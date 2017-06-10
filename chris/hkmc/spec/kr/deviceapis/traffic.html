@@ -1,0 +1,557 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <title>The Traffic module Specification</title>
+    <meta http-equiv='Content-Type' content='text/html;charset=utf-8'/>
+    <!-- 
+      === NOTA BENE ===
+      For the three scripts below, if your spec resides on dev.w3 you can check them
+      out in the same tree and use relative links so that they'll work offline,
+     -->
+    <script src='http://car.obigo.com:3030/spec/js/respec.js' class='remove'></script> <!-- chris/@obigo : http://dev.w3.org/2009/dap/ReSpec.js/js/respec.js -->
+    <script class='remove'>
+      var respecConfig = {
+          // specification status (e.g. WD, LCWD, NOTE, etc.). If in doubt use ED.
+          specStatus:           "WD",
+          
+          // the specification's short name, as in http://www.w3.org/TR/short-name/
+          shortName:            "traffic",
+		  subtitle : "Traffic API",
+
+          // if your specification has a subtitle that goes below the main
+          // formal title, define it here
+          // subtitle   :  "an excellent document",
+
+          // if you wish the publication date to be other than today, set this
+          // publishDate:  "2009-08-06",
+
+          // if the specification's copyright date is a range of years, specify
+          // the start date here:
+          // copyrightStart: "2005",
+
+          // if there is a previously published draft, uncomment this and set its YYYY-MM-DD date
+          // and its maturity status
+          // previousPublishDate:  "1977-03-15",
+          // previousMaturity:  "WD",
+
+          // if there a publicly available Editor's Draft, this is the link
+          edDraftURI:           "http://car.obigo.com:3030/spec/deviceapis/traffic.html",
+
+          // if this is a LCWD, uncomment and set the end of its review period
+          // lcEnd: "2009-08-05",
+
+          // if you want to have extra CSS, append them to this list
+          // it is recommended that the respec.css stylesheet be kept
+          extraCSS:             ["http://car.obigo.com:3030/spec/js/respec.css"], // chris@obigo : http://dev.w3.org/2009/dap/ReSpec.js/css/respec.css
+
+          // editors, add as many as you like
+          // only "name" is required
+          editors:  [
+              { name: "Top An", url: "",
+                company: "Obigo", companyURL: "http://www.obigo.com/" },
+				{ name: "BJ Kim", url: "",
+                company: "Obigo", companyURL: "http://www.obigo.com/" },
+				{ name: "Chris Lee", url: "",
+                company: "Obigo", companyURL: "http://www.obigo.com/" },
+				{ name: "Sandy Ban", url: "",
+                company: "Obigo", companyURL: "http://www.obigo.com/" },
+          ],
+
+          // authors, add as many as you like. 
+          // This is optional, uncomment if you have authors as well as editors.
+          // only "name" is required. Same format as editors.
+
+          //authors:  [
+          //    { name: "Your Name", url: "http://example.org/",
+          //      company: "Your Company", companyURL: "http://example.com/" },
+          //],
+          
+          // name of the WG
+		  noIDLSorting : "yes",  //chris@obigo
+          wg:           "Obigo Automotive Device APIs Working Group",
+          
+          // URI of the public WG page
+          //wgURI:        "http://example.org/really-cool-wg",
+          
+          // name (without the @w3c.org) of the public mailing to which comments are due
+          //wgPublicList: "automotive",
+          
+          // URI of the patent status for this WG, for Rec-track documents
+          // !!!! IMPORTANT !!!!
+          // This is important for Rec-track documents, do not copy a patent URI from a random
+          // document unless you know what you're doing. If in doubt ask your friendly neighbourhood
+          // Team Contact.
+          wgPatentURI:  "http://www.obigo.com",
+      };
+    </script>
+  </head>
+  <body>
+    
+	<section id='abstract'>
+      This specification defines APIs to get the TMC infomation from Automotive device.
+    </section>
+<!-- start -->
+	<section>
+		<h1>Summary of Methods</h1>
+    </section>
+
+	<table class='simple'>
+		<thead>
+		  <tr><th>Interface</th><th>Method</th></tr>
+		</thead>
+		<tbody>
+		  <tr>
+			<td>TrafficObject</td>
+			<td>
+			  
+			</td>
+		  </tr>
+		  <tr>
+			<td>Traffic</td>
+			<td>
+				boolean isTMCActivated(DOMString type)<br>
+				boolean setRDSFrequency(long freq)<br>
+				sequence&lt;DOMString&gt;  getRDSCachedMessages()<br>
+				long getRDSFrequency()<br>
+				long getRDSSignalLevel()<br>
+				sequence&lt;DOMString&gt; getTPEGCachedDataFiles()<br>				
+				long watchTPEGStatus(TPEGStatusSuccessCallback successCallback, ErrorCallback errorCallback)<br>
+				void clearWatchTPEGStatus(long watchId)<br>
+				long watchTPEGDataFile(TPEGDataFileSuccessCallback successCallback, ErrorCallback errorCallback)<br>
+				void clearWatchTPEGDataFile(long watchId)<br>
+			</td>
+		  </tr>
+		  <tr>
+			<td>TPEGDataFile</td>
+			<td></td>
+		  </tr>		
+		  <tr>
+			<td>TPEGStatusSuccessCallback</td>
+			<td>
+			  void onsuccess(short status)
+			</td>
+		  </tr>
+		  <tr>
+			<td>TPEGDataFileSuccessCallback</td>
+			<td>
+			  void onsuccess(TPEGDataFile tpegDataFile)
+			</td>
+		  </tr>
+		</tbody>
+	 </table>
+
+
+	<section >
+		<h1>Introduction</h1>
+		본 API는 TMC(Traffic Message Channel) 정보를 제공한다.
+    </section>
+
+	<section>
+		<h1>Type Definitions</h1>
+		<section>
+			<h2>TMCType</h2>
+			<p>TMC 장치 종류.</p>			
+			<code>enum TMCType { "DAB", "RDS", "SIRIUS", "TPEG", "XM" };</code>
+			<ul>
+			<li>DAB: Digital Audio Broadcasting.</li>
+			<li>RDS: Radio Data System.</li>
+			<li>SIRIUS: Sirius Satellite Radio.</li>
+			<li>TPEG: Transport Protocol Expert Group.</li>
+			<li>XM: XM Satellite Radio.</li>  
+			</ul>
+		</section>		
+		
+		<section>
+			<h2>TPEGDataFileStatus</h2>
+			<p>TPEG 데이터 파일 상태.</p>			
+			<code>enum TPEGDataFileStatus { "CREATED", "WILL_BE_REMOVED", "REMOVED" };</code>
+			<ul>
+			<li>CREATED: TPEG 데이터 파일 생성.</li>
+			<li>WILL_BE_REMOVED: TPEG 데이터 삭제 예정.</li>
+			<li>REMOVED: TPEG 데이터 파일 삭제.</li>			
+			</ul>
+		</section>		
+    </section>
+
+    <section>
+      <h1>Interfaces</h1>
+	     <section>
+			<h2>TrafficObject</h2>
+			Defines what is instantiated in the motor object.<br>
+			There will be a motor.traffic object that allows accessing the functionality of the traffic module.<br>
+			<dl title='[NoInterfaceObject] interface TrafficObject ' class='idl'>
+			  <dt>readonly attribute Traffic traffic</dt>
+			  <dd></dd>
+			</dl>			
+		 </section>
+		 
+		 <section>
+			 <dl title='Motor implements TrafficObject' class='idl'>
+				  <dt></dt>  
+				  <dd></dd>			  
+			</dl>
+		</section>		
+		
+		 <section>
+			<h2>Traffic</h2>
+			Traffic interface.<br>
+			
+			<dl title='[NoInterfaceObject] interface Traffic' class='idl'>
+			  <dt>boolean isTMCActivated(TMCType type)</dt>
+			  <dd>
+				TMC 장치의 작동 유무를 얻는다.
+				<dl>
+					<dt><b>Signature</b></dt>
+						<dd>  
+						boolean isTMCActivated(TMCType type)
+						</dd>
+					<dt><b>Return value</b></dt>
+						<dd>
+						장치가 On이면 true, Off이면 false 를 반환.
+						</dd>			
+					<dt><b>Exceptions</b></dt>
+						<dd>
+						MotorAPIError:<br>
+						with error code TYPE_MISMATCH_ERR if the input parameter is not compatible with the expected type for that parameter.<br>
+						with error code INVALID_VALUES_ERR if the errorCallback input parameter is an undefined errorCallback.<br>
+						with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+						</dd>
+				</dl>
+				<pre class='example'>
+					var isActivate = motor.traffic.isTMCActivated("DAB");
+					/* TMCType { "DAB", "RDS", "SIRIUS", "TPEG", "XM" } */
+
+					alert("DAB is Activated : " + isActivate);
+				</pre>
+			  </dd>
+			  
+			  <dt>boolean setRDSFrequency(long freq)</dt>
+			  <dd>
+				RDS 주파수를 설정한다.
+				<dl>
+					<dt><b>Signature</b></dt>
+						<dd>
+						boolean setRDSFrequency(long freq)
+						</dd>
+					<dt><b>Return value</b></dt>
+						<dd>
+						RDS 주파수가 제대로 설정됐다면 true, 그렇지 않으면 false 를 반환.
+						</dd>
+					<dt><b>Exceptions</b></dt>
+						<dd>
+						MotorAPIError:<br>
+						with error code TYPE_MISMATCH_ERR if the input parameter is not compatible with the expected type for that parameter.<br>
+						with error code INVALID_VALUES_ERR if the errorCallback input parameter is an undefined errorCallback.<br>
+						with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+						</dd>
+				</dl>
+				<pre class='example'>
+					var setRDSFreq = motor.traffic.setRDSFrequency(89);
+
+					alert("RDS Frequency is set : " + setRDSFreq);
+				</pre>
+			  </dd>
+			  
+			  <dt>sequence&lt;DOMString&gt; getRDSCachedMessages()</dt>
+			  <dd>
+				캐싱된 RDS 메시지를 얻는다.
+				<dl>
+					<dt><b>Signature</b></dt>
+						<dd>
+						sequence&lt;DOMString&gt; getRDSCachedMessages()
+						</dd>
+					<dt><b>Return value</b></dt>
+						<dd>
+						캐싱된 RDS 메시지.
+						</dd>
+					<dt><b>Exceptions</b></dt>
+						<dd>
+						MotorAPIError:<br>						
+						with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+						</dd>
+				</dl>
+				<pre class='example'>
+					var RDSCachedMessage = motor.traffic.getRDSCachedMessages();
+
+					alert("RDS cached message is : " + RDSCachedMessage);
+				</pre>
+			  </dd>
+			  
+			   <dt>long getRDSFrequency()</dt>
+			  <dd>
+				RDS 주파수를 얻는다.
+				<dl>
+					<dt><b>Signature</b></dt>
+						<dd>
+						long getRDSFrequency()
+						</dd>
+					<dt><b>Return value</b></dt>
+						<dd>
+						RDS 주파수.
+						</dd>
+					<dt><b>Exceptions</b></dt>
+						<dd>
+						MotorAPIError:<br>						
+						with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+						</dd>
+				</dl>
+				<pre class='example'>
+					var RDSFrq = motor.traffic.getRDSFrequency();
+
+					alert("RDS Frequency is : " + RDSFrq);
+				</pre>
+			  </dd>
+			  
+			  <dt>long getRDSSignalLevel()</dt>
+			  <dd>
+				RDS 신호 레벨을 얻는다.
+				<dl>
+					<dt><b>Signature</b></dt>
+						<dd>
+						long getRDSSignalLevel()
+						</dd>
+					<dt><b>Return value</b></dt>
+						<dd>
+						RDS 신호 레벨.
+						</dd>
+					<dt><b>Exceptions</b></dt>
+						<dd>
+						MotorAPIError:<br>						
+						with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+						</dd>
+				</dl>
+				<pre class='example'>
+					var RDSSignalLv = motor.traffic.getRDSSignalLevel();
+
+					alert("RDS Signal Level is : " + RDSSignalLv);
+				</pre>
+			  </dd>
+			  
+			  <dt>sequence&lt;DOMString&gt; getTPEGCachedDataFiles()</dt>
+			  <dd>
+				캐싱된 TPEG 데이터 파일을 얻는다.
+				<dl>
+					<dt><b>Signature</b></dt>
+						<dd>
+						sequence&lt;DOMString&gt; getTPEGCachedDataFiles()
+						</dd>
+					<dt><b>Return value</b></dt>
+						<dd>
+						캐싱된 TPEG 데이터 파일.
+						</dd>
+					<dt><b>Exceptions</b></dt>
+						<dd>
+						MotorAPIError:<br>						
+						with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+						</dd>
+				</dl>
+				<pre class='example'>
+					var TPEGDataFile = motor.traffic.getTPEGCachedDataFiles();
+
+					alert("TPEG Cached Data File is : " + TPEGDataFile);					
+				</pre>
+			  </dd>
+					
+			  <dt>long watchTPEGStatus(TPEGStatusSuccessCallback successCallback, optional ErrorCallback errorCallback)</dt>
+			  <dd> 
+				TPEG 업데이트 상태를 모니터링 한다.
+				<dl>
+					<dt><b>Signature</b></dt>
+						<dd>
+						long watchTPEGStatus(TPEGStatusSuccessCallback successCallback, optional ErrorCallback errorCallback)
+						</dd>
+					<dt><b>Return value</b></dt>
+						<dd>
+						clearWatchTPEGStatus() 메소드에 사용되는 식별자
+						</dd>
+					<dt><b>Exceptions</b></dt>
+						<dd>
+						MotorAPIError:<br>
+						with error code TYPE_MISMATCH_ERR if the input parameter is not compatible with the expected type for that parameter.<br>
+						with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+						</dd>
+				</dl>
+				<pre class='example'>
+					function TPEGStatusSuccessCB(status)	{
+						alert("TPEG Status is : " + status);
+					}
+
+					function ErrorCB(err)	{
+						alert("Error : " + err.message);
+					}
+
+					var watchTPEGStatus = motor.traffic.watchTPEGStatus(TPEGStatusSuccessCB, ErrorCB);	
+				</pre>
+			  </dd>
+			  
+			  <dt>void clearWatchTPEGStatus(in long watchId)</dt>
+			  <dd>
+				TPEG 업데이트 상태 모니터링을 해제한다.
+				<dl>
+					<dt><b>Signature</b></dt>
+						<dd>
+						void clearWatchTPEGStatus(long watchId)
+						</dd>
+					<dt><b>Return value</b></dt>
+						<dd>
+						none
+						</dd>
+					<dt><b>Exceptions</b></dt>
+						<dd>
+						MotorAPIError:<br>
+						with error code TYPE_MISMATCH_ERR if the input parameter is not compatible with the expected type for that parameter.<br>
+						with error code INVALID_VALUES_ERR if the errorCallback input parameter is an undefined errorCallback.<br>
+						with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+						</dd>
+				</dl>
+				<pre class='example'>
+					function TPEGStatusSuccessCB(status)	{
+						motor.traffic.clearWatchTPEGStatus(watchTPEGStatus);
+						alert("TPEG Status is : " + status);
+						/* watchTPEGStatus is cleared after first call */
+					}
+
+					function ErrorCB(err)	{
+						alert("Error : " + err.message);
+					}
+
+					var watchTPEGStatus = motor.traffic.watchTPEGStatus(TPEGStatusSuccessCB, ErrorCB);	
+				</pre>
+			  </dd>
+			  
+			  <dt>long watchTPEGDataFile(TPEGDataFileSuccessCallback successCallback, optional ErrorCallback errorCallback)</dt>
+			  <dd>
+				TPEG 데이터 파일 상태를 모니터링 한다.
+				<dl>
+					<dt><b>Signature</b></dt>
+						<dd>
+						long watchTPEGDataFile(TPEGDataFileSuccessCallback successCallback, optional ErrorCallback errorCallback)
+						</dd>
+					<dt><b>Return value</b></dt>
+						<dd>
+						clearWatchTPEGDataFile() 메소드에 사용되는 식별자
+						</dd>
+					<dt><b>Exceptions</b></dt>
+						<dd>
+						MotorAPIError:<br>
+						with error code TYPE_MISMATCH_ERR if the input parameter is not compatible with the expected type for that parameter.<br>
+						with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+						</dd>
+				</dl>
+				<pre class='example'>
+					function TPEGDataFileSuccessCB(t)	{
+						alert("TPEG Data File Status is : " + t.status + "TPEG Data File Path is : " + t.filePath);
+					}
+
+					function ErrorCB(err)	{
+						alert("Error : " + err.message);
+					}
+
+					var watchTPEGDataFile = motor.traffic.watchTPEGDataFile(TPEGDataFileSuccessCB, ErrorCB);
+				</pre>
+			  </dd>
+			  
+			  <dt>void clearWatchTPEGDataFile(in long watchId)</dt>
+			  <dd>
+				TPEG 데이터 파일 상태 모니터링을 해제한다.
+				<dl>
+					<dt><b>Signature</b></dt>
+						<dd>
+						void clearWatchTPEGDataFile(long watchId)
+						</dd>
+					<dt><b>Return value</b></dt>
+						<dd>
+						none
+						</dd>
+					<dt><b>Exceptions</b></dt>
+						<dd>
+						MotorAPIError:<br>
+						with error code TYPE_MISMATCH_ERR if the input parameter is not compatible with the expected type for that parameter.<br>
+						with error code INVALID_VALUES_ERR if the errorCallback input parameter is an undefined errorCallback.<br>
+						with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+						</dd>
+				</dl>
+				<pre class='example'>
+					function TPEGDataFileSuccessCB(t)	{
+						motor.traffic.clearWatchTPEGDataFile(watchTPEGDataFile);
+						alert("TPEG Data File Status is : " + t.status + "TPEG Data File Path is : " + t.filePath);
+						/* watchTPEGDataFile is cleared after first call */
+					}
+
+					function ErrorCB(err)	{
+						alert("Error : " + err.message);
+					}
+
+					var watchTPEGDataFile = motor.traffic.watchTPEGDataFile(TPEGDataFileSuccessCB, ErrorCB);	
+				</pre>
+			  </dd>
+			 </dl> 
+
+		  </section>
+
+		  <section>
+			<h2>TPEGDataFile</h2>
+			Define the attributes of a TPEG data file.<br>
+			It is used in the successCallback of the watchTPEGDataFile() method.<br>
+			<dl title='[NoInterfaceObject] interface TPEGDataFile' class='idl'>
+			  <dt>readonly attribute TPEGDataFileStatus status</dt>
+			  <dd>TPEG 데이터 파일 상태이다.</dd>
+			  <dt>readonly attribute DOMString filePath</dt>
+			  <dd>TPEG 데이터 파일 경로이다.</dd>
+			</dl>  
+		 </section>
+
+		 <section>
+			<h2>TPEGStatusSuccessCallback</h2>
+			TPEGStatus specific success callback.<br>
+			This callback interface specifies a success callback with a function taking a status value as input argument. It is used in asynchronous operations such as watchTPEGStatus() method.<br>
+			<dl title='[Callback=FunctionOnly, NoInterfaceObject] interface TPEGStatusSuccessCallback' class='idl'>
+			  <dt>void onsuccess(short status)</dt>
+			  <dd>Method invoked when the asynchronous call completes successfully
+				<dl>
+					  <dt><b>Signature</b></dt>
+						<dd>
+						 void onsuccess(short status)
+						</dd>
+				  </dl>
+			  </dd>
+			</dl>
+		 </section>
+
+		 <section>
+			<h2>TPEGDataFileSuccessCallback</h2>
+			Panic specific success callback.<br>
+			This callback interface specifies a success callback with a function taking a TPEGDataFile object as input argument. It is used in asynchronous operations such as watchTPEGDataFile() method.<br>
+			<dl title='[Callback=FunctionOnly, NoInterfaceObject] interface TPEGDataFileSuccessCallback' class='idl'>
+			  <dt>void onsuccess(TPEGDataFile tpegDataFile)</dt>
+			  <dd>Method invoked when the asynchronous call completes successfully
+				<dl>
+					  <dt><b>Signature</b></dt>
+						<dd>
+						  void onsuccess(TPEGDataFile tpegDataFile)
+						</dd>
+				  </dl>
+			  </dd>
+			</dl>
+		 </section>
+    </section>
+
+	 <section>
+      <h1>Features</h1>
+	  
+	  When the feature<br>
+
+
+		<ul><li>http://hyundai.com/api/traffic</li></ul>
+		or any of the features hierarchically under that feature is successfully requested, the interface Traffic is instantiated, and the resulting object appears in the global namespace as motor.traffic.
+<br>
+		This is the list of URIs used to declare this API's features, for use in the widget config.xml. For each URL, the list of functions covered is provided.<br>
+
+<br>
+		<b>http://hyundai.com/api/traffic</b><br>
+		Access to all the features in this module.<br> 
+	  
+    </section>
+
+  </body>
+</html>
