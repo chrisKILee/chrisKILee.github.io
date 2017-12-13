@@ -21,8 +21,8 @@ console.log('all_carrier : ',allCarrier._data.years, 'year /', allCarrier._data.
 
 $(document).ready(function() {
     $(function () {
-document.getElementById("dalicar").innerHTML = daliwokrsCarrier._data.years, ' year ', daliwokrsCarrier._data.months, ' month';
-document.getElementById("tocar").innerHTML = allCarrier._data.years, ' year ', allCarrier._data.months, ' months';
-document.getElementById("obicar").innerHTML = obigoCarrier._data.years+daliwokrsCarrier._data.years, ' year ', obigoCarrier._data.months+daliwokrsCarrier._data.months, ' month';
+document.getElementById("dalicar").innerHTML = daliwokrsCarrier._data.years, ' year ';
+document.getElementById("tocar").innerHTML = allCarrier._data.years, ' year ';
+document.getElementById("obicar").innerHTML = obigoCarrier._data.years+daliwokrsCarrier._data.years, ' year ';
     });
 });
