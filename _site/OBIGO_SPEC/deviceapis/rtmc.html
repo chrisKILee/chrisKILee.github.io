@@ -1,0 +1,654 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <title>The RDS-TMC module Specification</title>
+    <meta http-equiv='Content-Type' content='text/html;charset=eu-kr'/>
+    <!-- 
+      === NOTA BENE ===
+      For the three scripts below, if your spec resides on dev.w3 you can check them
+      out in the same tree and use relative links so that they'll work offline,
+     -->
+    <script src='../js/respec.js' class='remove'></script> <!-- chris/@obigo : http://dev.w3.org/2009/dap/ReSpec.js/js/respec.js -->
+    <script class='remove'>
+      var respecConfig = {
+          // specification status (e.g. WD, LCWD, NOTE, etc.). If in doubt use ED.
+          specStatus:           "WD",
+          
+          // the specification's short name, as in http://www.w3.org/TR/short-name/ <!-- chris/obigo : http://car.obigo.com:3030/spec/deviceapis/ -->
+          shortName:            "rtmc",
+		  subtitle : "RDS-TMC API",
+
+          // if your specification has a subtitle that goes below the main
+          // formal title, define it here
+          // subtitle   :  "an excellent document",
+
+          // if you wish the publication date to be other than today, set this
+          // publishDate: 
+          // if the specification's copyright date is a range of years, specify
+          // the start date here:
+          // copyrightStart: "2005",
+
+          // if there is a previously published draft, uncomment this and set its YYYY-MM-DD date
+          // and its maturity status
+           //previousPublishDate:  false,
+           //previousMaturity:  false,
+
+          // if there a publicly available Editor's Draft, this is the link
+          edDraftURI:           "http://car.obigo.com:3030/spec/deviceapis/rtmc.html",
+
+          // if this is a LCWD, uncomment and set the end of its review period
+          // lcEnd: "2009-08-05",
+
+          // if you want to have extra CSS, append them to this list
+          // it is recommended that the respec.css stylesheet be kept
+          extraCSS:             ["../js/respec.css"], // chris@obigo : http://dev.w3.org/2009/dap/ReSpec.js/css/respec.css
+
+          // editors, add as many as you like
+          // only "name" is required
+          editors:  [
+              { name: "Top An", url: "",
+                company: "Obigo", companyURL: "http://www.obigo.com/" },
+				      { name: "BJ Kim", url: "",
+                company: "Obigo", companyURL: "http://www.obigo.com/" },
+          ],
+
+          // authors, add as many as you like. 
+          // This is optional, uncomment if you have authors as well as editors.
+          // only "name" is required. Same format as editors.
+
+          //authors:  [
+          //    { name: "Your Name", url: "http://example.org/",
+          //      company: "Your Company", companyURL: "http://example.com/" },
+          //],
+          
+          // name of the WG
+		  noIDLSorting : "yes",  //chris@obigo
+          wg:           "Obigo Automotive Device APIs Working Group",
+          
+          // URI of the public WG page
+          //wgURI:        "http://example.org/really-cool-wg", //chris@obigo
+          
+          // name (without the @w3c.org) of the public mailing to which comments are due
+          //wgPublicList: "automotive", //chris@obigo
+          
+          // URI of the patent status for this WG, for Rec-track documents
+          // !!!! IMPORTANT !!!!
+          // This is important for Rec-track documents, do not copy a patent URI from a random
+          // document unless you know what you're doing. If in doubt ask your friendly neighbourhood
+          // Team Contact.
+          wgPatentURI:  "http://www.obigo.com",
+      };
+    </script>
+
+  </head>
+  <body>
+    
+	<section id='abstract'>
+     This specification defines APIs to control the RDS-TMC device.
+    </section>
+<!-- start -->
+	<section>
+		<h1>Summary of Methods</h1>
+    </section>
+
+	<table class='simple'>
+		<thead>
+		  <tr><th>Interface</th><th>Method</th></tr>
+		</thead>
+		<tbody>
+		  <tr>
+			<td>RDSTMCObject</td>
+			<td>
+			  
+			</td>
+		  </tr>
+		  <tr>
+			<td>RDSTMC</td>
+			<td>				
+				void setPowered(boolean state, SuccessCallback successCallback, ErrorCallback errorCallback)<br />
+				void isActivated(ActivatedSuccessCallback successCallback, ErrorCallback errorCallback)<br />
+				void autoTuning(AutoTuningOption option, FrequencySuccessCallback successCallback, ErrorCallback errorCallback)<br />
+				void setFrequency(long freq, SuccessCallback successCallback, ErrorCallback errorCallback)<br />
+				void getFrequency(FrequencySuccessCallback successCallback, ErrorCallback errorCallback)<br />
+				void getSignalLevel(SignalLevelSuccessCallback successCallback, ErrorCallback errorCallback)<br />
+				long watchTMCData(TMCDataSuccessCallback successCallback, ErrorCallback errorCallback)<br>
+				void clearWatchTMCData(long watchId)<br>
+			</td>
+		  </tr>
+		  <tr>
+			<td>TMCData</td>
+			<td></td>
+		  </tr>	
+		  <tr>
+			<td>TMCLocation</td>
+			<td></td>
+		  </tr>	
+		  <tr>
+			<td>ActivatedSuccessCallback</td>
+			<td>
+				void onsuccess(boolean state)
+			</td>
+		  </tr>		
+		  <tr>
+			<td>FrequencySuccessCallback </td>
+			<td>
+				void onsuccess(long freq)
+			</td>
+		  </tr>		
+		  <tr>
+			<td>SignalLevelSuccessCallback </td>
+			<td>
+				void onsuccess(long sigLevel)
+			</td>
+		  </tr>				  
+		  <tr>
+			<td>TMCDataSuccessCallback</td>
+			<td>
+				void onsuccess(TMCData tmcData)
+			</td>
+		  </tr>
+		</tbody>
+	 </table>
+
+
+	<section >
+		<h1>Introduction</h1>
+		This API provides functionalities to control the RDS-TMC device.
+    </section>
+	
+	<section>
+		<h1>Type Definitions</h1>
+		<section>
+			<h2>AutoTuningOption</h2>
+			<p>The option of auto tunning.</p>			
+			<code>enum AutoTuningOption { "UP", "DOWN" };</code>
+			<ul>
+			<li>UP: Tunes up RDS-TMC frequency.</li>
+            <li>DOWN: Tunes down RDS-TMC frequency.</li>
+			</ul>
+		</section>
+		
+		<section>
+			<h2>TMCEventType</h2>
+			<p>The event type of the situation.</p>			
+			<code>enum TMCEventType { "ACCIDENTS", "CLOSURES_AND_LANE_RESTRICTIONS", "CARRIAGEWAY_RESTRICTIONS", "EXIT_RESTRICTIONS", "ENTRY_RESTRICTIONS", "TRAFFIC_RESTRICTIONS", "ROADWORKS", "OBSTRUCTION_HAZARDS", "DANGEROUS_SITUATIONS" };</code>
+			<ul>
+			<li>ACCIDENTS: Accidents .</li>
+			<li>CLOSURES_AND_LANE_RESTRICTIONS: Closures and lane restrictions.</li>
+			<li>CARRIAGEWAY_RESTRICTIONS: Carriageway restrictions.</li>
+			<li>EXIT_RESTRICTIONS: Exit restrictions.</li>
+			<li>ENTRY_RESTRICTIONS: Entry restrictions.</li>
+            <li>TRAFFIC_RESTRICTIONS: Traffic restrictions.</li>
+			<li>ROADWORKS: Roadworks.</li>
+			<li>OBSTRUCTION_HAZARDS: Obstruction hazards.</li>
+			<li>DANGEROUS_SITUATIONS: Dangerous situations.</li>
+			</ul>
+		</section>
+		
+		<section>
+			<h2>TMCDuration</h2>
+			<p>The duration on how long an event is expected to last.</p>			
+			<code>enum TMCDuration { "15MIN", "30MIN", "1H", "2H", "3H", "4H", "UNTIL_MIDNIGHT" };</code>
+			<ul>
+			<li>15MIN: For at least next 15 minutes.</li>
+			<li>30MIN: For at least next 30 minutes.</li>
+			<li>1H: For at least next 1 hour.</li>
+			<li>2H: For at least next 2 hours.</li>
+			<li>3H: For at least next 3 hours.</li>
+			<li>4H: For at least next 4 hours.</li>
+            <li>UNTIL_MIDNIGHT: For at least until midnight.</li>
+			</ul>
+		</section>
+	</section>
+
+	<section>
+		<h1>Interfaces</h1>
+		<section>
+			<h2>RDSTMCObject</h2>
+			There will be a motor.rdstmc object that allows accessing the functionality of the RDS-TMC module.<br>
+			<dl title='[NoInterfaceObject] interface RDSTMCObject' class='idl'>
+				  <dt> readonly attribute RDSTMC rdstmc</dt>
+				  <dd></dd>
+			</dl>
+		</section>  
+		
+		<section>
+			 <dl title='Motor implements RDSTMCObject' class='idl'>
+				  <dt></dt>  
+				  <dd></dd>			  
+			</dl>
+		</section>	
+
+		<section>
+			<h2>RDSTMC</h2>
+			RDSTMC interface.<br>
+			<dl title='[NoInterfaceObject] interface RDSTMC' class='idl'>
+				 
+				<dt>void setPowered(boolean state, optional SuccessCallback? successCallback, optional ErrorCallback? errorCallback)</dt>
+				<dd>
+					Turns the RDS-TMC radio device on or off.
+					<dl>
+						<dt><b>Signature</b></dt>
+							<dd>
+							void setPowered(boolean state, optional SuccessCallback? successCallback, optional ErrorCallback? errorCallback)
+							</dd>
+						<dt><b>Return value</b></dt>
+							<dd>
+							none.
+							</dd>
+						<dt><b>Exceptions</b></dt>
+							<dd>
+							MotorAPIError:<br>		
+							with error code TYPE_MISMATCH_ERR if the input parameter is not compatible with the expected type for that parameter.<br>							
+							with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+							</dd>
+					</dl>
+					<dl class='parameters'>
+						<dt>boolean state</dt>
+						<dd>True to power on the RDS-TMC radio device, false to power it off.</dd>
+						<dt>optional SuccessCallback? successCallback</dt>
+						<dd> The method to be invoked when the asynchronous call completes successfully.</dd>
+						<dt>optional ErrorCallback? errorCallback</dt>
+						<dd> The method to be invoked when an error occurs.</dd>
+					</dl>
+					<pre class='example'>						
+						motor.rdstmc.setPowered(true, function() {
+							console.log("The RDS-TMC radio device powered on success.");
+						},
+						function(e) {
+							console.log("Failed to power on the RDS-TMC radio device: " + e.message);
+						});
+					</pre>
+				</dd>						
+						  			   				
+				<dt>void isActivated(ActivatedSuccessCallback successCallback, optional ErrorCallback? errorCallback)</dt>
+				<dd>				
+					Indicates whether the RDS-TMC radio device is activated.
+					<dl>
+						<dt><b>Signature</b></dt>
+							<dd>  
+							void isActivated(ActivatedSuccessCallback successCallback, optional ErrorCallback? errorCallback)
+							</dd>
+						<dt><b>Return value</b></dt>
+							<dd>						
+							none.
+							</dd>			
+						<dt><b>Exceptions</b></dt>
+							<dd>
+							MotorAPIError:<br>		
+							with error code TYPE_MISMATCH_ERR if the input parameter is not compatible with the expected type for that parameter.<br>	
+							with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+							</dd>
+					</dl>
+					<dl class='parameters'>						
+						<dt>ActivatedSuccessCallback successCallback</dt>
+						<dd> The method to be invoked when the asynchronous call completes successfully.</dd>
+						<dt>optional ErrorCallback? errorCallback</dt>
+						<dd> The method to be invoked when an error occurs.</dd>
+					</dl>
+					<pre class='example'>						
+						motor.rdstmc.isActivated(function(state) {
+							console.log("The RDS-TMC radio device is activated : " + state);
+						},
+						function(e) {
+							console.log("Error : " + e.message);
+						});															
+					</pre>
+				</dd>
+			  
+				<dt>void autoTuning(AutoTuningOption option, FrequencySuccessCallback successCallback, optional ErrorCallback? errorCallback)</dt>
+				<dd>
+					Tunes into a RDS-TMC channel automatically.
+					<dl>
+						<dt><b>Signature</b></dt>
+							<dd>
+							void autoTuning(AutoTuningOption option, FrequencySuccessCallback successCallback, optional ErrorCallback? errorCallback)
+							</dd>
+						<dt><b>Return value</b></dt>
+							<dd>
+							none.
+							</dd>
+						<dt><b>Exceptions</b></dt>
+							<dd>
+							MotorAPIError:<br>	
+							with error code TYPE_MISMATCH_ERR if any input parameter is not compatible with the expected type for that parameter.<br />
+							with error code INVALID_VALUES_ERR if the input parameter contains an invalid value.<br />
+							with error code NOT_SUPPORTED_ERR if this function is not supported.<br />
+							</dd>
+					</dl>
+					<dl class='parameters'>		
+						<dt>AutoTuningOption option</dt>
+						<dd> The auto tuning option.</dd>					
+						<dt>FrequencySuccessCallback successCallback</dt>
+						<dd> The method to be invoked when the asynchronous call completes successfully.</dd>
+						<dt>optional ErrorCallback? errorCallback</dt>
+						<dd> The method to be invoked when an error occurs.</dd>
+					</dl>
+					<pre class='example'>						
+						motor.rdstmc.autoTuning("UP", function(freq) {
+							console.log("Auto-tuned frequency: " + freq / 100 + "MHz");
+						},
+						function(e) {
+							console.log("Error : " + e.message);
+						});															
+					</pre>
+				</dd>
+			  
+				<dt>void setFrequency(long freq, optional SuccessCallback? successCallback, optional ErrorCallback? errorCallback)</dt>
+				<dd>				
+					Sets the RDS-TMC frequency.
+					<dl>
+						<dt><b>Signature</b></dt>
+							<dd>
+							void setFrequency(long freq, optional SuccessCallback? successCallback, optional ErrorCallback? errorCallback)
+							</dd>
+						<dt><b>Return value</b></dt>
+							<dd>					
+							none.
+							</dd>
+						<dt><b>Exceptions</b></dt>
+							<dd>
+							MotorAPIError:<br>
+							with error code TYPE_MISMATCH_ERR if any input parameter is not compatible with the expected type for that parameter.<br />
+							with error code INVALID_VALUES_ERR if the input parameter contains an invalid value.<br />
+							with error code NOT_SUPPORTED_ERR if this function is not supported.<br />
+							</dd>
+					</dl>
+					<dl class='parameters'>
+						<dt>long freq</dt>
+						<dd>The RDS-TMC frequency. The frequency is a human readable number. For instance, 101.2 MHz will be decimal 10120.</dd>
+						<dt>optional SuccessCallback? successCallback</dt>
+						<dd> The method to be invoked when the asynchronous call completes successfully.</dd>
+						<dt>optional ErrorCallback? errorCallback</dt>
+						<dd> The method to be invoked when an error occurs.</dd>
+					</dl>
+					<pre class='example'>						
+						motor.rdstmc.setFrequency(10120, function() {
+							console.log("Frequency setting success.");
+						},
+						function(e) {
+							console.log("Failed to set the frequency on the RDS-TMC radio device: " + e.message);
+						});
+					</pre>
+				</dd>
+				
+				<dt>void getFrequency(FrequencySuccessCallback successCallback, optional ErrorCallback? errorCallback)</dt>
+				<dd>
+					Gets the current RDS-TMC frequency.
+					<dl>
+						<dt><b>Signature</b></dt>
+							<dd>
+							void getFrequency(FrequencySuccessCallback successCallback, optional ErrorCallback? errorCallback)
+							</dd>
+						<dt><b>Return value</b></dt>
+							<dd>
+							none.
+							</dd>
+						<dt><b>Exceptions</b></dt>
+							<dd>
+							MotorAPIError:<br>						
+							with error code TYPE_MISMATCH_ERR if any input parameter is not compatible with the expected type for that parameter.<br />
+							with error code NOT_SUPPORTED_ERR if this function is not supported.<br />
+							</dd>
+					</dl>
+					<dl class='parameters'>						
+						<dt>FrequencySuccessCallback successCallback</dt>
+						<dd> The method to be invoked when the asynchronous call completes successfully.</dd>
+						<dt>optional ErrorCallback? errorCallback</dt>
+						<dd> The method to be invoked when an error occurs.</dd>
+					</dl>
+					<pre class='example'>						
+						motor.rdstmc.getFrequency(function(freq) {
+							console.log("The current RDS-TMC frequency: " + freq / 100 + "MHz");
+						},
+						function(e) {
+							console.log("Failed to get the current RDS-TMC frequency: " + e.message);
+						});
+					</pre>
+				</dd>
+				
+				<dt>void getSignalLevel(SignalLevelSuccessCallback successCallback, optional ErrorCallback? errorCallback)</dt>
+				<dd>
+					Gets the RDS-TMC signal level of the current RDS-TMC frequency.
+					<dl>
+						<dt><b>Signature</b></dt>
+							<dd>
+							void getSignalLevel(SignalLevelSuccessCallback successCallback, optional ErrorCallback? errorCallback)
+							</dd>
+						<dt><b>Return value</b></dt>
+							<dd>
+							none.
+							</dd>
+						<dt><b>Exceptions</b></dt>
+							<dd>
+							MotorAPIError:<br>						
+							with error code TYPE_MISMATCH_ERR if any input parameter is not compatible with the expected type for that parameter.<br />
+							with error code NOT_SUPPORTED_ERR if this function is not supported.<br />
+							</dd>
+					</dl>
+					<dl class='parameters'>						
+						<dt>SignalLevelSuccessCallback successCallback</dt>
+						<dd> The method to be invoked when the asynchronous call completes successfully.</dd>
+						<dt>optional ErrorCallback? errorCallback</dt>
+						<dd> The method to be invoked when an error occurs.</dd>
+					</dl>
+					<pre class='example'>						
+						motor.rdstmc.getSignalLevel(function(sigLevel) {
+							console.log("The RDS-TMC signal level of the current frequency: " + sigLevel);
+						},
+						function(e) {
+							console.log("Failed to get the RDS-TMC signal level of the current frequency: " + e.message);
+						});
+					</pre>
+				</dd>			
+
+				<dt>long watchTMCData(TMCDataSuccessCallback successCallback, optional ErrorCallback? errorCallback)</dt>
+				<dd>				
+					Subscribes to receive notifications about the change in status of a TMC data.
+					<dl>
+						<dt><b>Signature</b></dt>
+							<dd>
+							long watchTMCData(TMCDataSuccessCallback successCallback, optional ErrorCallback? errorCallback)
+							</dd>
+						<dt><b>Return value</b></dt>
+							<dd>
+							The identifier used to clear the watch subscription.
+							</dd>
+						<dt><b>Exceptions</b></dt>
+							<dd>
+							MotorAPIError:<br>
+							with error code TYPE_MISMATCH_ERR if the input parameter is not compatible with the expected type for that parameter.<br>
+							with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+							</dd>
+					</dl>
+					<dl class='parameters'>						
+						<dt>TMCDataSuccessCallback successCallback</dt>
+						<dd> The method to be invoked when the asynchronous call completes successfully.</dd>
+						<dt>optional ErrorCallback? errorCallback</dt>
+						<dd> The method to be invoked when an error occurs.</dd>
+					</dl>
+					<pre class='example'>
+						function tmcDataSuccessCB(tmcData)	{
+							console.log("The road number : " + tmcData.roadNumber + 
+								  "\nThe primary location : " + tmcData.primaryLocation.name +
+								  "\nThe secondary location : " + tmcData.secondaryLocation.name +
+								  "\nEvent : + t.eventType");
+						}
+
+						function errorCB(err)	{
+							console.log("Error : " + err.message);
+						}
+
+						var watchTMCData = motor.rdstmc.watchTMCData(tmcDataSuccessCB, errorCB);
+					</pre>
+			  </dd>
+			  
+			  <dt>void clearWatchTMCData(long watchId)</dt>
+				<dd>				
+					Unsubscribes the watch operation by the watchTMCData() method.
+					<dl>
+						<dt><b>Signature</b></dt>
+							<dd>
+							void clearWatchTMCData(long watchId)
+							</dd>
+						<dt><b>Return value</b></dt>
+							<dd>
+							none
+							</dd>
+						<dt><b>Exceptions</b></dt>
+							<dd>
+							MotorAPIError:<br>
+							with error code TYPE_MISMATCH_ERR if the input parameter is not compatible with the expected type for that parameter.<br>
+							with error code INVALID_VALUES_ERR if the input parameter contains an invalid value.<br>
+							with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+							</dd>
+					</dl>
+					<dl class='parameters'>						
+						<dt>long watchId</dt>
+						<dd>The identifier used to clear the watch subscription.</dd>						
+					</dl>
+					<pre class='example'>
+						function TPEGDataFileSuccessCB(tmcData)	{
+							motor.rdstmc.clearWatchTMCData(watchId);							
+						}
+
+						function errorCB(err)	{
+							console.log("Error : " + err.message);
+						}
+
+						var watchId = motor.rdstmc.watchTMCData(tmcDataSuccessCB, errorCB);	
+					</pre>
+			  </dd>			 
+				
+			</dl>			
+			
+		</section>
+		
+		<section>
+			<h2>TMCData</h2>
+				Define the attributes of a TMC data.<br>
+				It is used in the successCallback of the watchTMCData() method.<br>
+			<dl title='[NoInterfaceObject] interface TMCData' class='idl'>
+				<dt>readonly attribute DOMString roadNumber</dt>
+				<dd>The road name.</dd>
+				<dt>readonly attribute TMCLocation primaryLocation</dt>
+				<dd>The primary location.</dd>
+				<dt>readonly attribute TMCLocation secondaryLocation</dt>
+				<dd>The secondary location.</dd>
+				<dt>readonly attribute TMCEventType eventType</dt>
+				<dd>The event type of the situation.</dd>
+				<dt>readonly attribute TMCDuration duration</dt>
+				<dd>The duration on how long an event is expected to last.</dd>
+				<dt>readonly attribute sequence&lt;DOMString&gt; diversionRoute</dt>
+				<dd>The diversion routes.</dd>
+			</dl>   
+		</section>
+		
+		<section>
+			<h2>TMCLocation</h2>
+				Define the attributes of a TMC location.<br>
+				It is used in the TMCData object.<br>
+			<dl title='[NoInterfaceObject] interface TMCLocation' class='idl'>
+				<dt>readonly attribute DOMString name</dt>
+				<dd>The location name</dd>
+				<dt>readonly attribute double latitude</dt>
+				<dd>The latitude, a geographic coordinate specified in decimal degrees.</dd>
+				<dt>readonly attribute double longitude</dt>
+				<dd>The longitude, a geographic coordinate specified in decimal degrees.</dd>
+			</dl>   
+		</section>
+		
+		<section>
+			<h2>ActivatedSuccessCallback</h2>
+			The success callback for RDSTMC.isActivated().
+			<dl title='[Callback=FunctionOnly, NoInterfaceObject] interface ActivatedSuccessCallback' class='idl'>
+				<dt>void onsuccess(boolean state)</dt>
+				<dd>The method invoked when the asynchronous call completes successfully.
+					<dl>
+						<dt><b>Signature</b></dt>
+						<dd>
+							void onsuccess(boolean state)
+						</dd>					
+					</dl>
+					<dl class='parameters'>							
+						<dt>boolean state</dt>
+						<dd>True if the RDS-TMC radio device is activated, false otherwise.</dd>						
+					</dl>
+				</dd>
+			</dl>
+		 </section>
+		 
+		 <section>
+			<h2>FrequencySuccessCallback </h2>
+			The success callback for RDSTMC.autoTuning() or RDS-TMC.getFrequency().
+			<dl title='[Callback=FunctionOnly, NoInterfaceObject] interface FrequencySuccessCallback ' class='idl'>
+				<dt>void onsuccess(long freq)</dt>
+				<dd>The method invoked when the asynchronous call completes successfully.
+					<dl>
+						<dt><b>Signature</b></dt>
+						<dd>
+							void onsuccess(long freq)
+						</dd>					
+					</dl>
+					<dl class='parameters'>							
+						<dt>long freq</dt>
+						<dd>The RDS-TMC frequency. The frequency is a human readable number. For instance, 101.2 MHz will be decimal 10120.</dd>						
+					</dl>
+				</dd>
+			</dl>
+		 </section>
+		 
+		 <section>
+			<h2>SignalLevelSuccessCallback </h2>
+			The success callback for RDSTMC.getSignalLevel().
+			<dl title='[Callback=FunctionOnly, NoInterfaceObject] interface SignalLevelSuccessCallback ' class='idl'>
+				<dt>void onsuccess(long sigLevel)</dt>
+				<dd>The method invoked when the asynchronous call completes successfully.
+					<dl>
+						<dt><b>Signature</b></dt>
+						<dd>
+							void onsuccess(long sigLevel)
+						</dd>					
+					</dl>
+					<dl class='parameters'>							
+						<dt>long sigLevel</dt>
+						<dd>The RDS-TMC signal level of the current RDS-TMC frequency.</dd>						
+					</dl>
+				</dd>
+			</dl>
+		 </section>
+		
+		<section>
+			<h2>TMCDataSuccessCallback</h2>
+			The success callback for RDSTMC.watchTMCData().		
+			<dl title='[Callback=FunctionOnly, NoInterfaceObject] interface TMCDataSuccessCallback' class='idl'>
+				<dt>void onsuccess(TMCData tmcData)</dt>
+				<dd>The method invoked when the asynchronous call completes successfully
+					<dl>
+						<dt><b>Signature</b></dt>
+						<dd>
+							void onsuccess(TMCData tmcData)
+						</dd>
+					</dl>
+					<dl class='parameters'>							
+						<dt>TMCData tmcData</dt>
+						<dd>The TMC Data.</dd>						
+					</dl>
+				</dd>
+			</dl>
+		 </section>
+		
+	</section>
+
+	<section>
+		<h1>Features</h1>
+			When the feature<br>
+			<ul><li>http://obigo.com/api/rdstmc</li></ul>
+			or any of the features hierarchically under that feature is successfully requested, the interface RDSTMC is instantiated, and the resulting object appears in the global namespace as motor.rdstmc.<br>
+			This is the list of URIs used to declare this API's features, for use in the widget config.xml. For each URL, the list of functions covered is provided.<br><br>
+			<b>http://obigo.com/api/rdstmc</b><br>
+			Access to all the features in this module.<br>
+	</section>
+
+	</body>
+</html>

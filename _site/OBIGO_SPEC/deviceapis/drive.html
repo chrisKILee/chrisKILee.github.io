@@ -1,0 +1,554 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <title>The Drive module Specification</title>
+    <meta http-equiv='Content-Type' content='text/html;charset=utf-8'/>
+    <!-- 
+      === NOTA BENE ===
+      For the three scripts below, if your spec resides on dev.w3 you can check them
+      out in the same tree and use relative links so that they'll work offline,
+     -->
+    <script src='http://car.obigo.com:3030/common/spec/js/respec.js' class='remove'></script> <!-- chris/@obigo : http://dev.w3.org/2009/dap/ReSpec.js/js/respec.js -->
+    <script class='remove'>
+      var respecConfig = {
+          // specification status (e.g. WD, LCWD, NOTE, etc.). If in doubt use ED.
+          specStatus:           "WD",
+          
+          // the specification's short name, as in http://www.w3.org/TR/short-name/ <!-- chris/obigo : http://car.obigo.com:3030/spec/deviceapis/ -->
+          shortName:            "drive",
+		  subtitle : "Drive API",
+
+          // if your specification has a subtitle that goes below the main
+          // formal title, define it here
+          // subtitle   :  "an excellent document",
+
+          // if you wish the publication date to be other than today, set this
+          // publishDate: 
+          // if the specification's copyright date is a range of years, specify
+          // the start date here:
+          // copyrightStart: "2005",
+
+          // if there is a previously published draft, uncomment this and set its YYYY-MM-DD date
+          // and its maturity status
+           //previousPublishDate:  false,
+           //previousMaturity:  false,
+
+          // if there a publicly available Editor's Draft, this is the link
+          edDraftURI:           "http://car.obigo.com:3030/spec/deviceapis/drive.html",
+
+          // if this is a LCWD, uncomment and set the end of its review period
+          // lcEnd: "2009-08-05",
+
+          // if you want to have extra CSS, append them to this list
+          // it is recommended that the respec.css stylesheet be kept
+          extraCSS:             ["http://car.obigo.com:3030/spec/js/respec.css"], // chris@obigo : http://dev.w3.org/2009/dap/ReSpec.js/css/respec.css
+
+          // editors, add as many as you like
+          // only "name" is required
+          editors:  [
+              { name: "Top An", url: "",
+                company: "Obigo", companyURL: "http://www.obigo.com/" },
+				{ name: "BJ Kim", url: "",
+                company: "Obigo", companyURL: "http://www.obigo.com/" },
+				{ name: "Chris Lee", url: "",
+                company: "Obigo", companyURL: "http://www.obigo.com/" },
+				{ name: "Sandy Ban", url: "",
+                company: "Obigo", companyURL: "http://www.obigo.com/" },
+          ],
+
+          // authors, add as many as you like. 
+          // This is optional, uncomment if you have authors as well as editors.
+          // only "name" is required. Same format as editors.
+
+          //authors:  [
+          //    { name: "Your Name", url: "http://example.org/",
+          //      company: "Your Company", companyURL: "http://example.com/" },
+          //],
+          
+          // name of the WG
+		  noIDLSorting : "yes",  //chris@obigo
+          wg:           "Obigo Automotive Device APIs Working Group",
+          
+          // URI of the public WG page
+          //wgURI:        "http://example.org/really-cool-wg", //chris@obigo
+          
+          // name (without the @w3c.org) of the public mailing to which comments are due
+          //wgPublicList: "automotive", //chris@obigo
+          
+          // URI of the patent status for this WG, for Rec-track documents
+          // !!!! IMPORTANT !!!!
+          // This is important for Rec-track documents, do not copy a patent URI from a random
+          // document unless you know what you're doing. If in doubt ask your friendly neighbourhood
+          // Team Contact.
+          wgPatentURI:  "http://www.obigo.com",
+      };
+    </script>
+  </head>
+  <body>
+    
+	<section id='abstract'>
+      This specification defines APIs to get the driving information from an automotive device.
+    </section>
+<!-- start -->
+	<section>
+		<h1>Summary of Methods</h1>
+    </section>
+
+	<table class='simple'>
+		<thead>
+		  <tr><th>Interface</th><th>Method</th></tr>
+		</thead>
+		<tbody>
+		  <tr>
+			<td>DriveObject</td>
+			<td>
+			  
+			</td>
+		  </tr>
+		  <tr>
+			<td>Drive</td>
+			<td>
+				Odometer getOdometer()<br>
+				float getSpeed()<br>
+				float getCurrentFuelEconomy()<br>
+				long watchVehicleSpeed(SpeedSuccessCallback successCallback, ErrorCallback errorCallback)<br>
+				void clearWatchVehicleSpeed(long watchId)<br>
+				void setEngineMode(EngineMode mode)<br>
+				EngineStatus  getEngineMode()<br>
+				long watchGear(GearSuccessCallback successCallback, ErrorCallback errorCallback)<br>
+				void clearWatchGear(long watchId)<br>
+			</td>
+		  </tr>
+		  <tr>
+			<td>Odometer</td>
+			<td>
+			  
+			</td>
+		  </tr>
+		  <tr>
+			<td>Speed</td>
+			<td>
+			  
+			</td>
+		  </tr>
+		  <tr>
+			<td>SpeedSuccessCallback</td>
+			<td>
+			  void onsuccess(Speed speed)
+			</td>
+		  </tr>
+		  <tr>
+			<td>GearSuccessCallback</td>
+			<td>
+			  void onsuccess(Gear gear)
+			</td>
+		  </tr>
+		</tbody>
+	 </table>
+
+
+	<section >
+		<h1>Introduction</h1>
+		This API provides the driving information.
+    </section>
+
+	<section>
+		<h1>Type Definitions</h1>
+		<section>
+			<h2>SpeedUnit</h2>
+			<p>The unit of speed.</p>			
+			
+			<code> enum SpeedUnit { "KMH", "MPH"};</code>
+			<ul>
+			<li>KMH: km/h.</li>
+            <li>MPH: mph.</li>
+			</ul>
+		</section>
+
+		<section>
+			<h2>EngineMode</h2>
+			<p>The mode of a vehicle engine.</p>			
+			<code>enum EngineMode {"STOP", "START" };</code>
+			<ul>
+			<li>STOP: Stopping a vehicle engine.</li>
+			<li>START: Staring a vehicle engine.</li>
+			</ul>
+		</section>
+		
+		<section>
+			<h2>EngineStatus</h2>
+			<p>The status of a vehicle engine.</p>			
+			
+			<code>enum EngineStatus { "OFF", "RUNNING" };</code>
+			<ul>
+			<li>OFF: The engine off.</li>
+			<li>RUNNING: The engine running.</li>
+			</ul>
+		</section>
+		
+		<section>
+			<h2>GearMode</h2>
+			<p>The mode of a vehicle gear.</p>			
+			
+			<code>enum GearMode { "R", "P", "N", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" };</code>
+			<ul>
+			<li>R: A reverse gear.</li>
+			<li>P: A park gear.</li>
+			<li>N: A neutral gear.</li>
+			<li>1: A 1st gear.</li>
+			<li>2: A 2nd gear.</li>
+			<li>3: A 3th gear.</li>
+			<li>4: A 4th gear.</li>
+			<li>5: A 5th gear.</li>
+			<li>6: A 6th gear.</li>
+			<li>7: A 7th gear.</li>
+			<li>8: A 8th gear.</li>
+			<li>9: A 9th gear.</li>
+			<li>10: A 10th gear.</li>			
+			</ul>
+		</section>
+    </section>
+
+    <section>
+      <h1>Interfaces</h1>
+	     <section>
+			<h2>DriveObject</h2>
+			Defines what is instantiated in the motor object.<br>
+			There will be a motor.drive object that allows accessing the functionality of the drive module.<br>
+			<dl title='[NoInterfaceObject] interface DriveObject ' class='idl'>
+			  <dt>readonly attribute Drive drive</dt>
+			  <dd></dd>
+			</dl>
+
+		 </section>
+		 
+		 <section>
+			 <dl title='Motor implements DriveObject' class='idl'>
+				  <dt></dt>  
+				  <dd></dd>			  
+			</dl>
+		</section>	
+		 
+		 <section>
+			<h2>Drive</h2>
+			Drive interface.<br>
+			
+			<dl title='[NoInterfaceObject] interface Drive' class='idl'>
+				<dt>Odometer getOdometer()</dt>
+					<dd>Gets an Odometer object.
+					 
+					 <dl>
+						<dt><b>Signature</b></dt><dd>Odometer getOdometer()</dd>
+						<dt><b>Return value</b></dt><dd>An odometer object.</dd>
+						<dt><b>
+						Exceptions</b>
+						</dt>
+						<dd>
+						MotorAPIError:<br>
+						with error code TYPE_MISMATCH_ERR if any input parameter is not compatible with the expected type for that parameter. <br>
+						with error code INVALID_VALUES_ERR if the input parameter contains an invalid value.<br>
+						with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+						</dd>
+					</dl>
+					<pre class="example">
+						var odometer = motor.drive.getOdometer();
+						alert("Total Mileage : " + odometer.totalMileage);
+					 </pre>
+
+					</dd>
+
+				<dt>float getSpeed()                                                                                   </dt>
+					<dd>Gets the speed of a vehicle.
+						<dl>
+							<dt><b>Signature</b></dt>
+							<dd>
+							float getSpeed()
+							</dd>
+							<dt><b>Return value</b></dt>
+							<dd>The speed of a vehicle, which unit is km/h.</dd>
+							<dt><b>
+							Exceptions
+							</b></dt>
+							<dd>
+							MotorAPIError:<br>
+							with error code NOT_SUPPORTED_ERR if this function is not supported.
+							</dd>
+						</dl>
+						<pre class="example">
+							var speed = motor.drive.getSpeed();
+							alert("Speed : " + speed);
+						</pre>
+					</dd>
+				<dt>float getCurrentFuelEconomy()                                                                      </dt>
+					<dd>Gets the current fuel economy of a vehicle.
+						<dl>
+							<dt><b>Signature</b></dt>
+							<dd>
+							float getCurrentFuelEconomy()
+							</dd>
+							<dt><b>Return value</b></dt>
+							<dd>The current fuel economy of a vehicle, which unit is km/l.</dd>
+							<dt><b>
+							Exceptions
+							</b></dt>
+							<dd>
+							MotorAPIError:<br>
+							with error code NOT_SUPPORTED_ERR if this function is not supported.
+							</dd>
+						</dl>
+						<pre class="example">
+							var curFuel = motor.drive.getCurrentFuelEconomy();
+							alert("Current Fuel Economy : " + curFuel);
+						</pre>
+					</dd>
+
+				<dt>long watchVehicleSpeed(SpeedSuccessCallback successCallback, optional ErrorCallback errorCallback) </dt>
+					<dd>Subscribes to receive notifications about the change in speed of a vehicle.
+						<dl>
+							<dt><b>Signature</b></dt>
+								<dd>
+								long watchVehicleSpeed(SpeedSuccessCallback successCallback, optional ErrorCallback errorCallback)
+								</dd>
+								<dt><b>Return value</b></dt>
+								<dd>
+								The identifier used to clear the watch subscription.
+								</dd>
+								<dt><b>
+								Exceptions
+								</b></dt>
+								<dd>
+								MotorAPIError:<br>
+								with error code TYPE_MISMATCH_ERR if any input parameter is not compatible with the expected type for that parameter. <br>
+								with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+								</dd>
+						</dl>
+						<pre class="example">
+							function SuccessCB(speed)	{
+								motor.drive.clearWatchVehicleSpeed(watchSpeed);
+								alert("Speed : " + speed.speed + "\nUnit : " + speed.unit);
+								/* watchSpeed is cleared after first call */
+							}
+
+							function ErrorCB(err)	{
+								alert("Error : " + err.message);
+							}
+
+							var watchSpeed = motor.drive.watchVehicleSpeed(SuccessCB, ErrorCB);
+						</pre>
+					</dd>
+				<dt>void clearWatchVehicleSpeed(long watchId)</dt>
+					<dd>Unsubscribes the watch operation by the watchVehicleSpeed() method.
+						<dl>
+							<dt><b>Signature</b></dt>
+								<dd>
+								void clearWatchVehicleSpeed(long watchId)
+								</dd>
+								<dt><b>
+								Exceptions
+								</b></dt>
+								<dd>
+								MotorAPIError:<br>
+								with error code TYPE_MISMATCH_ERR if any input parameter is not compatible with the expected type for that parameter. <br>
+								with error code INVALID_VALUES_ERR if the input parameter contains an invalid value.<br>
+								with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+								</dd>
+						</dl>  
+						<pre class="example">
+							function SuccessCB(speed)	{
+								motor.drive.clearWatchVehicleSpeed(watchSpeed);
+								alert("Speed : " + speed.speed + "\nUnit : " + speed.unit);
+								 /* watchSpeed is cleared after first call */
+							}
+
+							function ErrorCB(err)	{
+								alert("Error : " + err.message);
+							}
+
+							var watchSpeed = motor.drive.watchVehicleSpeed(SuccessCB, ErrorCB);
+						</pre>
+					</dd>
+				<dt>void setEngineMode(EngineMode mode)                                                                </dt>
+					<dd>Sets the mode of a vehicle engine.
+						<dl>
+							<dt><b>Signature</b></dt><dd>void setEngineMode(EngineMode mode)</dd>
+							<dt><b>Return value</b></dt><dd>none.</dd>
+							<dt><b>Exceptions</b></dt>
+								<dd>
+								MotorAPIError:<br>
+								with error code TYPE_MISMATCH_ERR if any input parameter is not compatible with the expected type for that parameter. <br>
+								with error code INVALID_VALUES_ERR if the input parameter contains an invalid value.<br>
+								with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+								</dd>
+						</dl>
+						<pre class="example">
+							motor.drive.setEngineMode("STOP");
+							/* EngineMode {"STOP", "START" } */
+						</pre>
+					</dd>
+				<dt>EngineStatus getEngineMode()                                                                       </dt>
+					<dd>Gets the status of a vehicle engine.				
+						<dl>
+							<dt><b>Signature</b></dt><dd>EngineStatus getEngineMode()</dd>
+							<dt><b>Return value</b></dt><dd>The status of a vehicle engine.</dd>
+							<dt><b>Exceptions</b></dt>
+								<dd>
+								MotorAPIError:<br>
+								with error code UNKNOWN_ERR if an unknown error has occurred in this function.<br>
+								with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+								</dd>
+						</dl>
+						<pre class="example">
+							var engineMode = motor.drive.getEngineMode();
+							alert("Engine Mode : " + engineMode);
+						</pre>
+					</dd>
+				<dt>long watchGear(GearSuccessCallback successCallback, optional ErrorCallback errorCallback) </dt>
+					<dd>Subscribes to receive notifications about the change in mode of a vehicle gear.
+						<dl>
+							<dt><b>Signature</b></dt>
+								<dd>
+								long watchGear(GearSuccessCallback successCallback, optional ErrorCallback errorCallback)
+								</dd>
+								<dt><b>Return value</b></dt>
+								<dd>
+								The identifier used to clear the watch subscription.
+								</dd>
+								<dt><b>
+								Exceptions
+								</b></dt>
+								<dd>
+								MotorAPIError:<br>
+								with error code TYPE_MISMATCH_ERR if any input parameter is not compatible with the expected type for that parameter. <br>
+								with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+								</dd>
+						</dl>
+						<pre class="example">
+							function SuccessCB(gear)	{
+								motor.drive.clearWatchGear(watchGear);
+								alert("GearMode : " + gear.mode);
+								/* watchGear is cleared after first call */
+							}
+
+							function ErrorCB(err)	{
+								alert("Error : " + err.message);
+							}
+
+							var watchGear = motor.drive.watchGear(SuccessCB, ErrorCB);
+						</pre>
+					</dd>
+				<dt>void clearWatchGear(long watchId)</dt>
+					<dd>Unsubscribes the watch operation by the watchGear() method.
+						<dl>
+							<dt><b>Signature</b></dt>
+								<dd>
+								void clearWatchGear(long watchId)
+								</dd>
+								<dt><b>
+								Exceptions
+								</b></dt>
+								<dd>
+								MotorAPIError:<br>
+								with error code TYPE_MISMATCH_ERR if any input parameter is not compatible with the expected type for that parameter. <br>
+								with error code INVALID_VALUES_ERR if the input parameter contains an invalid value.<br>
+								with error code NOT_SUPPORTED_ERR if this function is not supported.<br>
+								</dd>
+						</dl>  
+						<pre class="example">
+							function SuccessCB(gearMode)	{
+								motor.drive.clearWatchGear(watchGear);
+								alert("GearMode : " + gearMode.mode);
+								/* watchGear is cleared after first call */
+							}
+
+							function ErrorCB(err)	{
+								alert("Error : " + err.message);
+							}
+
+							var watchGear = motor.drive.watchGear(SuccessCB, ErrorCB);
+						</pre>
+						</pre>
+					</dd>
+			</dl> 
+		  </section>
+
+		  <section>
+			<h2>Odometer</h2>
+			Define the attributes of an odometer.<br>
+			It is used as the return value of the getOdometer() method.<br>
+			<dl title='[NoInterfaceObject] interface Odometer ' class='idl'>
+			  <dt>readonly attribute float totalMileage</dt>
+			  <dd>The total mileage of a vehicle, which unit is km.</dd>
+			</dl>
+		 </section>
+
+		 <section>
+			<h2>Speed</h2>
+			It is used in the successCallback of the watchVehicleSpeed() method.<br>
+			<dl title='[NoInterfaceObject] interface Speed ' class='idl'>
+			  <dt>readonly attribute int speed</dt>
+			  <dd>The Speed of a vehicle.</dd>
+			  <dt>readonly attribute SpeedUnit unit</dt>
+			  <dd>The unit of speed.</dd>
+			</dl>
+		 </section>
+		 
+		 <section>
+			<h2>Gear</h2>
+			It is used in the successCallback of the watchGear() method.<br>
+			<dl title='[NoInterfaceObject] interface Gear ' class='idl'>			  
+			  <dt>readonly attribute GearMode mode</dt>
+			  <dd>The mode of a vehicle gear.</dd>
+			</dl>
+		 </section>
+
+		 <section>
+			<h2>SpeedSuccessCallback</h2>
+			This callback interface specifies a success callback with a function taking a Speed object as input argument. It is used in asynchronous operations such as watchVehicleSpeed() method.
+Methods<br>
+			<dl title='[Callback=FunctionOnly, NoInterfaceObject] interface SpeedSuccessCallback ' class='idl'>
+			  <dt>void onsuccess(Speed speed)</dt>
+			  <dd>Method invoked when the asynchronous call completes successfully.</dd>
+			</dl>
+		 </section>
+		 
+		 <section>
+			<h2>GearSuccessCallback</h2>
+			This callback interface specifies a success callback with a function taking a Gear object as input argument. It is used in asynchronous operations such as watchGear() method.
+Methods<br>
+			<dl title='[Callback=FunctionOnly, NoInterfaceObject] interface GearSuccessCallback ' class='idl'>
+			  <dt>void onsuccess(Gear gear)</dt>
+			  <dd>Method invoked when the asynchronous call completes successfully.</dd>
+			</dl>
+		 </section>
+ 
+
+    </section>
+
+	 <section>
+      <h1>Features</h1>
+	  
+	  When the feature<br>
+
+
+		<ul><li>http://obigo.com/api/drive</li></ul>
+		or any of the features hierarchically under that feature is successfully requested, the interface Drive is instantiated, and the resulting object appears in the global namespace as motor.drive.
+<br>
+		This is the list of URIs used to declare this API's features, for use in the widget config.xml. For each URL, the list of functions covered is provided.<br>
+
+<br>
+		<b>http://obigo.com/api/drive.get</b>  <br>
+		Access to all the feature except the following methods: setEngineMode()<br>
+<br>
+		<b>http://obigo.com/api/drive.set</b><br>
+		Access to all the feature except the following methods:<br>
+		getOdometer(), getSpeed(), getCurrentFuelEconomy(), watchVehicleSpeed(), clearWatchVehicleSpeed(), getEngineMode(), watchGear(), clearWatchGear(),<br>
+<br>
+		<b>http://obigo.com/api/drive</b><br>
+		Access to all the features in this module<br>
+	  
+    </section>
+
+	
+
+  </body>
+</html>
