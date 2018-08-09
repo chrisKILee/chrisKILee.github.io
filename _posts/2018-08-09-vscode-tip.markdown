@@ -3,7 +3,7 @@ title:  "Tip"
 subtitle: "VScode tips"
 author: "Chris Lee"
 avatar: "img/authors/profile.png"
-image: "img/code.jpg"
+image: "img/code.png"
 date:   2018-08-09 18:00:00
 categories : Tip
 ---
