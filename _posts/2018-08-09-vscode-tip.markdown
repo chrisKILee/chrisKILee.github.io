@@ -17,7 +17,7 @@ categories : Tip
   - `SHIFT` + `ALT`
 - 줄 이동
   - `ALT` + `방향키`
-- 줄 복사
+- 줄 복사 `mm`
   - `SHIFT` + `ALT` + `방향키`
 
 ```javascript
