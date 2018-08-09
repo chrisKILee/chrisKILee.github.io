@@ -22,7 +22,7 @@ categories : Tip
 
 ```javascript
 //TEST
-var Card = function (id, el) {
+      var Card = function (id, el) {
 
         this.id = id;
 
