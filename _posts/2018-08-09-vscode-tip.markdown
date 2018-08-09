@@ -1,10 +1,11 @@
 ---
-title:  "A Craftsman Workshop"
-subtitle: "It's always a bit messy"
+title:  "Tip"
+subtitle: "VScode tips"
 author: "Chris Lee"
 avatar: "img/authors/profile.png"
-image: "img/f.jpg"
-date:   2015-04-25 12:12:12
+image: "img/code.jpg"
+date:   2018-08-09 18:00:00
+categories : Tip
 ---
 
 ### Dolor sit amet?
