@@ -20,3 +20,21 @@ categories : Tip
 - 줄 복사
   - `SHIFT` + `ALT` + `방향키`
 
+```javascript
+//TEST
+var Card = function (id, el) {
+
+        this.id = id;
+
+        this._el = el;
+
+        // Get elements.
+        this._container = $(this._el).find(SELECTORS.container)[0];
+        this._clip = $(this._el).find(SELECTORS.clip)[0];
+        this._content = $(this._el).find(SELECTORS.content)[0];
+
+        this.isOpen = false;
+
+        this._TL = null;
+    };
+```
