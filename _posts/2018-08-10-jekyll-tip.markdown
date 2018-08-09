@@ -1,10 +1,10 @@
 ---
-title:  "A Craftsman Workshop"
-subtitle: "It's always a bit messy"
+title:  "Tip"
+subtitle: "Jekyll Tips"
 author: "Chris Lee"
 avatar: "img/authors/profile.png"
-image: "img/f.jpg"
-date:   2015-04-25 12:12:12
+image: "img/jekyll.png"
+date:   2018-08-10 12:00:00
 ---
 
 ### Dolor sit amet?
