@@ -4,7 +4,7 @@ subtitle: "VScode tips"
 author: "Chris Lee"
 avatar: "img/authors/profile.png"
 image: "img/code.png"
-date:   2018-08-09 18:00:00
+date:   2018-08-09 12:00:00
 categories : Tip
 ---
 
@@ -14,11 +14,11 @@ categories : Tip
   - `⌘` + `숫자키`
   - `⌘` + `\`
 - multi-selection
-  - `⇧` + `⌥ALT`
+  - `⇧` + `⌥`
 - 줄 이동
-  - `ALT` + `방향키`
-- 줄 복사 `mm`
-  - `SHIFT` + `ALT` + `방향키`
+  - `⌥` + `방향키`
+- 줄 복사 
+  - `⇧` + `⌥` + `방향키`
 
 ```javascript
 //TEST
