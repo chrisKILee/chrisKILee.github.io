@@ -10,11 +10,11 @@ categories : Tip
 
 ### short-cut
 - 편집기 분할
-  - `CTRL` + `CMD` +  `방향키`
-  - `CMD` + `숫자키`
-  - `CMD` + `\`
+  - `⌃` + `⌘` +  `방향키`
+  - `⌘` + `숫자키`
+  - `⌘` + `\`
 - multi-selection
-  - `SHIFT` + `ALT`
+  - `⇧` + `⌥ALT`
 - 줄 이동
   - `ALT` + `방향키`
 - 줄 복사 `mm`
