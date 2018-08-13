@@ -17,24 +17,15 @@ categories : Tip
   - `⇧` + `⌥`
 - 줄 이동
   - `⌥` + `방향키`
-- 줄 복사 
+- 줄 복사
   - `⇧` + `⌥` + `방향키`
+- tab 이동
+  - `⌘` + `⌥` + `방향키`
+- multi Selection
+  - `⇧` + `⌘` + `⌥` + `방향키`
+  - `⇧` + `⌘` +`마우스`
 
-```javascript
-//TEST
-      var Card = function (id, el) {
-
-        this.id = id;
-
-        this._el = el;
-
-        // Get elements.
-        this._container = $(this._el).find(SELECTORS.container)[0];
-        this._clip = $(this._el).find(SELECTORS.clip)[0];
-        this._content = $(this._el).find(SELECTORS.content)[0];
-
-        this.isOpen = false;
-
-        this._TL = null;
-    };
-```
+### setting Sync
+- markget place : Settings Sync
+- Upload Key :  `⇧` + `⌥` + `U`
+- Download Key : `⇧` + `⌥` + `D`
