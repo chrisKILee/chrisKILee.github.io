@@ -5,7 +5,7 @@ author: "Chris Lee"
 avatar: "img/authors/profile.png"
 image: "img/code.png"
 date:   2018-08-09 12:00:00
-categories : Tip
+categories : [all, Tip]
 ---
 
 ### short-cut
@@ -24,6 +24,9 @@ categories : Tip
 - multi Selection
   - `⇧` + `⌘` + `⌥` + `방향키`
   - `⇧` + `⌘` +`마우스`
+- Key Binding
+  - `⌘` + `K` + `S` > `keybindings.json` 에서 설정
+  - `triggerSuggest`를 `⌃` + `space` 에서 `⌃` + `⌘` + `space` 로 변경함.(mac의 `spotlight`와 충돌)
 
 ### setting Sync
 - markget place : Settings Sync
