@@ -1,6 +1,6 @@
 ---
-title:  "Tip"
-subtitle: "VScode tips"
+title:  "VScode tips"
+subtitle: "short-cut for VSCode"
 author: "Chris Lee"
 avatar: "img/authors/profile.png"
 image: "img/code.png"
