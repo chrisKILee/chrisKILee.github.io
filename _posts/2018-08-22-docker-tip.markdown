@@ -3,7 +3,7 @@ title:  "Docker Tips"
 subtitle: "Docker 기본 사용법"
 author: "Chris Lee"
 avatar: "img/authors/profile.png"
-image: "img/jekyll.png"
+image: "img/docker.png"
 date:   2018-08-22 12:00:00
 categories : [all, Tip]
 ---
