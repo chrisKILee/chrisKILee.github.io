@@ -2,7 +2,7 @@
 layout: post
 title:  "Docker Tips"
 subtitle: "Docker 기본 사용법"
-author: "Chris Lee"
+author: chris
 avatar: "img/authors/profile.png"
 image: "img/docker.png"
 featured: false
