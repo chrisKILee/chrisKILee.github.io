@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 SSD & IDP Strategy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Base Style */
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #0B1120;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Slide Transitions */
+        .slide-container { position: relative; height: 100%; width: 100%; }
+        .slide {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transform: scale(0.95) translateY(30px);
+            padding: 2rem;
+        }
+        .slide.active {
+            opacity: 1; visibility: visible; pointer-events: auto;
+            transform: scale(1) translateY(0); z-index: 10;
+        }
+        .slide.prev {
+            transform: scale(1.1) translateY(-30px); opacity: 0;
+        }
+
+        /* Animations */
+        .animate-item { opacity: 0; transform: translateY(20px); transition: all 0.6s ease-out; }
+        .slide.active .animate-item { opacity: 1; transform: translateY(0); }
+        
+        .delay-100 { transition-delay: 0.1s; }
+        .delay-200 { transition-delay: 0.2s; }
+        .delay-300 { transition-delay: 0.3s; }
+
+        /* Background Blobs */
+        .blob { position: absolute; border-radius: 50%; filter: blur(80px); z-index: 0; opacity: 0.25; }
+        .blob-purple { background: #8b5cf6; width: 600px; height: 600px; top: -100px; left: -100px; }
+        .blob-cyan { background: #06b6d4; width: 500px; height: 500px; bottom: -100px; right: -100px; }
+
+        /* 3D Layer Effect */
+        .layer-scene { perspective: 1000px; }
+        .layer-group { 
+            transform-style: preserve-3d; 
+            transform: rotateX(20deg) rotateY(-10deg) rotateZ(5deg); 
+            transition: transform 0.5s ease;
+        }
+        .layer-group:hover { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+        
+        .layer-plate {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s ease;
+        }
+        .layer-group:hover .layer-top { transform: translateY(-70px); background: rgba(139, 92, 246, 0.9); } /* SSD Color */
+        .layer-group:hover .layer-mid { transform: translateY(0); }
+        .layer-group:hover .layer-bot { transform: translateY(70px); }
+
+        /* Nav & Progress */
+        .progress-bar { position: fixed; bottom: 0; left: 0; height: 4px; background: linear-gradient(90deg, #8b5cf6, #06b6d4); transition: width 0.5s ease; z-index: 100; }
+        .nav-dots { position: fixed; right: 2rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 1rem; z-index: 50; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); cursor: pointer; transition: all 0.3s; }
+        .dot.active { background: #8b5cf6; height: 24px; border-radius: 10px; }
+        
+        /* Ops Card */
+        .ops-action-card {
+            background: rgba(15, 23, 42, 0.8);
+            border-left: 4px solid;
+            transition: transform 0.3s;
+        }
+        .ops-action-card:hover { transform: translateX(10px); }
+    </style>
+</head>
+<body onclick="nextSlide()">
+
+    <div class="blob blob-purple"></div>
+    <div class="blob blob-cyan"></div>
+    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+    <div class="nav-dots" id="navDots"></div>
+
+    <div class="slide-container" id="slider">
+
+        <!-- Slide 1: Title -->
+        <div class="slide active" data-index="0">
+            <div class="animate-item">
+                <span class="px-4 py-1 rounded-full border border-purple-500 text-purple-300 text-sm font-bold tracking-widest">2025 SSD VISION</span>
+            </div>
+            <h1 class="text-6xl md:text-8xl font-black mt-6 mb-4 text-center leading-tight animate-item delay-100">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-300">Spec Driven</span><br>
+                Operation
+            </h1>
+            <p class="text-xl md:text-2xl text-slate-300 mt-6 text-center animate-item delay-200">
+                Standardized Specs + Integrated Monitoring = <span class="text-cyan-400 font-bold">Autonomous Ops</span>
+            </p>
+            <div class="flex gap-8 mt-12 text-sm text-slate-400 animate-item delay-300">
+                <div class="flex items-center"><span class="w-3 h-3 bg-purple-500 rounded-full mr-2"></span> R&D실: Platform Provider</div>
+                <div class="flex items-center"><span class="w-3 h-3 bg-cyan-500 rounded-full mr-2"></span> 지역 센터: Service Operator</div>
+            </div>
+            <div class="absolute bottom-10 text-slate-500 text-sm animate-bounce">Click to Start</div>
+        </div>
+
+        <!-- Slide 2: Paradigm Shift (SSD Focus) -->
+        <div class="slide" data-index="1">
+            <h2 class="text-4xl font-bold mb-12 animate-item text-center">SSD 기반 운영 혁신</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 w-full max-w-6xl">
+                <!-- AS-IS -->
+                <div class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 opacity-60 hover:opacity-100 transition animate-item delay-100 relative group">
+                    <div class="absolute top-0 right-0 bg-slate-700 text-xs px-2 py-1 rounded-bl">AS-IS</div>
+                    <h3 class="text-xl text-slate-400 font-bold mb-6">인프라팀 의존형 (Ticket Driven)</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-slate-500 font-bold w-20">요청</span>
+                            <div class="flex-1 bg-slate-900 p-3 rounded text-sm text-slate-400">"서버 5대 증설해주세요" (티켓)</div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-slate-500 font-bold w-20">작업</span>
+                            <div class="flex-1 bg-slate-900 p-3 rounded text-sm text-slate-400">인프라팀의 수동 스크립트 실행</div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-slate-500 font-bold w-20">운영</span>
+                            <div class="flex-1 bg-slate-900 p-3 rounded text-sm text-slate-400">모니터링 환경 파편화 (누가 보나?)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TO-BE -->
+                <div class="bg-gradient-to-br from-purple-900/40 to-slate-900 p-8 rounded-2xl border border-purple-500 shadow-2xl animate-item delay-200 relative">
+                    <div class="absolute top-0 right-0 bg-purple-600 text-xs px-2 py-1 rounded-bl text-white">TO-BE (SSD)</div>
+                    <h3 class="text-xl text-white font-bold mb-6">스펙 주도형 (Spec Driven)</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-purple-400 font-bold w-20">정의</span>
+                            <div class="flex-1 bg-purple-900/30 p-3 rounded text-sm text-white border border-purple-500/50">
+                                <strong>SSD Spec 파일</strong> 작성 (Code)
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-purple-400 font-bold w-20">생성</span>
+                            <div class="flex-1 bg-purple-900/30 p-3 rounded text-sm text-white border border-purple-500/50">
+                                IDP가 Spec을 읽고 자동 배포
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-cyan-400 font-bold w-20">운영</span>
+                            <div class="flex-1 bg-cyan-900/30 p-3 rounded text-sm text-white border border-cyan-500/50">
+                                <strong>통합 모니터링 환경</strong> 자동 제공 → 지역센터 직접 관제
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: The Foundation (SSD & Observability) -->
+        <div class="slide" data-index="2">
+            <h2 class="text-4xl font-bold mb-4 animate-item">SSD Platform Architecture</h2>
+            <p class="text-slate-400 mb-10 animate-item delay-100">Spec이 정의되면, 인프라와 <span class="text-cyan-400 font-bold">모니터링 환경</span>이 함께 생성됩니다.</p>
+
+            <div class="layer-scene w-full max-w-2xl h-96 flex justify-center items-center animate-item delay-200 cursor-pointer">
+                <div class="layer-group relative w-3/4 h-full">
+                    
+                    <!-- Layer 1: SSD Interface (Top) -->
+                    <div class="layer-plate layer-top absolute top-10 left-10 w-full h-40 z-30 flex flex-col items-center justify-center bg-purple-600">
+                        <div class="text-4xl mb-2"><i class="fas fa-file-code"></i></div>
+                        <h3 class="text-2xl font-bold">Spec Definition</h3>
+                        <p class="text-purple-100 text-sm">인프라 + 모니터링 요구사항 명세</p>
+                    </div>
+
+                    <!-- Layer 2: IDP Engine (Mid) -->
+                    <div class="layer-plate layer-mid absolute top-24 left-6 w-full h-40 z-20 flex flex-col items-center justify-center bg-indigo-900">
+                        <h3 class="text-lg font-bold text-indigo-200">IDP Automation</h3>
+                        <div class="flex gap-2 mt-2">
+                            <span class="px-2 py-1 bg-indigo-800 rounded text-xs border border-indigo-600">Provisioning</span>
+                            <span class="px-2 py-1 bg-indigo-800 rounded text-xs border border-indigo-600">Dashboard Gen</span>
+                        </div>
+                    </div>
+
+                    <!-- Layer 3: Env (Bot) -->
+                    <div class="layer-plate layer-bot absolute top-40 left-2 w-full h-40 z-10 flex flex-col items-center justify-center bg-slate-800">
+                        <h3 class="text-lg font-bold text-slate-400">Deployed Environment</h3>
+                        <div class="flex gap-2 mt-2">
+                            <span class="px-2 py-1 bg-slate-700 rounded text-xs border border-slate-600 text-cyan-400">GCP/IDC Resource</span>
+                            <span class="px-2 py-1 bg-slate-700 rounded text-xs border border-slate-600 text-cyan-400">Grafana Dashboard</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-8 text-slate-500 text-sm animate-item delay-300 animate-pulse">Hover stack to see the flow</p>
+        </div>
+
+        <!-- Slide 4: R&D Role -->
+        <div class="slide" data-index="3">
+            <div class="flex items-center gap-4 mb-8 animate-item">
+                <span class="bg-purple-600 text-white px-3 py-1 rounded font-bold">R&D실</span>
+                <h2 class="text-4xl font-bold text-purple-400">Platform & Observability Provider</h2>
+            </div>
+            <p class="text-xl text-white font-light mb-12 animate-item delay-100">
+                "인프라뿐만 아니라, <span class="font-bold border-b-2 border-purple-500">운영할 수 있는 눈(Eye)</span>까지 패키지로 제공합니다."
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl animate-item delay-200">
+                <div class="bg-slate-800 p-6 rounded-xl border-t-4 border-purple-500">
+                    <h3 class="text-xl font-bold mb-2">SSD Spec 설계</h3>
+                    <p class="text-sm text-slate-400">누가 작성해도 표준화된 인프라가 생성되도록 Spec 규격을 정의하고 관리합니다.</p>
+                </div>
+                <div class="bg-slate-800 p-6 rounded-xl border-t-4 border-purple-500">
+                    <h3 class="text-xl font-bold mb-2">IDP 제품화</h3>
+                    <p class="text-sm text-slate-400">Spec을 입력받아 하이브리드 클라우드 자원을 자동 생성하는 플랫폼을 개발합니다.</p>
+                </div>
+                <div class="bg-slate-800 p-6 rounded-xl border-t-4 border-cyan-500">
+                    <h3 class="text-xl font-bold mb-2 text-cyan-300">통합 관제 환경 제공</h3>
+                    <p class="text-sm text-slate-400">지역 센터가 즉시 운영 가능하도록 <strong class="text-white">대시보드, 알람, 로깅 환경</strong>을 함께 배포합니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Regional Center Role (Dev + Ops) -->
+        <div class="slide" data-index="4">
+            <div class="flex items-center gap-4 mb-8 animate-item">
+                <span class="bg-cyan-600 text-white px-3 py-1 rounded font-bold">지역 센터</span>
+                <h2 class="text-4xl font-bold text-cyan-400">Full-Cycle Operator</h2>
+            </div>
+            <p class="text-xl text-white font-light mb-12 animate-item delay-100">
+                "제공된 환경 위에서 <span class="font-bold text-cyan-400">개발, 모니터링, 그리고 장애 조치</span>까지 수행합니다."
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
+                
+                <!-- Left: Dev Role -->
+                <div class="space-y-4 animate-item delay-200">
+                    <h3 class="text-xl font-bold text-white border-b border-slate-700 pb-2">1. Development (배포)</h3>
+                    <div class="ops-action-card p-4 rounded-lg border-purple-500">
+                        <div class="font-bold text-purple-300 mb-1"><i class="fas fa-file-code mr-2"></i>SSD Spec 작성</div>
+                        <p class="text-sm text-slate-400">서비스 요구사항을 Spec 파일로 정의</p>
+                    </div>
+                    <div class="ops-action-card p-4 rounded-lg border-purple-500">
+                        <div class="font-bold text-purple-300 mb-1"><i class="fas fa-rocket mr-2"></i>Self-Service Deploy</div>
+                        <p class="text-sm text-slate-400">IDP를 통해 인프라 및 앱 즉시 배포</p>
+                    </div>
+                </div>
+
+                <!-- Right: Ops Role -->
+                <div class="space-y-4 animate-item delay-300">
+                    <h3 class="text-xl font-bold text-white border-b border-slate-700 pb-2">2. Operations (운영 및 조치)</h3>
+                    <div class="ops-action-card p-4 rounded-lg border-cyan-500">
+                        <div class="font-bold text-cyan-300 mb-1"><i class="fas fa-desktop mr-2"></i>Real-time Monitoring</div>
+                        <p class="text-sm text-slate-400">제공된 Grafana로 서비스 상태 직접 관제</p>
+                    </div>
+                    <div class="ops-action-card p-4 rounded-lg border-cyan-500">
+                        <div class="font-bold text-cyan-300 mb-1"><i class="fas fa-tools mr-2"></i>Troubleshooting</div>
+                        <p class="text-sm text-slate-400">로그(Loki) 및 트레이스(Tempo) 분석 후 1차 조치 수행</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Slide 6: Integrated Observability Detail -->
+        <div class="slide" data-index="5">
+            <h2 class="text-3xl font-bold mb-8 animate-item">Integrated Observability Environment</h2>
+            <p class="text-slate-400 mb-8 animate-item delay-100 text-center">
+                R&D실은 <span class="text-cyan-400">"바로 볼 수 있는 환경"</span>을 제공하고, 지역 센터는 <span class="text-cyan-400">"운영"</span>만 합니다.
+            </p>
+
+            <div class="flex flex-col md:flex-row gap-12 items-center w-full max-w-6xl">
+                <!-- Visual Chart -->
+                <div class="w-full md:w-1/2 animate-item delay-200">
+                    <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-600">
+                        <canvas id="obsChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="w-full md:w-1/2 space-y-6 animate-item delay-300">
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold">R</div>
+                            <div class="h-full w-0.5 bg-slate-700 my-1"></div>
+                        </div>
+                        <div class="pb-6">
+                            <h4 class="text-purple-400 font-bold">R&D실 (환경 제공)</h4>
+                            <p class="text-sm text-slate-400 mt-1">
+                                - Alloy (수집기) 및 Backend (Mimir/Loki) 구축<br>
+                                - <strong>표준 대시보드 및 알람 규칙</strong> 템플릿 배포
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold">O</div>
+                        </div>
+                        <div>
+                            <h4 class="text-cyan-400 font-bold">지역 센터 (운영 수행)</h4>
+                            <p class="text-sm text-slate-400 mt-1">
+                                - 별도 구축 없이 <strong>로그인 즉시 모니터링</strong><br>
+                                - 알람 수신 시 로그 분석 및 재배포 수행
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Summary -->
+        <div class="slide" data-index="6">
+             <h1 class="text-5xl font-bold mb-8 text-center animate-item">SSD Driven Operations</h1>
+            <div class="text-2xl text-center text-slate-300 space-y-8 animate-item delay-100">
+                <p>
+                    <span class="text-purple-400 font-bold">Spec</span> defines Infrastructure & Monitoring.
+                </p>
+                <p>
+                    <span class="text-blue-500 font-bold">IDP</span> delivers the Environment.
+                </p>
+                <p>
+                    <span class="text-cyan-400 font-bold">Regional Center</span> owns the Operations.
+                </p>
+            </div>
+            <div class="mt-16 animate-item delay-200">
+                <button onclick="location.reload()" class="px-8 py-3 bg-white text-slate-900 hover:bg-slate-200 rounded-full font-bold shadow-lg transition transform hover:scale-105">
+                    Replay Vision
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="fixed bottom-8 right-8 flex gap-4 z-50">
+        <button onclick="prevSlide(event)" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 flex items-center justify-center transition">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button onclick="nextSlide(event)" class="w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-500/50 flex items-center justify-center transition">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const progressBar = document.getElementById('progressBar');
+        const navDots = document.getElementById('navDots');
+        let obsChartRendered = false;
+
+        slides.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            if (i === 0) dot.classList.add('active');
+            dot.onclick = () => goToSlide(i);
+            navDots.appendChild(dot);
+        });
+
+        const dots = document.querySelectorAll('.dot');
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === currentSlide) slide.classList.add('active');
+                else if (index < currentSlide) slide.classList.add('prev');
+            });
+
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            if (currentSlide === 5 && !obsChartRendered) {
+                renderObsChart();
+                obsChartRendered = true;
+            }
+        }
+
+        function nextSlide(e) {
+            if(e) e.stopPropagation();
+            if (currentSlide < totalSlides - 1) { currentSlide++; updateSlide(); }
+        }
+
+        function prevSlide(e) {
+            if(e) e.stopPropagation();
+            if (currentSlide > 0) { currentSlide--; updateSlide(); }
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlide();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') nextSlide();
+            else if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        function renderObsChart() {
+            const ctx = document.getElementById('obsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Ops Autonomy', 'Visibility', 'Remediation Speed', 'Setup Effort (Region)', 'Standardization'],
+                    datasets: [{
+                        label: 'TO-BE (SSD + Integrated Ops)',
+                        data: [95, 95, 90, 10, 95], // Setup Effort is Low (Good)
+                        borderColor: '#06b6d4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.3)',
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#06b6d4'
+                    },
+                    {
+                        label: 'AS-IS (Fragmented)',
+                        data: [30, 40, 30, 80, 40], // Setup Effort is High (Bad)
+                        borderColor: '#64748b',
+                        backgroundColor: 'rgba(100, 116, 139, 0.1)',
+                        pointBackgroundColor: '#64748b',
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: { color: '#cbd5e1', font: { size: 12 } },
+                            ticks: { display: false, backdropColor: 'transparent' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
