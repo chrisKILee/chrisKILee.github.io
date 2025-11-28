@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>세아창원특수강 공정 상세도</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: #0f172a;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .process-container {
+      max-width: 80rem;
+      width: 100%;
+      background: #1e293b;
+      border-radius: 1rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+
+    .process-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      background: linear-gradient(to right, #1e293b, #0f172a);
+    }
+
+    @media (min-width: 768px) {
+      .process-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .version-badge {
+      background: #2563eb;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+    }
+
+    .process-header h1 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: white;
+      margin: 0;
+    }
+
+    .header-subtitle {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 0.25rem;
+      border-radius: 0.75rem;
+    }
+
+    .tab-buttons button {
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: bold;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      background: transparent;
+    }
+
+    .tab-buttons button:hover {
+      color: white;
+      background: #334155;
+    }
+
+    .tab-buttons button.active.steelmaking {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2);
+    }
+
+    .tab-buttons button.active.rolling {
+      background: #ea580c;
+      color: white;
+      box-shadow: 0 10px 15px -3px rgba(234, 88, 12, 0.2);
+    }
+
+    .visual-stage {
+      position: relative;
+      height: 24rem;
+      background: #020617;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .tech-grid {
+      position: absolute;
+      inset: 0;
+      opacity: 0.2;
+      background-image: 
+        linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .data-stream {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(to right, transparent, #3b82f6, transparent);
+      opacity: 0.5;
+      animation: scan 2s linear infinite;
+    }
+
+    @keyframes scan {
+      0%, 100% { transform: translateX(-100%); }
+      50% { transform: translateX(100%); }
+    }
+
+    .animation-content {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 48rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .animation-area {
+      height: 14rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .steelmaking-animation, .rolling-animation {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .vessel-container {
+      position: absolute;
+      transition: all 0.7s;
+    }
+
+    .vessel-container.hidden {
+      top: -50px;
+      transform: scale(0.5);
+      opacity: 0;
+    }
+
+    .vessel-container.visible {
+      top: 50%;
+      transform: translateY(-50%) scale(1);
+      opacity: 1;
+    }
+
+    .vessel-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .status-label {
+      margin-bottom: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 1px solid;
+    }
+
+    .status-label.melting {
+      background: rgba(113, 63, 18, 0.5);
+      color: #fef3c7;
+      border-color: #92400e;
+    }
+
+    .status-label.decarb {
+      background: rgba(127, 29, 29, 0.5);
+      color: #fecaca;
+      border-color: #991b1b;
+    }
+
+    .status-label.degas {
+      background: rgba(88, 28, 135, 0.5);
+      color: #e9d5ff;
+      border-color: #7e22ce;
+    }
+
+    .vessel {
+      width: 10rem;
+      height: 12rem;
+      border: 4px solid #64748b;
+      border-top: none;
+      border-radius: 0 0 3rem 3rem;
+      background: #1e293b;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .molten-layer {
+      width: 100%;
+      transition: all 1s;
+      position: relative;
+    }
+
+    .molten-layer.step-0 {
+      height: 80%;
+      background: linear-gradient(to top, #ea580c, #eab308, white);
+      animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .molten-layer.step-1 {
+      height: 80%;
+      background: linear-gradient(to top, #b91c1c, #f97316, #fde047);
+    }
+
+    .molten-layer.step-2 {
+      height: 80%;
+      background: linear-gradient(to top, #581c87, #4c1d95, #60a5fa);
+    }
+
+    .molten-layer.empty {
+      height: 0;
+    }
+
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    .particles {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      padding-bottom: 2rem;
+    }
+
+    .particle {
+      position: absolute;
+      width: 0.5rem;
+      height: 0.5rem;
+      background: white;
+      border-radius: 50%;
+      animation: bubble 1.5s infinite ease-out;
+    }
+
+    @keyframes bubble {
+      0% { transform: translateY(0) scale(0.5); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+    }
+
+    .lance-container {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2rem;
+      height: 100%;
+      transition: all 0.5s;
+      pointer-events: none;
+      display: flex;
+      justify-content: center;
+    }
+
+    .lance-container.electrode {
+      transform: translateX(-50%) translateY(-10%);
+    }
+
+    .lance-container.lance {
+      transform: translateX(-50%) translateY(10%);
+    }
+
+    .electrode {
+      width: 1rem;
+      height: 8rem;
+      background: #94a3b8;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .electrode-glow {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 1rem;
+      background: white;
+      filter: blur(0.5rem);
+      animation: pulse 2s infinite;
+    }
+
+    .lance {
+      width: 0.5rem;
+      height: 10rem;
+      background: #cbd5e1;
+      border: 1px solid #94a3b8;
+    }
+
+    .lance-glow {
+      position: absolute;
+      bottom: 0;
+      left: -1rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      background: rgba(96, 165, 250, 0.3);
+      border-radius: 50%;
+      filter: blur(1rem);
+    }
+
+    .casting-container {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.7s;
+    }
+
+    .casting-container.hidden {
+      opacity: 0;
+      transform: translateY(2.5rem);
+    }
+
+    .casting-container.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .casting-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tundish {
+      width: 14rem;
+      height: 3rem;
+      background: #334155;
+      border-radius: 0.25rem;
+      margin-bottom: 0.25rem;
+      border: 1px solid #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .casting-pipe {
+      width: 1rem;
+      height: 4rem;
+      background: #f97316;
+      animation: pulse 2s infinite;
+    }
+
+    .mold {
+      width: 8rem;
+      height: 10rem;
+      border-left: 4px solid #475569;
+      border-right: 4px solid #475569;
+      background: rgba(15, 23, 42, 0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mold-glow {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      height: 2rem;
+      background: #ea580c;
+      filter: blur(0.25rem);
+    }
+
+    .bloom {
+      width: 6rem;
+      height: 100%;
+      background: linear-gradient(to bottom, #f97316, #1e293b);
+      margin-top: 0.5rem;
+      border-radius: 0.125rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bloom span {
+      color: rgba(255, 255, 255, 0.8);
+      font-weight: bold;
+      letter-spacing: 0.1em;
+      font-size: 1.125rem;
+      transform: rotate(90deg);
+    }
+
+    .spray-cooling {
+      position: absolute;
+      width: 0.5rem;
+      height: 0.5rem;
+      background: #60a5fa;
+      border-radius: 50%;
+      filter: blur(0.25rem);
+      animation: ping 1s infinite;
+    }
+
+    .spray-1 {
+      top: 2.5rem;
+      left: 0;
+    }
+
+    .spray-2 {
+      top: 3.5rem;
+      right: 0;
+      animation-delay: 0.075s;
+    }
+
+    @keyframes ping {
+      75%, 100% { transform: scale(2); opacity: 0; }
+    }
+
+    .ai-scanner-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .ai-scanner-box {
+      position: absolute;
+      top: 25%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16rem;
+      height: 8rem;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      background: rgba(34, 197, 94, 0.05);
+      border-radius: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      padding: 0.5rem;
+    }
+
+    .ai-scanner-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.625rem;
+      color: #4ade80;
+      font-family: monospace;
+      margin-bottom: 0.25rem;
+    }
+
+    .ai-scanner-content {
+      flex: 1;
+      border-top: 1px solid rgba(34, 197, 94, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-scan-line {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      height: 4px;
+      background: #4ade80;
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
+      animation: scan-down 1.5s linear infinite;
+    }
+
+    @keyframes scan-down {
+      0% { top: 0; opacity: 0.5; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    .ai-scan-text {
+      position: absolute;
+      bottom: 0.5rem;
+      left: 0.5rem;
+      font-size: 0.75rem;
+      color: #86efac;
+      font-family: monospace;
+    }
+
+    .rolling-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      position: relative;
+      height: 8rem;
+      z-index: 10;
+    }
+
+    .conveyor {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: #334155;
+      transform: translateY(-50%);
+    }
+
+    .product-flow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      transition: all 0.7s ease-in-out;
+      box-shadow: 0 0 20px rgba(234, 88, 12, 0.4);
+      border-radius: 0.125rem;
+    }
+
+    .product-flow.step-0 {
+      left: 5%;
+      width: 6rem;
+      height: 2rem;
+      background: #dc2626;
+    }
+
+    .product-flow.step-1 {
+      left: 35%;
+      width: 8rem;
+      height: 1.5rem;
+      background: #f97316;
+    }
+
+    .product-flow.step-2 {
+      left: 65%;
+      width: 12rem;
+      height: 0.5rem;
+      background: #fb923c;
+    }
+
+    .product-flow.step-3 {
+      left: 85%;
+      width: 12rem;
+      height: 0.5rem;
+      background: #94a3b8;
+      box-shadow: none;
+    }
+
+    .furnace {
+      position: absolute;
+      left: 5%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6rem;
+      height: 7rem;
+      border: 4px solid #475569;
+      background: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .furnace.step-active {
+      border-color: #ef4444;
+      box-shadow: 0 0 30px rgba(220, 38, 38, 0.3);
+    }
+
+    .furnace.step-inactive {
+      opacity: 0.5;
+    }
+
+    .furnace span {
+      font-size: 0.625rem;
+      color: #94a3b8;
+      margin-top: 3rem;
+    }
+
+    .furnace-bars {
+      position: absolute;
+      top: 1rem;
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .furnace-bars .bar {
+      width: 4px;
+      height: 2rem;
+      background: rgba(239, 68, 68, 0.5);
+      animation: pulse 2s infinite;
+    }
+
+    .furnace-bars .bar:nth-child(2) {
+      animation-delay: 0.075s;
+    }
+
+    .furnace-bars .bar:nth-child(3) {
+      animation-delay: 0.15s;
+    }
+
+    .roughing {
+      position: absolute;
+      left: 35%;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      transition: all 0.3s;
+    }
+
+    .roughing.step-active {
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .roughing.step-inactive {
+      opacity: 0.7;
+    }
+
+    .ai-camera {
+      position: absolute;
+      top: -4rem;
+      background: #334155;
+      padding: 0.25rem;
+      border-radius: 0.25rem;
+      border: 1px solid rgba(34, 197, 94, 0.5);
+      color: #4ade80;
+    }
+
+    .ai-camera svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .roll {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      border: 4px solid #64748b;
+      background: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .roll.spinning {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .roll-bar {
+      width: 2rem;
+      height: 4px;
+      background: #475569;
+    }
+
+    .sizing-block {
+      position: absolute;
+      left: 65%;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      transition: all 0.3s;
+    }
+
+    .sizing-block.step-active {
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .sizing-block.step-inactive {
+      opacity: 0.7;
+    }
+
+    .rsb-label {
+      background: rgba(30, 58, 138, 0.8);
+      padding: 0.125rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.625rem;
+      color: #bfdbfe;
+      margin-bottom: 0.5rem;
+      border: 1px solid #3b82f6;
+    }
+
+    .rsb-rolls {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .rsb-roll {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 0.25rem;
+      background: #2563eb;
+    }
+
+    .rsb-roll.spinning {
+      animation: spin 1s linear infinite;
+    }
+
+    .ndt-inspection {
+      position: absolute;
+      right: 2%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 7rem;
+      height: 5rem;
+      border: 1px solid #475569;
+      background: rgba(30, 41, 59, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.3s;
+    }
+
+    .ndt-inspection.step-active {
+      border-color: #60a5fa;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+    }
+
+    .ndt-inspection.step-inactive {
+      opacity: 0.5;
+    }
+
+    .ndt-scanner {
+      width: 100%;
+      height: 4px;
+      background: rgba(59, 130, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ndt-scan-line {
+      position: absolute;
+      height: 100%;
+      width: 1rem;
+      background: #60a5fa;
+      animation: scan-right 1.5s linear infinite;
+    }
+
+    @keyframes scan-right {
+      0% { left: -20%; }
+      100% { left: 120%; }
+    }
+
+    .ndt-inspection span {
+      font-size: 0.625rem;
+      color: #cbd5e1;
+    }
+
+    .info-panel {
+      background: #1e293b;
+      padding: 1.5rem;
+      border-top: 1px solid #334155;
+    }
+
+    .info-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .step-indicators {
+      display: flex;
+      gap: 0.375rem;
+      flex: 1;
+      margin-right: 2rem;
+    }
+
+    .step-indicators button {
+      height: 6px;
+      border-radius: 9999px;
+      transition: all 0.5s;
+      border: none;
+      cursor: pointer;
+      background: #334155;
+      width: 1rem;
+    }
+
+    .step-indicators button:hover {
+      background: #475569;
+    }
+
+    .step-indicators button.active {
+      flex: 1;
+      background: #3b82f6;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+
+    .play-pause-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      background: #334155;
+      color: #e2e8f0;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .play-pause-btn:hover {
+      background: #475569;
+      transform: scale(1.05);
+    }
+
+    .play-pause-btn:active {
+      transform: scale(0.95);
+    }
+
+    .play-pause-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .info-content {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1.5rem;
+    }
+
+    .info-icon {
+      width: 4rem;
+      height: 4rem;
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      transition: colors 0.5s;
+    }
+
+    .info-icon svg {
+      width: 2rem;
+      height: 2rem;
+      color: white;
+    }
+
+    .info-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .info-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .info-header {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+
+    .info-header h2 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: white;
+      letter-spacing: -0.025em;
+    }
+
+    .info-badge {
+      padding: 0.125rem 0.5rem;
+      border-radius: 0.25rem;
+      background: #334155;
+      font-size: 0.75rem;
+      color: #93c5fd;
+      font-family: monospace;
+      border: 1px solid #475569;
+    }
+
+    .info-desc {
+      color: #cbd5e1;
+      line-height: 1.75;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+
+    @media (min-width: 768px) {
+      .info-desc {
+        font-size: 1rem;
+      }
+    }
+
+    .tech-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.25rem;
+      background: rgba(51, 65, 85, 0.5);
+      border: 1px solid rgba(71, 85, 105, 0.5);
+    }
+
+    .tech-note-dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: #60a5fa;
+      animation: pulse 2s infinite;
+    }
+
+    .tech-note span:last-child {
+      font-size: 0.75rem;
+      color: #bfdbfe;
+      font-weight: 500;
+    }
+
+    .footer-notes {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .footer-notes span {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .footer-notes svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .bg-orange-600 { background: #ea580c; }
+    .bg-red-500 { background: #ef4444; }
+    .bg-purple-700 { background: #7e22ce; }
+    .bg-orange-800 { background: #9a3412; }
+    .bg-red-700 { background: #b91c1c; }
+    .bg-slate-600 { background: #475569; }
+    .bg-blue-600 { background: #2563eb; }
+    .bg-slate-500 { background: #64748b; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="process-container">
+    <!-- Header -->
+    <div class="process-header">
+      <div>
+        <div class="header-title-row">
+          <span class="version-badge">V2.0 Enhanced</span>
+          <h1>세아창원특수강 공정 상세도</h1>
+        </div>
+        <p class="header-subtitle">SeAH CSS Smart Process: Vision AI & High Purity Tech</p>
+      </div>
+      <div class="tab-buttons">
+        <button id="tab-steelmaking" class="active steelmaking" onclick="handleTabChange('steelmaking')">
+          제강 (Steelmaking)
+        </button>
+        <button id="tab-rolling" onclick="handleTabChange('rolling')">
+          압연 (Rolling & AI)
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Visual Stage -->
+    <div class="visual-stage">
+      <!-- Tech Background Grid -->
+      <div class="tech-grid"></div>
+      
+      <!-- Data Stream Effect -->
+      <div class="data-stream"></div>
+
+      <!-- Animation Content -->
+      <div class="animation-content">
+        <div class="animation-area">
+          <!-- 제강 애니메이션 -->
+          <div id="steelmaking-animation" class="steelmaking-animation">
+            <!-- Main Vessel -->
+            <div id="vessel-container" class="vessel-container visible">
+              <div class="vessel-wrapper">
+                <!-- Status Label -->
+                <div id="status-label" class="status-label melting">Melting (1600℃)</div>
+
+                <div class="vessel">
+                  <!-- Molten Steel Layer -->
+                  <div id="molten-layer" class="molten-layer step-0">
+                    <!-- Particle Effects -->
+                    <div id="particles" class="particles hidden"></div>
+                  </div>
+                  
+                  <!-- Lance / Electrodes -->
+                  <div id="lance-container" class="lance-container electrode">
+                    <div id="electrode" class="electrode">
+                      <div class="electrode-glow"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vertical Continuous Casting -->
+            <div id="casting-container" class="casting-container hidden">
+              <div class="casting-wrapper">
+                <div class="tundish">Tundish</div>
+                <div class="casting-pipe"></div>
+                <div class="mold">
+                  <div class="mold-glow"></div>
+                  <div class="bloom">
+                    <span>BLOOM</span>
+                  </div>
+                  <!-- Spray Cooling -->
+                  <div class="spray-cooling spray-1"></div>
+                  <div class="spray-cooling spray-2"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 압연 애니메이션 -->
+          <div id="rolling-animation" class="rolling-animation hidden">
+            <!-- AI Scanner Overlay -->
+            <div id="ai-scanner-overlay" class="ai-scanner-overlay hidden">
+              <div class="ai-scanner-box">
+                <div class="ai-scanner-header">
+                  <span>VISION AI SYSTEM</span>
+                  <span>ACTIVE</span>
+                </div>
+                <div class="ai-scanner-content">
+                  <div class="ai-scan-line"></div>
+                  <div id="ai-scan-text" class="ai-scan-text">O.D. MEASURING...</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rolling-line">
+              <!-- Conveyor Line -->
+              <div class="conveyor"></div>
+
+              <!-- Product Flow -->
+              <div id="product-flow" class="product-flow step-0"></div>
+
+              <!-- Step 0: Furnace -->
+              <div id="furnace" class="furnace step-active">
+                <span>Walking Beam</span>
+                <div class="furnace-bars">
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                </div>
+              </div>
+
+              <!-- Step 1: Roughing + AI Cam -->
+              <div id="roughing" class="roughing step-inactive">
+                <!-- AI Camera -->
+                <div class="ai-camera">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </div>
+                <div id="roll-1" class="roll">
+                  <div class="roll-bar"></div>
+                </div>
+                <div id="roll-2" class="roll">
+                  <div class="roll-bar"></div>
+                </div>
+              </div>
+
+              <!-- Step 2: Sizing Block -->
+              <div id="sizing-block" class="sizing-block step-inactive">
+                <div class="rsb-label">RSB</div>
+                <div class="rsb-rolls">
+                  <div id="rsb-roll-1" class="rsb-roll"></div>
+                  <div id="rsb-roll-2" class="rsb-roll"></div>
+                  <div id="rsb-roll-3" class="rsb-roll"></div>
+                </div>
+              </div>
+
+              <!-- Step 3: NDT/Inspection -->
+              <div id="ndt-inspection" class="ndt-inspection step-inactive">
+                <div class="ndt-scanner">
+                  <div class="ndt-scan-line"></div>
+                </div>
+                <span>NDT Inspection</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="info-panel">
+      <div class="info-controls">
+        <div id="step-indicators" class="step-indicators"></div>
+        <button id="play-pause-btn" class="play-pause-btn" onclick="togglePlayPause()">
+          <svg id="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <svg id="pause-icon" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="6" y="4" width="4" height="16"/>
+            <rect x="14" y="4" width="4" height="16"/>
+          </svg>
+          <span id="play-pause-text">PAUSE</span>
+        </button>
+      </div>
+
+      <div class="info-content">
+        <div id="info-icon" class="info-icon bg-orange-600">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        
+        <div class="info-text">
+          <div class="info-header">
+            <h2 id="info-title">1. EAF (Electric Arc Furnace)</h2>
+            <span id="info-subtitle" class="info-badge">60/100톤 전기로 용해</span>
+          </div>
+          
+          <p id="info-desc" class="info-desc">
+            스크랩과 합금철을 아크열로 용해합니다. 세아창원특수강은 특수강 전용 전기로를 운영하여 고합금강 생산의 기초를 다집니다.
+          </p>
+
+          <div class="tech-note">
+            <span class="tech-note-dot"></span>
+            <span id="tech-note-text">Tech Note: Tapping Temp: ~1,650℃</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="footer-notes">
+    <span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      VIM/ESR 공정은 특수합금(항공/방산) 전용입니다.
+    </span>
+    <span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      Vision AI는 압연 정밀도를 보증합니다.
+    </span>
+  </div>
+
+  <script>
+    // 데이터 정의
+    const steelSteps = [
+      {
+        id: 'eaf',
+        title: '1. EAF (Electric Arc Furnace)',
+        subtitle: '60/100톤 전기로 용해',
+        desc: '스크랩과 합금철을 아크열로 용해합니다. 세아창원특수강은 특수강 전용 전기로를 운영하여 고합금강 생산의 기초를 다집니다.',
+        detail: 'Tapping Temp: ~1,650℃',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+        color: 'bg-orange-600'
+      },
+      {
+        id: 'aod',
+        title: '2. AOD (Argon Oxygen Decarburization)',
+        subtitle: '주력 탈탄 정련',
+        desc: '스테인리스강 제조의 핵심 설비입니다. Ar/O₂ 가스 비율을 제어하여 크롬(Cr) 산화 없이 탄소(C)만 정밀하게 제거합니다.',
+        detail: 'Cr 회수율 극대화 공정',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2m5.8-7.8L2 3.2m18.8 18.6-3.8-3.8M2 12h20M12 2v20"/></svg>',
+        color: 'bg-red-500'
+      },
+      {
+        id: 'vod',
+        title: '3. VOD (Vacuum Oxygen Decarburization)',
+        subtitle: '진공 정련 및 탈가스',
+        desc: '진공 상태에서 산소를 취입하여 극저탄소(ELC) 강종을 생산하고, 가스(H, N)를 제거하여 청정도를 극대화합니다.',
+        detail: '고청정 베어링강/항공소재 필수',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+        color: 'bg-purple-700'
+      },
+      {
+        id: 'cc',
+        title: '4. 수직 연속 주조 (Vertical C.C)',
+        subtitle: '대단면 블룸(Bloom) 생산',
+        desc: '세계 최대급 단면의 블룸을 수직형 연주기로 생산하여 내부 품질이 균일하고 편석이 적은 소재를 만듭니다.',
+        detail: 'Bloom Size: Max □500mm 등',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M9 3v18"/></svg>',
+        color: 'bg-orange-800'
+      }
+    ];
+
+    const rollingSteps = [
+      {
+        id: 'reheat',
+        title: '1. 가열로 (Reheating)',
+        subtitle: 'Walking Beam Furnace',
+        desc: '블룸/빌렛을 강종별 최적 온도로 가열합니다. 탈탄 방지와 균일 가열을 위해 분위기 제어가 이루어집니다.',
+        detail: 'Temp: 1,050 ~ 1,250℃',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>',
+        color: 'bg-red-700'
+      },
+      {
+        id: 'rough',
+        title: '2. 조압연 & Vision AI',
+        subtitle: 'AI 기반 치수 제어',
+        desc: '강력한 압하력으로 단면을 줄입니다. 최근 도입된 "Vision AI"가 실시간으로 외경을 측정하고 롤 셋팅을 가이드합니다.',
+        detail: 'AI Monitoring System 적용',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+        color: 'bg-slate-600'
+      },
+      {
+        id: 'finish',
+        title: '3. 사상 압연 (Sizing Block)',
+        subtitle: 'RSB / Precision Rolling',
+        desc: 'RSB(Reducing Sizing Block) 설비를 통과시켜 0.1mm 단위의 정밀한 치수와 우수한 표면 조도를 확보합니다.',
+        detail: 'High Precision Tolerance',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+        color: 'bg-blue-600'
+      },
+      {
+        id: 'finish_proc',
+        title: '4. 정정 및 검사 (Finishing)',
+        subtitle: 'Straightening & NDT',
+        desc: '냉각 후 교정(Straightening)을 거쳐 비파괴 검사(NDT)로 내부/표면 결함을 전수 보증 후 출하합니다.',
+        detail: 'UST / ECT / Leakage Test',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M21 5v14c0 1.66-4 3-9 3s-9-1.34-9-3V5"/></svg>',
+        color: 'bg-slate-500'
+      }
+    ];
+
+    // 상태 관리
+    let activeTab = 'steelmaking';
+    let currentStep = 0;
+    let isPlaying = true;
+    let interval = null;
+
+    function getCurrentStepsData() {
+      return activeTab === 'steelmaking' ? steelSteps : rollingSteps;
+    }
+
+    function updateStepIndicators() {
+      const indicators = document.getElementById('step-indicators');
+      const steps = getCurrentStepsData();
+      indicators.innerHTML = '';
+      steps.forEach((_, idx) => {
+        const btn = document.createElement('button');
+        btn.className = idx === currentStep ? 'active' : '';
+        btn.onclick = () => {
+          currentStep = idx;
+          isPlaying = false;
+          if (interval) clearInterval(interval);
+          updateDisplay();
+        };
+        indicators.appendChild(btn);
+      });
+    }
+
+    function updateDisplay() {
+      const steps = getCurrentStepsData();
+      const step = steps[currentStep];
+
+      // 정보 패널 업데이트
+      document.getElementById('info-title').textContent = step.title;
+      document.getElementById('info-subtitle').textContent = step.subtitle;
+      document.getElementById('info-desc').textContent = step.desc;
+      document.getElementById('tech-note-text').textContent = 'Tech Note: ' + step.detail;
+      document.getElementById('info-icon').className = 'info-icon ' + step.color;
+      document.getElementById('info-icon').innerHTML = step.icon;
+
+      // 제강 애니메이션
+      if (activeTab === 'steelmaking') {
+        const vesselContainer = document.getElementById('vessel-container');
+        const castingContainer = document.getElementById('casting-container');
+        const statusLabel = document.getElementById('status-label');
+        const moltenLayer = document.getElementById('molten-layer');
+        const particles = document.getElementById('particles');
+        const lanceContainer = document.getElementById('lance-container');
+        const electrode = document.getElementById('electrode');
+
+        if (currentStep === 3) {
+          vesselContainer.className = 'vessel-container hidden';
+          castingContainer.className = 'casting-container visible';
+        } else {
+          vesselContainer.className = 'vessel-container visible';
+          castingContainer.className = 'casting-container hidden';
+
+          // Status label
+          statusLabel.className = 'status-label ' + 
+            (currentStep === 0 ? 'melting' : currentStep === 1 ? 'decarb' : 'degas');
+          statusLabel.textContent = 
+            currentStep === 0 ? 'Melting (1600℃)' : 
+            currentStep === 1 ? 'Decarburization' : 'Degassing';
+
+          // Molten layer
+          moltenLayer.className = 'molten-layer step-' + currentStep;
+
+          // Particles
+          if (currentStep === 1 || currentStep === 2) {
+            particles.classList.remove('hidden');
+            particles.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+              const particle = document.createElement('div');
+              particle.className = 'particle';
+              particle.style.left = (20 + i * 15) + '%';
+              particle.style.animationDelay = (i * 0.2) + 's';
+              particles.appendChild(particle);
+            }
+          } else {
+            particles.classList.add('hidden');
+          }
+
+          // Lance/Electrode
+          if (currentStep === 0) {
+            lanceContainer.className = 'lance-container electrode';
+            electrode.style.display = 'block';
+          } else if (currentStep === 1) {
+            lanceContainer.className = 'lance-container lance';
+            electrode.style.display = 'none';
+            if (!lanceContainer.querySelector('.lance')) {
+              const lance = document.createElement('div');
+              lance.className = 'lance';
+              const glow = document.createElement('div');
+              glow.className = 'lance-glow';
+              lance.appendChild(glow);
+              lanceContainer.appendChild(lance);
+            }
+          }
+        }
+      }
+
+      // 압연 애니메이션
+      if (activeTab === 'rolling') {
+        const productFlow = document.getElementById('product-flow');
+        const furnace = document.getElementById('furnace');
+        const roughing = document.getElementById('roughing');
+        const roll1 = document.getElementById('roll-1');
+        const roll2 = document.getElementById('roll-2');
+        const sizingBlock = document.getElementById('sizing-block');
+        const rsbRolls = ['rsb-roll-1', 'rsb-roll-2', 'rsb-roll-3'];
+        const ndtInspection = document.getElementById('ndt-inspection');
+        const aiScannerOverlay = document.getElementById('ai-scanner-overlay');
+        const aiScanText = document.getElementById('ai-scan-text');
+
+        productFlow.className = 'product-flow step-' + currentStep;
+
+        // Furnace
+        furnace.className = 'furnace step-' + (currentStep === 0 ? 'active' : 'inactive');
+
+        // Roughing
+        roughing.className = 'roughing step-' + (currentStep === 1 ? 'active' : 'inactive');
+        if (currentStep === 1) {
+          roll1.classList.add('spinning');
+          roll2.classList.add('spinning');
+        } else {
+          roll1.classList.remove('spinning');
+          roll2.classList.remove('spinning');
+        }
+
+        // AI Scanner
+        if (currentStep === 1 || currentStep === 2) {
+          aiScannerOverlay.classList.remove('hidden');
+          aiScanText.textContent = currentStep === 1 ? 'O.D. MEASURING...' : 'TOLERANCE CHECK...';
+        } else {
+          aiScannerOverlay.classList.add('hidden');
+        }
+
+        // Sizing Block
+        sizingBlock.className = 'sizing-block step-' + (currentStep === 2 ? 'active' : 'inactive');
+        rsbRolls.forEach(id => {
+          const roll = document.getElementById(id);
+          if (currentStep === 2) {
+            roll.classList.add('spinning');
+          } else {
+            roll.classList.remove('spinning');
+          }
+        });
+
+        // NDT Inspection
+        ndtInspection.className = 'ndt-inspection step-' + (currentStep === 3 ? 'active' : 'inactive');
+      }
+
+      updateStepIndicators();
+    }
+
+    function handleTabChange(tab) {
+      activeTab = tab;
+      currentStep = 0;
+      isPlaying = true;
+
+      // 탭 버튼 업데이트
+      document.getElementById('tab-steelmaking').classList.toggle('active', tab === 'steelmaking');
+      document.getElementById('tab-rolling').classList.toggle('active', tab === 'rolling');
+
+      // 애니메이션 표시/숨김
+      document.getElementById('steelmaking-animation').classList.toggle('hidden', tab !== 'steelmaking');
+      document.getElementById('rolling-animation').classList.toggle('hidden', tab !== 'rolling');
+
+      updateDisplay();
+      startAutoPlay();
+    }
+
+    function togglePlayPause() {
+      isPlaying = !isPlaying;
+      const playIcon = document.getElementById('play-icon');
+      const pauseIcon = document.getElementById('pause-icon');
+      const playPauseText = document.getElementById('play-pause-text');
+
+      if (isPlaying) {
+        playIcon.classList.add('hidden');
+        pauseIcon.classList.remove('hidden');
+        playPauseText.textContent = 'PAUSE';
+        startAutoPlay();
+      } else {
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        playPauseText.textContent = 'PLAY';
+        if (interval) clearInterval(interval);
+      }
+    }
+
+    function startAutoPlay() {
+      if (interval) clearInterval(interval);
+      if (isPlaying) {
+        interval = setInterval(() => {
+          const steps = getCurrentStepsData();
+          currentStep = (currentStep + 1) % steps.length;
+          updateDisplay();
+        }, 3500);
+      }
+    }
+
+    // 초기화
+    updateStepIndicators();
+    updateDisplay();
+    startAutoPlay();
+  </script>
+</body>
+</html>
