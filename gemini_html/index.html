@@ -381,22 +381,33 @@
 
         // Get file type label
         function getFileType(filename) {
-            if (filename.includes('Zone.Identifier')) return 'ID';
             const ext = getFileExtension(filename);
             return ext.toUpperCase() || 'FILE';
         }
 
+        // Load custom display names from files.json
+        async function loadDisplayNames(folderName) {
+            try {
+                const response = await fetch(`${folderName}/files.json`);
+                if (!response.ok) return {};
+                return await response.json();
+            } catch (error) {
+                return {}; // Return empty object if files.json doesn't exist
+            }
+        }
+
         // Create file card HTML
-        function createFileCard(file, folderName) {
+        function createFileCard(file, folderName, displayNames = {}) {
             const icon = getFileIcon(file.name);
             const type = getFileType(file.name);
             const size = formatFileSize(file.size);
             const href = `${folderName}/${file.name}`;
+            const displayName = displayNames[file.name] || file.name;
 
             return `
                 <a href="${href}" class="file-card" data-filename="${file.name}">
                     <div class="file-icon">${icon}</div>
-                    <div class="file-name">${file.name}</div>
+                    <div class="file-name">${displayName}</div>
                     <div class="file-meta">
                         <span class="file-size">${size}</span>
                         <span class="file-type">${type}</span>
@@ -406,8 +417,11 @@
         }
 
         // Create folder section HTML
-        function createFolderSection(folderName, files) {
-            const fileCards = files.map(file => createFileCard(file, folderName)).join('');
+        async function createFolderSection(folderName, files) {
+            // Load custom display names
+            const displayNames = await loadDisplayNames(folderName);
+
+            const fileCards = files.map(file => createFileCard(file, folderName, displayNames)).join('');
 
             return `
                 <div class="folder-section" data-folder="${folderName}">
@@ -436,7 +450,7 @@
                 // Fetch main directory
                 const mainContents = await fetchFolderContents(GITHUB_API);
 
-                // Filter only directories
+                // Filter only directories (automatically includes any new folders)
                 const folders = mainContents.filter(item => item.type === 'dir');
 
                 // Fetch contents of each folder
@@ -445,7 +459,12 @@
                         const files = await fetchFolderContents(folder.url);
                         return {
                             name: folder.name,
-                            files: files.filter(item => item.type === 'file')
+                            // Exclude files.json and Zone.Identifier files
+                            files: files.filter(item =>
+                                item.type === 'file' &&
+                                item.name !== 'files.json' &&
+                                !item.name.endsWith('.Identifier')
+                            )
                         };
                     })
                 );
@@ -458,10 +477,11 @@
                 document.getElementById('totalFiles').textContent = totalFiles;
                 document.getElementById('totalFolders').textContent = totalFolders;
 
-                // Create folder sections
-                const foldersHTML = folderData
-                    .map(folder => createFolderSection(folder.name, folder.files))
-                    .join('');
+                // Create folder sections (now async)
+                const folderSectionsPromises = folderData.map(folder =>
+                    createFolderSection(folder.name, folder.files)
+                );
+                const foldersHTML = (await Promise.all(folderSectionsPromises)).join('');
 
                 document.getElementById('foldersContainer').innerHTML = foldersHTML;
 
