@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>차세대 Framework 환경 아키텍처</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root {
+            /* Color Palette - Modern Light Theme */
+            --bg-main: #ffffff;
+            --bg-secondary: #f8fafc; /* very light gray */
+            --bg-card: #ffffff;
+            --bg-card-hover: #f1f5f9;
+            
+            --text-main: #1e293b; /* slate-800 */
+            --text-sub: #475569;  /* slate-600 */
+            --text-muted: #94a3b8; /* slate-400 */
+
+            --border-color: #e2e8f0; /* slate-200 */
+            --border-hover: #cbd5e1; /* slate-300 */
+
+            /* Brand Accents */
+            --accent-primary: #2563eb;   /* Blue-600 */
+            --accent-success: #059669;   /* Emerald-600 */
+            --accent-warning: #d97706;   /* Amber-600 */
+            --accent-danger: #dc2626;    /* Red-600 */
+            --accent-purple: #7c3aed;    /* Violet-600 */
+            --accent-cyan: #0891b2;      /* Cyan-600 */
+            --accent-pink: #db2777;      /* Pink-600 */
+
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background-color: var(--bg-main);
+            background-image: 
+                radial-gradient(circle at 15% 10%, rgba(37, 99, 235, 0.04), transparent 25%), 
+                radial-gradient(circle at 85% 30%, rgba(124, 58, 237, 0.04), transparent 25%),
+                radial-gradient(circle at 50% 80%, rgba(5, 150, 105, 0.03), transparent 40%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 60px 20px;
+            overflow-x: hidden;
+            word-break: keep-all; /* 한글 단어 줄바꿈 방지 */
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Typography */
+        h1 {
+            text-align: center;
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+            background: linear-gradient(to right, #2563eb, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-sub);
+            font-size: 1.3rem;
+            margin-bottom: 60px;
+            font-weight: 500;
+        }
+
+        /* Vision Statement */
+        .vision-statement {
+            background: #eff6ff; /* blue-50 */
+            border: 1px solid #bfdbfe; /* blue-200 */
+            padding: 40px;
+            border-radius: 24px;
+            margin-bottom: 80px;
+            font-size: 1.2rem;
+            color: var(--text-main);
+            line-height: 1.8;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .vision-statement strong {
+            color: var(--accent-primary);
+            font-weight: 700;
+        }
+
+        /* Section Styling */
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: var(--text-main);
+        }
+
+        .section-title span {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-left: 8px;
+        }
+
+        /* --- Comparison Matrix Styling --- */
+        .comparison-matrix {
+            display: grid;
+            grid-template-columns: 200px 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 100px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+
+        /* Headers */
+        .matrix-header {
+            padding: 24px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .matrix-header small {
+            font-weight: 400;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+            display: block;
+            color: var(--text-sub);
+        }
+
+        .header-legacy { border-top: 4px solid #64748b; color: #475569; background: #f8fafc; }
+        .header-lowcode { border-top: 4px solid #ea580c; color: #c2410c; background: #fff7ed; }
+        .header-target { 
+            border-top: 4px solid var(--accent-primary); 
+            color: var(--accent-primary); 
+            background: #eff6ff;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            transform: scale(1.02);
+            z-index: 5;
+        }
+        .header-target::after {
+            content: '추천 (Recommended)';
+            position: absolute;
+            top: -12px;
+            background: var(--accent-primary);
+            color: white;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* Row Headers */
+        .matrix-row-header {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            background: transparent;
+            border-left: 4px solid var(--border-color);
+        }
+        
+        .row-icon {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .row-dev { border-left-color: var(--accent-cyan); }
+        .row-deploy { border-left-color: var(--accent-primary); }
+        .row-infra { border-left-color: var(--accent-purple); }
+        .row-ops { border-left-color: var(--accent-warning); }
+        .row-idp { border-left-color: var(--accent-pink); }
+
+        /* Data Cells */
+        .matrix-cell {
+            padding: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .matrix-cell:hover {
+            background: var(--bg-card-hover);
+            box-shadow: var(--shadow-md);
+        }
+
+        .cell-target {
+            background: #f8fafc;
+            border-color: #bfdbfe;
+            box-shadow: inset 0 0 15px rgba(37, 99, 235, 0.05), var(--shadow-sm);
+        }
+
+        .cell-value {
+            font-size: 1.05rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+        
+        .cell-target .cell-value {
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .text-limit { color: var(--accent-danger); font-size: 0.95rem; font-weight: 500; }
+        .text-good { color: var(--accent-success); font-size: 0.95rem; font-weight: 500; }
+        .highlight-txt { color: var(--accent-primary); text-decoration: underline; text-underline-offset: 3px; }
+        .eng-sub { font-size: 0.85em; color: var(--text-muted); font-weight: 400; margin-left: 4px; }
+
+        .matrix-corner { visibility: hidden; }
+
+        /* Environment Sections */
+        .environment-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 50px;
+            margin-bottom: 60px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .environment-section:hover {
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Section Borders */
+        .dev-env { --section-color: var(--accent-cyan); }
+        .deploy-env { --section-color: var(--accent-primary); }
+        .infra-env { --section-color: var(--accent-purple); }
+        .ops-env { --section-color: var(--accent-warning); }
+        .idp-env { --section-color: var(--accent-pink); }
+
+        .environment-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: var(--section-color);
+        }
+
+        .env-header {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .env-icon {
+            width: 72px;
+            height: 72px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: var(--section-color);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .env-title-group h2 {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .env-title-group p {
+            font-size: 1.15rem;
+            color: var(--text-sub);
+        }
+
+        .env-description {
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 50px;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: var(--text-sub);
+            border-left: 5px solid var(--section-color);
+        }
+
+        .env-description strong {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .scope-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 40px 0 24px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Tech Grid */
+        .tech-stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .tech-category {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tech-category:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .tech-category-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .tech-category-name .icon-box {
+            color: var(--section-color);
+            font-size: 1.2em;
+        }
+
+        .tech-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tech-badge {
+            font-size: 0.95rem;
+            padding: 8px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 100px;
+            color: var(--text-sub);
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .tech-badge:hover {
+            color: #fff;
+            background: var(--section-color);
+            border-color: var(--section-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Key Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            border-radius: 16px;
+            font-size: 1rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+        
+        .feature-item strong {
+            display: block;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            font-size: 1.1rem;
+        }
+
+        /* Integration Flow */
+        .flow-section {
+            margin: 100px 0;
+            padding: 60px;
+            background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%);
+            border: 2px solid #a7f3d0;
+            border-radius: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .flow-rows-container {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .flow-step {
+            flex: 1;
+            min-width: 180px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .flow-step:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-success);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .flow-step-num {
+            width: 44px;
+            height: 44px;
+            background: var(--accent-success);
+            color: white;
+            font-weight: 800;
+            font-size: 1.2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.3);
+        }
+
+        .flow-step h3 { font-size: 1.3rem; margin-bottom: 12px; color: var(--text-main); font-weight: 700; }
+        .flow-step p { font-size: 1rem; color: var(--text-sub); line-height: 1.5; }
+
+        .flow-arrow-horizontal {
+            font-size: 36px;
+            color: var(--accent-success);
+            font-weight: bold;
+            opacity: 0.8;
+            flex-shrink: 0;
+        }
+
+        /* Benefits */
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .benefit-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            border-radius: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-danger);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .benefit-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--accent-danger);
+        }
+
+        .benefit-icon {
+            width: 64px;
+            height: 64px;
+            background: #fef2f2;
+            color: var(--accent-danger);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 24px;
+            border: 1px solid #fecaca;
+        }
+
+        .benefit-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 16px; color: var(--text-main); }
+        .benefit-desc { font-size: 1.05rem; color: var(--text-sub); line-height: 1.6; }
+
+        @media (max-width: 1200px) {
+            .comparison-matrix { grid-template-columns: 180px 250px 250px 250px; }
+            .flow-row { flex-direction: column; gap: 15px; }
+            .flow-arrow-horizontal { transform: rotate(90deg); margin: 5px auto; }
+            h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>차세대 프레임워크 아키텍처</h1>
+        <div class="subtitle">미래형 개발 플랫폼으로의 전환 (Next-Generation Platform)</div>
+
+        <div class="vision-statement">
+            <strong>Vision:</strong> 기존의 <strong>CS(.NET) 환경</strong>에서 벗어나, 
+            30개 팀이 <strong>AI 기반 웹(Web) 환경</strong>에서 <strong>표준화된 기술 스택(Nx, React, NestJS)</strong>으로 협업하며, 
+            <strong>자동화된 CI/CD</strong>와 <strong>하이브리드 클라우드</strong>를 통해 고품질 서비스를 제공합니다.
+        </div>
+
+        <!-- Matrix Comparison Section -->
+        <div class="section-title">⚖️ 프레임워크 환경 비교 <span>(Framework Comparison)</span></div>
+        <div class="comparison-matrix">
+            <!-- Headers -->
+            <div class="matrix-corner"></div>
+            <div class="matrix-header header-legacy">
+                기존 SIS 프레임워크
+                <small>(Legacy)</small>
+            </div>
+            <div class="matrix-header header-lowcode">
+                OutSystems
+                <small>(Low-Code)</small>
+            </div>
+            <div class="matrix-header header-target">
+                차세대 프레임워크
+                <small>(Target)</small>
+            </div>
+
+            <!-- Row 1: Development -->
+            <div class="matrix-row-header row-dev">
+                <span class="row-icon">💻</span>
+                개발 환경 <span class="eng-sub">Development</span>
+            </div>
+            <div class="matrix-cell">
+                <div class="cell-value">Visual Studio .NET</div>
+                <div class="text-limit">TFS 소스 잠금 (협업 병목)</div>
+            </div>
+            <div class="matrix-cell">
+                <div class="cell-value">Visual Drag & Drop</div>
+                <div class="text-good">단순 업무 개발 빠름</div>
+            </div>
+            <div class="matrix-cell cell-target">
+                <div class="cell-value">VSCode + <span class="highlight-txt">Cursor AI</span></div>
+                <div class="cell-value">Nx Monorepo (Git 기반)</div>
+            </div>
+
+            <!-- Row 2: Deployment -->
+            <div class="matrix-row-header row-deploy">
+                <span class="row-icon">🚀</span>
+                배포 환경 <span class="eng-sub">Deployment</span>
+            </div>
+            <div class="matrix-cell">
+                <div class="cell-value">HTTP 파일 전송 툴</div>
+                <div class="text-limit">수동 DLL 배포</div>
+            </div>
+            <div class="matrix-cell">
+                <div class="cell-value">One-Click Publish</div>
+                <div class="text-limit">블랙박스 배포 (제어 불가)</div>
+            </div>
+            <div class="matrix-cell cell-target">
+                <div class="cell-value">GitHub Actions</div>
+                <div class="cell-value"><span class="highlight-txt">ArgoCD</span> (GitOps 자동화)</div>
+            </div>
+
+            <!-- Row 3: Infrastructure -->
+            <div class="matrix-row-header row-infra">
+                <span class="row-icon">☁️</span>
+                인프라 환경 <span class="eng-sub">Infrastructure</span>
+            </div>
+            <div class="matrix-cell">
+                <div class="cell-value">On-Premise (Windows)</div>
+                <div class="text-limit">Oracle Client 접속 (CS)</div>
+            </div>
+            <div class="matrix-cell">
+                <div class="cell-value">Managed PaaS</div>
+                <div class="text-limit">강력한 벤더 종속 (Lock-in)</div>
+            </div>
+            <div class="matrix-cell cell-target">
+                <div class="cell-value">Hybrid (GCP + IDC)</div>
+                <div class="cell-value"><span class="highlight-txt">Kubernetes</span> + Kafka</div>
+            </div>
+
+            <!-- Row 4: Operations -->
+            <div class="matrix-row-header row-ops">
+                <span class="row-icon">📊</span>
+                운영 환경 <span class="eng-sub">Operations</span>
+            </div>
+            <div class="matrix-cell">
+                <div class="cell-value">IIS / 파일 로그</div>
+                <div class="text-limit">장애 사후 대응 중심</div>
+            </div>
+            <div class="matrix-cell">
+                <div class="cell-value">Service Center</div>
+                <div class="text-good">기본 모니터링 제공</div>
+            </div>
+            <div class="matrix-cell cell-target">
+                <div class="cell-value">통합 관제 (Observability)</div>
+                <div class="cell-value"><span class="highlight-txt">LGT Stack</span> (AI Ops)</div>
+            </div>
+
+            <!-- Row 5: IDP -->
+            <div class="matrix-row-header row-idp">
+                <span class="row-icon">🎯</span>
+                IDP (개발자 포털)
+            </div>
+            <div class="matrix-cell">
+                <div class="text-limit">VS 프로젝트 템플릿만 존재</div>
+            </div>
+            <div class="matrix-cell">
+                <div class="cell-value">Lifetime Console</div>
+                <div class="text-limit">폐쇄적 환경</div>
+            </div>
+            <div class="matrix-cell cell-target">
+                <div class="cell-value">Backstage 포털</div>
+                <div class="cell-value">공통 라이브러리 (@vntg/core)</div>
+            </div>
+        </div>
+
+
+        <!-- 1. Development Environment -->
+        <div class="environment-section dev-env">
+            <div class="env-header">
+                <div class="env-icon">💻</div>
+                <div class="env-title-group">
+                    <h2>1. 개발 환경 (Development)</h2>
+                    <p>CS 환경에서 Modern Web(React)으로의 혁신적 전환</p>
+                </div>
+            </div>
+
+            <div class="env-description">
+                개발자가 <strong>생산성 높게 코드를 작성</strong>하고, <strong>컴포넌트를 재사용</strong>하며, 
+                <strong>AI 도구(Cursor/Copilot)를 활용</strong>하여 빠르고 일관된 개발을 할 수 있는 통합 환경입니다.
+                기존 TFS의 소스 잠금(Lock) 방식에서 벗어나 <strong>Nx Monorepo 기반의 Git Branch 전략</strong>을 통해 협업 효율을 극대화합니다.
+            </div>
+            
+            <div class="scope-title">📦 핵심 기술 스택 <span>(Tech Stack)</span></div>
+            <div class="tech-stack-grid">
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">⚛️</span> 프론트엔드 (Frontend)</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">React 18</span>
+                        <span class="tech-badge">Next.js 14</span>
+                        <span class="tech-badge">TypeScript</span>
+                        <span class="tech-badge">TailwindCSS</span>
+                        <span class="tech-badge">Zustand</span>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">🔧</span> 백엔드 (Backend)</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">NestJS</span>
+                        <span class="tech-badge">Prisma ORM</span>
+                        <span class="tech-badge">GraphQL</span>
+                        <span class="tech-badge">Swagger</span>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">📚</span> 빌드 & 저장소 (Build & Repo)</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">Nx Workspace</span>
+                        <span class="tech-badge">pnpm</span>
+                        <span class="tech-badge">Vite</span>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">🎨</span> 디자인 시스템 (Design System)</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">Figma</span>
+                        <span class="tech-badge">Storybook</span>
+                        <span class="tech-badge">shadcn/ui</span>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">🤖</span> AI 도구 (AI Tools)</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">Cursor AI</span>
+                        <span class="tech-badge">Claude Code</span>
+                        <span class="tech-badge">Spec-Driven Dev (SDD)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scope-title">✨ 주요 기능 <span>(Key Features)</span></div>
+            <div class="features-grid">
+                <div class="feature-item"><strong>통합 개발 환경</strong> VSCode + Extensions로 팀 전체가 동일한 개발 경험 제공</div>
+                <div class="feature-item"><strong>컴포넌트 라이브러리</strong> Storybook 기반 재사용 가능한 UI 컴포넌트 (@vntg/ui-kit)</div>
+                <div class="feature-item"><strong>타입 안정성 (Type Safety)</strong> TypeScript로 런타임 에러 사전 방지 및 자동완성 지원</div>
+                <div class="feature-item"><strong>AI 페어 프로그래밍</strong> Cursor/Copilot과 함께하는 빠른 코드 작성 및 리팩토링</div>
+                <div class="feature-item"><strong>Hot Reload</strong> 코드 변경 즉시 브라우저 반영 (Vite 기반 빠른 빌드)</div>
+                <div class="feature-item"><strong>API 자동 문서화</strong> NestJS 기반 Swagger/OpenAPI 자동 생성</div>
+            </div>
+        </div>
+
+        <!-- 2. Deployment Environment -->
+        <div class="environment-section deploy-env">
+            <div class="env-header">
+                <div class="env-icon">🚀</div>
+                <div class="env-title-group">
+                    <h2>2. 배포 환경 (Deployment)</h2>
+                    <p>수동 파일 전송을 제거한 GitOps 완전 자동화</p>
+                </div>
+            </div>
+
+            <div class="env-description">
+                개발 코드를 <strong>자동으로 빌드, 테스트, 배포</strong>하여 서버에 안전하게 올리고 동작시키는 환경입니다.
+                기존 SIS 프레임워크의 'HTTP 파일 전송 툴' 수동 배포와 달리, 
+                <strong>ArgoCD 기반의 GitOps 파이프라인</strong>으로 배포 시간을 90% 단축하고 인적 오류를 제거합니다.
+            </div>
+            
+            <div class="scope-title">📦 핵심 기술 스택 <span>(Tech Stack)</span></div>
+            <div class="tech-stack-grid">
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">🔄</span> CI/CD 파이프라인</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">GitHub Actions</span>
+                        <span class="tech-badge">ArgoCD (GitOps)</span>
+                        <span class="tech-badge">Helm Charts</span>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">🐳</span> 컨테이너 (Container)</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">Docker</span>
+                        <span class="tech-badge">Harbor Registry</span>
+                        <span class="tech-badge">Multi-stage Build</span>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">🔒</span> 보안 (Security)</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">Trivy (Scan)</span>
+                        <span class="tech-badge">SonarQube</span>
+                        <span class="tech-badge">Jest/Playwright</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scope-title">✨ 주요 기능 <span>(Key Features)</span></div>
+            <div class="features-grid">
+                <div class="feature-item"><strong>자동 빌드</strong> Git Push 시 자동으로 Docker 이미지 빌드 및 레지스트리 등록</div>
+                <div class="feature-item"><strong>자동 테스트</strong> 단위/통합/E2E 테스트 자동 실행 (Nx Affected Test)</div>
+                <div class="feature-item"><strong>보안 스캔</strong> Trivy를 통한 컨테이너 취약점 자동 탐지 및 차단</div>
+                <div class="feature-item"><strong>GitOps 배포</strong> ArgoCD가 Git 상태와 K8s 상태를 자동으로 동기화</div>
+                <div class="feature-item"><strong>무중단 배포</strong> Rolling Update 또는 Blue-Green 배포 전략 지원</div>
+                <div class="feature-item"><strong>자동 롤백</strong> 배포 실패 시 이전 안정 버전으로 즉시 복구</div>
+            </div>
+        </div>
+
+        <!-- 3. Infrastructure Environment -->
+        <div class="environment-section infra-env">
+            <div class="env-header">
+                <div class="env-icon">☁️</div>
+                <div class="env-title-group">
+                    <h2>3. 인프라 환경 (Infrastructure)</h2>
+                    <p>Windows/Oracle 중심에서 K8s/Cloud로 무한 확장</p>
+                </div>
+            </div>
+
+            <div class="env-description">
+                애플리케이션이 <strong>IDC와 Cloud(GCP)에서 안정적으로 실행</strong>되고, 
+                <strong>트래픽에 따라 자동 확장</strong>되며, <strong>장애 시 자동 복구</strong>되는 환경입니다.
+                Windows Server/IIS 중심의 고정된 인프라에서 벗어나, 
+                <strong>Kubernetes 기반의 유연한 컨테이너 오케스트레이션</strong> 환경을 구축합니다.
+            </div>
+            
+            <div class="scope-title">📦 핵심 기술 스택 <span>(Tech Stack)</span></div>
+            <div class="tech-stack-grid">
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">☁️</span> 플랫폼 (Platform)</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">GCP (Cloud)</span>
+                        <span class="tech-badge">GKE (Kubernetes)</span>
+                        <span class="tech-badge">On-Premise K8s</span>
+                        <span class="tech-badge">Cloud Run</span>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">⚡</span> IaC & 네트워크</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">Terraform</span>
+                        <span class="tech-badge">Istio (Service Mesh)</span>
+                        <span class="tech-badge">Cloud Armor</span>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">💾</span> 데이터 & 이벤트</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">PostgreSQL</span>
+                        <span class="tech-badge">Apache Kafka</span>
+                        <span class="tech-badge">Redis Cluster</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scope-title">✨ 주요 기능 <span>(Key Features)</span></div>
+            <div class="features-grid">
+                <div class="feature-item"><strong>오토 스케일링 (Auto Scaling)</strong> 트래픽에 따라 Pod/Node 자동 확장</div>
+                <div class="feature-item"><strong>자동 복구 (Self Healing)</strong> 장애 발생 시 Pod 자동 재시작 및 복구</div>
+                <div class="feature-item"><strong>하이브리드 클라우드</strong> 보안이 중요한 데이터는 IDC, 확장이 필요한 서비스는 GCP 배치</div>
+                <div class="feature-item"><strong>서비스 메시 (Service Mesh)</strong> 마이크로서비스 간 안전한 통신 및 트래픽 제어 (Istio)</div>
+                <div class="feature-item"><strong>이벤트 구동 아키텍처</strong> Kafka를 활용한 비동기 메시징 및 결합도 감소</div>
+                <div class="feature-item"><strong>비용 최적화</strong> Spot Instance 활용 및 리소스 최적화로 비용 절감</div>
+            </div>
+        </div>
+
+        <!-- 4. Operations Environment -->
+        <div class="environment-section ops-env">
+            <div class="env-header">
+                <div class="env-icon">📊</div>
+                <div class="env-title-group">
+                    <h2>4. 운영 환경 (Operations)</h2>
+                    <p>단순 로그 확인에서 데이터 기반 선제적 장애 대응으로</p>
+                </div>
+            </div>
+
+            <div class="env-description">
+                서비스의 <strong>실시간 상태를 모니터링</strong>하고, <strong>장애를 사전에 감지</strong>하며, 
+                <strong>신속하게 대응</strong>할 수 있는 환경입니다.
+                기존의 단순 파일 로그 확인 방식에서 벗어나, 
+                <strong>LGT(Loki, Grafana, Tempo) 스택 기반의 완전한 통합 관제(Observability)</strong>를 제공합니다.
+            </div>
+            
+            <div class="scope-title">📦 핵심 기술 스택 <span>(Tech Stack)</span></div>
+            <div class="tech-stack-grid">
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">📈</span> LGT 스택 (관제)</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">Loki (Logs)</span>
+                        <span class="tech-badge">Grafana (Dashboard)</span>
+                        <span class="tech-badge">Tempo (Traces)</span>
+                        <span class="tech-badge">Mimir (Metrics)</span>
+                        <span class="tech-badge">Prometheus</span>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">🚨</span> 알림 & 분석</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">AlertManager</span>
+                        <span class="tech-badge">Slack Integration</span>
+                        <span class="tech-badge">DORA Metrics</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scope-title">✨ 주요 기능 <span>(Key Features)</span></div>
+            <div class="features-grid">
+                <div class="feature-item"><strong>실시간 대시보드</strong> 모든 서비스의 CPU, 메모리, 트래픽 상태 한눈에 확인</div>
+                <div class="feature-item"><strong>자동 알림</strong> 임계치 초과 시 Slack/Email 즉시 알림 (AlertManager)</div>
+                <div class="feature-item"><strong>분산 추적</strong> 마이크로서비스 간 요청 경로(Trace) 완전 추적 (Tempo)</div>
+                <div class="feature-item"><strong>통합 로그 분석</strong> 여러 Pod의 로그를 중앙에서 검색 및 분석 (Loki)</div>
+                <div class="feature-item"><strong>장애 원인 분석</strong> 에러 발생 시점의 스택 트레이스 및 연관 로그 자동 수집</div>
+                <div class="feature-item"><strong>DORA Metrics</strong> 배포 빈도, 변경 실패율 등 개발 생산성 지표 시각화</div>
+            </div>
+        </div>
+
+        <!-- 5. IDP Environment -->
+        <div class="environment-section idp-env">
+            <div class="env-header">
+                <div class="env-icon">🎯</div>
+                <div class="env-title-group">
+                    <h2>5. IDP (내부 개발자 플랫폼)</h2>
+                    <p>Helper Class를 넘어선 통합 개발자 셀프서비스 포털</p>
+                </div>
+            </div>
+
+            <div class="env-description">
+                개발자가 <strong>필요한 모든 것을 한 곳에서 셀프서비스</strong>로 이용할 수 있는 통합 플랫폼입니다.
+                문서, 도구, 배포 환경, 템플릿, 모니터링 대시보드까지 <strong>Golden Path</strong>를 제공하여 
+                <strong>개발자 온보딩 시간을 80% 단축</strong>하고 <strong>인지 부하를 최소화</strong>합니다.
+            </div>
+            
+            <div class="scope-title">📦 핵심 기술 스택 <span>(Tech Stack)</span></div>
+            <div class="tech-stack-grid">
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">🎭</span> 포털 (Portal)</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">Backstage</span>
+                        <span class="tech-badge">Software Catalog</span>
+                        <span class="tech-badge">TechDocs</span>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">🚀</span> 셀프서비스 (Self-Service)</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">Scaffolder</span>
+                        <span class="tech-badge">@vntg/create-app</span>
+                        <span class="tech-badge">Sandbox Env</span>
+                        <span class="tech-badge">Cost Dashboard</span>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <div class="tech-category-name"><span class="icon-box">📦</span> 공통 자산 (Assets)</div>
+                    <div class="tech-items">
+                        <span class="tech-badge">@vntg/ui-kit</span>
+                        <span class="tech-badge">@vntg/auth</span>
+                        <span class="tech-badge">Open Metadata</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scope-title">✨ 주요 기능 <span>(Key Features)</span></div>
+            <div class="features-grid">
+                <div class="feature-item"><strong>원클릭 프로젝트 생성</strong> 템플릿(Scaffolder)으로 5분 내 표준 아키텍처 프로젝트 생성</div>
+                <div class="feature-item"><strong>통합 검색</strong> 모든 문서, 서비스, API, 라이브러리를 한 곳에서 검색</div>
+                <div class="feature-item"><strong>Golden Path</strong> 검증된 모범 사례를 따르는 표준 경로 가이드 제공</div>
+                <div class="feature-item"><strong>셀프서비스 인프라</strong> 운영팀 승인 대기 없이 Dev/Sandbox 환경 즉시 생성</div>
+                <div class="feature-item"><strong>소프트웨어 카탈로그</strong> 마이크로서비스의 소유자, API 문서, 의존성 관계 시각화</div>
+                <div class="feature-item"><strong>Tech Radar</strong> 조직 내 권장 기술, 보류 기술, 금지 기술 현황 공유</div>
+            </div>
+        </div>
+
+        <!-- Integration Flow (Horizontal 2-Row) -->
+        <div class="flow-section">
+            <h2 class="section-title">🔄 통합 워크플로우 <span>(Integrated Workflow)</span></h2>
+            
+            <div class="flow-rows-container">
+                <!-- Row 1: Core Pipeline -->
+                <div class="flow-row">
+                    <div class="flow-step">
+                        <div class="flow-step-num">1</div>
+                        <h3>개발 (Develop)</h3>
+                        <p>IDP 템플릿으로 생성<br>Nx Monorepo 커밋</p>
+                    </div>
+                    <div class="flow-arrow-horizontal">➜</div>
+                    <div class="flow-step">
+                        <div class="flow-step-num">2</div>
+                        <h3>빌드 (Build)</h3>
+                        <p>Github Actions 실행<br>테스트 & 도커 이미지 생성</p>
+                    </div>
+                    <div class="flow-arrow-horizontal">➜</div>
+                    <div class="flow-step">
+                        <div class="flow-step-num">3</div>
+                        <h3>배포 (Deploy)</h3>
+                        <p>ArgoCD 동기화 (GitOps)<br>K8s 무중단 롤링 업데이트</p>
+                    </div>
+                </div>
+
+                <!-- Row 2: Feedback Loop -->
+                <div class="flow-row" style="justify-content: center;">
+                    <div class="flow-step" style="flex:0 1 30%;">
+                        <div class="flow-step-num">4</div>
+                        <h3>운영 (Operate)</h3>
+                        <p>LGT 스택 실시간 모니터링<br>오토 스케일링 & 자동 복구</p>
+                    </div>
+                    <div class="flow-arrow-horizontal">➜</div>
+                    <div class="flow-step" style="flex:0 1 30%;">
+                        <div class="flow-step-num">5</div>
+                        <h3>개선 (Improve)</h3>
+                        <p>DORA 지표 분석<br>IDP 대시보드 & 피드백</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefits Section -->
+        <div class="section-title">🎁 핵심 기대 효과 <span>(Key Benefits)</span></div>
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <div class="benefit-icon">⚡</div>
+                <div class="benefit-title">생산성 향상 (Productivity)</div>
+                <div class="benefit-desc">
+                    AI 코딩 도구, 재사용 컴포넌트(@vntg/ui-kit), 자동화된 파이프라인으로 기능 개발부터 배포까지의 리드 타임을 대폭 단축합니다.
+                </div>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">🛡️</div>
+                <div class="benefit-title">안정성 확보 (Stability)</div>
+                <div class="benefit-desc">
+                    Kubernetes의 자동 복구, 무중단 배포, 실시간 모니터링으로 시스템 가용성 99.9% 이상을 목표로 합니다.
+                </div>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">🎓</div>
+                <div class="benefit-title">빠른 온보딩 (Onboarding)</div>
+                <div class="benefit-desc">
+                    IDP의 Golden Path와 통합 문서화로 신규 개발자가 첫날부터 생산적인 업무를 수행할 수 있도록 지원합니다.
+                </div>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">💰</div>
+                <div class="benefit-title">비용 효율 (Cost Efficiency)</div>
+                <div class="benefit-desc">
+                    클라우드 오토스케일링과 Spot Instance 활용, 오픈소스 기반 스택으로 인프라 및 운영 비용을 효율적으로 관리합니다.
+                </div>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">🔓</div>
+                <div class="benefit-title">탈 벤더 종속 (No Lock-in)</div>
+                <div class="benefit-desc">
+                    특정 솔루션(OutSystems/Oracle)에 갇히지 않는 개방형 오픈소스 기술 스택으로 기술 주권과 유연성을 확보합니다.
+                </div>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">👥</div>
+                <div class="benefit-title">협업 강화 (Collaboration)</div>
+                <div class="benefit-desc">
+                    Nx Monorepo를 통해 30개 팀이 코드를 공유하고, 일관된 컨벤션과 프로세스로 협업하는 문화를 조성합니다.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
