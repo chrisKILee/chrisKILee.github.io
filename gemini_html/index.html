@@ -385,8 +385,8 @@
             return ext.toUpperCase() || 'FILE';
         }
 
-        // Load custom display names from files.json
-        async function loadDisplayNames(folderName) {
+        // Load custom display names and order from files.json
+        async function loadConfig(folderName) {
             try {
                 const response = await fetch(`${folderName}/files.json`);
                 if (!response.ok) return {};
@@ -396,13 +396,43 @@
             }
         }
 
+        // Sort files based on _order in config, then alphabetically
+        function sortFiles(files, config) {
+            const order = config._order || [];
+
+            // Separate files into ordered and unordered
+            const orderedFiles = [];
+            const unorderedFiles = [];
+
+            files.forEach(file => {
+                if (order.includes(file.name)) {
+                    orderedFiles.push(file);
+                } else {
+                    unorderedFiles.push(file);
+                }
+            });
+
+            // Sort ordered files by their position in _order array
+            orderedFiles.sort((a, b) => {
+                return order.indexOf(a.name) - order.indexOf(b.name);
+            });
+
+            // Sort unordered files alphabetically
+            unorderedFiles.sort((a, b) => {
+                return a.name.localeCompare(b.name);
+            });
+
+            // Combine: ordered first, then alphabetical
+            return [...orderedFiles, ...unorderedFiles];
+        }
+
         // Create file card HTML
-        function createFileCard(file, folderName, displayNames = {}) {
+        function createFileCard(file, folderName, config = {}) {
             const icon = getFileIcon(file.name);
             const type = getFileType(file.name);
             const size = formatFileSize(file.size);
             const href = `${folderName}/${file.name}`;
-            const displayName = displayNames[file.name] || file.name;
+            const displayName = config[file.name] || file.name;
 
             return `
                 <a href="${href}" class="file-card" data-filename="${file.name}">
@@ -418,16 +448,22 @@
 
         // Create folder section HTML
         async function createFolderSection(folderName, files) {
-            // Load custom display names
-            const displayNames = await loadDisplayNames(folderName);
+            // Load custom display names and order
+            const config = await loadConfig(folderName);
 
-            const fileCards = files.map(file => createFileCard(file, folderName, displayNames)).join('');
+            // Get custom folder display name or use original
+            const displayFolderName = config._folderName || folderName;
+
+            // Sort files based on config
+            const sortedFiles = sortFiles(files, config);
+
+            const fileCards = sortedFiles.map(file => createFileCard(file, folderName, config)).join('');
 
             return `
                 <div class="folder-section" data-folder="${folderName}">
                     <div class="folder-header">
                         <span class="folder-icon">📂</span>
-                        <h2>${folderName}</h2>
+                        <h2>${displayFolderName}</h2>
                         <span class="folder-count">${files.length} files</span>
                     </div>
                     <div class="file-grid">

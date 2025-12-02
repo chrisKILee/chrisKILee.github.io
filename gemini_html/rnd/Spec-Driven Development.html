@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDD (Spec-Driven Development) 구현 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #2563EB, #4F46E5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .step-card:hover {
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+        code {
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-md fixed w-full z-50 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-code-branch text-blue-600 text-2xl mr-2"></i>
+                    <span class="font-bold text-xl tracking-tight text-slate-900">SDD Guide</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#intro" class="text-slate-600 hover:text-blue-600 font-medium">소개</a>
+                    <a href="#workflow" class="text-slate-600 hover:text-blue-600 font-medium">4단계 프로세스</a>
+                    <a href="#constitution" class="text-slate-600 hover:text-blue-600 font-medium">Constitution</a>
+                    <a href="#tech" class="text-slate-600 hover:text-blue-600 font-medium">기술 스택 & 품질</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="intro" class="pt-32 pb-20 px-4 bg-white">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="inline-block px-3 py-1 mb-4 text-sm font-semibold text-blue-600 bg-blue-100 rounded-full">
+                Enterprise Implementation Guide
+            </div>
+            <h1 class="text-4xl md:text-6xl font-black mb-6 leading-tight">
+                <span class="gradient-text">Spec-Driven Development</span><br>
+                AI 증강 팀을 위한 가이드
+            </h1>
+            <p class="text-xl text-slate-600 mb-8 leading-relaxed">
+                사양(Spec)이 진실의 원천(Source of Truth)이 됩니다.<br>
+                코드가 사양을 따르는 패러다임 전환을 통해 AI 코딩 어시스턴트(Claude, Cursor, Windsurf)를 
+                최대로 활용하고 일관된 품질을 확보하세요.
+            </p>
+            <div class="flex justify-center gap-4">
+                <a href="#workflow" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/30">
+                    프로세스 시작하기
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Core Philosophy -->
+    <section class="py-16 bg-slate-100">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold mb-6 text-slate-900">기존 개발 vs SDD</h2>
+                    <p class="text-slate-600 mb-6 text-lg">
+                        GitHub Spec-Kit 방법론(2024년 9월)을 기반으로 한 SDD는 개발 과정을 역전시킵니다.
+                        사양이 코드를 가이드하는 것이 아니라, <strong class="text-blue-700">사양이 AI 해석을 통해 코드를 생성</strong>합니다.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span><strong>진실의 원천:</strong> 코드가 아닌 사양 문서가 중심</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span><strong>인간의 역할:</strong> 코더에서 설계자 및 검토자로 전환</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span><strong>AI의 역할:</strong> 사양을 기반으로 구현체 생성 (TDD 준수)</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
+                    <div class="flex items-center justify-between mb-4 border-b pb-4">
+                        <span class="font-bold text-slate-500">Traditional</span>
+                        <i class="fa-solid fa-arrow-right text-slate-300"></i>
+                        <span class="font-bold text-blue-600">SDD Paradigm</span>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm bg-slate-100 px-3 py-1 rounded">요구사항 해석 (인간)</span>
+                            <i class="fa-solid fa-robot text-blue-500"></i>
+                            <span class="text-sm bg-blue-50 px-3 py-1 rounded text-blue-700 font-semibold">AI가 사양 해석</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm bg-slate-100 px-3 py-1 rounded">코드 작성 (인간)</span>
+                            <i class="fa-solid fa-bolt text-yellow-500"></i>
+                            <span class="text-sm bg-blue-50 px-3 py-1 rounded text-blue-700 font-semibold">AI가 코드 생성</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm bg-slate-100 px-3 py-1 rounded">테스트 작성 (후순위)</span>
+                            <i class="fa-solid fa-shield-halved text-green-500"></i>
+                            <span class="text-sm bg-blue-50 px-3 py-1 rounded text-blue-700 font-semibold">구현 전 TDD 필수</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4 Phases Workflow -->
+    <section id="workflow" class="py-20">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">4단계 SDD 워크플로우</h2>
+                <p class="text-slate-600">각 단계마다 인간의 검토(Human Checkpoint)가 필수적입니다.</p>
+            </div>
+
+            <div class="grid md:grid-cols-4 gap-6">
+                <!-- Phase 1 -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
+                    <div class="text-blue-500 font-black text-5xl mb-4">01</div>
+                    <h3 class="text-xl font-bold mb-2">Specify (정의)</h3>
+                    <p class="text-sm text-slate-500 mb-4 font-mono">/speckit.specify</p>
+                    <p class="text-slate-600 text-sm mb-4">
+                        '무엇'과 '왜'를 캡처합니다. 사용자 여정, 비즈니스 요구사항, 성공 기준을 정의합니다.
+                    </p>
+                    <div class="bg-red-50 text-red-700 text-xs p-3 rounded font-medium">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                        기술적 결정(Stack 등)은 의도적으로 배제합니다.
+                    </div>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-500">
+                    <div class="text-indigo-500 font-black text-5xl mb-4">02</div>
+                    <h3 class="text-xl font-bold mb-2">Plan (계획)</h3>
+                    <p class="text-sm text-slate-500 mb-4 font-mono">/speckit.plan</p>
+                    <p class="text-slate-600 text-sm mb-4">
+                        요구사항을 기술적 설계로 변환합니다. 아키텍처 패턴, 기술 스택, 의존성을 선택합니다.
+                    </p>
+                    <div class="bg-indigo-50 text-indigo-700 text-xs p-3 rounded font-medium">
+                        <i class="fa-solid fa-brain mr-1"></i>
+                        AI가 옵션을 조사하고 Constitution에 맞는 솔루션을 제안합니다.
+                    </div>
+                </div>
+
+                <!-- Phase 3 -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-purple-500">
+                    <div class="text-purple-500 font-black text-5xl mb-4">03</div>
+                    <h3 class="text-xl font-bold mb-2">Tasks (작업 분해)</h3>
+                    <p class="text-sm text-slate-500 mb-4 font-mono">/speckit.tasks</p>
+                    <p class="text-slate-600 text-sm mb-4">
+                        계획을 원자 단위의 병렬 처리 가능한 작업으로 분해합니다.
+                    </p>
+                    <div class="bg-purple-50 text-purple-700 text-xs p-3 rounded font-medium">
+                        <i class="fa-solid fa-list-check mr-1"></i>
+                        의존성이 없는 작업은 [P]로 표시하여 동시에 실행할 수 있습니다.
+                    </div>
+                </div>
+
+                <!-- Phase 4 -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-emerald-500">
+                    <div class="text-emerald-500 font-black text-5xl mb-4">04</div>
+                    <h3 class="text-xl font-bold mb-2">Implement (구현)</h3>
+                    <p class="text-sm text-slate-500 mb-4 font-mono">/speckit.implement</p>
+                    <p class="text-slate-600 text-sm mb-4">
+                        TDD 방식으로 작업을 실행합니다. 테스트가 구현보다 선행됩니다.
+                    </p>
+                    <div class="bg-emerald-50 text-emerald-700 text-xs p-3 rounded font-medium">
+                        <i class="fa-solid fa-magnifying-glass mr-1"></i>
+                        각 단계별 인간의 코드 리뷰 및 검증이 필수입니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Constitution & Rules -->
+    <section id="constitution" class="py-20 bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid lg:grid-cols-2 gap-16">
+                <div>
+                    <h2 class="text-3xl font-bold mb-6 text-blue-400">
+                        <i class="fa-solid fa-scroll mr-2"></i>Constitution.md (헌법)
+                    </h2>
+                    <p class="text-slate-300 mb-8 text-lg">
+                        프로젝트의 협상 불가능한 원칙을 정의하는 가장 중요한 파일입니다. AI의 모든 결정은 이 파일을 따릅니다.
+                    </p>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-slate-800 p-5 rounded-lg border border-slate-700">
+                            <h4 class="font-bold text-white mb-2">핵심 원칙 (Core Principles)</h4>
+                            <ul class="list-disc list-inside text-slate-400 space-y-1 text-sm">
+                                <li>DDD (Domain-Driven Design) 준수</li>
+                                <li>TypeScript Strict Mode 필수</li>
+                                <li>모든 공개 API는 OpenAPI 사양 필수</li>
+                                <li>구조화된 로깅을 통한 에러 처리</li>
+                            </ul>
+                        </div>
+                        <div class="bg-slate-800 p-5 rounded-lg border border-slate-700">
+                            <h4 class="font-bold text-white mb-2">품질 게이트 (Quality Gates)</h4>
+                            <ul class="list-disc list-inside text-slate-400 space-y-1 text-sm">
+                                <li>테스트 커버리지 최소 80%</li>
+                                <li>치명적 보안 취약점 0건</li>
+                                <li>API 응답 시간 &lt; 200ms (p95)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-3xl font-bold mb-6 text-green-400">
+                        <i class="fa-solid fa-folder-tree mr-2"></i>디렉토리 구조 & 규칙
+                    </h2>
+                    <div class="bg-black/50 p-6 rounded-xl font-mono text-sm border border-slate-700 overflow-hidden">
+<pre class="text-green-300">
+.specify/              # Spec-Kit 설정
+memory/                # AI 메모리
+constitution.md        # [중요] 프로젝트 헌법
+specs/                 # 사양 저장소
+  ├── 001-feature-name/
+  │    ├── spec.md     # 기능 명세서
+  │    ├── plan.md     # 기술 구현 계획
+  │    ├── tasks.md    # 작업 목록
+  │    └── research.md # 기술 조사 내용
+contracts/
+  └── api-spec.json    # API 계약
+templates/             # 템플릿
+CLAUDE.md              # Claude 컨텍스트 규칙
+.cursor/rules/         # Cursor 규칙 (*.mdc)
+</pre>
+                    </div>
+                    <div class="mt-6 bg-slate-800 p-4 rounded-lg">
+                        <h4 class="font-bold text-white mb-2">규칙 적용 우선순위</h4>
+                        <p class="text-slate-400 text-sm">
+                            로컬(~/.claude) &lt; 프로젝트 루트 &lt; 백엔드/프론트엔드 폴더별 규칙<br>
+                            하위 폴더의 구체적인 규칙이 상위 규칙보다 우선합니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack & Quality -->
+    <section id="tech" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center text-slate-900">기술 스택 및 품질 보증 전략</h2>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Stack -->
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 text-blue-600">
+                        <i class="fa-solid fa-layer-group text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-3">Enterprise Stack</h3>
+                    <ul class="space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>Nx Monorepo (Scope + Type 분류)</li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>Frontend: React 18+, TypeScript</li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>Backend: NestJS (DDD 구조)</li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>DB: PostgreSQL + Prisma ORM</li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>Infra: Kubernetes + ArgoCD</li>
+                    </ul>
+                </div>
+
+                <!-- Testing -->
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 text-green-600">
+                        <i class="fa-solid fa-vial-circle-check text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-3">Test Pyramid</h3>
+                    <ul class="space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Unit (60-70%): 비즈니스 로직</li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Integration (20-25%): 모듈 간 연동</li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Contract (10-15%): Pact 활용</li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>E2E (5-10%): 전체 흐름</li>
+                    </ul>
+                </div>
+
+                <!-- Metrics -->
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 text-purple-600">
+                        <i class="fa-solid fa-chart-line text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-3">Success Metrics</h3>
+                    <ul class="space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>Spec 완료율 > 90% (코딩 전)</li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>Spec-Code 일치율 > 95%</li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>AI 구현 성공률(초안) > 70%</li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>재작업률(Rework Rate) < 10%</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Adoption Plan -->
+    <section class="py-16 bg-slate-100">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-2xl font-bold mb-8 text-center">90일 도입 로드맵</h2>
+            <div class="space-y-6">
+                <div class="flex">
+                    <div class="flex-shrink-0 w-24 font-bold text-slate-500 pt-1">Phase 1<br><span class="text-sm font-normal">Day 1-30</span></div>
+                    <div class="border-l-2 border-slate-300 pl-6 pb-2">
+                        <h4 class="font-bold text-lg">Pilot (파일럿)</h4>
+                        <p class="text-sm text-slate-600">핵심 팀 3-5명. 헌법 수립, 도구 세팅, 챔피언 육성.</p>
+                    </div>
+                </div>
+                <div class="flex">
+                    <div class="flex-shrink-0 w-24 font-bold text-slate-500 pt-1">Phase 2<br><span class="text-sm font-normal">Day 31-60</span></div>
+                    <div class="border-l-2 border-slate-300 pl-6 pb-2">
+                        <h4 class="font-bold text-lg">Expansion (확장)</h4>
+                        <p class="text-sm text-slate-600">추가 5-10명. 챔피언과의 페어 프로그래밍. 새로운 기능의 50%에 SDD 적용.</p>
+                    </div>
+                </div>
+                <div class="flex">
+                    <div class="flex-shrink-0 w-24 font-bold text-slate-500 pt-1">Phase 3<br><span class="text-sm font-normal">Day 61-90</span></div>
+                    <div class="border-l-2 border-slate-300 pl-6 pb-2">
+                        <h4 class="font-bold text-lg">Org-Wide (전사 도입)</h4>
+                        <p class="text-sm text-slate-600">모든 엔지니어링 팀. 기능의 80% 이상 SDD 적용. DORA 지표 개선 확인.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-10 mt-12 text-center">
+        <p>© 2025 Generated Guide based on Enterprise Implementation Guide.</p>
+        <p class="text-sm mt-2">사양은 모호한 지시보다 AI 성능을 극적으로 향상시킵니다.</p>
+    </footer>
+
+</body>
+</html>
