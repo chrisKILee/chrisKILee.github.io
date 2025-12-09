@@ -117,14 +117,15 @@
             font-weight: 500;
         }
 
-        .folder-view-btn {
+        .copy-link-btn {
             background: rgba(255, 255, 255, 0.9);
             color: #667eea;
-            padding: 8px 20px;
+            padding: 8px 16px;
             border-radius: 10px;
             font-size: 0.85rem;
             font-weight: 600;
-            text-decoration: none;
+            border: none;
+            cursor: pointer;
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
@@ -132,10 +133,14 @@
             margin-left: 10px;
         }
 
-        .folder-view-btn:hover {
+        .copy-link-btn:hover {
             background: white;
-            transform: translateX(5px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .copy-link-btn.copied {
+            background: #10b981;
+            color: white;
         }
 
 
@@ -371,6 +376,13 @@
         const GITHUB_PATH = 'gemini_html';
         const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
 
+        // Hash folder mappings
+        const HASH_MAPPINGS = {
+            '01_rnd': 'AED13WE',
+            '02_work': 'BF7K2M9',
+            '03_travel': 'C8PQ4X1'
+        };
+
         // File type icons
         const FILE_ICONS = {
             'html': '📄',
@@ -468,6 +480,31 @@
             `;
         }
 
+        // Copy folder link to clipboard
+        async function copyFolderLink(folderName) {
+            const hash = HASH_MAPPINGS[folderName];
+            if (!hash) return;
+
+            const url = `${window.location.origin}/gemini_html/${hash}/`;
+
+            try {
+                await navigator.clipboard.writeText(url);
+
+                // Visual feedback
+                const btn = event.target.closest('.copy-link-btn');
+                const originalText = btn.innerHTML;
+                btn.classList.add('copied');
+                btn.innerHTML = '✓ Copied!';
+
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        }
+
         // Create folder section HTML
         async function createFolderSection(folderName, files) {
             // Load custom display names and order
@@ -481,13 +518,17 @@
 
             const fileCards = sortedFiles.map(file => createFileCard(file, folderName, config)).join('');
 
+            // Get hash for this folder
+            const hash = HASH_MAPPINGS[folderName];
+            const copyButton = hash ? `<button class="copy-link-btn" onclick="copyFolderLink('${folderName}')">📋 Copy Link</button>` : '';
+
             return `
                 <div class="folder-section" data-folder="${folderName}">
                     <div class="folder-header">
                         <span class="folder-icon">📂</span>
                         <h2>${displayFolderName}</h2>
                         <span class="folder-count">${files.length} files</span>
-                        <a href="${folderName}/index.html" class="folder-view-btn">View Folder →</a>
+                        ${copyButton}
                     </div>
                     <div class="file-grid">
                         ${fileCards}
@@ -509,8 +550,11 @@
                 // Fetch main directory
                 const mainContents = await fetchFolderContents(GITHUB_API);
 
-                // Filter only directories (automatically includes any new folders)
-                const folders = mainContents.filter(item => item.type === 'dir');
+                // Filter only directories, exclude hash folders
+                const folders = mainContents.filter(item =>
+                    item.type === 'dir' &&
+                    !['GDEDSE', 'AED13WE', 'BF7K2M9', 'C8PQ4X1'].includes(item.name)
+                );
 
                 // Fetch contents of each folder
                 const folderData = await Promise.all(
