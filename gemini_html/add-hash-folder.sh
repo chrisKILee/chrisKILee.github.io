@@ -1,22 +1,23 @@
 #!/bin/bash
 
-# Hash Folder Generator Script
-# Usage: ./add-hash-folder.sh <folder_name> <title> <hash> [gradient]
+# Hash Folder Generator Script (Updated for Hash Routing)
+# Usage: ./add-hash-folder.sh <folder_name> <title> <emoji> <hash> [gradient]
 #
-# Example: ./add-hash-folder.sh 04_projects "🚀 Projects" "PRJ8X2Y"
+# Example: ./add-hash-folder.sh 04_projects "Projects" "🚀" "PRJ8X2Y"
 
 set -e
 
 # Check arguments
-if [ $# -lt 3 ]; then
-    echo "Usage: $0 <folder_name> <title> <hash> [gradient]"
+if [ $# -lt 4 ]; then
+    echo "Usage: $0 <folder_name> <title> <emoji> <hash> [gradient]"
     echo ""
     echo "Example:"
-    echo "  $0 04_projects \"🚀 Projects\" \"PRJ8X2Y\""
+    echo "  $0 04_projects \"Projects\" \"🚀\" \"PRJ8X2Y\""
     echo ""
     echo "Arguments:"
     echo "  folder_name  - Folder name (e.g., 04_projects)"
-    echo "  title        - Display title (e.g., \"🚀 Projects\")"
+    echo "  title        - Display title (e.g., \"Projects\")"
+    echo "  emoji        - Emoji icon (e.g., \"🚀\")"
     echo "  hash         - 7-character hash code (e.g., PRJ8X2Y)"
     echo "  gradient     - Optional CSS gradient (default: purple)"
     exit 1
@@ -24,14 +25,15 @@ fi
 
 FOLDER_NAME=$1
 TITLE=$2
-HASH=$3
-GRADIENT=${4:-"linear-gradient(135deg, #667eea 0%, #764ba2 100%)"}
+EMOJI=$3
+HASH=$4
+GRADIENT=${5:-"linear-gradient(135deg, #667eea 0%, #764ba2 100%)"}
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GEMINI_HTML_DIR="$SCRIPT_DIR"
 
 echo "🚀 Creating hash folder for: $FOLDER_NAME"
-echo "   Title: $TITLE"
+echo "   Title: $EMOJI $TITLE"
 echo "   Hash: $HASH"
 echo ""
 
@@ -43,12 +45,12 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo "{}" > "$CONFIG_FILE"
 fi
 
-# Add new entry to config (using jq if available, otherwise manual)
+# Add new entry to config (using jq if available)
 if command -v jq &> /dev/null; then
     TEMP_FILE=$(mktemp)
     jq --arg folder "$FOLDER_NAME" \
        --arg hash "$HASH" \
-       --arg title "$TITLE" \
+       --arg title "$EMOJI $TITLE" \
        --arg desc "Description for $TITLE" \
        --arg gradient "$GRADIENT" \
        '.[$folder] = {
@@ -63,7 +65,7 @@ else
     echo "   ⚠ jq not found, please manually add to hash_config.json:"
     echo "   \"$FOLDER_NAME\": {"
     echo "     \"hash\": \"$HASH\","
-    echo "     \"title\": \"$TITLE\","
+    echo "     \"title\": \"$EMOJI $TITLE\","
     echo "     \"description\": \"Description\","
     echo "     \"gradient\": \"$GRADIENT\""
     echo "   }"
@@ -81,7 +83,7 @@ else
     echo "   ✓ Folder created"
 fi
 
-# Step 3: Copy template from existing hash folder
+# Step 3: Copy template from AED13WE
 echo ""
 echo "📋 Copying template from AED13WE..."
 cp "$GEMINI_HTML_DIR/AED13WE/index.html" "$HASH_DIR/index.html"
@@ -93,30 +95,30 @@ echo "✏️  Updating index.html..."
 INDEX_FILE="$HASH_DIR/index.html"
 
 # Replace title
-sed -i "s|<h1>🔬 R&D</h1>|<h1>$TITLE</h1>|g" "$INDEX_FILE"
-sed -i "s|Research & Development Projects|${TITLE#* } Content|g" "$INDEX_FILE"
+sed -i "s|<title>🔬 R&D - Research & Development</title>|<title>$EMOJI $TITLE</title>|g" "$INDEX_FILE"
+
+# Replace header
+sed -i "s|<h1>🔬 R&D</h1>|<h1>$EMOJI $TITLE</h1>|g" "$INDEX_FILE"
+sed -i "s|<p>Research & Development Projects</p>|<p>$TITLE Content</p>|g" "$INDEX_FILE"
+
+# Replace gradient
+sed -i "s|background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);|background: $GRADIENT;|g" "$INDEX_FILE"
 
 # Replace API path
-sed -i "s|gemini_html/01_rnd|gemini_html/$FOLDER_NAME|g" "$INDEX_FILE"
+sed -i "s|const GITHUB_PATH = 'gemini_html/01_rnd';|const GITHUB_PATH = 'gemini_html/$FOLDER_NAME';|g" "$INDEX_FILE"
 
-# Replace file paths
-sed -i "s|../01_rnd/|../$FOLDER_NAME/|g" "$INDEX_FILE"
+# Replace config path
+sed -i "s|fetch('../01_rnd/files.json')|fetch('../$FOLDER_NAME/files.json')|g" "$INDEX_FILE"
 
-# Replace gradient if not default
-if [ "$GRADIENT" != "linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%)" ]; then
-    sed -i "s|linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%)|$GRADIENT|g" "$INDEX_FILE"
-fi
+# Replace file content path
+sed -i "s|fetch(\`../01_rnd/\${filename}\`)|fetch(\`../$FOLDER_NAME/\${filename}\`)|g" "$INDEX_FILE"
 
 echo "   ✓ index.html updated"
 
-# Step 5: Update GDEDSE/index.html hash mappings
+# Step 5: Remind to update GDEDSE
 echo ""
-echo "🔄 Updating GDEDSE hash mappings..."
-GDEDSE_FILE="$GEMINI_HTML_DIR/GDEDSE/index.html"
-
-# Find the HASH_MAPPINGS section and add new entry
-# This is a simple append - you may need to manually verify
-echo "   ⚠ Please manually verify GDEDSE/index.html HASH_MAPPINGS includes:"
+echo "🔄 Next: Update GDEDSE/index.html"
+echo "   ⚠ Please manually add to GDEDSE/index.html HASH_MAPPINGS:"
 echo "   '$FOLDER_NAME': '$HASH',"
 
 echo ""
@@ -126,7 +128,9 @@ echo "📌 Next steps:"
 echo "   1. Verify hash_config.json has correct entry"
 echo "   2. Update GDEDSE/index.html HASH_MAPPINGS to include:"
 echo "      '$FOLDER_NAME': '$HASH',"
-echo "   3. Test the new hash URL:"
+echo "   3. Create the original folder: $FOLDER_NAME/"
+echo "   4. Add HTML files to $FOLDER_NAME/"
+echo "   5. Test the new hash URL:"
 echo "      https://chriskilee.github.io/gemini_html/$HASH/"
 echo ""
 echo "🔗 Share this link to give access to $FOLDER_NAME only!"

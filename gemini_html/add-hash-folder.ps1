@@ -1,5 +1,5 @@
-# Hash Folder Generator Script (PowerShell)
-# Usage: .\add-hash-folder.ps1 -FolderName "04_projects" -Title "🚀 Projects" -Hash "PRJ8X2Y"
+# Hash Folder Generator Script (PowerShell) - Updated for Hash Routing
+# Usage: .\add-hash-folder.ps1 -FolderName "04_projects" -Title "Projects" -Emoji "🚀" -Hash "PRJ8X2Y"
 
 param(
     [Parameter(Mandatory=$true)]
@@ -7,6 +7,9 @@ param(
     
     [Parameter(Mandatory=$true)]
     [string]$Title,
+    
+    [Parameter(Mandatory=$true)]
+    [string]$Emoji,
     
     [Parameter(Mandatory=$true)]
     [string]$Hash,
@@ -18,7 +21,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 Write-Host "🚀 Creating hash folder for: $FolderName" -ForegroundColor Cyan
-Write-Host "   Title: $Title"
+Write-Host "   Title: $Emoji $Title"
 Write-Host "   Hash: $Hash"
 Write-Host ""
 
@@ -36,7 +39,7 @@ if (-not (Test-Path $ConfigFile)) {
 $config = Get-Content $ConfigFile -Raw | ConvertFrom-Json
 $newEntry = @{
     hash = $Hash
-    title = $Title
+    title = "$Emoji $Title"
     description = "Description for $Title"
     gradient = $Gradient
 }
@@ -73,19 +76,23 @@ Write-Host "✏️  Updating index.html..." -ForegroundColor Yellow
 $content = Get-Content $IndexFile -Raw -Encoding UTF8
 
 # Replace title
-$content = $content -replace '<h1>🔬 R&D</h1>', "<h1>$Title</h1>"
-$content = $content -replace 'Research & Development Projects', "$($Title -replace '^\S+\s+', '') Content"
+$content = $content -replace '<title>🔬 R&D - Research & Development</title>', "<title>$Emoji $Title</title>"
+
+# Replace header
+$content = $content -replace '<h1>🔬 R&D</h1>', "<h1>$Emoji $Title</h1>"
+$content = $content -replace '<p>Research & Development Projects</p>', "<p>$Title Content</p>"
+
+# Replace gradient
+$content = $content -replace 'background: linear-gradient\(135deg, #00d2ff 0%, #3a7bd5 100%\);', "background: $Gradient;"
 
 # Replace API path
-$content = $content -replace 'gemini_html/01_rnd', "gemini_html/$FolderName"
+$content = $content -replace "const GITHUB_PATH = 'gemini_html/01_rnd';", "const GITHUB_PATH = 'gemini_html/$FolderName';"
 
-# Replace file paths
-$content = $content -replace '\.\./01_rnd/', "../$FolderName/"
+# Replace config path
+$content = $content -replace "fetch\('\.\./01_rnd/files\.json'\)", "fetch('../$FolderName/files.json')"
 
-# Replace gradient if not default
-if ($Gradient -ne "linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%)") {
-    $content = $content -replace 'linear-gradient\(135deg, #00d2ff 0%, #3a7bd5 100%\)', $Gradient
-}
+# Replace file content path
+$content = $content -replace "fetch\(`\.\./01_rnd/\$\{filename\}`\)", "fetch(``../$FolderName/`${filename}``)"
 
 $content | Out-File -FilePath $IndexFile -Encoding UTF8 -NoNewline
 
@@ -93,8 +100,8 @@ Write-Host "   ✓ index.html updated" -ForegroundColor Green
 
 # Step 5: Reminder for GDEDSE
 Write-Host ""
-Write-Host "🔄 Updating GDEDSE hash mappings..." -ForegroundColor Yellow
-Write-Host "   ⚠ Please manually verify GDEDSE/index.html HASH_MAPPINGS includes:" -ForegroundColor Yellow
+Write-Host "🔄 Next: Update GDEDSE/index.html" -ForegroundColor Yellow
+Write-Host "   ⚠ Please manually add to GDEDSE/index.html HASH_MAPPINGS:" -ForegroundColor Yellow
 Write-Host "   '$FolderName': '$Hash',"
 
 Write-Host ""
@@ -104,7 +111,9 @@ Write-Host "📌 Next steps:" -ForegroundColor Cyan
 Write-Host "   1. Verify hash_config.json has correct entry"
 Write-Host "   2. Update GDEDSE/index.html HASH_MAPPINGS to include:"
 Write-Host "      '$FolderName': '$Hash',"
-Write-Host "   3. Test the new hash URL:"
+Write-Host "   3. Create the original folder: $FolderName/"
+Write-Host "   4. Add HTML files to $FolderName/"
+Write-Host "   5. Test the new hash URL:"
 Write-Host "      https://chriskilee.github.io/gemini_html/$Hash/"
 Write-Host ""
 Write-Host "🔗 Share this link to give access to $FolderName only!" -ForegroundColor Green
