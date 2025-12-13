@@ -233,6 +233,10 @@
                     <i data-lucide="shield" class="w-3 h-3"></i>
                     <span>PROTOCOL: V.1.0</span>
                 </div>
+                <button onclick="setApiKey()"
+                    class="text-xs border border-cyber-primary text-cyber-primary px-3 py-1 hover:bg-cyber-primary hover:text-black transition-all duration-300">
+                    CONFIG_AUTH
+                </button>
             </div>
         </div>
     </header>
@@ -533,68 +537,91 @@
     </script>
     <script>
         // Separate script for global functions to ensure they are accessible
-        async function generateResearch() {
-            // ... existing logic ...
+
+        // ------------------------------------------------------------------
+        // SECURE API KEY MANAGEMENT
+        // ------------------------------------------------------------------
+        window.setApiKey = function () {
+            const currentKey = localStorage.getItem('gemini_api_key') || "";
+            const newKey = prompt("ENTER_ACCESS_TOKEN (SECURE_STORAGE):", currentKey);
+            if (newKey !== null) {
+                localStorage.setItem('gemini_api_key', newKey);
+                alert("IDENTITY_VERIFIED. TOKEN_STORED.");
+                location.reload();
+            }
+        };
+
+        window.generateResearch = async function () {
+            let apiKey = localStorage.getItem('gemini_api_key') || "";
+
+            if (!apiKey) {
+                const conf = confirm("ACCESS_DENIED: MISSING_CREDENTIALS. CONFIGURE NOW?");
+                if (conf) {
+                    window.setApiKey();
+                    return;
+                } else {
+                    alert("OPERATION_ABORTED.");
+                    return;
+                }
+            }
+
+            const domain = document.getElementById('domainSelect').value;
+            const focus = document.getElementById('focusPoint').value || "General Overview";
+            const output = document.getElementById('research-output');
+            const loader = document.getElementById('scan-loader');
+
+            loader.classList.remove('hidden');
+            output.innerHTML = `
+            <div class="text-cyber-primary font-mono text-sm leading-6">
+                > INITIALIZING NEURAL LINK...<br>
+                > SCANNING REPOSITORIES...<br>
+                > ANALYZING ${domain.toUpperCase()} CONTEXT...<br>
+                > GENERATING INSIGHTS...
+                <span class="inline-block w-2 h-4 bg-cyber-primary animate-pulse ml-1"></span>
+            </div>
+            `;
+
+            const prompt = `
+            Role: Cyberpunk Tech Analyst.
+            Task: Analyze the 'Model Context Protocol (MCP)' for the ${domain} domain.
+            Focus: ${focus}.
+            Format: Markdown. Use bullet points. Keep it technical and concise.
+            Style: professional yet futuristic.
+            Contents:
+            1. 🛑 Pain Points (Current Systems)
+            2. ⚡ MCP Solution (The Fix)
+            3. 🔮 Strategic Impact (Future)
+            `;
+
+            try {
+                // Using flash-preview as per original code
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                if (!response.ok) throw new Error(`HTTP_ERROR: ${response.status}`);
+
+                const data = await response.json();
+                const rawText = data.candidates[0].content.parts[0].text;
+
+                // Markdown Parse
+                output.innerHTML = marked.parse(rawText);
+
+                // Add Cyberpunk Styling to Markup
+                output.querySelectorAll('h3').forEach(el => el.className = 'text-cyber-primary font-bold text-lg mt-4 mb-2 mono-font border-b border-cyber-primary/30 pb-1 inline-block');
+                output.querySelectorAll('ul').forEach(el => el.className = 'list-disc pl-5 space-y-1 text-cyber-text');
+                output.querySelectorAll('strong').forEach(el => el.className = 'text-cyber-secondary font-bold');
+
+            } catch (error) {
+                console.error(error);
+                output.innerHTML = `<span class="text-cyber-accent">ERROR: CONNECTION LOST >> ${error.message}</span>`;
+            } finally {
+                loader.classList.add('hidden');
+            }
         }
-    </script>
-    async function generateResearch() {
-    if (!apiKey) { alert("API Key Required"); return; }
-
-    const domain = document.getElementById('domainSelect').value;
-    const focus = document.getElementById('focusPoint').value || "General Overview";
-    const output = document.getElementById('research-output');
-    const loader = document.getElementById('scan-loader');
-
-    loader.classList.remove('hidden');
-    output.innerHTML = `
-    <div class="text-cyber-primary font-mono text-sm leading-6">
-        > INITIALIZING NEURAL LINK...<br>
-        > SCANNING REPOSITORIES...<br>
-        > ANALYZING ${domain.toUpperCase()} CONTEXT...<br>
-        > GENERATING INSIGHTS...
-        <span class="inline-block w-2 h-4 bg-cyber-primary animate-pulse ml-1"></span>
-    </div>
-    `;
-
-    const prompt = `
-    Role: Cyberpunk Tech Analyst.
-    Task: Analyze the 'Model Context Protocol (MCP)' for the ${domain} domain.
-    Focus: ${focus}.
-    Format: Markdown. Use bullet points. Keep it technical and concise.
-    Style: professional yet futuristic.
-    Contents:
-    1. 🛑 Pain Points (Current Systems)
-    2. ⚡ MCP Solution (The Fix)
-    3. 🔮 Strategic Impact (Future)
-    `;
-
-    try {
-    const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-    const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-    });
-
-    const data = await response.json();
-    const rawText = data.candidates[0].content.parts[0].text;
-
-    // Markdown Parse
-    output.innerHTML = marked.parse(rawText);
-
-    // Add Cyberpunk Styling to Markup
-    output.querySelectorAll('h3').forEach(el => el.className = 'text-cyber-primary font-bold text-lg mt-4 mb-2 mono-font
-    border-b border-cyber-primary/30 pb-1 inline-block');
-    output.querySelectorAll('ul').forEach(el => el.className = 'list-disc pl-5 space-y-1 text-cyber-text');
-    output.querySelectorAll('strong').forEach(el => el.className = 'text-cyber-secondary font-bold');
-
-    } catch (error) {
-    output.innerHTML = `<span class="text-cyber-accent">ERROR: CONNECTION LOST >> ${error.message}</span>`;
-    } finally {
-    loader.classList.add('hidden');
-    }
-    }
     </script>
 
     <style>
