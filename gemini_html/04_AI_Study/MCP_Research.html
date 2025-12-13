@@ -11,7 +11,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap"
         rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <script>
         tailwind.config = {
@@ -426,155 +426,175 @@
     </footer>
 
     <script>
-        lucide.createIcons();
-        const apiKey = ""; // Runtime Environment
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Icons
+            if (window.lucide) {
+                lucide.createIcons();
+            }
 
-        // ------------------------------------------------------------------
-        // CHART CONFIG (Cyberpunk Theme)
-        // ------------------------------------------------------------------
-        Chart.defaults.color = '#94a3b8';
-        Chart.defaults.borderColor = 'rgba(0, 240, 255, 0.1)';
-        Chart.defaults.font.family = 'JetBrains Mono';
+            const apiKey = ""; // Runtime Environment
 
-        // 1. Capability Radar
-        new Chart(document.getElementById('capabilityRadar'), {
-            type: 'radar',
-            data: {
-                labels: ['Context', 'Speed', 'Security', 'Flexibility', 'Integration'],
-                datasets: [{
-                    label: 'MCP Standard',
-                    data: [90, 85, 95, 80, 88],
-                    backgroundColor: 'rgba(0, 240, 255, 0.2)',
-                    borderColor: '#00f0ff',
-                    pointBackgroundColor: '#fff',
-                    pointBorderColor: '#00f0ff'
-                }, {
-                    label: 'Legacy API',
-                    data: [40, 60, 70, 45, 50],
-                    backgroundColor: 'rgba(148, 163, 184, 0.2)',
-                    borderColor: '#94a3b8',
-                    borderDash: [5, 5]
-                }]
-            },
-            options: {
-                scales: {
-                    r: {
-                        grid: { color: 'rgba(0, 240, 255, 0.1)' },
-                        angleLines: { color: 'rgba(0, 240, 255, 0.1)' },
-                        pointLabels: { color: '#e0e6ed', font: { size: 10 } }
+            // ------------------------------------------------------------------
+            // CHART CONFIG (Cyberpunk Theme)
+            // ------------------------------------------------------------------
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.borderColor = 'rgba(0, 240, 255, 0.1)';
+            Chart.defaults.font.family = 'JetBrains Mono';
+
+            // 1. Capability Radar
+            const ctxCapability = document.getElementById('capabilityRadar');
+            if (ctxCapability) {
+                new Chart(ctxCapability.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: ['Context', 'Speed', 'Security', 'Flexibility', 'Integration'],
+                        datasets: [{
+                            label: 'MCP Standard',
+                            data: [90, 85, 95, 80, 88],
+                            backgroundColor: 'rgba(0, 240, 255, 0.2)',
+                            borderColor: '#00f0ff',
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#00f0ff'
+                        }, {
+                            label: 'Legacy API',
+                            data: [40, 60, 70, 45, 50],
+                            backgroundColor: 'rgba(148, 163, 184, 0.2)',
+                            borderColor: '#94a3b8',
+                            borderDash: [5, 5]
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                grid: { color: 'rgba(0, 240, 255, 0.1)' },
+                                angleLines: { color: 'rgba(0, 240, 255, 0.1)' },
+                                pointLabels: { color: '#e0e6ed', font: { size: 10 } }
+                            }
+                        },
+                        plugins: { legend: { labels: { color: '#e0e6ed' } } }
                     }
-                },
-                plugins: { legend: { labels: { color: '#e0e6ed' } } }
-            }
-        });
-
-        // 2. Growth Chart (Line)
-        new Chart(document.getElementById('growthChart'), {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Active Users',
-                    data: [120, 190, 300, 500, 800, 1200],
-                    borderColor: '#00f0ff',
-                    backgroundColor: 'rgba(0, 240, 255, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }, {
-                    label: 'Integrations',
-                    data: [10, 25, 45, 80, 150, 300],
-                    borderColor: '#7000ff',
-                    backgroundColor: 'rgba(112, 0, 255, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                scales: {
-                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)' } },
-                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' } }
-                }
-            }
-        });
-
-        // 3. Server Types (Doughnut)
-        new Chart(document.getElementById('serverDoughnut'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Database', 'Tools', 'Knowledge', 'Other'],
-                datasets: [{
-                    data: [45, 30, 20, 5],
-                    backgroundColor: ['#00f0ff', '#7000ff', '#00ff9f', '#ff003c'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                cutout: '75%',
-                plugins: { legend: { display: false } }
-            }
-        });
-
-        // ------------------------------------------------------------------
-        // AI LOGIC
-        // ------------------------------------------------------------------
-        async function generateResearch() {
-            if (!apiKey) { alert("API Key Required"); return; }
-
-            const domain = document.getElementById('domainSelect').value;
-            const focus = document.getElementById('focusPoint').value || "General Overview";
-            const output = document.getElementById('research-output');
-            const loader = document.getElementById('scan-loader');
-
-            loader.classList.remove('hidden');
-            output.innerHTML = `
-                <div class="text-cyber-primary font-mono text-sm leading-6">
-                    > INITIALIZING NEURAL LINK...<br>
-                    > SCANNING REPOSITORIES...<br>
-                    > ANALYZING ${domain.toUpperCase()} CONTEXT...<br>
-                    > GENERATING INSIGHTS...
-                    <span class="inline-block w-2 h-4 bg-cyber-primary animate-pulse ml-1"></span>
-                </div>
-            `;
-
-            const prompt = `
-            Role: Cyberpunk Tech Analyst.
-            Task: Analyze the 'Model Context Protocol (MCP)' for the ${domain} domain.
-            Focus: ${focus}.
-            Format: Markdown. Use bullet points. Keep it technical and concise.
-            Style: professional yet futuristic.
-            Contents:
-            1. 🛑 Pain Points (Current Systems)
-            2. ⚡ MCP Solution (The Fix)
-            3. 🔮 Strategic Impact (Future)
-            `;
-
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
-
-                const data = await response.json();
-                const rawText = data.candidates[0].content.parts[0].text;
-
-                // Markdown Parse
-                output.innerHTML = marked.parse(rawText);
-
-                // Add Cyberpunk Styling to Markup
-                output.querySelectorAll('h3').forEach(el => el.className = 'text-cyber-primary font-bold text-lg mt-4 mb-2 mono-font border-b border-cyber-primary/30 pb-1 inline-block');
-                output.querySelectorAll('ul').forEach(el => el.className = 'list-disc pl-5 space-y-1 text-cyber-text');
-                output.querySelectorAll('strong').forEach(el => el.className = 'text-cyber-secondary font-bold');
-
-            } catch (error) {
-                output.innerHTML = `<span class="text-cyber-accent">ERROR: CONNECTION LOST >> ${error.message}</span>`;
-            } finally {
-                loader.classList.add('hidden');
             }
+
+            // 2. Growth Chart (Line)
+            const ctxGrowth = document.getElementById('growthChart');
+            if (ctxGrowth) {
+                new Chart(ctxGrowth.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Active Users',
+                            data: [120, 190, 300, 500, 800, 1200],
+                            borderColor: '#00f0ff',
+                            backgroundColor: 'rgba(0, 240, 255, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Integrations',
+                            data: [10, 25, 45, 80, 150, 300],
+                            borderColor: '#7000ff',
+                            backgroundColor: 'rgba(112, 0, 255, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: {
+                            x: { grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                            y: { grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+                        }
+                    }
+                });
+            }
+
+            // 3. Server Types (Doughnut)
+            const ctxServer = document.getElementById('serverDoughnut');
+            if (ctxServer) {
+                new Chart(ctxServer.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Database', 'Tools', 'Knowledge', 'Other'],
+                        datasets: [{
+                            data: [45, 30, 20, 5],
+                            backgroundColor: ['#00f0ff', '#7000ff', '#00ff9f', '#ff003c'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        cutout: '75%',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        });
+    </script>
+    <script>
+        // Separate script for global functions to ensure they are accessible
+        async function generateResearch() {
+            // ... existing logic ...
         }
+    </script>
+    async function generateResearch() {
+    if (!apiKey) { alert("API Key Required"); return; }
+
+    const domain = document.getElementById('domainSelect').value;
+    const focus = document.getElementById('focusPoint').value || "General Overview";
+    const output = document.getElementById('research-output');
+    const loader = document.getElementById('scan-loader');
+
+    loader.classList.remove('hidden');
+    output.innerHTML = `
+    <div class="text-cyber-primary font-mono text-sm leading-6">
+        > INITIALIZING NEURAL LINK...<br>
+        > SCANNING REPOSITORIES...<br>
+        > ANALYZING ${domain.toUpperCase()} CONTEXT...<br>
+        > GENERATING INSIGHTS...
+        <span class="inline-block w-2 h-4 bg-cyber-primary animate-pulse ml-1"></span>
+    </div>
+    `;
+
+    const prompt = `
+    Role: Cyberpunk Tech Analyst.
+    Task: Analyze the 'Model Context Protocol (MCP)' for the ${domain} domain.
+    Focus: ${focus}.
+    Format: Markdown. Use bullet points. Keep it technical and concise.
+    Style: professional yet futuristic.
+    Contents:
+    1. 🛑 Pain Points (Current Systems)
+    2. ⚡ MCP Solution (The Fix)
+    3. 🔮 Strategic Impact (Future)
+    `;
+
+    try {
+    const url =
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+    const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+
+    const data = await response.json();
+    const rawText = data.candidates[0].content.parts[0].text;
+
+    // Markdown Parse
+    output.innerHTML = marked.parse(rawText);
+
+    // Add Cyberpunk Styling to Markup
+    output.querySelectorAll('h3').forEach(el => el.className = 'text-cyber-primary font-bold text-lg mt-4 mb-2 mono-font
+    border-b border-cyber-primary/30 pb-1 inline-block');
+    output.querySelectorAll('ul').forEach(el => el.className = 'list-disc pl-5 space-y-1 text-cyber-text');
+    output.querySelectorAll('strong').forEach(el => el.className = 'text-cyber-secondary font-bold');
+
+    } catch (error) {
+    output.innerHTML = `<span class="text-cyber-accent">ERROR: CONNECTION LOST >> ${error.message}</span>`;
+    } finally {
+    loader.classList.add('hidden');
+    }
+    }
     </script>
 
     <style>
