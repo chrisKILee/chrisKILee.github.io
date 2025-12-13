@@ -4,436 +4,463 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCP 완전 정복: Anti Gravity, Cursor & Gemini</title>
+    <title>MCP Technical Documentation: Protocol Specification</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap"
         rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        blueprint: {
+                            bg: '#0f172a',      /* Slate 900 */
+                            grid: '#1e293b',    /* Slate 800 */
+                            line: '#334155',    /* Slate 700 */
+                            primary: '#38bdf8', /* Sky 400 */
+                            accent: '#fbbf24',  /* Amber 400 - Warning/Attention */
+                            text: '#cbd5e1',    /* Slate 300 */
+                            dim: '#64748b'      /* Slate 500 */
+                        }
+                    },
+                    backgroundImage: {
+                        'technical-grid': "radial-gradient(#334155 1px, transparent 1px)"
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
+        /* CSS Reset & Defaults (Visibility Safety) */
         body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #0f172a;
-            /* Slate 900 */
-            color: #e2e8f0;
-            /* Slate 200 */
+            background-color: #0f172a !important;
+            color: #cbd5e1 !important;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        /* 차트 컨테이너 스타일 (요구사항 준수) */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            color: #fff !important;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        /* Blueprint Grid Background */
+        .blueprint-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image:
+                linear-gradient(rgba(51, 65, 85, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(51, 65, 85, 0.3) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .blueprint-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.8) 20%, #0f172a 100%);
+        }
+
+        /* Technical Components */
+        .tech-box {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #1e293b;
+            position: relative;
+        }
+
+        /* Corner Makers */
+        .tech-corner::before,
+        .tech-corner::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tech-corner::before {
+            top: -1px;
+            left: -1px;
+            border-top: 1px solid #38bdf8;
+            border-left: 1px solid #38bdf8;
+        }
+
+        .tech-corner::after {
+            bottom: -1px;
+            right: -1px;
+            border-bottom: 1px solid #38bdf8;
+            border-right: 1px solid #38bdf8;
+        }
+
+        /* Warning Scale Strip */
+        .warning-stripe {
+            background: repeating-linear-gradient(45deg,
+                    #fbbf24,
+                    #fbbf24 10px,
+                    #000 10px,
+                    #000 20px);
+            height: 4px;
+            width: 100%;
+        }
+
+        /* Chart Container */
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 350px;
-            max-height: 400px;
+            height: 300px;
         }
 
-        /* 색상 팔레트: "Vibrant Cyber" (선명하고 생동감 있는 컬러) */
-        .bg-primary {
-            background-color: #4f46e5;
+        /* Code Block */
+        .code-block {
+            background: #000;
+            border: 1px solid #334155;
+            padding: 1rem;
+            color: #a5b4fc;
+            font-size: 0.85rem;
+            overflow-x: auto;
         }
 
-        /* Indigo 600 */
-        .bg-secondary {
-            background-color: #0ea5e9;
-        }
-
-        /* Sky 500 */
-        .bg-accent {
-            background-color: #d946ef;
-        }
-
-        /* Fuchsia 500 */
-        .bg-dark {
-            background-color: #1e293b;
-        }
-
-        /* Slate 800 */
-
-        .text-primary {
-            color: #818cf8;
-        }
-
-        .text-secondary {
-            color: #38bdf8;
-        }
-
-        .text-accent {
-            color: #e879f9;
-        }
-
-        /* 카드 호버 효과 */
-        .hover-card:hover {
-            transform: translateY(-5px);
-            transition: transform 0.3s ease;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        /* Hover Effects */
+        .tech-hover:hover {
+            border-color: #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
         }
     </style>
 </head>
 
-<body class="overflow-x-hidden">
+<body>
+    <!-- Background Grid -->
+    <div class="blueprint-bg"></div>
 
-    <!-- 헤더 섹션 -->
-    <header
-        class="bg-gradient-to-r from-indigo-900 to-slate-900 border-b border-indigo-500/30 p-8 text-center relative overflow-hidden">
-        <div
-            class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/circuit-board.png')]">
-        </div>
-        <div class="relative z-10 max-w-4xl mx-auto">
-            <span
-                class="inline-block py-1 px-3 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold tracking-wider mb-4 uppercase">AI
-                개발 프로토콜 가이드</span>
-            <h1
-                class="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-indigo-400 to-fuchsia-400 mb-4 leading-tight">
-                Anti Gravity, Cursor & Gemini<br>MCP 완전 정복
-            </h1>
-            <p class="text-lg text-slate-400 font-light max-w-2xl mx-auto">
-                <strong class="text-sky-300">Model Context Protocol (MCP)</strong> 활용법: AI IDE와 내 로컬 데이터, 도구를 연결하는 완벽
-                가이드
-            </p>
+    <!-- Header -->
+    <header class="border-b border-slate-700 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i data-lucide="network" class="text-blueprint-primary w-6 h-6"></i>
+                <div>
+                    <h1 class="text-lg leading-none">MCP_PROTOCOL_SPEC</h1>
+                    <span class="text-[10px] text-blueprint-dim uppercase tracking-widest">Version 1.0 // Auth:
+                        Gemini</span>
+                </div>
+            </div>
+
+            <div class="hidden md:flex gap-8 text-[10px] uppercase tracking-widest text-blueprint-dim">
+                <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                    System: Online
+                </div>
+                <div>SecLevel: High</div>
+                <div>Ref: Doc#8821</div>
+            </div>
         </div>
     </header>
 
-    <!-- 메인 콘텐츠 그리드 -->
-    <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-12 gap-8">
+    <main class="max-w-7xl mx-auto px-6 py-12 space-y-12">
 
-        <!-- 섹션 1: MCP란 무엇인가? (정보 전달) -->
-        <section class="md:col-span-12 mb-4">
-            <div class="bg-dark rounded-xl shadow-lg border border-slate-700 p-8 hover-card">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                    <div>
-                        <h2 class="text-2xl font-bold text-white mb-4">AI 컨텍스트를 위한 "USB-C"</h2>
-                        <p class="text-slate-300 mb-4 leading-relaxed">
-                            <strong>Model Context Protocol (MCP)</strong>는 Anti Gravity나 Cursor 같은 IDE 내부의 AI 모델(Gemini
-                            등)이 사용자의 로컬 시스템과 소통하기 위한 표준 규약입니다.
-                        </p>
-                        <p class="text-slate-300 leading-relaxed">
-                            채팅창에 코드를 일일이 복사해 붙여넣는 대신, MCP는 AI에게 파일 읽기, DB 조회(Postgres), API 호출(GitHub) 등의 권한을 안전하게
-                            부여합니다.
-                        </p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-slate-700/50 p-6 rounded-lg text-center border border-indigo-500/30">
-                            <div class="text-4xl mb-2">🔌</div>
-                            <h3 class="font-bold text-indigo-300">범용성</h3>
-                            <p class="text-xs text-slate-400">모든 도구를 위한 단일 표준</p>
+        <!-- Title Section -->
+        <section class="border-l-2 border-blueprint-primary pl-6 py-2">
+            <div class="text-blueprint-primary text-xs uppercase tracking-widest mb-2 font-bold">Technical Overview
+            </div>
+            <h2 class="text-4xl md:text-5xl mb-4 text-white">
+                MODEL CONTEXT PROTOCOL<br>
+                <span class="text-slate-600">INTEGRATION GUIDE</span>
+            </h2>
+            <p class="max-w-2xl text-blueprint-text">
+                AI 모델(Gemini)과 로컬 시스템(DB, Filesystem) 간의 표준화된 데이터 교환 프로토콜(MCP)에 대한 기술 문서 및 구현 가이드입니다.
+                Anti Gravity 및 Cursor IDE 환경에서의 최적화된 설정을 다룹니다.
+            </p>
+        </section>
+
+        <!-- Section 1: Concept Architecture -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="tech-box tech-corner p-6 tech-hover">
+                <div class="flex justify-between items-start mb-6 border-b border-slate-800 pb-4">
+                    <h3 class="text-lg text-white flex items-center gap-2">
+                        <i data-lucide="cpu" class="w-5 h-5 text-blueprint-primary"></i>
+                        PROTOCOL_ARCHITECTURE
+                    </h3>
+                    <span class="text-xs text-blueprint-dim border border-blueprint-dim px-2 py-0.5 rounded">FIG.
+                        01</span>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="flex gap-4">
+                        <div
+                            class="w-12 h-12 bg-slate-800 flex items-center justify-center border border-slate-700 shrink-0">
+                            <i data-lucide="plug" class="w-6 h-6 text-white"></i>
                         </div>
-                        <div class="bg-slate-700/50 p-6 rounded-lg text-center border border-fuchsia-500/30">
-                            <div class="text-4xl mb-2">🛡️</div>
-                            <h3 class="font-bold text-fuchsia-300">보안성</h3>
-                            <p class="text-xs text-slate-400">통제 가능한 로컬 접근</p>
+                        <div>
+                            <h4 class="text-white text-sm font-bold mb-1">Universal Interface (USB-C for AI)</h4>
+                            <p class="text-xs text-blueprint-text">
+                                MCP는 AI 모델이 외부 도구와 소통하기 위한 단일 표준입니다.
+                                개별 API 연동 없이 표준화된 JSON-RPC 메시지로 파일 읽기, DB 쿼리, 코드 실행을 수행합니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div
+                            class="w-12 h-12 bg-slate-800 flex items-center justify-center border border-slate-700 shrink-0">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-blueprint-accent"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white text-sm font-bold mb-1">Security Boundary</h4>
+                            <p class="text-xs text-blueprint-text">
+                                모든 로컬 접근은 사용자의 명시적 허용 하에 이루어집니다.
+                                샌드박스 환경 내에서 실행되어 시스템 무결성을 보장합니다.
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- 섹션 2: 핵심 질문 - 프롬프트 전략 (비교) -->
-        <section class="md:col-span-12 lg:col-span-8">
-            <div class="bg-dark rounded-xl shadow-lg border border-slate-700 p-8 h-full">
-                <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-sky-500 pl-4">프롬프트 전략: 서버 이름을 써야 하나요?
-                </h2>
-                <p class="text-slate-300 mb-8">
-                    가장 많이 하는 질문: Postgres MCP 서버를 연결한 뒤, Gemini에게 <em>"Postgres MCP 서버를 써줘"</em>라고 말해야 할까요?
-                </p>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- 시나리오 A: 묵시적 -->
-                    <div class="bg-slate-900/50 rounded-lg p-6 border border-green-500/30 relative">
-                        <div
-                            class="absolute top-0 right-0 bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-bl-lg font-bold">
-                            권장 (기본)</div>
-                        <h3 class="text-lg font-bold text-white mb-2">묵시적 요청 (Implicit)</h3>
-                        <p class="text-sm text-slate-400 mb-4 italic">"이메일이 'test@example.com'인 유저를 찾아서 상태를 초기화해줘."</p>
-                        <ul class="text-sm text-slate-300 space-y-2">
-                            <li class="flex items-start"><span class="text-green-400 mr-2">✓</span> Gemini가 사용 가능한 도구를
-                                자동 스캔합니다.</li>
-                            <li class="flex items-start"><span class="text-green-400 mr-2">✓</span> IDE의 라우팅 로직이 "유저
-                                찾기"를 DB 도구와 연결합니다.</li>
-                            <li class="flex items-start"><span class="text-green-400 mr-2">✓</span> <strong>결과:</strong>
-                                기술 용어 없이 자연스럽게 실행됩니다.</li>
-                        </ul>
-                    </div>
-
-                    <!-- 시나리오 B: 명시적 -->
-                    <div class="bg-slate-900/50 rounded-lg p-6 border border-amber-500/30 relative">
-                        <div
-                            class="absolute top-0 right-0 bg-amber-500/20 text-amber-400 text-xs px-2 py-1 rounded-bl-lg font-bold">
-                            상황에 따라</div>
-                        <h3 class="text-lg font-bold text-white mb-2">명시적 요청 (Explicit)</h3>
-                        <p class="text-sm text-slate-400 mb-4 italic">"Postgres 도구를 사용해서 'users' 테이블을 조회해줘..."</p>
-                        <ul class="text-sm text-slate-300 space-y-2">
-                            <li class="flex items-start"><span class="text-amber-400 mr-2">⚠</span> <strong>언제
-                                    쓰나요?</strong> 기능이 겹치는 도구가 여러 개일 때 (예: 2개의 다른 DB 연결).</li>
-                            <li class="flex items-start"><span class="text-amber-400 mr-2">⚠</span> 모호한 요청을 명확히 할 때
-                                유용합니다.</li>
-                            <li class="flex items-start"><span class="text-amber-400 mr-2">⚠</span> 일반적인 작업에는 굳이 필요
-                                없습니다.</li>
-                        </ul>
-                    </div>
+            <!-- Chart: Efficiency -->
+            <div class="tech-box p-6 border-slate-800">
+                <div class="mb-4">
+                    <h3 class="text-sm font-bold text-blueprint-dim uppercase">Efficiency Metrics</h3>
                 </div>
-            </div>
-        </section>
-
-        <!-- 섹션 3: 효율성 데이터 (바 차트) -->
-        <section class="md:col-span-12 lg:col-span-4">
-            <div class="bg-dark rounded-xl shadow-lg border border-slate-700 p-6 h-full flex flex-col">
-                <h2 class="text-xl font-bold text-white mb-2">효율성 비교</h2>
-                <p class="text-sm text-slate-400 mb-4">컨텍스트 확보 소요 시간 (분)</p>
-
-                <div class="flex-grow flex items-center justify-center">
-                    <div class="chart-container">
-                        <canvas id="efficiencyChart"></canvas>
-                    </div>
-                </div>
-                <div class="mt-4 text-xs text-center text-slate-500">
-                    *복잡한 기능 구현 시 개발자 시간 절약 추정치
-                </div>
-            </div>
-        </section>
-
-        <!-- 섹션 4: 설정 워크플로우 (프로세스) -->
-        <section class="md:col-span-12 mb-4">
-            <div
-                class="bg-gradient-to-br from-indigo-900/50 to-slate-900 rounded-xl shadow-lg border border-indigo-500/30 p-8">
-                <h2 class="text-2xl font-bold text-white mb-8 text-center">Anti Gravity & Cursor 설정 워크플로우</h2>
-
-                <!-- CSS 타임라인 -->
-                <div class="relative">
-                    <!-- 연결선 -->
-                    <div class="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-slate-700 -translate-y-1/2 z-0">
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
-                        <!-- 1단계 -->
-                        <div
-                            class="bg-slate-800 p-6 rounded-lg border border-slate-600 shadow-md text-center transform transition hover:scale-105">
-                            <div
-                                class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold mx-auto mb-4 text-lg">
-                                1</div>
-                            <h3 class="font-bold text-white mb-2">서버 설치</h3>
-                            <p class="text-xs text-slate-400">npm, pip, Docker 등을 이용해 로컬에서 MCP 서버를 구동합니다.</p>
-                            <code
-                                class="block mt-2 text-xs bg-black p-1 rounded text-green-400">npx -y .../server-postgres</code>
-                        </div>
-
-                        <!-- 2단계 -->
-                        <div
-                            class="bg-slate-800 p-6 rounded-lg border border-slate-600 shadow-md text-center transform transition hover:scale-105">
-                            <div
-                                class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold mx-auto mb-4 text-lg">
-                                2</div>
-                            <h3 class="font-bold text-white mb-2">IDE 설정</h3>
-                            <p class="text-xs text-slate-400">`settings.json`을 수정하거나 Cursor/AG의 설정 UI에 서버 정보를 입력합니다.</p>
-                            <code
-                                class="block mt-2 text-xs bg-black p-1 rounded text-sky-400">"mcpServers": { ... }</code>
-                        </div>
-
-                        <!-- 3단계 -->
-                        <div
-                            class="bg-slate-800 p-6 rounded-lg border border-slate-600 shadow-md text-center transform transition hover:scale-105">
-                            <div
-                                class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold mx-auto mb-4 text-lg">
-                                3</div>
-                            <h3 class="font-bold text-white mb-2">연결 확인</h3>
-                            <p class="text-xs text-slate-400">IDE를 재시작하고 상태 표시등이 "Connected"인지 확인합니다.</p>
-                            <div class="mt-2 text-xs text-green-400">● 온라인 (Connected)</div>
-                        </div>
-
-                        <!-- 4단계 -->
-                        <div
-                            class="bg-slate-800 p-6 rounded-lg border border-slate-600 shadow-md text-center transform transition hover:scale-105">
-                            <div
-                                class="w-10 h-10 bg-fuchsia-600 rounded-full flex items-center justify-center text-white font-bold mx-auto mb-4 text-lg">
-                                4</div>
-                            <h3 class="font-bold text-white mb-2">프롬프트 입력</h3>
-                            <p class="text-xs text-slate-400">이제 질문하세요! AI가 자동으로 도구를 실행합니다.</p>
-                            <p class="mt-2 text-xs text-fuchsia-300 italic">"DB에서 판매 데이터를 분석해줘"</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 섹션 5: 자주 쓰는 도구 (도넛 차트) -->
-        <section class="md:col-span-12 md:grid md:grid-cols-2 gap-8 items-center">
-            <div class="bg-dark rounded-xl shadow-lg border border-slate-700 p-8 h-96 flex flex-col justify-center">
-                <h3 class="text-xl font-bold text-white mb-4">인기 MCP 통합 분야</h3>
-                <p class="text-slate-400 text-sm mb-4">
-                    개발자들은 어떤 도구를 IDE와 연결하고 있을까요?
-                </p>
                 <div class="chart-container">
-                    <canvas id="toolsChart"></canvas>
+                    <canvas id="efficiencyChart"></canvas>
+                </div>
+                <div class="mt-4 text-[10px] text-right text-blueprint-dim font-mono">
+                    * TIME_SAVED_METRIC based on average dev cycle
                 </div>
             </div>
+        </section>
 
-            <div class="space-y-6">
-                <div class="bg-slate-800/50 p-6 rounded-xl border-l-4 border-indigo-500">
-                    <h3 class="text-xl font-bold text-white">Gemini 인포그래픽 제작에 MCP를 쓸 수 있나요?</h3>
-                    <p class="text-slate-300 mt-2 text-sm">
-                        <strong>네, 가능합니다.</strong> 하지만 직접 그림을 그리는 것이 아니라, <strong>데이터 소스</strong>로서 활용합니다.
-                    </p>
-                    <ul class="list-disc list-inside mt-2 text-slate-400 text-sm leading-relaxed">
-                        <li>1단계: Gemini에게 "내 로컬 DB에서 지난달 매출 데이터를 쿼리해줘" (MCP 활용)</li>
-                        <li>2단계: "이 데이터를 JSON으로 정리해서 Chart.js 코드로 시각화해줘" (코드 생성)</li>
-                        <li>결과: 실제 데이터를 기반으로 한 이와 같은 HTML 인포그래픽 생성.</li>
+        <!-- Section 2: Prompt Engineering Strategy -->
+        <section class="tech-box border-t-2 border-t-blueprint-accent p-8">
+            <div class="flex items-center gap-3 mb-6">
+                <i data-lucide="alert-triangle" class="text-blueprint-accent w-6 h-6"></i>
+                <h3 class="text-xl text-white font-bold">PROMPT_ENGINEERING_STRATEGY</h3>
+            </div>
+
+            <p class="mb-6 text-sm text-blueprint-text">
+                Postgres 등 특정 서버 연결 시, LLM에게 어떻게 지시해야 하는지에 대한 전략입니다.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Implicit -->
+                <div class="border border-green-500/30 bg-green-900/10 p-5 relative">
+                    <div class="absolute top-0 right-0 bg-green-500 text-black text-[10px] font-bold px-2 py-0.5">
+                        RECOMMENDED</div>
+                    <h4 class="text-green-400 font-bold mb-2">MODE A: IMPLICIT (묵시적)</h4>
+                    <div class="code-block mb-3 text-xs text-slate-300">
+                        "이메일이 'test@example.com'인 유저 상태를 초기화해줘."
+                    </div>
+                    <ul class="text-xs space-y-2 text-slate-400">
+                        <li class="flex gap-2"><span>✅</span> <span>LLM이 가용 도구 자동 스캔</span></li>
+                        <li class="flex gap-2"><span>✅</span> <span>복잡한 기술 용어 불필요</span></li>
+                        <li class="flex gap-2"><span>✅</span> <span>자연스러운 대화 흐름 유지</span></li>
                     </ul>
                 </div>
 
-                <div class="bg-slate-800/50 p-6 rounded-xl border-l-4 border-fuchsia-500">
-                    <h3 class="text-xl font-bold text-white">Anti Gravity의 특징</h3>
-                    <p class="text-slate-300 mt-2 text-sm">
-                        Anti Gravity(AG)와 같은 차세대 AI IDE는 MCP 도구를 단순한 설정 파일이 아닌 <strong>'Agent(에이전트)'</strong> 탭이나
-                        <strong>'Capabilities'</strong> 메뉴에서 1급 시민으로 대우합니다. 복잡한 JSON 편집 없이 UI에서 쉽게 서버를 추가할 수 있는 기능을
-                        찾아보세요.
-                    </p>
+                <!-- Explicit -->
+                <div class="border border-blueprint-accent/30 bg-amber-900/10 p-5 relative">
+                    <div
+                        class="absolute top-0 right-0 bg-blueprint-accent text-black text-[10px] font-bold px-2 py-0.5">
+                        CONDITIONAL</div>
+                    <h4 class="text-blueprint-accent font-bold mb-2">MODE B: EXPLICIT (명시적)</h4>
+                    <div class="code-block mb-3 text-xs text-slate-300">
+                        "Postgres 도구를 써서 'users' 테이블을 조회해줘."
+                    </div>
+                    <ul class="text-xs space-y-2 text-slate-400">
+                        <li class="flex gap-2"><span>⚠️</span> <span>동일 기능의 도구가 중복될 때 사용</span></li>
+                        <li class="flex gap-2"><span>⚠️</span> <span>모델이 도구를 헷갈려할 때 강제 지정</span></li>
+                    </ul>
                 </div>
             </div>
         </section>
 
-        <footer class="md:col-span-12 mt-8 border-t border-slate-800 pt-8 text-center text-slate-500 text-sm">
-            <p>Generated by Gemini Canvas • Material Design Inspired • No SVG Used</p>
-        </footer>
+        <!-- Section 3: Implementation Workflow -->
+        <section>
+            <div class="flex items-center gap-2 mb-6 border-b border-white/10 pb-2">
+                <h3 class="text-lg font-bold text-white">IMPLEMENTATION_PIPELINE</h3>
+                <span class="text-xs text-blueprint-dim">// SETUP GUIDE</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Step 1 -->
+                <div class="tech-box p-5 border-l-4 border-l-blueprint-primary hover:bg-slate-800 transition-colors">
+                    <div class="text-3xl font-bold text-slate-700 mb-2">01</div>
+                    <h4 class="text-white font-bold text-sm mb-2">SERVER_INSTALL</h4>
+                    <p class="text-xs text-blueprint-dim mb-3">Install MCP server/client locally.</p>
+                    <div class="code-block text-[10px]">npx -y @modelcontextprotocol/server-postgres</div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="tech-box p-5 border-l-4 border-l-slate-600 hover:bg-slate-800 transition-colors">
+                    <div class="text-3xl font-bold text-slate-700 mb-2">02</div>
+                    <h4 class="text-white font-bold text-sm mb-2">CONFIG_UPDATE</h4>
+                    <p class="text-xs text-blueprint-dim mb-3">Update IDE settings.json</p>
+                    <div class="code-block text-[10px]">"mcpServers": { ... }</div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="tech-box p-5 border-l-4 border-l-slate-600 hover:bg-slate-800 transition-colors">
+                    <div class="text-3xl font-bold text-slate-700 mb-2">03</div>
+                    <h4 class="text-white font-bold text-sm mb-2">VERIFICATION</h4>
+                    <p class="text-xs text-blueprint-dim mb-3">Check connection status.</p>
+                    <div
+                        class="inline-block text-[10px] bg-green-900/30 text-green-400 px-2 py-1 border border-green-500/30">
+                        STATUS: CONNECTED</div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="tech-box p-5 border-l-4 border-l-blueprint-accent hover:bg-slate-800 transition-colors">
+                    <div class="text-3xl font-bold text-slate-700 mb-2">04</div>
+                    <h4 class="text-white font-bold text-sm mb-2">EXECUTION</h4>
+                    <p class="text-xs text-blueprint-dim mb-3">Prompt AI to use tools.</p>
+                    <div class="text-[10px] text-blueprint-accent italic">"Query the sales data..."</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Tools Distribution -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="md:col-span-2 tech-box p-6">
+                <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-widest">Tool Usage Distribution</h3>
+                <p class="text-xs text-blueprint-dim mb-6 max-w-lg">
+                    Current telemetry showing standard tool adoption rates across engineering teams using MCP
+                    integration.
+                </p>
+                <!-- Horizontal Bar Chart Layout -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center h-full">
+                    <div class="h-64 chart-container">
+                        <canvas id="toolsChart"></canvas>
+                    </div>
+                    <div class="space-y-4 text-xs font-mono">
+                        <div class="flex justify-between border-b border-slate-800 pb-1">
+                            <span class="text-blueprint-primary">DATABASE (SQL)</span>
+                            <span class="text-white">35%</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-800 pb-1">
+                            <span class="text-purple-400">FILESYSTEM</span>
+                            <span class="text-white">25%</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-800 pb-1">
+                            <span class="text-pink-400">GIT INTEG</span>
+                            <span class="text-white">20%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tech-box p-6 border border-slate-700 bg-slate-800/50">
+                <div class="warning-stripe mb-4"></div>
+                <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4 text-blueprint-primary"></i>
+                    FAQ_HIGHLIGHTS
+                </h3>
+
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-xs font-bold text-blueprint-text mb-1">Q. Can Gemini create charts?</h4>
+                        <p class="text-[11px] text-blueprint-dim leading-relaxed">
+                            A. Gemini generates the *data* and *code* (JSON/JS) for charts, which is then rendered by
+                            client-side libraries like Chart.js.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-blueprint-text mb-1">Q. Anti Gravity Support?</h4>
+                        <p class="text-[11px] text-blueprint-dim leading-relaxed">
+                            A. AG treats MCP tools as "First Class Citizens" in the capability tab, offering GUI-based
+                            configuration.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
     </main>
 
+    <footer class="border-t border-slate-800 bg-slate-900 py-8 text-center">
+        <div class="text-[10px] text-slate-600 font-mono">
+            SECURE CONNECTION ESTABLISHED<br>
+            DOCUMENT ID: MCP-2025-KR // CLASSIFIED: INTERNAL USE
+        </div>
+    </footer>
+
     <script>
-        // --- 유틸리티: 레이블 줄바꿈 처리 ---
-        // 16자가 넘어가면 배열로 쪼개어 Chart.js에서 줄바꿈되도록 함
-        function wrapLabels(labels) {
-            return labels.map(label => {
-                if (typeof label === 'string' && label.length > 16) {
-                    const words = label.split(' ');
-                    const lines = [];
-                    let currentLine = words[0];
+        lucide.createIcons();
 
-                    for (let i = 1; i < words.length; i++) {
-                        if ((currentLine + " " + words[i]).length < 16) {
-                            currentLine += " " + words[i];
-                        } else {
-                            lines.push(currentLine);
-                            currentLine = words[i];
-                        }
-                    }
-                    lines.push(currentLine);
-                    return lines;
-                }
-                return label;
-            });
-        }
+        // -------------------------------------------------------------
+        // CHART CONFIGURATION (Technical Theme)
+        // -------------------------------------------------------------
+        Chart.defaults.color = '#64748b'; // Slate 500
+        Chart.defaults.borderColor = 'rgba(148, 163, 184, 0.1)';
+        Chart.defaults.font.family = 'JetBrains Mono';
 
-        // --- 공통: 툴팁 콜백 설정 ---
-        // 줄바꿈된(배열) 레이블을 툴팁에서는 다시 한 줄로 합쳐서 보여줌
-        const tooltipConfig = {
-            callbacks: {
-                title: function (tooltipItems) {
-                    const item = tooltipItems[0];
-                    let label = item.chart.data.labels[item.dataIndex];
-                    if (Array.isArray(label)) {
-                        return label.join(' ');
-                    } else {
-                        return label;
-                    }
-                }
-            }
-        };
-
-        // --- 차트 1: 효율성 비교 (Bar Chart) ---
+        // 1. Efficiency Chart (Bar)
         const ctxEfficiency = document.getElementById('efficiencyChart').getContext('2d');
-        const rawLabelsEfficiency = ['수동 코드 복사/붙여넣기', 'MCP 컨텍스트 동기화', '수동 SQL 쿼리 작성', 'MCP 도구 자동 쿼리'];
-
         new Chart(ctxEfficiency, {
             type: 'bar',
             data: {
-                labels: wrapLabels(rawLabelsEfficiency),
+                labels: ['Manual Copy', 'MCP Sync', 'Manual SQL', 'MCP Query'],
                 datasets: [{
-                    label: '작업 소요 시간 (분)',
-                    data: [15, 2, 20, 3], // Mock data
+                    label: 'Time Cost (min)',
+                    data: [15, 2, 20, 3],
                     backgroundColor: [
-                        'rgba(148, 163, 184, 0.5)', // Slate (수동)
-                        'rgba(79, 70, 229, 0.8)',   // Indigo (MCP)
-                        'rgba(148, 163, 184, 0.5)', // Slate (수동)
-                        'rgba(217, 70, 239, 0.8)'   // Fuchsia (MCP)
+                        'rgba(100, 116, 139, 0.5)', // Dim
+                        '#38bdf8',                  // Primary
+                        'rgba(100, 116, 139, 0.5)', // Dim
+                        '#fbbf24'                   // Accent
                     ],
-                    borderColor: [
-                        'rgba(148, 163, 184, 1)',
-                        'rgba(79, 70, 229, 1)',
-                        'rgba(148, 163, 184, 1)',
-                        'rgba(217, 70, 239, 1)'
-                    ],
-                    borderWidth: 1
+                    borderWidth: 0,
+                    barThickness: 40
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: tooltipConfig,
-                    title: {
-                        display: true,
-                        text: '작업 완료 시간 (낮을수록 좋음)',
-                        color: '#94a3b8',
-                        font: { family: "'Noto Sans KR', sans-serif" }
-                    }
-                },
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                        ticks: { color: '#94a3b8' }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: {
-                            color: '#cbd5e1',
-                            font: { family: "'Noto Sans KR', sans-serif", size: 11 }
-                        }
-                    }
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
                 }
             }
         });
 
-        // --- 차트 2: 도구 활용 분포 (Doughnut Chart) ---
+        // 2. Tools Chart (Doughnut)
         const ctxTools = document.getElementById('toolsChart').getContext('2d');
-        const rawLabelsTools = ['데이터베이스 (Postgres/SQL)', '로컬 파일시스템 접근', 'Git/GitHub 통합', '웹 검색 / 브라우저', '사내 커스텀 API'];
-
         new Chart(ctxTools, {
             type: 'doughnut',
             data: {
-                labels: wrapLabels(rawLabelsTools),
+                labels: ['SQL', 'Files', 'Git', 'Web', 'API'],
                 datasets: [{
                     data: [35, 25, 20, 15, 5],
-                    backgroundColor: [
-                        '#4f46e5', // Indigo
-                        '#0ea5e9', // Sky
-                        '#d946ef', // Fuchsia
-                        '#8b5cf6', // Violet
-                        '#6366f1'  // Indigo Light
-                    ],
-                    borderWidth: 0
+                    backgroundColor: ['#38bdf8', '#818cf8', '#e879f9', '#fbbf24', '#cbd5e1'],
+                    borderWidth: 0,
+                    hoverOffset: 10
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            color: '#cbd5e1',
-                            padding: 20,
-                            boxWidth: 10,
-                            font: { family: "'Noto Sans KR', sans-serif" }
-                        }
-                    },
-                    tooltip: tooltipConfig
-                }
+                responsive: true, maintainAspectRatio: false,
+                cutout: '80%',
+                plugins: { legend: { display: false } }
             }
         });
-
     </script>
 </body>
 
