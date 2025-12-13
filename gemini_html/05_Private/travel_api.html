@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트 여행 연구: 한국 오픈 API 현황</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts: Noto Sans KR for Korean support -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;800&display=swap"
+        rel="stylesheet">
+
+    <!-- 
+        PALETTE: Brilliant Blues & Tech
+        Background: #f0f9ff (Alice Blue)
+        Primary Text: #0f172a (Slate 900)
+        Accent Blue: #0ea5e9 (Sky 500)
+        Deep Blue: #1e3a8a (Blue 900)
+        Vibrant Cyan: #06b6d4 (Cyan 500)
+        Warning/Highlight: #f59e0b (Amber 500)
+    -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans KR"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            light: '#e0f2fe',
+                            DEFAULT: '#0ea5e9',
+                            dark: '#0c4a6e',
+                            accent: '#06b6d4'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .gradient-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Chart Container Styling - Mandatory */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Loader */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #06b6d4;
+            width: 24px;
+            height: 24px;
+            -webkit-animation: spin 1s linear infinite;
+            /* Safari */
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <!-- Header Section -->
+    <header class="gradient-header text-white pt-20 pb-24 px-6 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+            <!-- Decorative Background Elements using HTML/CSS only -->
+            <div class="absolute top-10 right-10 w-64 h-64 bg-cyan-400 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-10 left-10 w-48 h-48 bg-blue-500 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto text-center relative z-10">
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 break-keep">
+                스마트 여행 연구:<br />
+                <span class="text-cyan-400">한국 오픈 API 현황</span>
+            </h1>
+            <p class="text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed break-keep">
+                항공, 해상, 숙박 공공데이터 통합 가이드.
+                오픈 API의 무료 사용 한도, 접근성, 그리고 연안 여객선 데이터를 집중 분석합니다.
+            </p>
+            <div class="mt-8 flex justify-center space-x-4">
+                <span
+                    class="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-semibold border border-white/20">출처:
+                    공공데이터포털 (data.go.kr)</span>
+                <span
+                    class="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-semibold border border-white/20">비용:
+                    무료 (트래픽 제한형)</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl mx-auto px-6 -mt-16 pb-20 relative z-20 space-y-20">
+
+        <!-- Section 1: The Big Three (Overview Cards) -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">핵심 데이터 소스 (Big 3)</h2>
+                <p class="text-slate-600">한국 여행 데이터 생태계를 구성하는 3대 핵심 분야입니다.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Air Card -->
+                <div class="bg-white rounded-xl shadow-lg p-8 card-hover border-t-4 border-sky-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-slate-800">✈️ 항공 (Aviation)</h3>
+                        <span class="text-xs font-bold text-sky-600 bg-sky-100 px-2 py-1 rounded">대용량 트래픽</span>
+                    </div>
+                    <p class="text-slate-600 text-sm mb-6 break-keep">인천 및 한국공항공사 산하 공항의 실시간 운항 정보, 게이트 현황, 주차장 혼잡도 정보
+                        제공.</p>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-500">제공 기관</span>
+                            <span class="font-medium text-slate-800">인천국제공항 / KAC</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-500">데이터 포맷</span>
+                            <span class="font-medium text-slate-800">JSON / XML</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sea Card (Focus) -->
+                <div
+                    class="bg-white rounded-xl shadow-lg p-8 card-hover border-t-4 border-cyan-500 transform scale-105 ring-4 ring-cyan-500/20">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-slate-800">🚢 해상 (Maritime)</h3>
+                        <span class="text-xs font-bold text-cyan-600 bg-cyan-100 px-2 py-1 rounded">연구 집중 분야</span>
+                    </div>
+                    <p class="text-slate-600 text-sm mb-6 break-keep">연안 여객선 운항 스케줄, 실시간 위치 정보(AIS 기반), 항만 혼잡도 및 터미널 정보.
+                    </p>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-500">제공 기관</span>
+                            <span class="font-medium text-slate-800">해양교통안전공단(KOMSA)</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-500">핵심 API</span>
+                            <span class="font-medium text-slate-800">여객선 운항정보</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stay Card -->
+                <div class="bg-white rounded-xl shadow-lg p-8 card-hover border-t-4 border-indigo-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-slate-800">🏨 숙박 (Stay)</h3>
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-100 px-2 py-1 rounded">풍부한 메타데이터</span>
+                    </div>
+                    <p class="text-slate-600 text-sm mb-6 break-keep">전국 관광지 POI와 연계된 호텔, 한옥, 게스트하우스의 상세 정보 및 다국어 지원.
+                    </p>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-500">제공 기관</span>
+                            <span class="font-medium text-slate-800">한국관광공사 (KTO)</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-500">API 명칭</span>
+                            <span class="font-medium text-slate-800">TourAPI 4.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Limits & Costs (Bar Chart) -->
+        <section
+            class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center bg-white rounded-2xl shadow-sm p-8 border border-slate-100">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-4">일일 호출 제한 및 무료 정책</h2>
+                <div class="prose prose-slate text-sm text-slate-600 break-keep">
+                    <p class="mb-4">
+                        대부분의 한국 공공데이터 API는 '트래픽 제한(Traffic Limit)' 시스템을 운영합니다. 기본적으로 무료이지만, 하루 호출 횟수에 제한이 있습니다.
+                        제한 초과 시 서비스가 거부(HTTP 429)되며, 자동 과금되지 않습니다.
+                    </p>
+                    <ul class="space-y-2 mb-6 list-disc pl-5">
+                        <li><strong>기본 무료 제공량:</strong> 보통 1,000 ~ 10,000 건/일</li>
+                        <li><strong>초과 시 비용:</strong> <span class="text-green-600 font-bold">0원 (무료)</span>. 비용을 내는 대신,
+                            공공데이터 포털에서 '활용 사례'를 제출하고 '트래픽 증설 신청'을 해야 합니다.</li>
+                        <li><strong>승인 절차:</strong> 낮은 등급은 자동 승인, 대용량은 심사 후 승인.</li>
+                    </ul>
+                    <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded">
+                        <span class="text-amber-800 font-semibold text-xs uppercase tracking-wide">연구 노트</span>
+                        <p class="text-amber-900 text-sm mt-1 break-keep">실시간 예약 시스템 구축 시, 공공 API의 갱신 주기(30~60분)는 다소 느릴
+                            수 있습니다. 실시간 재고 확인은 각 선사/항공사와의 직접 제휴가 필요할 수 있습니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center justify-center w-full">
+                <h3 class="text-sm font-semibold text-slate-500 mb-4 uppercase tracking-widest">일일 API 요청 제한 (Call/Day)
+                </h3>
+                <div class="chart-container">
+                    <canvas id="limitChart"></canvas>
+                </div>
+                <p class="text-center text-xs text-slate-400 mt-2">출처: 공공데이터포털 (표준 초기 할당량 기준)</p>
+            </div>
+        </section>
+
+        <!-- Section 3: DEEP DIVE - Passenger Ship APIs -->
+        <section class="bg-slate-900 text-white rounded-2xl shadow-2xl overflow-hidden">
+            <div class="p-8 md:p-12">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10">
+                    <div>
+                        <h2 class="text-3xl font-bold text-cyan-400 mb-2">집중 탐구: 연안 여객선 데이터</h2>
+                        <p class="text-slate-300 break-keep">한국 해양교통안전공단(KOMSA) 여객선 API 심층 분석.</p>
+                    </div>
+                    <a href="https://www.data.go.kr" target="_blank"
+                        class="mt-4 md:mt-0 inline-flex items-center px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg transition text-sm">
+                        data.go.kr 바로가기 &rarr;
+                    </a>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <!-- Specific API Table -->
+                    <div class="space-y-6">
+                        <h3 class="text-xl font-semibold border-b border-slate-700 pb-2">사용 가능 API 목록 (KOMSA)</h3>
+                        <div class="overflow-hidden rounded-lg border border-slate-700">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-slate-800 text-cyan-400 uppercase font-bold text-xs">
+                                    <tr>
+                                        <th class="px-6 py-3">API 명칭</th>
+                                        <th class="px-6 py-3">주요 데이터 항목</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-700">
+                                    <tr class="bg-slate-900/50">
+                                        <td class="px-6 py-4 font-medium text-white">여객선 운항 정보</td>
+                                        <td class="px-6 py-4 text-slate-400">항로, 선박명, 출/입항 시각, 기상 통제 여부</td>
+                                    </tr>
+                                    <tr class="bg-slate-900/50">
+                                        <td class="px-6 py-4 font-medium text-white">터미널 시설 정보</td>
+                                        <td class="px-6 py-4 text-slate-400">위치, 주차장 유무, 편의시설, 연락처</td>
+                                    </tr>
+                                    <tr class="bg-slate-900/50">
+                                        <td class="px-6 py-4 font-medium text-white">항만 혼잡도 정보</td>
+                                        <td class="px-6 py-4 text-slate-400">대기 시간(추정치), 입출항 선박 수</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="bg-slate-800 p-6 rounded-lg">
+                            <h4 class="text-lg font-semibold text-white mb-2">⚠️ 예약(Reservation) 기능 제한</h4>
+                            <p class="text-slate-400 text-sm leading-relaxed break-keep">
+                                현재 공공 데이터로는 <strong>'실시간 좌석 예약/결제'</strong> 기능이 제공되지 않습니다. 공개된 API는 운항 스케줄 조회용입니다.
+                                <br /><br />
+                                <strong class="text-cyan-400">연구 방향 제안:</strong> '운항 정보 API'로 통합 검색 엔진을 구축하고, 실제 예약은
+                                '가보고 싶은 섬' 앱이나 각 선사 홈페이지로 연결(Deep Link)하는 방식을 추천합니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Visual Breakdown of Data -->
+                    <div class="flex flex-col items-center">
+                        <h3 class="text-sm font-semibold text-slate-400 mb-6 uppercase tracking-widest">데이터 필드 가용성</h3>
+                        <div class="chart-container">
+                            <canvas id="shipDataChart"></canvas>
+                        </div>
+                        <div class="mt-6 grid grid-cols-2 gap-4 w-full">
+                            <div class="text-center p-3 bg-slate-800 rounded">
+                                <span class="block text-2xl font-bold text-white">104+</span>
+                                <span class="text-xs text-slate-400">대상 항로 수</span>
+                            </div>
+                            <div class="text-center p-3 bg-slate-800 rounded">
+                                <span class="block text-2xl font-bold text-white">실시간</span>
+                                <span class="text-xs text-slate-400">운항 통제 현황</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW: Gemini AI Tool Section -->
+        <section
+            class="relative overflow-hidden bg-gradient-to-r from-slate-900 to-indigo-900 rounded-2xl p-1 shadow-2xl">
+            <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+            <div class="bg-slate-900/90 backdrop-blur-sm p-8 rounded-xl h-full relative z-10">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="text-2xl animate-pulse-slow">✨</span>
+                    <h2
+                        class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
+                        Gemini 기반: 스마트 연구 어시스턴트</h2>
+                </div>
+
+                <p class="text-slate-300 mb-8 max-w-2xl break-keep">
+                    공공데이터 활용 신청 시 가장 까다로운 '활용 목적' 작성을 Google Gemini가 도와드립니다. 또한 이종 데이터(항공+해상+숙박) 융합 아이디어도 제안받아 보세요.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Tool 1: Application Writer -->
+                    <div
+                        class="bg-white/5 border border-white/10 rounded-xl p-6 hover:border-cyan-500/50 transition-colors">
+                        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            📝 활용 신청 사유 작성기
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-4">트래픽 증설 신청 시 제출할 '활용 목적' 초안을 생성합니다.</p>
+
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">연구/프로젝트 주제</label>
+                                <input type="text" id="projectTopic" placeholder="예: 외국인 관광객을 위한 섬 여행 앱"
+                                    class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm text-white focus:ring-2 focus:ring-cyan-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">대상 API</label>
+                                <select id="targetApi"
+                                    class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm text-white focus:ring-2 focus:ring-cyan-500 outline-none">
+                                    <option value="Passenger Ship Info">해양교통안전공단 여객선 운항정보</option>
+                                    <option value="TourAPI 4.0">한국관광공사 국문 관광정보 (TourAPI)</option>
+                                    <option value="Flight Schedule">인천국제공항 여객편 운항현황</option>
+                                </select>
+                            </div>
+                            <button onclick="generateApplication()"
+                                class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-medium text-sm transition-colors flex justify-center items-center gap-2">
+                                <span>✨ 사유 생성하기</span>
+                            </button>
+                        </div>
+
+                        <div id="applicationResult"
+                            class="mt-4 p-3 bg-slate-950 rounded border border-slate-800 text-xs text-slate-300 min-h-[100px] hidden leading-relaxed">
+                        </div>
+                    </div>
+
+                    <!-- Tool 2: Idea Generator -->
+                    <div
+                        class="bg-white/5 border border-white/10 rounded-xl p-6 hover:border-indigo-500/50 transition-colors">
+                        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            💡 데이터 융합 아이디어 생성기
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-4">서로 다른 데이터를 결합하여 창의적인 서비스 기능을 기획합니다.</p>
+
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">관심 키워드 / 상황</label>
+                                <input type="text" id="ideaKeyword" placeholder="예: '반려동물 동반' 또는 '악천후 결항'"
+                                    class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                            <button onclick="generateIdea()"
+                                class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-medium text-sm transition-colors flex justify-center items-center gap-2">
+                                <span>✨ 아이디어 제안받기</span>
+                            </button>
+                        </div>
+
+                        <div id="ideaResult"
+                            class="mt-4 p-3 bg-slate-950 rounded border border-slate-800 text-xs text-slate-300 min-h-[100px] hidden leading-relaxed">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Implementation Workflow (HTML Diagram) -->
+        <section>
+            <div class="text-center mb-10">
+                <h2 class="text-2xl font-bold text-slate-800">API 연동 워크플로우</h2>
+                <p class="text-slate-600">공공데이터포털(data.go.kr) 표준 이용 절차입니다.</p>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 relative">
+                <!-- Line Connector for Desktop -->
+                <div
+                    class="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-10 transform -translate-y-1/2">
+                </div>
+
+                <!-- Step 1 -->
+                <div
+                    class="bg-white p-6 w-full md:w-1/4 rounded-lg shadow-md border border-slate-100 flex flex-col items-center text-center z-10">
+                    <div
+                        class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold mb-4">
+                        1</div>
+                    <h4 class="font-bold text-slate-800 mb-2">회원가입</h4>
+                    <p class="text-xs text-slate-500 break-keep">공공데이터포털 가입 (필요 시 기업/기관 회원 전환).</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div
+                    class="bg-white p-6 w-full md:w-1/4 rounded-lg shadow-md border border-slate-100 flex flex-col items-center text-center z-10">
+                    <div
+                        class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold mb-4">
+                        2</div>
+                    <h4 class="font-bold text-slate-800 mb-2">활용 신청 (Key 발급)</h4>
+                    <p class="text-xs text-slate-500 break-keep">원하는 API 활용 신청. 오픈형 API는 즉시 자동 승인됩니다.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div
+                    class="bg-white p-6 w-full md:w-1/4 rounded-lg shadow-md border border-slate-100 flex flex-col items-center text-center z-10">
+                    <div
+                        class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold mb-4">
+                        3</div>
+                    <h4 class="font-bold text-slate-800 mb-2">키 디코딩 (Decoding)</h4>
+                    <p class="text-xs text-slate-500 break-keep">중요: URL 호출 시 인코딩된 키가 아닌 '디코딩된 키'를 사용하세요.</p>
+                </div>
+
+                <!-- Step 4 -->
+                <div
+                    class="bg-white p-6 w-full md:w-1/4 rounded-lg shadow-md border border-slate-100 flex flex-col items-center text-center z-10">
+                    <div
+                        class="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-full flex items-center justify-center font-bold mb-4">
+                        4</div>
+                    <h4 class="font-bold text-slate-800 mb-2">파싱 및 시각화</h4>
+                    <p class="text-xs text-slate-500 break-keep">XML/JSON 데이터를 받아 Chart.js 등으로 시각화합니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-slate-200 pt-8 text-center text-slate-500 text-sm">
+            <p>본 자료는 연구 계획 수정용으로 생성되었습니다. 모든 데이터 참조는 data.go.kr (공공데이터포털)을 기반으로 합니다.</p>
+            <p class="mt-2">이 인포그래픽은 SVG 이미지나 외부 이미지 자산을 사용하지 않았습니다.</p>
+        </footer>
+
+    </main>
+
+    <!-- JavaScript for Charts and Gemini -->
+    <script>
+        // --- GEMINI API INTEGRATION ---
+        const apiKey = ""; // API Key provided by environment
+
+        async function callGemini(prompt, outputId) {
+            const outputElement = document.getElementById(outputId);
+            outputElement.classList.remove('hidden');
+            outputElement.innerHTML = '<div class="flex items-center gap-2"><div class="loader"></div><span>Gemini가 생각 중입니다...</span></div>';
+
+            try {
+                // Retry logic variables
+                let attempt = 0;
+                const maxRetries = 5;
+                const baseDelay = 1000;
+                let response;
+                let success = false;
+
+                while (attempt < maxRetries && !success) {
+                    try {
+                        response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [{ text: prompt }]
+                                }]
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        success = true;
+                    } catch (e) {
+                        attempt++;
+                        if (attempt >= maxRetries) throw e;
+                        const delay = baseDelay * Math.pow(2, attempt - 1);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+
+                const data = await response.json();
+                const generatedText = data.candidates[0].content.parts[0].text;
+
+                // Simple formatting conversion (markdown to html breaks usually)
+                // For this snippet, we just replace newlines
+                const formattedText = generatedText.replace(/\n/g, '<br>');
+                outputElement.innerHTML = formattedText;
+
+            } catch (error) {
+                console.error('Gemini API Error:', error);
+                outputElement.innerHTML = `<span class="text-red-400">콘텐츠 생성 중 오류가 발생했습니다. 다시 시도해 주세요. (${error.message})</span>`;
+            }
+        }
+
+        function generateApplication() {
+            const topic = document.getElementById('projectTopic').value;
+            const api = document.getElementById('targetApi').value;
+
+            if (!topic) {
+                alert('프로젝트 주제를 입력해주세요.');
+                return;
+            }
+
+            const prompt = `당신은 한국 공공데이터 활용 신청서 작성 전문가입니다. 
+            사용자가 공공데이터포털(data.go.kr)의 트래픽 증설 신청 시 제출할 '활용 목적' 텍스트가 필요합니다.
+            
+            프로젝트 주제: ${topic}
+            대상 API: ${api}
+            
+            작업: 이 API가 프로젝트에 왜 필수적인지 설명하는 전문적이고 간결한 문단을 한국어로 작성해 주세요. 
+            "데이터 기반의 분석"과 "대국민 정보 제공"을 언급하여 트래픽 증설의 정당성을 확보하세요.
+            신청서 폼에 입력하기 좋도록 300자 이내로 작성하세요.`;
+
+            callGemini(prompt, 'applicationResult');
+        }
+
+        function generateIdea() {
+            const keyword = document.getElementById('ideaKeyword').value;
+
+            if (!keyword) {
+                alert('키워드를 입력해주세요.');
+                return;
+            }
+
+            const prompt = `당신은 여행 데이터 분석가입니다. 사용자의 관심사는 "${keyword}"입니다.
+            다음 3가지 한국 오픈 API를 융합(Mashup)하여 창의적인 서비스를 기획해 주세요:
+            1. 인천국제공항 운항 정보 (항공)
+            2. KOMSA 연안 여객선 운항 정보 (해상)
+            3. 한국관광공사 TourAPI (숙박/관광)
+            
+            작업: 위 API들을 결합하여 사용자의 관심사를 해결할 수 있는 구체적인 서비스 기능 아이디어 2가지를 한국어로 제안하세요. 
+            각 아이디어는 이모지를 사용하여 불렛 포인트로 정리해 주세요.`;
+
+            callGemini(prompt, 'ideaResult');
+        }
+
+        // --- CHART JS CONFIGURATION ---
+        Chart.defaults.font.family = "'Noto Sans KR', 'Inter', sans-serif";
+        Chart.defaults.color = '#64748b';
+
+        function wrapLabel(label) {
+            if (label.length <= 16) return label;
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                if (currentLine.length + 1 + words[i].length <= 16) {
+                    currentLine += ' ' + words[i];
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
+        const tooltipCallback = {
+            title: function (tooltipItems) {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                } else {
+                    return label;
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // 1. Daily Limits Bar Chart
+            const ctxLimit = document.getElementById('limitChart').getContext('2d');
+            const limitLabels = ['인천공항 운항정보', 'KOMSA 여객선 운항정보', 'VisitKorea 관광정보(TourAPI)', '제주 버스 위치 정보'];
+            const processedLimitLabels = limitLabels.map(wrapLabel);
+
+            new Chart(ctxLimit, {
+                type: 'bar',
+                data: {
+                    labels: processedLimitLabels,
+                    datasets: [{
+                        label: '무료 등급 일일 호출 한도 (Call/Day)',
+                        data: [10000, 5000, 10000, 1000],
+                        backgroundColor: ['rgba(14, 165, 233, 0.7)', 'rgba(6, 182, 212, 0.7)', 'rgba(99, 102, 241, 0.7)', 'rgba(203, 213, 225, 0.7)'],
+                        borderColor: ['rgb(14, 165, 233)', 'rgb(6, 182, 212)', 'rgb(99, 102, 241)', 'rgb(203, 213, 225)'],
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: tooltipCallback } },
+                    scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' }, title: { display: true, text: '일일 호출 수 (건)' } }, x: { grid: { display: false } } }
+                }
+            });
+
+            // 2. Ship Data Breakdown Doughnut Chart
+            const ctxShip = document.getElementById('shipDataChart').getContext('2d');
+            const shipLabels = ['운항 스케줄 (정적)', '기상 통제 현황 (실시간)', '운임 정보', '선박 제원'];
+            const processedShipLabels = shipLabels.map(wrapLabel);
+
+            new Chart(ctxShip, {
+                type: 'doughnut',
+                data: {
+                    labels: processedShipLabels,
+                    datasets: [{
+                        data: [40, 30, 20, 10],
+                        backgroundColor: ['#06b6d4', '#22d3ee', '#67e8f9', '#0891b2'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } },
+                        tooltip: { callbacks: tooltipCallback }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

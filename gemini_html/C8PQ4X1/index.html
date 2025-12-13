@@ -17,35 +17,22 @@
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             min-height: 100vh;
-            padding: 40px 20px;
             color: #333;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 40px 20px;
         }
 
-        .nav-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            margin-bottom: 30px;
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
-            animation: fadeIn 0.8s ease;
+        /* File List View */
+        #fileListView {
+            display: none;
         }
 
-        .nav-back:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateX(-5px);
+        #fileListView.active {
+            display: block;
         }
 
         .header {
@@ -68,43 +55,8 @@
             font-weight: 300;
         }
 
-        .stats {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-bottom: 40px;
-            animation: fadeIn 1s ease 0.3s both;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px 40px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        .stat-card h3 {
-            font-size: 2rem;
-            color: white;
-            font-weight: 700;
-        }
-
-        .stat-card p {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
-
         .search-box {
             margin-bottom: 30px;
-            animation: fadeIn 1s ease 0.2s both;
         }
 
         .search-input {
@@ -135,7 +87,6 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
-            animation: fadeInUp 0.8s ease;
         }
 
         .file-card {
@@ -213,33 +164,50 @@
             text-transform: uppercase;
         }
 
+        /* File Content View */
+        #fileContentView {
+            display: none;
+        }
+
+        #fileContentView.active {
+            display: block;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 30px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+
+        .content-frame {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            min-height: 600px;
+        }
+
         .loading {
             text-align: center;
             color: white;
             font-size: 1.2rem;
             padding: 40px;
-        }
-
-        .loading::after {
-            content: '...';
-            animation: dots 1.5s steps(4, end) infinite;
-        }
-
-        @keyframes dots {
-
-            0%,
-            20% {
-                content: '.';
-            }
-
-            40% {
-                content: '..';
-            }
-
-            60%,
-            100% {
-                content: '...';
-            }
         }
 
         @keyframes fadeInDown {
@@ -254,28 +222,6 @@
             }
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2rem;
@@ -284,84 +230,74 @@
             .file-grid {
                 grid-template-columns: 1fr;
             }
-
-            .stats {
-                flex-direction: column;
-            }
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <div class="header">
-            <h1>✈️ Travel</h1>
-            <p>Adventures & Journeys Around the World</p>
-        </div>
+        <!-- File List View -->
+        <div id="fileListView">
+            <div class="header">
+                <h1>✈️ Travel</h1>
+                <p>Adventures & Journeys Around the World</p>
+            </div>
 
-        <div class="stats">
-            <div class="stat-card">
-                <h3 id="totalFiles">-</h3>
-                <p>Total Files</p>
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="🔍 파일 검색...">
+            </div>
+
+            <div id="filesContainer" class="file-grid">
+                <div class="loading">Loading files from GitHub</div>
             </div>
         </div>
 
-        <div class="search-box">
-            <input type="text" class="search-input" id="searchInput" placeholder="🔍 파일 검색...">
-        </div>
-
-        <div id="filesContainer" class="file-grid">
-            <div class="loading">Loading files from GitHub</div>
+        <!-- File Content View -->
+        <div id="fileContentView">
+            <button class="back-button" onclick="showFileList()">← Back to Files</button>
+            <div class="content-frame" id="contentFrame">
+                <div class="loading">Loading content...</div>
+            </div>
         </div>
     </div>
 
     <script>
-        // GitHub repository configuration
         const GITHUB_OWNER = 'chrisKILee';
         const GITHUB_REPO = 'chrisKILee.github.io';
         const GITHUB_PATH = 'gemini_html/03_travel';
         const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
 
-        // File type icons
         const FILE_ICONS = {
-            'html': '📄',
-            'css': '🎨',
-            'js': '⚡',
-            'json': '📋',
-            'md': '📝',
-            'txt': '📃',
-            'default': '📄'
+            'html': '📄', 'css': '🎨', 'js': '⚡',
+            'json': '📋', 'md': '📝', 'txt': '📃', 'default': '📄'
         };
 
-        // Format file size
+        let filesData = [];
+
         function formatFileSize(bytes) {
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
-        // Get file extension
         function getFileExtension(filename) {
             const parts = filename.split('.');
             return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : '';
         }
 
-        // Get file icon
         function getFileIcon(filename) {
             const ext = getFileExtension(filename);
             return FILE_ICONS[ext] || FILE_ICONS.default;
         }
 
-        // Get file type label
         function getFileType(filename) {
             const ext = getFileExtension(filename);
             return ext.toUpperCase() || 'FILE';
         }
 
-        // Load custom display names and order from files.json
         async function loadConfig() {
             try {
-                const response = await fetch(`../03_travel/${filename}`);
+                const response = await fetch('../03_travel/files.json');
                 if (!response.ok) return {};
                 return await response.json();
             } catch (error) {
@@ -369,7 +305,6 @@
             }
         }
 
-        // Sort files based on _order in config
         function sortFiles(files, config) {
             const order = config._order || [];
             const orderedFiles = [];
@@ -389,26 +324,25 @@
             return [...orderedFiles, ...unorderedFiles];
         }
 
-        // Create file card HTML
         function createFileCard(file, config = {}) {
             const icon = getFileIcon(file.name);
             const type = getFileType(file.name);
             const size = formatFileSize(file.size);
             const displayName = config[file.name] || file.name;
+            const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
 
             return `
-                <a href="../01_rnd/${file.name}" class="file-card" data-filename="${file.name}">
+                <div class="file-card" onclick="showFile('${fileNameWithoutExt}')" data-filename="${file.name}">
                     <div class="file-icon">${icon}</div>
                     <div class="file-name">${displayName}</div>
                     <div class="file-meta">
                         <span class="file-size">${size}</span>
                         <span class="file-type">${type}</span>
                     </div>
-                </a>
+                </div>
             `;
         }
 
-        // Load files
         async function loadFiles() {
             try {
                 const response = await fetch(GITHUB_API);
@@ -422,10 +356,9 @@
                     item.name !== 'index.html'
                 );
 
+                filesData = files;
                 const config = await loadConfig();
                 const sortedFiles = sortFiles(files, config);
-
-                document.getElementById('totalFiles').textContent = files.length;
 
                 const fileCards = sortedFiles.map(file => createFileCard(file, config)).join('');
                 document.getElementById('filesContainer').innerHTML = fileCards;
@@ -443,14 +376,12 @@
             }
         }
 
-        // Initialize search
         function initializeSearch() {
             const searchInput = document.getElementById('searchInput');
             const cards = document.querySelectorAll('.file-card');
 
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
-
                 cards.forEach(card => {
                     const filename = card.getAttribute('data-filename').toLowerCase();
                     card.style.display = filename.includes(searchTerm) ? '' : 'none';
@@ -458,7 +389,94 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', loadFiles);
+        function showFile(fileNameWithoutExt) {
+            // Find the file with matching name
+            const file = filesData.find(f => f.name.startsWith(fileNameWithoutExt));
+            if (!file) return;
+
+            // Update URL hash
+            window.location.hash = fileNameWithoutExt;
+
+            // Hide file list, show content view
+            document.getElementById('fileListView').classList.remove('active');
+            document.getElementById('fileContentView').classList.add('active');
+
+            // Load file content
+            loadFileContent(file.name);
+        }
+
+        async function loadFileContent(filename) {
+            const contentFrame = document.getElementById('contentFrame');
+            contentFrame.innerHTML = '<div class="loading">Loading content...</div>';
+
+            try {
+                const response = await fetch(`../03_travel/${filename}`);
+                if (!response.ok) throw new Error('Failed to load file');
+
+                const content = await response.text();
+
+                // Create iframe to display HTML content
+                const iframe = document.createElement('iframe');
+                iframe.style.width = '100%';
+                iframe.style.height = '800px';
+                iframe.style.border = 'none';
+                iframe.srcdoc = content;
+
+                contentFrame.innerHTML = '';
+                contentFrame.appendChild(iframe);
+            } catch (error) {
+                contentFrame.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h2>⚠️ Error Loading File</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function showFileList() {
+            window.location.hash = '';
+            document.getElementById('fileContentView').classList.remove('active');
+            document.getElementById('fileListView').classList.add('active');
+        }
+
+        // Handle hash changes (back/forward navigation)
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                const file = filesData.find(f => f.name.startsWith(hash));
+                if (file) {
+                    document.getElementById('fileListView').classList.remove('active');
+                    document.getElementById('fileContentView').classList.add('active');
+                    loadFileContent(file.name);
+                }
+            } else {
+                showFileList();
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFiles();
+
+            // Check if there's a hash in URL
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                // Wait for files to load, then show the file
+                setTimeout(() => {
+                    const file = filesData.find(f => f.name.startsWith(hash));
+                    if (file) {
+                        document.getElementById('fileListView').classList.remove('active');
+                        document.getElementById('fileContentView').classList.add('active');
+                        loadFileContent(file.name);
+                    } else {
+                        document.getElementById('fileListView').classList.add('active');
+                    }
+                }, 1000);
+            } else {
+                document.getElementById('fileListView').classList.add('active');
+            }
+        });
     </script>
 </body>
 
