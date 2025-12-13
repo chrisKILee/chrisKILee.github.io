@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <script>
         tailwind.config = {
@@ -371,21 +371,15 @@
 
     <!-- Init Icons -->
     <script>
-        lucide.createIcons();
-
         // -------------------------------------------------------------
         // LOGIC PRESERVATION (Copy/Paste of original logic with minor tweaks for new styling)
         // -------------------------------------------------------------
-        const apiKey = ""; // Runtime Environment
+        // Expose functions globally for HTML event handlers
+        window.callGemini = async function (promptText) {
+            const apiKey = ""; // Runtime Injected - Please insert API Key here
 
-        // Chart Global Config for Dark Mode
-        Chart.defaults.color = '#94a3b8'; // slate-400
-        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
-        Chart.defaults.font.family = 'Pretendard';
-
-        async function callGemini(promptText) {
             if (!apiKey) {
-                alert("API Key가 설정되지 않았습니다.");
+                alert("API Key가 설정되지 않았습니다. 코드를 확인해주세요.");
                 return null;
             }
             // Mock API Call for UI testing if empty (remove in prod)
@@ -407,7 +401,7 @@
             }
         }
 
-        async function generateItinerary() {
+        window.generateItinerary = async function () {
             const dest = document.getElementById('destination').value;
             const checkboxes = document.querySelectorAll('.interest-check:checked');
             const interests = Array.from(checkboxes).map(cb => cb.value).join(', ');
@@ -434,7 +428,7 @@
             2. 🗓️ 일자별 코스 (1일차 ~ 4일차)
             3. 🍯 꿀팁`;
 
-            const text = await callGemini(prompt);
+            const text = await window.callGemini(prompt);
 
             loader.classList.add('hidden');
             btnText.textContent = "AI 일정 생성 시작";
@@ -444,7 +438,7 @@
             }
         }
 
-        async function askAI() {
+        window.askAI = async function () {
             const resultDiv = document.getElementById('ask-result');
             const input = document.getElementById('ai-question');
             const loader = document.getElementById('ask-loader');
@@ -455,13 +449,13 @@
             resultDiv.classList.remove('hidden');
             resultDiv.innerHTML = '<span class="animate-pulse">답변 생성 중...</span>';
 
-            const text = await callGemini(`부산-일본 배 여행 질문 답변해줘: ${input.value} (한국어로, 짧고 굵게)`);
+            const text = await window.callGemini(`부산-일본 배 여행 질문 답변해줘: ${input.value} (한국어로, 짧고 굵게)`);
 
             loader.classList.add('hidden');
             if (text) resultDiv.innerHTML = text.replace(/\n/g, '<br>');
         }
 
-        async function generatePhrases() {
+        window.generatePhrases = async function () {
             const resultDiv = document.getElementById('phrase-result');
             const input = document.getElementById('phrase-situation');
             const loader = document.getElementById('phrase-loader');
@@ -472,102 +466,125 @@
             resultDiv.classList.remove('hidden');
             resultDiv.innerHTML = '<span class="animate-pulse">번역 중...</span>';
 
-            const text = await callGemini(`일본 여행 상황: "${input.value}". 유용한 일본어 표현 3개 (발음/뜻 포함) 표 형식 말고 리스트로 줘.`);
+            const text = await window.callGemini(`일본 여행 상황: "${input.value}". 유용한 일본어 표현 3개 (발음/뜻 포함) 표 형식 말고 리스트로 줘.`);
 
             loader.classList.add('hidden');
             if (text) resultDiv.innerHTML = text.replace(/\n/g, '<br>');
         }
 
-        function handleEnter(e) { if (e.key === 'Enter') askAI(); }
-        function handlePhraseEnter(e) { if (e.key === 'Enter') generatePhrases(); }
+        window.handleEnter = function (e) { if (e.key === 'Enter') window.askAI(); }
+        window.handlePhraseEnter = function (e) { if (e.key === 'Enter') window.generatePhrases(); }
 
-        // -------------------------------------------------------------
-        // CHARTS (Data preserved, styling updated)
-        // -------------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', () => {
+            // Init Icons
+            if (window.lucide) {
+                lucide.createIcons();
+            }
 
-        // 1. Cost Chart
-        new Chart(document.getElementById('costComparisonChart'), {
-            type: 'bar',
-            data: {
-                labels: ['대마도', '후쿠오카(L)', '후쿠오카(F)', '시모노세키'],
-                datasets: [{
-                    label: '4인 총 비용 (만원)',
-                    data: [48, 65, 115, 72],
-                    backgroundColor: ['#2dd4bf', '#3b82f6', '#f43f5e', '#a855f7'],
-                    borderRadius: 6,
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
-                    x: { grid: { display: false } }
-                }
+            // Chart Global Config for Dark Mode
+            Chart.defaults.color = '#94a3b8'; // slate-400
+            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+            Chart.defaults.font.family = 'Pretendard';
+
+            // -------------------------------------------------------------
+            // CHARTS (Data preserved, styling updated)
+            // -------------------------------------------------------------
+
+            // 1. Cost Chart
+            const ctxCost = document.getElementById('costComparisonChart');
+            if (ctxCost) {
+                new Chart(ctxCost.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['대마도', '후쿠오카(L)', '후쿠오카(F)', '시모노세키'],
+                        datasets: [{
+                            label: '4인 총 비용 (만원)',
+                            data: [48, 65, 115, 72],
+                            backgroundColor: ['#2dd4bf', '#3b82f6', '#f43f5e', '#a855f7'],
+                            borderRadius: 6,
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // 2. Time Chart
+            const ctxTime = document.getElementById('timeComparisonChart');
+            if (ctxTime) {
+                new Chart(ctxTime.getContext('2d'), {
+                    type: 'bar',
+                    indexAxis: 'y',
+                    data: {
+                        labels: ['대마도(쾌속)', '후쿠오카(쾌속)', '후쿠오카(야간)', '시모노세키(야간)'],
+                        datasets: [{
+                            label: '소요 시간 (시간)',
+                            data: [1.5, 3.7, 9, 12],
+                            backgroundColor: 'rgba(14, 165, 233, 0.7)',
+                            borderColor: '#0ea5e9',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                            y: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // 3. Accommodation Chart
+            const ctxAcc = document.getElementById('accommodationChart');
+            if (ctxAcc) {
+                new Chart(ctxAcc.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['비즈니스 호텔', '료칸/온천', '게스트하우스', '고급 호텔'],
+                        datasets: [{
+                            data: [50, 20, 20, 10],
+                            backgroundColor: ['#3b82f6', '#f97316', '#10b981', '#8b5cf6'],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10 } } }
+                    }
+                });
+            }
+
+            // 4. Breakdown Chart
+            const ctxBreakdown = document.getElementById('costBreakdownChart');
+            if (ctxBreakdown) {
+                new Chart(ctxBreakdown.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['대마도', '후쿠오카(L)', '후쿠오카(F)', '시모노세키'],
+                        datasets: [
+                            { label: '순수 운임', data: [36, 45, 95, 52], backgroundColor: '#0ea5e9', borderRadius: 4 },
+                            { label: '세금/유류비', data: [12, 20, 20, 20], backgroundColor: '#64748b', borderRadius: 4 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' } } }
+                    }
+                });
             }
         });
-
-        // 2. Time Chart
-        new Chart(document.getElementById('timeComparisonChart'), {
-            type: 'bar',
-            indexAxis: 'y',
-            data: {
-                labels: ['대마도(쾌속)', '후쿠오카(쾌속)', '후쿠오카(야간)', '시모노세키(야간)'],
-                datasets: [{
-                    label: '소요 시간 (시간)',
-                    data: [1.5, 3.7, 9, 12],
-                    backgroundColor: 'rgba(14, 165, 233, 0.7)',
-                    borderColor: '#0ea5e9',
-                    borderWidth: 1,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.05)' } },
-                    y: { grid: { display: false } }
-                }
-            }
-        });
-
-        // 3. Accommodation Chart
-        new Chart(document.getElementById('accommodationChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['비즈니스 호텔', '료칸/온천', '게스트하우스', '고급 호텔'],
-                datasets: [{
-                    data: [50, 20, 20, 10],
-                    backgroundColor: ['#3b82f6', '#f97316', '#10b981', '#8b5cf6'],
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10 } } }
-            }
-        });
-
-        // 4. Breakdown Chart
-        new Chart(document.getElementById('costBreakdownChart'), {
-            type: 'bar',
-            data: {
-                labels: ['대마도', '후쿠오카(L)', '후쿠오카(F)', '시모노세키'],
-                datasets: [
-                    { label: '순수 운임', data: [36, 45, 95, 52], backgroundColor: '#0ea5e9', borderRadius: 4 },
-                    { label: '세금/유류비', data: [12, 20, 20, 20], backgroundColor: '#64748b', borderRadius: 4 }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' } } }
-            }
-        });
-
     </script>
 </body>
 
