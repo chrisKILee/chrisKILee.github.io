@@ -146,6 +146,7 @@
                                 <th class="w-20">지역</th>
                                 <th class="w-32">여행지</th>
                                 <th class="min-w-[200px]">핵심 포인트</th>
+                                <th class="w-16 text-center">추천</th>
                                 <th class="w-20 text-center">휴양</th>
                                 <th class="w-20 text-center">관광</th>
                                 <th class="w-20 text-center">활동</th>
@@ -543,10 +544,24 @@
                 tr.onclick = () => openModal(d.id);
                 const regionBadge = d.region === 'snow' ? '<span class="text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded text-xs">JP (6박)</span>' : '<span class="text-orange-500 font-bold bg-orange-50 px-2 py-1 rounded text-xs">SEA (9박)</span>';
 
+                // Recommendation Logic
+                let recIcon = '';
+                // Thumb Down: Warning exists OR High Rain (>150mm)
+                if (d.warning || d.rain > 150) {
+                    recIcon = '<i class="fas fa-thumbs-down text-red-400"></i>';
+                }
+                // Thumb Up: No Warning AND High Cost Efficiency (Score 4+) AND Food Score 4+
+                // OR specific "Great Weather" keywords in subtitle?
+                // Let's go with: No Warning & (Cost Score >= 4 OR Relax Score >= 5)
+                else if (!d.warning && (d.scores.cost >= 4 || d.scores.relax >= 5)) {
+                    recIcon = '<i class="fas fa-thumbs-up text-green-500 text-lg"></i>';
+                }
+
                 tr.innerHTML = `
                     <td class="text-center">${regionBadge}</td>
                     <td class="font-bold text-slate-700">${d.name}</td>
                     <td class="text-xs text-slate-500 truncate max-w-[150px]">${d.comment}</td>
+                    <td class="text-center">${recIcon}</td>
                     <td class="text-center">${getStars(d.scores.relax)}</td>
                     <td class="text-center">${getStars(d.scores.sight)}</td>
                     <td class="text-center">${getStars(d.scores.activity)}</td>
