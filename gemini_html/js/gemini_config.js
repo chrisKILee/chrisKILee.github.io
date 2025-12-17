@@ -3,5 +3,5 @@
 // Usage: const apiKey = GEMINI_CONFIG.API_KEY;
 
 const GEMINI_CONFIG = {
-    API_KEY: "AIzaSyAVQ5N6ke1ybBWW0MUqHhZioYHmXEKOEXY"
+    API_KEY: "AIzaSyBQ_Mx5GAIlsE9fikDEZILhFezv8XaVgmc"
 };
