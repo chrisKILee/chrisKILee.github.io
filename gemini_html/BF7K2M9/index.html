@@ -352,6 +352,7 @@
                 const files = contents.filter(item =>
                     item.type === 'file' &&
                     item.name !== 'files.json' &&
+                    item.name !== 'files_config.js' &&
                     !item.name.endsWith('.Identifier') &&
                     item.name !== 'index.html'
                 );
@@ -364,6 +365,7 @@
                 document.getElementById('filesContainer').innerHTML = fileCards;
 
                 initializeSearch();
+                checkHash();
 
             } catch (error) {
                 console.error('Error loading files:', error);
@@ -390,93 +392,72 @@
         }
 
         function showFile(fileNameWithoutExt) {
-            // Find the file with matching name
-            const file = filesData.find(f => f.name.startsWith(fileNameWithoutExt));
-            if (!file) return;
-
-            // Update URL hash
             window.location.hash = fileNameWithoutExt;
-
-            // Hide file list, show content view
-            document.getElementById('fileListView').classList.remove('active');
-            document.getElementById('fileContentView').classList.add('active');
-
-            // Load file content
-            loadFileContent(file.name);
         }
 
-        async function loadFileContent(filename) {
-            const contentFrame = document.getElementById('contentFrame');
-            contentFrame.innerHTML = '<div class="loading">Loading content...</div>';
-
-            try {
-                const response = await fetch(`../02_work/${filename}`);
-                if (!response.ok) throw new Error('Failed to load file');
-
-                const content = await response.text();
-
-                // Create iframe to display HTML content
-                const iframe = document.createElement('iframe');
-                iframe.style.width = '100%';
-                iframe.style.height = '800px';
-                iframe.style.border = 'none';
-                iframe.srcdoc = content;
-
-                contentFrame.innerHTML = '';
-                contentFrame.appendChild(iframe);
-            } catch (error) {
-                contentFrame.innerHTML = `
-                    <div style="text-align: center; padding: 40px;">
-                        <h2>⚠️ Error Loading File</h2>
-                        <p>${error.message}</p>
-                    </div>
-                `;
-            }
-        }
-
-        function showFileList() {
-            window.location.hash = '';
-            document.getElementById('fileContentView').classList.remove('active');
-            document.getElementById('fileListView').classList.add('active');
-        }
-
-        // Handle hash changes (back/forward navigation)
-        window.addEventListener('hashchange', () => {
-            const hash = window.location.hash.substring(1);
+        function checkHash() {
+            const hash = decodeURIComponent(window.location.hash.substring(1));
             if (hash) {
-                const file = filesData.find(f => f.name.startsWith(hash));
+                const file = filesData.find(f => f.name.replace(/\.[^/.]+$/, "") === hash);
                 if (file) {
                     document.getElementById('fileListView').classList.remove('active');
                     document.getElementById('fileContentView').classList.add('active');
                     loadFileContent(file.name);
+                } else {
+                    showFileList();
                 }
             } else {
                 showFileList();
             }
-        });
+        }
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            loadFiles();
+        function loadFileContent(filename) {
+            const contentFrame = document.getElementById('contentFrame');
+            contentFrame.innerHTML = '<div class="loading">Loading content...</div>';
 
-            // Check if there's a hash in URL
-            const hash = window.location.hash.substring(1);
-            if (hash) {
-                // Wait for files to load, then show the file
-                setTimeout(() => {
-                    const file = filesData.find(f => f.name.startsWith(hash));
-                    if (file) {
-                        document.getElementById('fileListView').classList.remove('active');
-                        document.getElementById('fileContentView').classList.add('active');
-                        loadFileContent(file.name);
-                    } else {
-                        document.getElementById('fileListView').classList.add('active');
-                    }
-                }, 1000);
+            const iframe = document.createElement('iframe');
+            iframe.src = `../02_work/${filename}`;
+            iframe.style.width = '100%';
+            iframe.style.border = 'none';
+            iframe.style.minHeight = '600px';
+            iframe.style.opacity = '0';
+            iframe.style.transition = 'opacity 0.5s ease';
+
+            iframe.onload = () => {
+                try {
+                    const height = iframe.contentWindow.document.body.scrollHeight;
+                    iframe.style.height = (height + 50) + 'px';
+                    iframe.style.opacity = '1';
+                } catch (e) {
+                    iframe.style.height = '100vh';
+                    iframe.style.opacity = '1';
+                }
+            };
+
+            contentFrame.innerHTML = '';
+            contentFrame.appendChild(iframe);
+        }
+
+        function showFileList() {
+            if (window.location.hash) {
+                history.pushState("", document.title, window.location.pathname + window.location.search);
+                handleHashChangeDisplay(false);
             } else {
-                document.getElementById('fileListView').classList.add('active');
+                handleHashChangeDisplay(false);
             }
-        });
+        }
+
+        function handleHashChangeDisplay(hasHash) {
+            if (hasHash) {
+            } else {
+                document.getElementById('fileContentView').classList.remove('active');
+                document.getElementById('fileListView').classList.add('active');
+                document.getElementById('contentFrame').innerHTML = '';
+            }
+        }
+
+        window.addEventListener('hashchange', checkHash);
+        document.addEventListener('DOMContentLoaded', loadFiles);
     </script>
 </body>
 

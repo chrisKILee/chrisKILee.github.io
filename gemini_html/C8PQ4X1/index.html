@@ -41,6 +41,7 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
             transition: all 0.3s ease;
             animation: fadeIn 0.8s ease;
+            cursor: pointer;
         }
 
         .nav-back:hover {
@@ -294,8 +295,6 @@
 
 <body>
     <div class="container">
-        <!-- Back to Main Explorer (GDEDSE) -->
-        <!-- Back Link Removed -->
 
         <div class="header">
             <h1>✈️ Travel</h1>
@@ -319,18 +318,16 @@
     </div>
 
     <script>
-        // GitHub data for the target folder (03_travel)
         const GITHUB_OWNER = 'chrisKILee';
         const GITHUB_REPO = 'chrisKILee.github.io';
         const GITHUB_PATH = 'gemini_html/03_travel';
         const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
 
-        // This is the relative path from THIS hash folder to the actual file
-        const RELATIVE_PATH_TO_FILES = '../03_travel';
-
         const FILE_ICONS = {
             'html': '📄', 'css': '🎨', 'js': '⚡', 'json': '📋', 'md': '📝', 'txt': '📃', 'default': '📄'
         };
+
+        let filesData = [];
 
         function formatFileSize(bytes) {
             if (bytes < 1024) return bytes + ' B';
@@ -355,8 +352,7 @@
 
         async function loadConfig() {
             try {
-                // Try to load config from the target folder
-                const response = await fetch(`${RELATIVE_PATH_TO_FILES}/files.json`);
+                const response = await fetch('../03_travel/files.json');
                 if (!response.ok) return {};
                 return await response.json();
             } catch (error) { return {}; }
@@ -380,19 +376,17 @@
             const type = getFileType(file.name);
             const size = formatFileSize(file.size);
             const displayName = config[file.name] || file.name;
-
-            // DIRECT LINK
-            const linkUrl = `${RELATIVE_PATH_TO_FILES}/${file.name}`;
+            const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
 
             return `
-                <a href="${linkUrl}" class="file-card" data-filename="${file.name}">
+                <div class="file-card" onclick="showFile('${fileNameWithoutExt}')" data-filename="${file.name}">
                     <div class="file-icon">${icon}</div>
                     <div class="file-name">${displayName}</div>
                     <div class="file-meta">
                         <span class="file-size">${size}</span>
                         <span class="file-type">${type}</span>
                     </div>
-                </a>
+                </div>
             `;
         }
 
@@ -405,17 +399,21 @@
                 const files = contents.filter(item =>
                     item.type === 'file' &&
                     item.name !== 'files.json' &&
+                    item.name !== 'files_config.js' &&
                     !item.name.endsWith('.Identifier') &&
                     item.name !== 'index.html'
                 );
 
+                filesData = files;
                 const config = await loadConfig();
                 const sortedFiles = sortFiles(files, config);
 
                 document.getElementById('totalFiles').textContent = files.length;
                 const fileCards = sortedFiles.map(file => createFileCard(file, config)).join('');
                 document.getElementById('filesContainer').innerHTML = fileCards;
+
                 initializeSearch();
+                checkHash();
 
             } catch (error) {
                 console.error('Error loading files:', error);
@@ -439,6 +437,88 @@
             });
         }
 
+        function showFile(fileNameWithoutExt) {
+            window.location.hash = fileNameWithoutExt;
+        }
+
+        function checkHash() {
+            const hash = decodeURIComponent(window.location.hash.substring(1));
+
+            const container = document.querySelector('.container');
+
+            let viewer = document.getElementById('fileViewer');
+            if (!viewer) {
+                viewer = document.createElement('div');
+                viewer.id = 'fileViewer';
+                viewer.style.display = 'none';
+                viewer.innerHTML = `
+                    <div onclick="showFileList()" class="nav-back">← Back to List</div>
+                    <div id="contentFrame" style="background: white; border-radius: 15px; padding: 20px; min-height:600px;"></div>
+                `;
+                container.appendChild(viewer);
+            }
+
+            if (hash) {
+                const file = filesData.find(f => f.name.replace(/\.[^/.]+$/, "") === hash);
+                if (file) {
+                    document.querySelector('.header').style.display = 'none';
+                    document.querySelector('.stats').style.display = 'none';
+                    document.querySelector('.search-box').style.display = 'none';
+                    document.getElementById('filesContainer').style.display = 'none';
+
+                    viewer.style.display = 'block';
+                    loadFileContent(file.name);
+                } else {
+                    showFileList();
+                }
+            } else {
+                showFileList();
+            }
+        }
+
+        function loadFileContent(filename) {
+            const contentFrame = document.getElementById('contentFrame');
+            contentFrame.innerHTML = '<div class="loading">Loading content...</div>';
+
+            const iframe = document.createElement('iframe');
+            iframe.src = `../03_travel/${filename}`;
+            iframe.style.width = '100%';
+            iframe.style.border = 'none';
+            iframe.style.minHeight = '600px';
+            iframe.style.opacity = '0';
+            iframe.style.transition = 'opacity 0.5s ease';
+
+            iframe.onload = () => {
+                try {
+                    const height = iframe.contentWindow.document.body.scrollHeight;
+                    iframe.style.height = (height + 50) + 'px';
+                    iframe.style.opacity = '1';
+                } catch (e) {
+                    iframe.style.height = '100vh';
+                    iframe.style.opacity = '1';
+                }
+            };
+
+            contentFrame.innerHTML = '';
+            contentFrame.appendChild(iframe);
+        }
+
+        function showFileList() {
+            if (window.location.hash) {
+                history.pushState("", document.title, window.location.pathname + window.location.search);
+            }
+
+            document.querySelector('.header').style.display = 'block';
+            document.querySelector('.stats').style.display = 'flex';
+            document.querySelector('.search-box').style.display = 'block';
+            document.getElementById('filesContainer').style.display = 'grid';
+
+            const viewer = document.getElementById('fileViewer');
+            if (viewer) viewer.style.display = 'none';
+            if (document.getElementById('contentFrame')) document.getElementById('contentFrame').innerHTML = '';
+        }
+
+        window.addEventListener('hashchange', checkHash);
         document.addEventListener('DOMContentLoaded', loadFiles);
     </script>
 </body>
