@@ -8,4 +8,4 @@ trigger: always_on
   - xxxxxx/index.html 로는 접근 불가
 - 각페이지는 해당 폴더의 컨셉에 맞는 스타일을 적용한다.
 - 모든 설명과 작업내용, 문서는 한글로 작업한다. (커밋로그 포함)
-- 개발과 테스트가완료되면 git commit/push를 한다.
+- 개발과 테스트가 완료되면 git commit/push를 한다.
