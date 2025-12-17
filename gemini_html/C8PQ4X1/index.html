@@ -350,37 +350,67 @@
             const file = filesData.find(f => f.name.replace(/\.[^/.]+$/, "") === hash);
             if (file) {
                 toggleView(true);
-                loadIframe(file.name);
+                loadContent(file.name);
             } else {
                 toggleView(false);
             }
         }
 
-        function loadIframe(filename) {
+        async function loadContent(filename) {
             const frame = document.getElementById('contentFrame');
             frame.innerHTML = '<div style="text-align:center; padding:40px; color:#aaa;">Loading content...</div>';
 
-            const iframe = document.createElement('iframe');
-            iframe.src = CONTENT_BASE_PATH + filename;
-            iframe.style.width = '100%';
-            iframe.style.border = 'none';
-            iframe.style.minHeight = '800px';
-            iframe.style.opacity = '0';
-            iframe.style.transition = 'opacity 0.4s';
+            try {
+                const response = await fetch(CONTENT_BASE_PATH + filename);
+                if (!response.ok) throw new Error('Failed to load file');
+                const text = await response.text();
 
-            iframe.onload = () => {
-                try {
-                    const h = iframe.contentWindow.document.body.scrollHeight;
-                    iframe.style.height = (h + 100) + 'px';
-                    iframe.style.opacity = '1';
-                } catch (e) {
-                    iframe.style.height = '100vh';
-                    iframe.style.opacity = '1';
-                }
-            };
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
 
-            frame.innerHTML = '';
-            frame.appendChild(iframe);
+                // 1. Fix Image Paths
+                const images = doc.querySelectorAll('img');
+                images.forEach(img => {
+                    const src = img.getAttribute('src');
+                    if (src && !src.startsWith('http') && !src.startsWith('//') && !src.startsWith('data:')) {
+                        img.setAttribute('src', CONTENT_BASE_PATH + src);
+                    }
+                });
+
+                // 2. Extract Body Content
+                let contentHTML = doc.body.innerHTML;
+
+                // 3. Inject Content
+                // Add a wrapper for consistent styling if needed, or inject directly
+                frame.innerHTML = `
+                    <div class="nav-back" onclick="showFileList()">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </div>
+                    <div class="imported-content">${contentHTML}</div>
+                `;
+
+                // 4. Handle Scripts (Execute them)
+                const scripts = doc.querySelectorAll('script');
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    if (oldScript.src) {
+                        newScript.src = oldScript.src;
+                    } else {
+                        newScript.textContent = oldScript.textContent;
+                    }
+                    document.body.appendChild(newScript);
+                });
+
+                // 5. Handle Styles (Append to head)
+                const styles = doc.querySelectorAll('style');
+                styles.forEach(style => {
+                    document.head.appendChild(style.cloneNode(true));
+                });
+
+            } catch (e) {
+                console.error(e);
+                frame.innerHTML = '<div style="text-align:center; padding:40px; color:red;">Error loading content.</div>';
+            }
         }
 
         document.getElementById('searchInput').addEventListener('input', (e) => {
