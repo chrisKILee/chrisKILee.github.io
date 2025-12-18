@@ -368,7 +368,20 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(text, 'text/html');
 
-                // 1. Fix Image Paths
+                // 1. Inject Head Elements (Styles, Fonts, Tailwind)
+                const links = doc.querySelectorAll('head link');
+                links.forEach(link => {
+                    // Prevent duplicate injections if possible, or just append
+                    const newLink = document.createElement('link');
+                    newLink.rel = link.rel;
+                    newLink.href = link.href;
+                    if (link.href && !link.href.startsWith('http') && !link.href.startsWith('//')) {
+                        newLink.href = CONTENT_BASE_PATH + link.getAttribute('href');
+                    }
+                    document.head.appendChild(newLink);
+                });
+
+                // 2. Fix Image Paths
                 const images = doc.querySelectorAll('img');
                 images.forEach(img => {
                     const src = img.getAttribute('src');
@@ -377,19 +390,15 @@
                     }
                 });
 
-                // 2. Extract Body Content
+                // 3. Extract Body Content
                 let contentHTML = doc.body.innerHTML;
 
-                // 3. Inject Content
-                // Add a wrapper for consistent styling if needed, or inject directly
+                // 4. Inject Content (No Back Button)
                 frame.innerHTML = `
-                    <div class="nav-back" onclick="showFileList()">
-                        <i class="fas fa-arrow-left"></i> Back to List
-                    </div>
                     <div class="imported-content">${contentHTML}</div>
                 `;
 
-                // 4. Handle Scripts (Execute them)
+                // 5. Handle Scripts (Execute them)
                 const scripts = doc.querySelectorAll('script');
                 scripts.forEach(oldScript => {
                     const newScript = document.createElement('script');
@@ -401,7 +410,7 @@
                     document.body.appendChild(newScript);
                 });
 
-                // 5. Handle Styles (Append to head)
+                // 6. Handle Styles (Append to head)
                 const styles = doc.querySelectorAll('style');
                 styles.forEach(style => {
                     document.head.appendChild(style.cloneNode(true));
