@@ -395,20 +395,35 @@
                 const bodyStyles = doc.body.getAttribute('style') || '';
                 let contentHTML = doc.body.innerHTML;
 
+                // Reset frame styles to allow full page takeover
+                frame.style.padding = '0';
+                frame.style.background = 'transparent';
+                frame.style.boxShadow = 'none';
+
                 // 4. Inject Content (No Back Button)
                 // specific wrapper to mimic body behavior of imported doc
                 frame.innerHTML = `
-                    <div class="imported-content ${bodyClasses}" style="${bodyStyles}">
+                    <div class="imported-content ${bodyClasses}" style="${bodyStyles}; width:100%;">
                         ${contentHTML}
                     </div>
                 `;
 
                 // 5. Handle Scripts (Execute them)
+                // Clean up previous dynamic scripts if necessary? 
+                // For Tailwind specifically, we want it to run again or at least not be blocked.
+                const existingTailwind = document.querySelector('script[src*="tailwindcss"]');
+                if (existingTailwind) existingTailwind.remove();
+
                 const scripts = doc.querySelectorAll('script');
                 scripts.forEach(oldScript => {
                     const newScript = document.createElement('script');
                     if (oldScript.src) {
-                        newScript.src = oldScript.src;
+                        // Cache bust Tailwind to force re-execution
+                        if (oldScript.src.includes('tailwindcss')) {
+                            newScript.src = oldScript.src + '?refresh=' + Date.now();
+                        } else {
+                            newScript.src = oldScript.src;
+                        }
                     } else {
                         newScript.textContent = oldScript.textContent;
                     }
@@ -416,9 +431,14 @@
                 });
 
                 // 6. Handle Styles (Append to head)
+                // We should probably remove *previous* imported styles to prevent conflict/bloat
+                document.querySelectorAll('.imported-style').forEach(el => el.remove());
+
                 const styles = doc.querySelectorAll('style');
                 styles.forEach(style => {
-                    document.head.appendChild(style.cloneNode(true));
+                    const newStyle = style.cloneNode(true);
+                    newStyle.classList.add('imported-style');
+                    document.head.appendChild(newStyle);
                 });
 
             } catch (e) {
