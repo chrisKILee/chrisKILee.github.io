@@ -7,12 +7,14 @@ window.FOLDER_CONFIG['03_travel'] = {
         "2026.jan.eastsouth_island.html",
         "busan_Ferry_trip.html",
         "christmas_korean_travel.html",
-        "voyage_2026.html"
+        "voyage_2026.html",
+        "kyoto_family_trip.html"
     ],
     "japan_trip.html": "일본 겨울여행",
     "2026winter_island_compraison.html": "2026년 1월 동남아 가고싶은 섬 비교",
     "2026.jan.eastsouth_island.html": "2026년 1월 동남아 갈수있는 섬 비교",
     "busan_Ferry_trip.html": "부산발 일본 여행 선박 분석 & AI 플래너",
     "christmas_korean_travel.html": "크리스마스 한국 여행",
-    "voyage_2026.html": "2026년 1월 여행 리포트"
+    "voyage_2026.html": "2026년 1월 여행 리포트",
+    "kyoto_family_trip.html": "2026년 가족 여행 계획: 목적지 교토"
 };
