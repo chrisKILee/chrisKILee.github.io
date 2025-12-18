@@ -64,6 +64,13 @@ try {
         console.log('FAIL: "링크 복사" text NOT found.');
     }
 
+    // New Assertion for "Shortcut" (바로가기) button
+    if (output.includes('바로가기') && output.includes('fa-external-link-alt')) {
+        console.log('PASS: "바로가기" button with icon found.');
+    } else {
+        console.log('FAIL: "바로가기" button or icon NOT found.');
+    }
+
     if (output.includes('AED13WE')) {
         console.log('PASS: Hash "AED13WE" found in output (indicating mapping worked).');
     }

@@ -54,9 +54,14 @@ function init() {
             <div class="folder-header">
                 <div class="folder-title">${folderName}</div>
                 <div class="folder-count">${sortedKeys.length} posts</div>
-                <button class="copy-link-btn" onclick="copyLink('${hashPath}')">
-                    <i class="fas fa-link"></i> 링크 복사
-                </button>
+                <div style="display:flex; gap:10px;">
+                    <button class="copy-link-btn" onclick="window.location.href='../${hashPath}/'">
+                        <i class="fas fa-external-link-alt"></i> 바로가기
+                    </button>
+                    <button class="copy-link-btn" onclick="copyLink('${hashPath}')">
+                        <i class="fas fa-link"></i> 링크 복사
+                    </button>
+                </div>
             </div>
             <div class="file-grid">
                 ${sortedKeys.map(fileName => {

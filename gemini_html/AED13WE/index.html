@@ -262,7 +262,7 @@
     <script>
         // --- Configuration (Template for R&D) ---
         const GITHUB_API = `https://api.github.com/repos/chrisKILee/chrisKILee.github.io/contents/gemini_html/01_rnd`;
-        const CONFIG_PATH = '../01_rnd/files.json'; // Replaced by fetch
+        const CONFIG_PATH = '../01_rnd/files.json';
         const CONTENT_BASE_PATH = '../01_rnd/';
 
         // --- Logic (Identical logic, applied to new DOM) ---
@@ -348,7 +348,7 @@
             } else {
                 content.classList.remove('active');
                 list.classList.add('active');
-                document.getElementById('contentFrame').innerHTML = ''; // Clear iframe
+                document.getElementById('contentFrame').innerHTML = ''; // Clear content
             }
         }
 
@@ -362,38 +362,109 @@
             const file = filesData.find(f => f.name.replace(/\.[^/.]+$/, "") === hash);
             if (file) {
                 toggleView(true);
-                loadIframe(file.name);
+                loadContent(file.name);
             } else {
                 toggleView(false);
             }
         }
 
-        function loadIframe(filename) {
+        async function loadContent(filename) {
             const frame = document.getElementById('contentFrame');
             frame.innerHTML = '<div style="text-align:center; padding:40px; color:#aaa;">Loading content...</div>';
 
-            const iframe = document.createElement('iframe');
-            iframe.src = CONTENT_BASE_PATH + filename;
-            iframe.style.width = '100%';
-            iframe.style.border = 'none';
-            iframe.style.minHeight = '800px';
-            iframe.style.opacity = '0';
-            iframe.style.transition = 'opacity 0.4s';
+            try {
+                const response = await fetch(CONTENT_BASE_PATH + filename);
+                if (!response.ok) throw new Error('Failed to load file');
+                const text = await response.text();
 
-            iframe.onload = () => {
-                try {
-                    // Auto Resize
-                    const h = iframe.contentWindow.document.body.scrollHeight;
-                    iframe.style.height = (h + 100) + 'px';
-                    iframe.style.opacity = '1';
-                } catch (e) {
-                    iframe.style.height = '100vh';
-                    iframe.style.opacity = '1';
-                }
-            };
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
 
-            frame.innerHTML = '';
-            frame.appendChild(iframe);
+                // 1. Inject Head Elements (Styles, Fonts, Tailwind)
+                const links = doc.querySelectorAll('head link');
+                links.forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (!href) return;
+
+                    const newLink = document.createElement('link');
+                    newLink.rel = link.rel || 'stylesheet';
+
+                    if (href.startsWith('http') || href.startsWith('//') || href.startsWith('data:')) {
+                        newLink.href = href;
+                    } else {
+                        newLink.href = CONTENT_BASE_PATH + href;
+                    }
+                    document.head.appendChild(newLink);
+                });
+
+                // 2. Fix Image Paths
+                const images = doc.querySelectorAll('img');
+                images.forEach(img => {
+                    const src = img.getAttribute('src');
+                    if (src && !src.startsWith('http') && !src.startsWith('//') && !src.startsWith('data:')) {
+                        img.setAttribute('src', CONTENT_BASE_PATH + src);
+                    }
+                });
+
+                // 3. Extract Body Content and Attributes
+                const bodyClasses = doc.body.className;
+                const bodyStyles = doc.body.getAttribute('style') || '';
+                let contentHTML = doc.body.innerHTML;
+
+                // Reset frame styles to allow full page takeover
+                frame.style.padding = '0';
+                frame.style.background = 'transparent';
+                frame.style.boxShadow = 'none';
+
+                // 4. Inject Content (No Back Button)
+                frame.innerHTML = `
+                    <div class="imported-content ${bodyClasses}" style="${bodyStyles}; width:100%;">
+                        ${contentHTML}
+                    </div>
+                `;
+
+                // 5. Handle Scripts (Execute them)
+                // Remove existing Tailwind to force re-scan
+                const existingTailwind = document.querySelector('script[src*="tailwindcss"]');
+                if (existingTailwind) existingTailwind.remove();
+
+                const scripts = doc.querySelectorAll('script');
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    const src = oldScript.getAttribute('src');
+
+                    if (src) {
+                        if (src.startsWith('http') || src.startsWith('//')) {
+                            // Absolute URLs (CDN)
+                            if (src.includes('tailwindcss')) {
+                                newScript.src = src + '?refresh=' + Date.now();
+                            } else {
+                                newScript.src = src;
+                            }
+                        } else {
+                            // Relative URLs
+                            newScript.src = CONTENT_BASE_PATH + src;
+                        }
+                    } else {
+                        // Inline Scripts
+                        newScript.textContent = oldScript.textContent;
+                    }
+                    document.body.appendChild(newScript);
+                });
+
+                // 6. Handle Styles (Append to head)
+                document.querySelectorAll('.imported-style').forEach(el => el.remove());
+                const styles = doc.querySelectorAll('style');
+                styles.forEach(style => {
+                    const newStyle = style.cloneNode(true);
+                    newStyle.classList.add('imported-style');
+                    document.head.appendChild(newStyle);
+                });
+
+            } catch (e) {
+                console.error(e);
+                frame.innerHTML = '<div style="text-align:center; padding:40px; color:red;">Error loading content.</div>';
+            }
         }
 
         // --- Search ---
