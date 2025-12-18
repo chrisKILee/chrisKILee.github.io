@@ -90,6 +90,12 @@ function init() {
         }).join('')}
             </div>
         `;
+
+        // Debugging verification
+        if (!section.innerHTML.includes('copy-link-btn')) {
+            console.error('Failed to generate copy link button for', folderKey);
+        }
+
         container.appendChild(section);
     });
 
@@ -125,11 +131,14 @@ function init() {
 }
 
 // --- Toast Logic ---
-function copyLink(hashPath) {
+// --- Toast Logic ---
+window.copyLink = function (hashPath) {
+    console.log('Copying link for:', hashPath);
     const url = `${window.location.origin}/gemini_html/${hashPath}/`;
     navigator.clipboard.writeText(url).then(() => {
         showToast();
     }).catch(err => {
+        console.error('Clipboard failed, using fallback', err);
         // Fallback
         const input = document.createElement('textarea');
         input.value = url;
@@ -150,8 +159,6 @@ function showToast() {
     }, 3000);
 }
 
-// Auto-run if not in test environment? 
-// We can check if 'module' exists or similar, but for simple script inclusions:
-// We rely on 'window.addEventListener' in the HTML mostly. 
-// But here let's export it or attach to window for testing.
+// Ensure init is available globally
 window.init = init;
+console.log('GDEDSE Main Script Loaded');
