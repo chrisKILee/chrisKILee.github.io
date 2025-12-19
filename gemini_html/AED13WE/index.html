@@ -353,138 +353,144 @@
 
         async function loadContent(filename) {
             const frame = document.getElementById('contentFrame');
-            frame.innerHTML = '<div style="text-align:center; padding:40px; color:#aaa;">Loading content...</div>';
+            const fileListView = document.getElementById('fileListView');
+            const SCOPE_CLASS = 'imported-content';
 
-            // --- 0. Clear previous injected styles FIRST ---
+            if (!filename) {
+                if (fileListView) fileListView.classList.remove('hidden');
+                if (frame) {
+                    frame.classList.add('hidden');
+                    frame.innerHTML = '';
+                }
+                return;
+            }
+
+            if (fileListView) fileListView.classList.add('hidden');
+            if (frame) {
+                frame.classList.remove('hidden');
+                frame.innerHTML = '<div style="text-align:center; padding:40px; color:#666;">Loading...</div>';
+            }
+
             document.querySelectorAll('.imported-style').forEach(el => el.remove());
+            document.querySelectorAll('.imported-script').forEach(el => {
+                if (el.src && el.src.startsWith('blob:')) URL.revokeObjectURL(el.src);
+                el.remove();
+            });
 
             try {
                 const response = await fetch(CONTENT_BASE_PATH + filename);
-                if (!response.ok) throw new Error('Failed to load file');
-                let text = await response.text();
-
-                // --- 1. Node Modules CDN Rewrite (Auto-Fix) ---
-                // Replaces ../node_modules/PACKAGE/dist/FILE -> https://cdn.jsdelivr.net/npm/PACKAGE/dist/FILE
-                // This is a heuristic; might need adjustment for specific packages.
-                text = text.replace(/(\.\.\/)*node_modules\/([^"']+)/g, (match, dot, path) => {
-                    return `https://cdn.jsdelivr.net/npm/${path}`;
-                });
-
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const html = await response.text();
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(text, 'text/html');
+                const doc = parser.parseFromString(html, 'text/html');
 
-                // --- 2. CSS Scoping & Isolation ---
-                // We wrap the content in a specific class and rewrite styles to target ONLY that class.
-                const SCOPE_CLASS = 'imported-content';
-
-                // 2.1 Process Styles: Rewrite 'body'/'html' to '.imported-content'
-                const styles = doc.querySelectorAll('style');
-                styles.forEach(style => {
-                    let css = style.innerHTML;
-                    // Replace 'body' 'html' with scope class
-                    // Note: This is a simple regex replacer. Complex CSS might need a real parser, but this suffices for most cases.
-                    css = css.replace(/(^|[\s,}])(body|html)([\s,{])/gi, `$1.${SCOPE_CLASS}$3`);
-
-                    // Create new style element
+                // 1. Styles
+                doc.querySelectorAll('style').forEach(style => {
                     const newStyle = document.createElement('style');
-                    newStyle.textContent = css;
+                    newStyle.textContent = style.textContent.replace(/(^|[\s,}])(body|html)([\s,{])/gi, `$1.${SCOPE_CLASS}$3`);
                     newStyle.classList.add('imported-style');
                     document.head.appendChild(newStyle);
                 });
 
-                // 2.2 Inject External Stylesheets
-                const links = doc.querySelectorAll('head link[rel="stylesheet"]');
-                links.forEach(link => {
-                    const href = link.getAttribute('href');
-                    if (!href) return;
-
+                doc.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
                     const newLink = document.createElement('link');
                     newLink.rel = 'stylesheet';
                     newLink.classList.add('imported-style');
-
-                    if (href.startsWith('http') || href.startsWith('//') || href.startsWith('data:')) {
-                        newLink.href = href;
-                    } else {
-                        // Fix Relative Paths
-                        newLink.href = CONTENT_BASE_PATH + href;
+                    const href = link.getAttribute('href');
+                    if (href) {
+                        newLink.href = (href.startsWith('http') || href.startsWith('//')) ? href : CONTENT_BASE_PATH + href;
+                        document.head.appendChild(newLink);
                     }
-                    document.head.appendChild(newLink);
                 });
 
-                // --- 3. Content Injection ---
-                // Extract Body Content and Attributes
+                // 2. Content
                 const bodyClasses = doc.body.className;
                 const bodyStyles = doc.body.getAttribute('style') || '';
-
-                // Reset frame styles
                 frame.style.padding = '0';
                 frame.style.background = 'transparent';
                 frame.style.boxShadow = 'none';
+                frame.innerHTML = `<div id="importedRoot" class="${SCOPE_CLASS} ${bodyClasses}" style="${bodyStyles}; width:100%; min-height:100%; position:relative;">${doc.body.innerHTML}</div>`;
 
-                // Wrap in scoped div
-                frame.innerHTML = `
-                    <div id="importedRoot" class="${SCOPE_CLASS} ${bodyClasses}" style="${bodyStyles}; width:100%; min-height:100%; position:relative;">
-                        ${doc.body.innerHTML}
-                    </div>
-                `;
-
-                // --- 4. JavaScript Execution ---
-                // Execute scripts in order, replacing node_modules paths if missed by text replacement
-                const scripts = doc.querySelectorAll('script');
-
-                // Helper to load script sequentially
-                const loadScript = (index) => {
-                    if (index >= scripts.length) return;
-
-                    const oldScript = scripts[index];
-                    const newScript = document.createElement('script');
-                    const src = oldScript.getAttribute('src');
-
-                    // Allow inline script execution by copying content
-                    if (oldScript.textContent) {
-                        newScript.textContent = oldScript.textContent;
-                    }
-
-                    if (src) {
-                        if (src.includes('node_modules')) {
-                            // Fallback CDN rewrite if not caught above
-                            const path = src.split('node_modules/')[1];
-                            newScript.src = `https://cdn.jsdelivr.net/npm/${path}`;
-                        } else if (src.startsWith('http') || src.startsWith('//')) {
-                            newScript.src = src;
-                        } else {
-                            newScript.src = CONTENT_BASE_PATH + src;
-                        }
-
-                        // Wait for load before next script
-                        newScript.onload = () => loadScript(index + 1);
-                        newScript.onerror = () => {
-                            console.warn(`Failed to load script: ${newScript.src}`);
-                            loadScript(index + 1);
-                        };
-                        document.body.appendChild(newScript);
-                    } else {
-                        // Inline script
-                        document.body.appendChild(newScript);
-                        loadScript(index + 1);
-                    }
-                };
-
-                // Start loading scripts
-                loadScript(0);
-
-                // --- 5. Fix Image Paths ---
-                const images = frame.querySelectorAll('img');
-                images.forEach(img => {
+                // 3. Fix Image Paths
+                frame.querySelectorAll('img').forEach(img => {
                     const src = img.getAttribute('src');
                     if (src && !src.startsWith('http') && !src.startsWith('//') && !src.startsWith('data:')) {
                         img.setAttribute('src', CONTENT_BASE_PATH + src);
                     }
                 });
 
+                const scriptsArr = Array.from(doc.querySelectorAll('script'));
+                const executeScripts = async () => {
+                    for (const s of scriptsArr) {
+                        await new Promise(async (resolve) => {
+                            const newS = document.createElement('script');
+                            newS.classList.add('imported-script');
+                            Array.from(s.attributes).forEach(attr => {
+                                if (attr.name !== 'src' && attr.name !== 'type') newS.setAttribute(attr.name, attr.value);
+                            });
+
+                            const src = s.getAttribute('src');
+                            const type = s.getAttribute('type');
+
+                            if (src) {
+                                if (src.includes('node_modules')) {
+                                    const path = src.split('node_modules/')[1];
+                                    newS.src = `https://cdn.jsdelivr.net/npm/${path}`;
+                                } else {
+                                    newS.src = (src.startsWith('http') || src.startsWith('//')) ? src : CONTENT_BASE_PATH + src;
+                                }
+                                newS.onload = resolve;
+                                newS.onerror = resolve;
+                                document.body.appendChild(newS);
+                            } else {
+                                if (type === 'text/babel') {
+                                    let attempts = 0;
+                                    while (!window.Babel && attempts < 50) {
+                                        await new Promise(r => setTimeout(r, 100));
+                                        attempts++;
+                                    }
+                                    if (window.Babel) {
+                                        try {
+                                            const result = window.Babel.transform(s.textContent, { presets: ['react', 'env'] });
+                                            newS.textContent = result.code;
+                                        } catch (e) {
+                                            newS.textContent = s.textContent;
+                                            newS.type = 'text/babel';
+                                        }
+                                    } else {
+                                        newS.textContent = s.textContent;
+                                        newS.type = 'text/babel';
+                                    }
+                                } else {
+                                    newS.textContent = s.textContent;
+                                    if (type) newS.type = type;
+                                }
+                                document.body.appendChild(newS);
+                                resolve();
+                            }
+                        });
+                    }
+                    setTimeout(() => {
+                        const dispatch = (name) => {
+                            try {
+                                const evt = document.createEvent('Event');
+                                evt.initEvent(name, true, true);
+                                window.dispatchEvent(evt);
+                                document.dispatchEvent(evt);
+                            } catch (e) {
+                                window.dispatchEvent(new Event(name));
+                            }
+                        };
+                        ['DOMContentLoaded', 'load', 'resize'].forEach(dispatch);
+                        if (typeof window.onload === 'function') window.onload();
+                        if (window.lucide) window.lucide.createIcons();
+                        if (window.tailwind && window.tailwind.render) window.tailwind.render();
+                    }, 800);
+                };
+                executeScripts();
             } catch (e) {
                 console.error(e);
-                frame.innerHTML = '<div style="text-align:center; padding:40px; color:red;">Error loading content.<br>' + e.message + '</div>';
+                frame.innerHTML = `<div style="padding:40px; color:red;">Error: ${e.message}</div>`;
             }
         }
 
