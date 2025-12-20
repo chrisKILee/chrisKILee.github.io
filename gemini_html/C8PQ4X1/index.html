@@ -377,7 +377,7 @@
                 frame.innerHTML = '<div style="text-align:center; padding:40px; color:#666;">Loading...</div>';
             }
 
-            // Cleanup previous injected elements
+            // Cleanup
             document.querySelectorAll('.imported-style').forEach(el => el.remove());
             document.querySelectorAll('.imported-script').forEach(el => {
                 if (el.src && el.src.startsWith('blob:')) URL.revokeObjectURL(el.src);
@@ -425,15 +425,14 @@
                     }
                 });
 
-                // Small delay to let browser parse the new innerHTML
-                await new Promise(r => setTimeout(r, 300));
-
-                // 3. Ultra-Robust Master Script Execution
+                // 3. Execution (Master Script Engine)
                 const scriptsArr = Array.from(doc.querySelectorAll('script'));
+
+                // Wait for DOM to stabilize
+                await new Promise(r => setTimeout(r, 200));
+
                 const executeScripts = async () => {
-                    console.log('Executing scripts...');
                     for (const s of scriptsArr) {
-                        console.log('Processing script:', s.src || s.textContent.substring(0, 50) + '...');
                         await new Promise(async (resolve) => {
                             const newS = document.createElement('script');
                             newS.classList.add('imported-script');
@@ -451,12 +450,11 @@
                                 } else {
                                     newS.src = (src.startsWith('http') || src.startsWith('//')) ? src : CONTENT_BASE_PATH + src;
                                 }
-                                newS.onload = () => { console.log('Script loaded:', newS.src); resolve(); };
-                                newS.onerror = () => { console.error('Script failed to load:', newS.src); resolve(); };
+                                newS.onload = () => resolve();
+                                newS.onerror = () => resolve();
                                 document.body.appendChild(newS);
                             } else {
                                 if (type === 'text/babel') {
-                                    // Wait for Babel to be available (max 5s)
                                     let attempts = 0;
                                     while (!window.Babel && attempts < 50) {
                                         await new Promise(r => setTimeout(r, 100));
@@ -464,15 +462,20 @@
                                     }
                                     if (window.Babel) {
                                         try {
+                                            if (s.textContent.includes('React.') || s.textContent.includes('ReactDOM.')) {
+                                                let rAttempts = 0;
+                                                while ((!window.React || !window.ReactDOM) && rAttempts < 50) {
+                                                    await new Promise(r => setTimeout(r, 100));
+                                                    rAttempts++;
+                                                }
+                                            }
                                             const result = window.Babel.transform(s.textContent, { presets: ['react', 'env'] });
                                             newS.textContent = result.code;
                                         } catch (e) {
-                                            console.error('Babel transform failed:', e);
                                             newS.textContent = s.textContent;
                                             newS.type = 'text/babel';
                                         }
                                     } else {
-                                        console.warn('Babel not available for script:', s.textContent.substring(0, 50));
                                         newS.textContent = s.textContent;
                                         newS.type = 'text/babel';
                                     }
@@ -481,22 +484,23 @@
                                     if (type) newS.type = type;
                                 }
                                 document.body.appendChild(newS);
-                                console.log('Inline script executed.');
                                 resolve();
                             }
                         });
                     }
 
                     setTimeout(() => {
-                        console.log('Dispatching events...');
                         const dispatch = (name) => {
                             try {
                                 const evt = document.createEvent('Event');
                                 evt.initEvent(name, true, true);
+                                evt.isSynthetic = true; // Prevent loop
                                 window.dispatchEvent(evt);
                                 document.dispatchEvent(evt);
                             } catch (e) {
-                                window.dispatchEvent(new Event(name));
+                                const evt = new Event(name);
+                                evt.isSynthetic = true;
+                                window.dispatchEvent(evt);
                             }
                         };
                         ['DOMContentLoaded', 'load', 'resize'].forEach(dispatch);
@@ -523,7 +527,10 @@
         });
 
         window.addEventListener('hashchange', checkHash);
-        window.addEventListener('DOMContentLoaded', loadFiles);
+        window.addEventListener('DOMContentLoaded', (e) => {
+            if (e.isSynthetic) return;
+            loadFiles();
+        });
     </script>
 </body>
 

@@ -423,13 +423,18 @@
                     }
                 });
 
-                // --- 3. Scripts ---
+                // --- 3. Scripts (Master Script Engine) ---
                 const scriptsArr = Array.from(doc.querySelectorAll('script'));
+
+                // Wait for DOM to stabilize
+                await new Promise(r => setTimeout(r, 200));
+
                 const executeScripts = async () => {
                     for (const s of scriptsArr) {
                         await new Promise(async (resolve) => {
                             const newS = document.createElement('script');
                             newS.classList.add('imported-script');
+
                             Array.from(s.attributes).forEach(attr => {
                                 if (attr.name !== 'src' && attr.name !== 'type') newS.setAttribute(attr.name, attr.value);
                             });
@@ -439,13 +444,12 @@
 
                             if (src) {
                                 if (src.includes('node_modules')) {
-                                    const path = src.split('node_modules/')[1];
-                                    newS.src = `https://cdn.jsdelivr.net/npm/${path}`;
+                                    newS.src = `https://cdn.jsdelivr.net/npm/${src.split('node_modules/')[1]}`;
                                 } else {
                                     newS.src = (src.startsWith('http') || src.startsWith('//')) ? src : CONTENT_BASE_PATH + src;
                                 }
-                                newS.onload = resolve;
-                                newS.onerror = resolve;
+                                newS.onload = () => resolve();
+                                newS.onerror = () => resolve();
                                 document.body.appendChild(newS);
                             } else {
                                 if (type === 'text/babel') {
@@ -456,6 +460,13 @@
                                     }
                                     if (window.Babel) {
                                         try {
+                                            if (s.textContent.includes('React.') || s.textContent.includes('ReactDOM.')) {
+                                                let rAttempts = 0;
+                                                while ((!window.React || !window.ReactDOM) && rAttempts < 50) {
+                                                    await new Promise(r => setTimeout(r, 100));
+                                                    rAttempts++;
+                                                }
+                                            }
                                             const result = window.Babel.transform(s.textContent, { presets: ['react', 'env'] });
                                             newS.textContent = result.code;
                                         } catch (e) {
@@ -475,15 +486,19 @@
                             }
                         });
                     }
+
                     setTimeout(() => {
                         const dispatch = (name) => {
                             try {
                                 const evt = document.createEvent('Event');
                                 evt.initEvent(name, true, true);
+                                evt.isSynthetic = true; // Loop protection
                                 window.dispatchEvent(evt);
                                 document.dispatchEvent(evt);
                             } catch (e) {
-                                window.dispatchEvent(new Event(name));
+                                const evt = new Event(name);
+                                evt.isSynthetic = true;
+                                window.dispatchEvent(evt);
                             }
                         };
                         ['DOMContentLoaded', 'load', 'resize'].forEach(dispatch);
@@ -492,7 +507,9 @@
                         if (window.tailwind && window.tailwind.render) window.tailwind.render();
                     }, 800);
                 };
+
                 executeScripts();
+
             } catch (e) {
                 console.error(e);
                 frame.innerHTML = `<div style="padding:40px; color:red;">Error: ${e.message}</div>`;
@@ -508,7 +525,10 @@
         });
 
         window.addEventListener('hashchange', checkHash);
-        window.addEventListener('DOMContentLoaded', loadFiles);
+        window.addEventListener('DOMContentLoaded', (e) => {
+            if (e.isSynthetic) return;
+            loadFiles();
+        });
     </script>
 </body>
 
