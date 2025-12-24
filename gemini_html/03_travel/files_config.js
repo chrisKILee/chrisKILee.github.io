@@ -8,7 +8,8 @@ window.FOLDER_CONFIG['03_travel'] = {
         "busan_Ferry_trip.html",
         "christmas_korean_travel.html",
         "voyage_2026.html",
-        "kyoto_family_trip.html"
+        "kyoto_family_trip.html",
+        "yangyang_2025-christmas.html"
     ],
     "japan_trip.html": "일본 겨울여행",
     "2026winter_island_compraison.html": "2026년 1월 동남아 가고싶은 섬 비교",
@@ -16,5 +17,6 @@ window.FOLDER_CONFIG['03_travel'] = {
     "busan_Ferry_trip.html": "부산발 일본 여행 선박 분석 & AI 플래너",
     "christmas_korean_travel.html": "크리스마스 한국 여행",
     "voyage_2026.html": "2026년 1월 여행 리포트",
-    "kyoto_family_trip.html": "2026년 가족 여행 계획: 목적지 교토"
+    "kyoto_family_trip.html": "2026년 가족 여행 계획: 목적지 교토",
+    "yangyang_2025-christmas.html": "양양·속초 크리스마스 가족 여행 계획"
 };
