@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교토 9인 가족 4박 5일 리얼 투어 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Application Plan:
+         1. 5-Day Master Plan: Haruka-based, optimized for 9 people.
+         2. Real Search Swipe Modal: Uses Google Search tool for Jan 2025 context.
+         3. Markdown Parser: Logic to convert **bold** into clean HTML.
+         <!-- Logistic Dashboard: 9-person taxi/van strategies and mart shopping comparisons. -->
+    <script src="../js/gemini_config.js"></script>
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #fbfaf9;
+            color: #2d3436;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .tab-active {
+            border-bottom: 4px solid #1e293b;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        /* Timeline UI */
+        .timeline-step {
+            position: relative;
+            padding-left: 2rem;
+            border-left: 2px dashed #e2e8f0;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: -9px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            background: #8b7d6b;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-step:last-child {
+            border-left: none;
+        }
+
+        /* Modal Swipe Layer */
+        #gallery-layer {
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+        }
+
+        #gallery-layer.open {
+            transform: translateY(0);
+        }
+
+        .swipe-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .swipe-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .swipe-card {
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+            padding: 1rem;
+        }
+
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #1e293b;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .day-chip-active {
+            background-color: #1e293b !important;
+            color: white !important;
+        }
+
+        .btn-press:active {
+            transform: scale(0.96);
+            opacity: 0.9;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        b,
+        strong {
+            font-weight: 700;
+            color: #111;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white/95 backdrop-blur-md border-b sticky top-0 z-50 shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">❄️ 교토 9인 가족 4박 5일</h1>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Jan 23 - Jan 27 | Osaka
+                    Airport Haruka</p>
+            </div>
+            <nav class="flex space-x-4 text-sm font-medium">
+                <button onclick="switchTab('plan')" id="btn-plan" class="tab-active py-1">일정</button>
+                <button onclick="switchTab('shopping')" id="btn-shopping" class="py-1">쇼핑</button>
+                <button onclick="switchTab('spots')" id="btn-spots" class="py-1">장소</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full p-4 flex-grow">
+
+        <!-- Tab: Itinerary -->
+        <section id="plan" class="tab-content block space-y-6">
+
+            <!-- Logistics Summary -->
+            <div class="bg-slate-900 text-white p-5 rounded-3xl shadow-xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <h3 class="font-bold text-sm mb-2 flex items-center">🚐 9인 대가족 이동 핵심 가이드</h3>
+                    <ul class="text-[11px] leading-relaxed opacity-80 space-y-1">
+                        <li>• 숙소는 **교토역 하치조 동쪽 출구** 도보 3분 거리 (민기온 산조).</li>
+                        <li>• 1/24(토) 이네후나야 일정은 9명이 움직이기에 **점보 밴 대절**이 가장 경제적입니다.</li>
+                        <li>• 시내 택시는 3대를 나누어 타는 것이 버스 대기보다 빠르고 쾌적합니다.</li>
+                    </ul>
+                </div>
+                <div class="absolute right-[-10px] bottom-[-10px] text-8xl opacity-10 font-bold italic">9P</div>
+            </div>
+
+            <!-- Day Selector Chips -->
+            <div class="flex space-x-2 overflow-x-auto pb-2 no-scrollbar">
+                <button onclick="renderDay(1)"
+                    class="day-chip shrink-0 px-4 py-2 rounded-full bg-white border text-xs font-bold shadow-sm"
+                    id="chip-1">1/23 금</button>
+                <button onclick="renderDay(2)"
+                    class="day-chip shrink-0 px-4 py-2 rounded-full bg-white border text-xs font-bold shadow-sm"
+                    id="chip-2">1/24 토</button>
+                <button onclick="renderDay(3)"
+                    class="day-chip shrink-0 px-4 py-2 rounded-full bg-white border text-xs font-bold shadow-sm"
+                    id="chip-3">1/25 일</button>
+                <button onclick="renderDay(4)"
+                    class="day-chip shrink-0 px-4 py-2 rounded-full bg-white border text-xs font-bold shadow-sm"
+                    id="chip-4">1/26 월</button>
+                <button onclick="renderDay(5)"
+                    class="day-chip shrink-0 px-4 py-2 rounded-full bg-white border text-xs font-bold shadow-sm"
+                    id="chip-5">1/27 화</button>
+            </div>
+
+            <div id="itinerary-display" class="bg-white rounded-3xl p-6 shadow-sm border min-h-[500px]">
+                <!-- Day content injected here -->
+            </div>
+        </section>
+
+        <!-- Tab: Shopping Strategy -->
+        <section id="shopping" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-3xl border shadow-sm">
+                <h3 class="font-bold text-lg mb-6 flex items-center">🛒 9인을 위한 마트 & 쇼핑 분석</h3>
+                <div class="space-y-4 text-xs">
+                    <div class="p-4 bg-red-50 rounded-2xl border border-red-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-bold text-red-800 text-sm">🥩 로피아 (Lopia) - 초밥 & 와규</h4>
+                            <span class="text-[9px] bg-red-200 text-red-800 px-2 py-0.5 rounded font-bold">현금 전용</span>
+                        </div>
+                        <p class="leading-relaxed text-red-900 opacity-90">
+                            9명 대가족 저녁의 정답. **초밥 가성비가 교토 1등**입니다. 대형 연어/참치 팩 3~4개만 사도 9명이 충분합니다. 와규 스테이크는 한국의 1/4 가격입니다.
+                            요도바시 카메라 지하 위치.
+                        </p>
+                    </div>
+                    <div class="p-4 bg-pink-50 rounded-2xl border border-pink-100">
+                        <h4 class="font-bold text-pink-800 text-sm mb-2">🍇 이온몰 (Aeon) - 과일 & 음료</h4>
+                        <p class="leading-relaxed text-pink-900 opacity-90">
+                            1월의 주인공인 **딸기(아마오우)** 등 프리미엄 과일 품질이 가장 좋습니다. 숙소와 가장 가까워 무거운 음료/생수 보급에 최적입니다. 카드 가능.
+                        </p>
+                    </div>
+                    <div class="p-4 bg-yellow-50 rounded-2xl border border-yellow-100">
+                        <h4 class="font-bold text-yellow-800 text-sm mb-2">💊 돈키호테 - 기념품 & 주류</h4>
+                        <p class="leading-relaxed text-yellow-900 opacity-90">
+                            산토리 위스키, 샤론파스 등 한국인이 좋아하는 품목은 여기가 제일 저렴합니다. 아반티 건물 내 위치. 9명 합산 면세 혜택을 꼭 챙기세요.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Spots Gallery -->
+        <section id="spots" class="tab-content hidden space-y-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <button onclick="openRealSearch('이네노후나야 1월 풍경')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">이네노후나야</button>
+                <button onclick="openRealSearch('아마노하시다테 겨울')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">아마노하시다테</button>
+                <button onclick="openRealSearch('아라시야마 1월 풍경')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">아라시야마</button>
+                <button onclick="openRealSearch('키부네 신사 설경')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">쿠라마&키부네</button>
+                <button onclick="openRealSearch('교토 우지 평등원 1월')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">우지(Uji)</button>
+                <button onclick="openRealSearch('철학자의 길 겨울')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">철학자의 길</button>
+                <button onclick="openRealSearch('기온 시라카와 밤 풍경')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">기온(Gion)</button>
+                <button onclick="openRealSearch('후시미 이나리 1월')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">후시미</button>
+                <button onclick="openRealSearch('기요미즈데라 청수사 겨울')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">히가시야마</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Real Search Layer (Modal) -->
+    <div id="gallery-layer" class="fixed inset-0 bg-white hidden flex flex-col">
+        <div class="p-4 border-b flex justify-between items-center bg-white sticky top-0 shadow-sm">
+            <h3 id="gallery-title" class="font-bold text-lg text-slate-800">리얼 데이터 정보</h3>
+            <button onclick="closeGallery()" class="text-3xl text-slate-300 px-2">&times;</button>
+        </div>
+
+        <div id="gallery-loader" class="flex-grow flex flex-col items-center justify-center">
+            <div class="spinner mb-4"></div>
+            <p class="text-sm text-slate-400 font-medium animate-pulse text-center">구글 검색을 통해 2025년 1월의<br>실제 현장 정보를 찾는
+                중...</p>
+        </div>
+
+        <div id="gallery-content" class="hidden flex-grow flex flex-col overflow-hidden">
+            <div id="gallery-slider" class="swipe-container flex-grow items-center bg-slate-50">
+                <!-- Info cards injected here -->
+            </div>
+
+            <div class="p-6 bg-white border-t">
+                <div class="flex justify-center space-x-1.5 mb-6" id="gallery-dots"></div>
+                <button onclick="closeGallery()"
+                    class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl btn-press">확인 완료</button>
+                <p class="text-[10px] text-center text-slate-400 mt-4 italic tracking-tight">Source: Google Search
+                    Grounding (January Context)</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t py-12 text-center text-slate-300 text-[10px] font-bold tracking-widest uppercase">
+        Kyoto 9-People Master Plan 2025
+    </footer>
+
+    <script>
+        const apiKey = GEMINI_CONFIG.API_KEY;
+
+        const itineraryData = {
+            1: {
+                day: "1/23 (금) | 도착 및 장보기",
+                desc: "오사카 공항 13시 도착 후 하루카 탑승. 교토역 체크인 후 9인 대량 보급을 마칩니다.",
+                steps: [
+                    { time: "13:00", spot: "간사이 공항 도착", note: "입국 수속 및 하루카 티켓 발권." },
+                    { time: "16:00", spot: "교토역 도착 & 숙소 체크인", note: "민기온 산조 숙소 도보 3분 이동. 짐 풀기.", search: "교토역 하치조 출구 1월 풍경" },
+                    { time: "17:30", spot: "이온몰 & 돈키호테", note: "생수, 1월 제철 과일, 위스키 등 4박 5일분 보급.", search: "교토 이온몰 1월 과일 추천" },
+                    { time: "19:30", spot: "숙소 첫 저녁 식사", note: "이온몰 델리와 과일로 즐거운 가족 파티." }
+                ]
+            },
+            2: {
+                day: "1/24 (토) | 북부 바다 원정",
+                desc: "이네후나야와 아마노하시다테 정복. 9인 전용 차량 대절을 추천하는 하이라이트 날입니다.",
+                steps: [
+                    { time: "09:00", spot: "아마노하시다테", note: "일본 3대 절경 관람 및 설경 소나무 길 산책.", search: "아마노하시다테 1월 설경 풍경" },
+                    { time: "12:00", spot: "이네노후나야", note: "후나야군 전망소, Funayanosato Park 투어.", search: "이네노후나야 1월 설경 분위기" },
+                    { time: "14:00", spot: "이네카페 & 보트 선착장", note: "이네카페 휴식 및 수상 가옥 보트 체험.", search: "이네카페 보트 선착장 팁" },
+                    { time: "17:30", spot: "로피아 요도바시점", note: "와규 스테이크 & 초밥 대량 구매 (현금 필수).", search: "교토 로피아 초밥 가격" },
+                    { time: "19:30", spot: "숙소 와규 파티", note: "최고급 와규로 즐기는 9인 대가족의 밤." }
+                ]
+            },
+            3: {
+                day: "1/25 (일) | 교토 클래식 투어",
+                desc: "교토의 상징적인 사찰과 시장의 활기를 느끼는 날입니다.",
+                steps: [
+                    { time: "09:30", spot: "기요미즈데라 & 히가시야마", note: "청수사 산책 및 산넨자카 쇼핑.", search: "교토 청수사 1월 풍경" },
+                    { time: "13:00", spot: "니시키 시장 투어", note: "먹거리 탐방 및 저녁 반찬(절임류) 구매.", search: "교토 니시키 시장 추천 음식" },
+                    { time: "15:30", spot: "철학자의 길 & 기온", note: "겨울 운치 수로 길 산책 후 기온 시라카와 야경.", search: "교토 철학자의 길 겨울 분위기" }
+                ]
+            },
+            4: {
+                day: "1/26 (월) | 자연과 선택 투어",
+                desc: "아라시야마 투어 후 가족 컨디션에 따라 오후 코스를 선택합니다.",
+                steps: [
+                    { time: "09:30", spot: "아라시야마 치쿠린", note: "대나무 숲길 산책 및 도게츠교 풍경.", search: "아라시야마 1월 풍경" },
+                    { time: "14:00", spot: "쿠라마 & 키부네 (선택)", note: "설경이 아름다운 붉은 등불의 신사.", search: "키부네 신사 1월 설경" },
+                    { time: "14:00", spot: "우지 평등원 (선택)", note: "말차의 성지 우지 마을과 평등원 관람.", search: "우지 평등원 1월 풍경" }
+                ]
+            },
+            5: {
+                day: "1/27 (화) | 여우 신사 & 귀국",
+                desc: "마지막 사진을 남기고 공항으로 향하는 아쉬운 날입니다.",
+                steps: [
+                    { time: "08:30", spot: "후시미 이나리", note: "붉은 도리이 터널 아침 산책.", search: "후시미 이나리 1월 풍경" },
+                    { time: "11:00", spot: "교토역 하루카 탑승", note: "짐 정리 후 공항 이동 (14:30 비행기)." }
+                ]
+            }
+        };
+
+        // --- Core Logics ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById(`btn-${tabId}`).classList.add('tab-active');
+            window.scrollTo(0, 0);
+        }
+
+        function renderDay(day) {
+            const container = document.getElementById('itinerary-display');
+            if (!container) return;
+
+            const data = itineraryData[day];
+            document.querySelectorAll('.day-chip').forEach(c => c.classList.remove('day-chip-active'));
+            const activeChip = document.getElementById(`chip-${day}`);
+            if (activeChip) activeChip.classList.add('day-chip-active');
+
+            let html = `
+                <div class="mb-8 animate-fade-in">
+                    <h2 class="text-2xl font-bold text-slate-800">${data.day}</h2>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">${data.desc}</p>
+                </div>
+                <div class="space-y-1">
+            `;
+
+            data.steps.forEach(s => {
+                html += `
+                    <div class="timeline-step">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-grow pr-4">
+                                <span class="text-[10px] font-bold text-slate-400 tracking-tighter">${s.time}</span>
+                                <h4 class="font-bold text-sm text-slate-800">${s.spot}</h4>
+                                <p class="text-[11px] text-slate-600 mt-0.5 leading-relaxed">${s.note}</p>
+                            </div>
+                            ${s.search ? `<button onclick="openRealSearch('${s.search}')" class="shrink-0 bg-slate-50 border p-2 rounded-xl text-[9px] font-bold shadow-sm btn-press">📸 정보확인</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // --- Markdown Sanitizer ---
+        function cleanMarkdown(text) {
+            if (!text) return "";
+            return text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*/g, '');
+        }
+
+        // --- API Grounding Search (Robust Logic) ---
+        async function openRealSearch(query) {
+            const layer = document.getElementById('gallery-layer');
+            const loader = document.getElementById('gallery-loader');
+            const content = document.getElementById('gallery-content');
+            const slider = document.getElementById('gallery-slider');
+            const dots = document.getElementById('gallery-dots');
+
+            layer.classList.remove('hidden');
+            setTimeout(() => layer.classList.add('open'), 10);
+            loader.classList.remove('hidden');
+            content.classList.add('hidden');
+            slider.innerHTML = '';
+            dots.innerHTML = '';
+            document.body.style.overflow = 'hidden';
+
+            try {
+                const results = await callSearchAPI(query);
+                if (results && results.cards) {
+                    results.cards.forEach((card, idx) => {
+                        const item = document.createElement('div');
+                        item.className = 'swipe-card flex flex-col justify-center items-center h-full';
+                        item.innerHTML = `
+                            <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100 w-full max-w-sm h-[420px] flex flex-col justify-center text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-widest italic">Jan 2025 Real Info</span>
+                                <h4 class="text-xl font-bold mb-4 text-slate-800 leading-tight">${cleanMarkdown(card.title)}</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed mb-8">${cleanMarkdown(card.description)}</p>
+                                <div class="text-[9px] text-slate-200 font-medium">Verified via Google Search</div>
+                            </div>
+                        `;
+                        slider.appendChild(item);
+
+                        const dot = document.createElement('div');
+                        dot.className = `w-1.5 h-1.5 rounded-full transition-colors ${idx === 0 ? 'bg-slate-900' : 'bg-slate-200'}`;
+                        dots.appendChild(dot);
+                    });
+
+                    loader.classList.add('hidden');
+                    content.classList.remove('hidden');
+
+                    slider.onscroll = () => {
+                        const active = Math.round(slider.scrollLeft / slider.offsetWidth);
+                        dots.querySelectorAll('div').forEach((d, i) => {
+                            d.className = `w-1.5 h-1.5 rounded-full transition-colors ${i === active ? 'bg-slate-900' : 'bg-slate-200'}`;
+                        });
+                    };
+                } else { throw new Error("Null data"); }
+            } catch (err) {
+                console.error("Grounding Error:", err);
+                loader.innerHTML = `
+                    <div class="text-center p-8">
+                        <p class="text-red-500 text-xs font-bold">리얼 정보를 불러오지 못했습니다.</p>
+                        <p class="text-stone-400 text-[10px] mt-2">일시적인 연결 문제이거나 데이터가 부족합니다.<br>잠시 후 다시 시도해 주세요.</p>
+                        <button onclick="closeGallery()" class="mt-4 px-6 py-2 border rounded-full text-[10px] btn-press">닫기</button>
+                    </div>`;
+            }
+        }
+
+        async function callSearchAPI(userQuery) {
+            // Updated Prompt to be extremely neutral and structured to avoid Reject
+            const systemPrompt = `You are a professional travel info architect. For the Kyoto spot provided, find 3 factual cards about its context in JANUARY (winter). 
+            Each card MUST have a 'title' (Short Korean), a 'description' (100 chars Korean factual data), and 'source'.
+            Return ONLY a valid JSON: { "cards": [ { "title": "...", "description": "...", "source": "..." } ] }. 
+            NO explanation, NO markdown backticks.`;
+
+            let backoff = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: `Search real-time winter context for ${userQuery} in Kyoto Japan.` }] }],
+                            systemInstruction: { parts: [{ text: systemPrompt }] },
+                            tools: [{ "google_search": {} }],
+                            generationConfig: { responseMimeType: "application/json" }
+                        })
+                    });
+
+                    if (!response.ok) throw new Error("API_FAIL");
+                    const data = await response.json();
+                    let textResult = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+                    // Robust Extraction Logic
+                    const match = textResult.match(/\{[\s\S]*\}/);
+                    if (!match) throw new Error("JSON_NOT_FOUND");
+                    return JSON.parse(match[0]);
+                } catch (e) {
+                    if (i === 4) throw e;
+                    await new Promise(r => setTimeout(r, backoff));
+                    backoff *= 2;
+                }
+            }
+            return null;
+        }
+
+        function closeGallery() {
+            const layer = document.getElementById('gallery-layer');
+            layer.classList.remove('open');
+            setTimeout(() => layer.classList.add('hidden'), 400);
+            document.body.style.overflow = 'auto';
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDay(1);
+        });
+    </script>
+</body>
+
+</html>

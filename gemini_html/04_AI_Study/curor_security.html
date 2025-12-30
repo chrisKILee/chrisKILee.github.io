@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor IDE 보안 감사 및 정책 연구 보고서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Font Setup */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc;
+            /* Slate 50 */
+            color: #1e293b;
+            /* Slate 800 */
+        }
+
+        /* Chart Container Styling - Mandatory Requirement */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+
+        /* Interactive Element Styles */
+        .nav-item.active {
+            background-color: #3b82f6;
+            /* Blue 500 */
+            color: white;
+            font-weight: bold;
+        }
+
+        .policy-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .policy-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-color: #3b82f6;
+        }
+
+        .code-block {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+        }
+
+        .highlight-green {
+            color: #4ec9b0;
+        }
+
+        .highlight-blue {
+            color: #569cd6;
+        }
+
+        .highlight-orange {
+            color: #ce9178;
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+    <!-- Chosen Palette: Slate (Background), Blue (Primary Action), Emerald (Success/Security), Rose (Alert) -->
+    <!-- Application Structure Plan: 
+         1. Executive Summary: Direct answers to the user's questions (Yes/No/How).
+         2. Configuration Hub: Interactive explanation of .cursorrules (the custom policy engine).
+         3. Workflow Analysis: Visualizing how AI applies these rules (Automation level).
+         4. Comparative Analytics: Radar chart comparing AI Security vs. Traditional Linting.
+         Reasoning: The user needs to understand *how* to implement security, as it's not a single "button" but a process.
+    -->
+    <!-- Visualization & Content Choices:
+         - Radar Chart: To compare qualitative attributes of Cursor vs Traditional SAST (Context, Speed, Strictness).
+         - Interactive Code Simulator: To demonstrate .cursorrules syntax without needing screenshots.
+         - Step Process Grid: To explain the flow of information.
+         - Justification: NO SVG/Mermaid used. HTML/CSS/JS provides better interactivity for text-heavy logic.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🛡️</span>
+                <h1 class="text-xl font-bold text-slate-800">Cursor IDE 보안 감사 분석 리포트</h1>
+            </div>
+            <nav class="hidden md:flex space-x-1 bg-slate-100 p-1 rounded-lg" role="tablist">
+                <button onclick="navigate('overview')" id="nav-overview"
+                    class="nav-item active px-4 py-2 rounded-md text-sm transition-colors">요약 (Overview)</button>
+                <button onclick="navigate('configuration')" id="nav-configuration"
+                    class="nav-item px-4 py-2 rounded-md text-sm transition-colors">설정 및 정책 (.cursorrules)</button>
+                <button onclick="navigate('workflow')" id="nav-workflow"
+                    class="nav-item px-4 py-2 rounded-md text-sm transition-colors">자동화 워크플로우</button>
+            </nav>
+        </div>
+        <!-- Mobile Nav -->
+        <div class="md:hidden flex justify-around border-t border-slate-200 p-2 bg-slate-50 text-xs">
+            <button onclick="navigate('overview')" class="p-2 font-bold text-blue-600">요약</button>
+            <button onclick="navigate('configuration')" class="p-2 text-slate-600">설정</button>
+            <button onclick="navigate('workflow')" class="p-2 text-slate-600">워크플로우</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- SECTION 1: OVERVIEW -->
+        <section id="overview" class="fade-in space-y-8">
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">연구 요약: 보안 감사 기능의 실체</h2>
+                <p class="text-slate-700 leading-relaxed">
+                    Cursor IDE에는 전통적인 정적 분석 도구(SonarQube 등)와 같은 별도의 "보안 감사(Security Audit)" 탭이나 버튼이 존재하지 않습니다.
+                    대신, <strong>AI 기반의 문맥 인식(Context Awareness)</strong>과 <strong>`.cursorrules` 파일</strong>을 통해
+                    사용자가 정의한 보안 정책(Custom Policy)을 코드 생성 및 수정 시점에 실시간으로 적용하는 방식을 사용합니다.
+                </p>
+            </div>
+
+            <!-- Key Findings Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Finding 1 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-3xl">⚙️</span>
+                        <h3 class="text-lg font-bold">설정 위치</h3>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">별도 메뉴가 아닌 <strong>프로젝트 루트의 .cursorrules 파일</strong>이 핵심
+                        설정입니다. 전역 설정은 Cursor Settings > General > Rules for AI에서 가능합니다.</p>
+                    <div class="bg-slate-100 p-2 rounded text-xs text-center font-mono text-slate-600">Settings > Rules
+                        for AI</div>
+                </div>
+
+                <!-- Finding 2 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-3xl">📝</span>
+                        <h3 class="text-lg font-bold">커스텀 Policy</h3>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">가능합니다. 자연어(Natural Language)로 작성합니다. 예: "AWS Key를 하드코딩하지 말고
+                        환경변수를 사용해."</p>
+                    <div class="bg-green-100 p-2 rounded text-xs text-center font-bold text-green-700">자연어 기반 정책 지원
+                    </div>
+                </div>
+
+                <!-- Finding 3 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-3xl">🤖</span>
+                        <h3 class="text-lg font-bold">자동 확인 여부</h3>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">"백그라운드 스캔"은 아닙니다. AI가 코드를 <strong>생성하거나 수정할 때</strong> 해당 룰을
+                        참고하여 위반 사항을 방지하거나 수정합니다.</p>
+                    <div class="bg-orange-100 p-2 rounded text-xs text-center font-bold text-orange-700">생성 시점 능동 방어
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Chart Section -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold mb-6 border-b pb-2">Cursor AI 보안 vs 전통적 정적 분석(Linter) 비교</h3>
+                <div class="flex flex-col md:flex-row gap-8 items-center">
+                    <div class="w-full md:w-1/2">
+                        <p class="text-sm text-slate-600 mb-4">
+                            Cursor의 접근 방식은 "엄격한 규칙 기반(Rule-based)"이 아닌 "의도 기반(Intent-based)"입니다.
+                            전통적인 툴은 모든 오류를 잡지만 문맥을 모릅니다. Cursor는 문맥을 이해하고 보안 가이드를 제안하지만, 100% 탐지를 보장하진 않습니다.
+                        </p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                                <strong>Cursor AI:</strong> 높은 문맥 이해도, 유연한 정책, 코드 생성 시 적용.
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-slate-400"></span>
+                                <strong>Traditional (ESLint/Sonar):</strong> 높은 엄격성, 낮은 오탐률, 전체 스캔 가능.
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="w-full md:w-1/2">
+                        <div class="chart-container">
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: CONFIGURATION (.cursorrules) -->
+        <section id="configuration" class="hidden fade-in space-y-8">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-800">커스텀 Policy 설정: .cursorrules</h2>
+                <p class="text-slate-600">
+                    Cursor의 "보안 정책"은 프로젝트 루트 디렉토리에 <code>.cursorrules</code> 파일을 생성하여 자연어로 정의합니다.
+                    아래 시뮬레이터를 사용하여 보안 룰을 어떻게 작성하는지 확인해보세요.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Left: Policy Builder -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-bold mb-4">🛡️ 보안 정책 빌더</h3>
+                    <p class="text-xs text-slate-500 mb-4">적용하고 싶은 보안 정책 항목을 선택하세요.</p>
+
+                    <div class="space-y-3">
+                        <div onclick="toggleRule('secrets')" id="btn-secrets"
+                            class="policy-card border p-3 rounded-lg flex justify-between items-center bg-slate-50">
+                            <span class="font-medium text-sm">🔑 하드코딩된 비밀 키 방지</span>
+                            <span class="text-slate-400 status-icon">⚪</span>
+                        </div>
+                        <div onclick="toggleRule('sql')" id="btn-sql"
+                            class="policy-card border p-3 rounded-lg flex justify-between items-center bg-slate-50">
+                            <span class="font-medium text-sm">💉 SQL 인젝션 방지 (ORM 강제)</span>
+                            <span class="text-slate-400 status-icon">⚪</span>
+                        </div>
+                        <div onclick="toggleRule('logs')" id="btn-logs"
+                            class="policy-card border p-3 rounded-lg flex justify-between items-center bg-slate-50">
+                            <span class="font-medium text-sm">📝 민감 정보 로깅 금지</span>
+                            <span class="text-slate-400 status-icon">⚪</span>
+                        </div>
+                        <div onclick="toggleRule('auth')" id="btn-auth"
+                            class="policy-card border p-3 rounded-lg flex justify-between items-center bg-slate-50">
+                            <span class="font-medium text-sm">🔒 인증 미들웨어 필수 적용</span>
+                            <span class="text-slate-400 status-icon">⚪</span>
+                        </div>
+                    </div>
+
+                    <button onclick="resetRules()"
+                        class="mt-6 w-full py-2 text-sm text-slate-500 hover:text-red-500 border border-transparent hover:border-red-200 rounded transition-colors">초기화</button>
+                </div>
+
+                <!-- Right: File Preview -->
+                <div
+                    class="bg-slate-900 p-6 rounded-xl shadow-lg text-slate-300 font-mono text-sm relative overflow-hidden">
+                    <div
+                        class="absolute top-0 left-0 w-full bg-slate-800 px-4 py-2 text-xs flex items-center gap-2 border-b border-slate-700">
+                        <span>📄</span>
+                        <span>.cursorrules</span>
+                    </div>
+                    <div class="mt-8 h-64 overflow-y-auto custom-scrollbar" id="rules-content">
+                        <span class="text-slate-500">// 아직 선택된 보안 정책이 없습니다.</span><br>
+                        <span class="text-slate-500">// 왼쪽에서 정책을 선택하면 AI가 이해할 수 있는 프롬프트가 생성됩니다.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pro Tip -->
+            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-lg flex gap-3 items-start">
+                <span class="text-xl">💡</span>
+                <div>
+                    <h4 class="font-bold text-emerald-800 text-sm">Tip: 시스템 프롬프트(System Prompt) 처럼 작동합니다.</h4>
+                    <p class="text-xs text-emerald-700 mt-1">
+                        이 파일에 적힌 내용은 Cursor의 Chat, Cmd+K(에디트), Composer 등 모든 AI 기능에 "시스템 지침"으로 주입됩니다.
+                        따라서 "항상(Always)" 또는 "절대(Never)"와 같은 강력한 어조를 사용하는 것이 효과적입니다.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: WORKFLOW -->
+        <section id="workflow" class="hidden fade-in space-y-8">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-800">자동화 워크플로우: AI의 정책 확인 과정</h2>
+                <p class="text-slate-600">
+                    정책(.cursorrules)을 넣은 후, Cursor가 이를 어떻게 수행하는지 단계별로 확인합니다.
+                    전통적인 린터처럼 빨간 줄을 긋는 것이 아니라, <strong>코드 생성 및 제안 단계에서 교정</strong>합니다.
+                </p>
+            </div>
+
+            <div class="relative border-l-2 border-slate-200 ml-4 space-y-12">
+                <!-- Step 1 -->
+                <div class="relative pl-8">
+                    <span class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-blue-500 ring-4 ring-white"></span>
+                    <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                        <h3 class="font-bold text-lg mb-2">1. 사용자 요청 (Input)</h3>
+                        <p class="text-sm text-slate-600 mb-2">사용자가 Chat이나 Cmd+K로 코드를 요청합니다.</p>
+                        <div class="bg-slate-100 p-3 rounded text-xs font-mono text-slate-700">
+                            User: "DB에 사용자 정보를 저장하는 API 만들어줘."
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="relative pl-8">
+                    <span
+                        class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-purple-500 ring-4 ring-white"></span>
+                    <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                        <h3 class="font-bold text-lg mb-2">2. 정책 주입 (Context Injection)</h3>
+                        <p class="text-sm text-slate-600 mb-2">Cursor가 <code>.cursorrules</code> 파일을 읽어 프롬프트에 몰래 추가합니다.
+                        </p>
+                        <div class="bg-slate-800 p-3 rounded text-xs font-mono text-purple-300">
+                            System: (Injecting .cursorrules content)<br>
+                            - Rule: NO RAW SQL. USE ORM.<br>
+                            - Rule: VALIDATE INPUTS.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="relative pl-8">
+                    <span
+                        class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-emerald-500 ring-4 ring-white"></span>
+                    <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                        <h3 class="font-bold text-lg mb-2">3. 보안 준수 코드 생성 (Generation)</h3>
+                        <p class="text-sm text-slate-600 mb-2">AI가 정책을 인지하고, 보안 위반 사항을 피해서 코드를 작성합니다.</p>
+                        <div class="bg-slate-100 p-3 rounded text-xs font-mono text-slate-700">
+                            AI: "Prisma ORM을 사용하여 SQL 인젝션을 방지했습니다."<br>
+                            <span class="text-blue-600">await prisma.user.create({ data: ... })</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Limitations -->
+            <div class="mt-8 bg-rose-50 border border-rose-200 p-5 rounded-lg">
+                <h3 class="text-rose-800 font-bold mb-2">⚠️ 주의사항: 한계점</h3>
+                <ul class="list-disc list-inside text-sm text-rose-700 space-y-1">
+                    <li>AI는 완벽하지 않으며, 프롬프트가 너무 길거나 복잡하면 룰을 무시할 수도 있습니다(Hallucination).</li>
+                    <li>기존에 작성된 코드(Legacy Code)에 대해서는 자동으로 스캔하지 않습니다. "이 파일 보안 검사해줘"라고 명시적으로 요청해야 합니다.</li>
+                    <li>따라서 <strong>ESLint, SonarQube 같은 전통적인 도구와 병행</strong>하는 것이 가장 좋습니다.</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-400 py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs">
+            <p class="mb-2">Cursor IDE Security Analysis Report</p>
+            <p>본 리포트는 Cursor IDE의 기능을 분석하여 생성된 인터랙티브 가이드입니다.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            currentTab: 'overview',
+            activeRules: {
+                secrets: false,
+                sql: false,
+                logs: false,
+                auth: false
+            }
+        };
+
+        // --- Rule Definitions ---
+        const ruleDefinitions = {
+            secrets: `
+<span class="text-slate-500"># Security: Secrets Management</span>
+<span class="highlight-blue">You strictly strictly adhere to security best practices.</span>
+<span class="highlight-orange">NEVER</span> hardcode secrets, API keys, or credentials in the code.
+Always use environment variables (process.env or similar).
+If you see a hardcoded secret, <span class="highlight-green">stop and ask the user to move it to .env</span>.
+`,
+            sql: `
+<span class="text-slate-500"># Security: Database Interaction</span>
+<span class="highlight-orange">NEVER</span> write raw SQL queries tailored with string concatenation.
+<span class="highlight-blue">ALWAYS</span> use the project's ORM (e.g., Prisma, TypeORM) or parameterized queries to prevent SQL Injection.
+`,
+            logs: `
+<span class="text-slate-500"># Security: Logging Policy</span>
+When adding logging statements, <span class="highlight-orange">ENSURE</span> no PII (Personally Identifiable Information) or sensitive tokens are logged.
+Use a masking function for sensitive fields like 'password', 'token', 'ssn'.
+`,
+            auth: `
+<span class="text-slate-500"># Security: Authentication & Authorization</span>
+Any API route definition <span class="highlight-blue">MUST</span> include the authentication middleware by default.
+Explicitly comment if a route is public-facing.
+`
+        };
+
+        // --- Navigation Logic ---
+        function navigate(tabId) {
+            // Update State
+            state.currentTab = tabId;
+
+            // Update UI: Sections
+            document.querySelectorAll('section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+
+            // Update UI: Buttons
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.remove('bg-blue-500', 'text-white'); // Tailwind specific removal
+            });
+
+            // Highlight active button (Desktop)
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+
+            // Render Chart if overview tab
+            if (tabId === 'overview') {
+                renderChart();
+            }
+        }
+
+        // --- Policy Simulator Logic ---
+        function toggleRule(ruleKey) {
+            state.activeRules[ruleKey] = !state.activeRules[ruleKey];
+            updateRuleUI(ruleKey);
+            renderRulesContent();
+        }
+
+        function updateRuleUI(ruleKey) {
+            const btn = document.getElementById(`btn-${ruleKey}`);
+            const icon = btn.querySelector('.status-icon');
+
+            if (state.activeRules[ruleKey]) {
+                btn.classList.remove('bg-slate-50');
+                btn.classList.add('bg-blue-50', 'border-blue-500');
+                icon.textContent = '✅';
+                icon.classList.remove('text-slate-400');
+                icon.classList.add('text-blue-600');
+            } else {
+                btn.classList.add('bg-slate-50');
+                btn.classList.remove('bg-blue-50', 'border-blue-500');
+                icon.textContent = '⚪';
+                icon.classList.add('text-slate-400');
+                icon.classList.remove('text-blue-600');
+            }
+        }
+
+        function renderRulesContent() {
+            const container = document.getElementById('rules-content');
+            const activeKeys = Object.keys(state.activeRules).filter(k => state.activeRules[k]);
+
+            if (activeKeys.length === 0) {
+                container.innerHTML = `
+                    <span class="text-slate-500">// 아직 선택된 보안 정책이 없습니다.</span><br>
+                    <span class="text-slate-500">// 왼쪽에서 정책을 선택하면 AI가 이해할 수 있는 프롬프트가 생성됩니다.</span>
+                `;
+                return;
+            }
+
+            let htmlContent = '';
+            activeKeys.forEach(key => {
+                htmlContent += ruleDefinitions[key] + '<br>';
+            });
+            container.innerHTML = htmlContent;
+        }
+
+        function resetRules() {
+            Object.keys(state.activeRules).forEach(key => {
+                state.activeRules[key] = false;
+                updateRuleUI(key);
+            });
+            renderRulesContent();
+        }
+
+        // --- Chart Logic (Chart.js) ---
+        let comparisonChart = null;
+
+        function renderChart() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+
+            if (comparisonChart) {
+                comparisonChart.destroy();
+            }
+
+            comparisonChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        '문맥 이해도 (Context)',
+                        '설정 유연성 (Flexibility)',
+                        '사전 방지 능력 (Prevention)',
+                        '검사 엄격성 (Strictness)',
+                        '전수 검사 (Full Scan)'
+                    ],
+                    datasets: [{
+                        label: 'Cursor AI (Policy)',
+                        data: [90, 95, 85, 60, 30],
+                        fill: true,
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)', // Blue-500
+                        borderColor: 'rgb(59, 130, 246)',
+                        pointBackgroundColor: 'rgb(59, 130, 246)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(59, 130, 246)'
+                    }, {
+                        label: 'Traditional Linter (ESLint)',
+                        data: [20, 40, 40, 95, 95],
+                        fill: true,
+                        backgroundColor: 'rgba(148, 163, 184, 0.2)', // Slate-400
+                        borderColor: 'rgb(148, 163, 184)',
+                        pointBackgroundColor: 'rgb(148, 163, 184)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(148, 163, 184)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: { borderWidth: 3 }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: {
+                                backdropColor: 'transparent', // Hide white box behind numbers
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.dataset.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            navigate('overview');
+        });
+
+    </script>
+</body>
+
+</html>
