@@ -37,6 +37,18 @@ window.KYOTO_GALLERY_CONFIG = {
             imgKeyword: "Chie no wa lantern"
         }
     ],
+    "로피아": [
+        {
+            title: "로피아 요도바시점",
+            desc: "2023년 6월에 오픈\n로피아는 1971년 정육점으로 창업한 곳으로,\n슈퍼 마켓, 마트업계로 진출하면서 최근 10년간 빠른 성장율을 기록",
+            imgKeyword: "lopia kyoto yodobashi store"
+        },
+        {
+            title: "로피아 요도바시점",
+            desc: "특히 해산물과 고기쪽이 인기 있는데...\n마구로(참치) 뿐만 아니라 다양한 해산물의 해장, 해동 상품은 가격, 양, 맛 모두 훌륭하다",
+            imgUrl: "https://postfiles.pstatic.net/MjAyNDA4MjJfMTI2/MDAxNzI0MzI5ODM0Nzg4.40cQSuNyA4FUzDkBWnPGth7aoPglKVh22rRGWoye-QYg.HO7H469MHD7AKn18bjRkBxotHx0Kw_qIXU9tY8J5_Tkg.JPEG/IMG_2165.JPG?type=w966"
+        }
+    ],
     "아라시야마": [
         {
             title: "치쿠린 대나무 숲",
