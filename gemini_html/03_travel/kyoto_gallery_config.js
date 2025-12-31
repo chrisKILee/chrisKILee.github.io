@@ -35,6 +35,16 @@ window.KYOTO_GALLERY_CONFIG = {
             title: "지혜의 고리 등불",
             desc: "세 번 통과하면 지혜로워진다는 전설이 있는 아마노하시다테의 상징적인 등불입니다.",
             imgKeyword: "Chie no wa lantern"
+        },
+        {
+            title: "아마노하시다테: 해변으로 떠나는 여행",
+            desc: "아마노하시다테는 교토부 북부 해변에 위치해 있으며, 감탄을 자아내는 자연의 경이로움을 간직하고 있습니다. 일본 3대 절경 중 하나로 꼽히는 아름다운 모래톱이 미야즈만의 깊고 푸른 바다에 펼쳐져 있어 마치 하늘과 땅이 이어진 듯한 매혹적인 경관을 연출합니다.",
+            imgUrl: "https://www.kyototourism.org/wp/wp-content/uploads/2021/01/Sea_Amanohashidate-01-1-1024x683.jpg"
+        },
+        {
+            title: "아마노하시다테: 케이블카, 리프트",
+            desc: "아마노하시다테의 아름다움을 마음껏 감상하려면 케이블카나 리프트를 타고 아마노하시다테 정상까지 올라가 보세요. 울창한 숲과 산을 배경으로 모래톱의 전경을 한눈에 담을 수 있습니다.\n 탁 트인 경치를 만끽한 후에는 모래톱 기슭까지 내려가 매력적인 미야즈의 거리를 거닐어 보세요. 그림처럼 아름다운 거리를 돌아다니거나 현지 신사나 절을 방문할 수도 있으며, 해산물을 만끽하거나 해변 카페에서 휴식을 취할 수도 있습니다. 아마노하시다테는 자전거, 도보, 유람선을 이용할 때도 교토 모험에서 빼놓을 수 없는 곳입니다.",
+            imgUrl: "https://www.kyototourism.org/wp/wp-content/uploads/2021/01/Sea_Amanohashidate-01-1-1024x683.jpg"
         }
     ],
     "로피아": [
@@ -47,6 +57,11 @@ window.KYOTO_GALLERY_CONFIG = {
             title: "로피아 요도바시점",
             desc: "특히 해산물과 고기쪽이 인기 있는데...\n마구로(참치) 뿐만 아니라 다양한 해산물의 해장, 해동 상품은 가격, 양, 맛 모두 훌륭하다",
             imgUrl: "https://postfiles.pstatic.net/MjAyNDA4MjJfMTI2/MDAxNzI0MzI5ODM0Nzg4.40cQSuNyA4FUzDkBWnPGth7aoPglKVh22rRGWoye-QYg.HO7H469MHD7AKn18bjRkBxotHx0Kw_qIXU9tY8J5_Tkg.JPEG/IMG_2165.JPG?type=w966"
+        },
+        {
+            title: "로피아 요도바시점",
+            desc: "스시 또한 양과 맛, 가격이 훌륭해서 여행 오시는 분들은 저녁 식사 쇼핑 리스트로 구입해서 \n호텔에서 저녁 식사 또는 야식으로 즐기셔도 좋을 듯 하다",
+            imgUrl: "https://postfiles.pstatic.net/MjAyNDA4MjJfMjc4/MDAxNzI0MzI5OTQ5NjA5.eQMyKExVXw_84I7v6kuoeiBQcarZm6LolfZ61GmF4I0g.7sQa7mrRX3ro_2wJZR1KrzCGt20lAp-ADa-8m8JsjL8g.JPEG/IMG_2178.JPG?type=w966"
         }
     ],
     "아라시야마": [
@@ -81,6 +96,18 @@ window.KYOTO_GALLERY_CONFIG = {
             title: "키부네천 물점",
             desc: "종이를 물에 띄우면 글자가 나타나는 신비로운 운세 보기를 체험해보세요.",
             imgKeyword: "Kifune Mizuuranai"
+        }
+    ],
+    "aeonmall": [
+        {
+            title: "이온몰",
+            desc: "이온몰 교토는 JR 교토역에서 도보 5분 거리에 위치한 대형 복합 쇼핑몰로, 사쿠라관(Sakura Mall)과 카에데관(Kaede Mall) 2개 건물로 구성되어 있으며, 유니클로, 무인양품, 다이소, 프랑프랑 같은 인기 브랜드와 마트, 식당, 서점 등 다양한 쇼핑 및 식사, 엔터테인먼트 시설을 갖춰 교토 여행객들의 쇼핑과 편의를 해결하기 좋은 곳",
+            imgKeyword: "AEON MALL KYOTO"
+        },
+        {
+            title: "돈키호테",
+            desc: "추천 쇼핑리스트",
+            imgUrl: "https://postfiles.pstatic.net/MjAyNDA3MzFfMTI0/MDAxNzIyMzk3OTUwOTEw.auZuAUe44nXBFRGDZrXtvqzikTpuGU9Nl4bHopV7Bqwg.5nUFS93xioluyM9iCMnm1pUBkc-CArNBoT6JbUtQmUEg.PNG/SE-5c265ec7-a9d6-45ae-971c-05a5a9268bcd.png?type=w966"
         }
     ],
     "우지(Uji)": [
@@ -168,6 +195,11 @@ window.KYOTO_GALLERY_CONFIG = {
             title: "교토역 스카이 가든",
             desc: "현대적인 건축미가 돋보이는 교토역 옥상에서 즐기는 시내 야경과 자유로운 공간입니다.",
             imgKeyword: "Kyoto Station Sky Garden"
+        },
+        {
+            title: "하루카",
+            desc: "간사이에서 오사카 정차 없이 바로 교토로 갈수 있다.\n 미리 예약해야함 \n 클룩 기준 2만원(편도)",
+            imgUrl: "https://postfiles.pstatic.net/MjAyNTAxMDFfMTMz/MDAxNzM1NzM1Mzk0ODQ3.oCLiWivilFe56gvi4Gxyq6KJeEpviPC5RTnm3siafwog.akuRTrux03zLWKh6xAyNDIBTGsRrlFLZmlm-k7zowZcg.JPEG/IMG_2742.jpg?type=w386"
         }
     ]
 };
