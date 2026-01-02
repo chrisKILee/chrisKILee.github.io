@@ -164,7 +164,41 @@ window.KYOTO_GALLERY_CONFIG = {
             title: "야사카 신사",
             desc: "기온의 수호신을 모시는 곳으로, 밤이 되면 수많은 제등이 불을 밝혀 웅장합니다.",
             imgKeyword: "Yasaka Shrine night"
-        }
+        },
+        {
+            title: "기온지역 동선",
+            desc: `후시미이나리 신사에서 시작하시는 분들은
+▶후시미이나리신사-청수사(기요미즈데라)+신넨자카,니넨자카-야사카신사-히나미코지도리-니시키시장-폰토초+가모가와강
+순으로 걸어서 구경하기 좋은 거리에요.
+※청수사(기요미즈데라)부터 가모가와강까지는
+기온 거리에 몰려있어 뚜벅이로 여행하기 좋아요`,
+            imgUrl: [
+                "https://postfiles.pstatic.net/MjAyMzA3MTdfMjEx/MDAxNjg5NTgxNzAzOTg2.zWveLINvcxOESbZ3NQ2GDvci02jH8wq-4AFlbnAC7qcg.zu4bICbxWs5TP46KkDTFrlzUrGyiPTVI4wLvNVNelQYg.PNG.qlwwoddl3/%EA%B8%B0%EC%98%A8%EC%8B%9C%EC%A1%B02.png?type=w966"
+            ]
+        },
+        {
+            title: "하나미코지 도리 - 게이샤",
+            desc: "기온시조 역에 도착하면 기온에 있는 두 곳의 게이샤 지구 중 큰 쪽의 일부인 하나미코지 도리에 쉽게 갈 수 있다. 역에서 도보 3분 거리이니 주변 관광의 거점으로도 편리하다.",
+            imgUrl: [
+                "https://postfiles.pstatic.net/MjAyMzA3MTRfMTcy/MDAxNjg5MjkzOTM1OTAw.V4T0Q1yGvOCTnFdtqv56Gp_Xhe55YGbW6CSkkkjoSbgg.Mc4WwpPPsxK652SuGg8-UGtO5X8leil-640mdUG0z0sg.JPEG.qlwwoddl3/IMG_4023.jpg?type=w966",
+                "https://postfiles.pstatic.net/MjAyMzA3MTRfMTM0/MDAxNjg5MjkzOTMxNzIx.jLUGfySDZuzUkYgr1NX6jMT6aQpef0EGcFZdMseG-3gg.6nuJQAZFoXIoRk9GNodjrHrKrlGk1dM51gYAbywQCSAg.JPEG.qlwwoddl3/IMG_4010.jpg?type=w966",
+                "https://postfiles.pstatic.net/MjAyMzA3MTRfMjgg/MDAxNjg5MjkzOTM1Mjk1.ePOHCwspwYrjCU3p-mQibq2JqpsQra5hWV9g5Rlc4b0g._AdxcqwDSrbzc_CTmUO-9DWx-LsKtboLgRAEKNfjm8Ug.JPEG.qlwwoddl3/IMG_4018.jpg?type=w466",
+                "https://postfiles.pstatic.net/MjAyMzA3MTdfMTY3/MDAxNjg5NTc0NDI4NDIy.QHsq9RdNkDTCK7hrmqJM1oSj9ovJ2Hm0k2gVWJSYslwg.eQ7bkttd90ZpsqtywuBhrylfgIE5mb0QAhHCj85793Eg.JPEG.qlwwoddl3/SE-C9E6DE63-6EFC-44FC-97CB-E19D4D4BC2F5.jpg?type=w466",
+                "https://postfiles.pstatic.net/MjAyMzA3MTRfMzAg/MDAxNjg5MjkzOTQwNTE0.eDx2aRK4nmvn8yZn670WkzLsUFBkdVr79k47ewkJwvsg.5UV5Ljg0MY2hVpnyZZGFiO8hXmMEc62TaLrYDtHIQYQg.JPEG.qlwwoddl3/IMG_4040.jpg?type=w966"
+            ]
+        },
+        {
+            title: "시조 도리 - 쇼핑",
+            desc: `기온시조 역의 3･4･6번 출구를 나서면 시조 도리로 나가게 된다. 
+그 후 시조 대교를 건너면(또는 직접 가와라마치 역에 갈 수도 있다) 근대적인 상점이 빼곡히 늘어선 거리에 도착한다.
+한편 반대 방향인 야사카 신사로 향하면 타임캡슐에서 꺼낸 듯한 가게들이 보일 것이다. 
+기온에서 시조 도리까지 걷다 보면 옛 일본에서 현대 일본으로 타임슬립을 한 것 같은 느낌이 들 것이다. 가는 길목에는 쇼핑할 곳도 많다.
+시조 도리 Shijo-dori 는 야사카 신사에서 가라스마 역까지 이어져 있는 교토 최고의 번화가로 교토의 주요 관광명소들을 포함한 다양한 브랜드 숍과 대형 쇼핑몰이 길을 따라 들어선 거리다. 백화점과 상점들이 길게 늘어져 있고 대부분의 교토 시내버스들이 이 곳을 지나간다. `,
+            imgUrl: [
+                "https://postfiles.pstatic.net/MjAyMzExMTBfNzYg/MDAxNjk5NjA4NDQyODMx.qdYViM-pMfWvQhzgbTe3uXv8_UZE8gFt45bD7tynPpUg.o2HyqP0eqfHxe4iiw5dzH-RrnukQgFzrZBS12Eqz0Ygg.JPEG.momsy/IMG_3835.jpg?type=w966",
+                "https://postfiles.pstatic.net/MjAyMzExMTBfOSAg/MDAxNjk5NjA4NDQzNTQz.7R9OzISJM3r0ibJDeDVKKZBH3LZ4jsVIJ5DAjVz2LDwg.WQxgctVK-wHxhbnheYXwo1s7wP9XFMwDksfNJ3V4VmAg.JPEG.momsy/IMG_3872.jpg?type=w966"
+            ]
+        },
     ],
     "후시미": [
         {
@@ -242,6 +276,35 @@ window.KYOTO_GALLERY_CONFIG = {
 - 공항 - 교토 이동시간 : 80분
 - 배차 간격 : 약 30분`,
             imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDJfMTk5/MDAxNzY3MjgyNTcwODk0.bTaRmIwK_H8r9ihnEONbgmecO4OlDsM-TWKYGFL8G4Eg.9DjC9IU8YPnaaqaw7kYRgBslcygV3B-unP4pkzKJpYcg.JPEG/SE-89f4e438-e721-11f0-99f4-e353563ad000.jpg?type=w400"
+        },
+        {
+            title: "민 기온 산조",
+            desc: `우리 숙소다
+- 예약번호 1400822734700247 PIN번호 9882(다른 사람에게 알려주지 마세요)
+- 18 Sanchōme, 히가시야마 구, 605-0005 교토, 교토 부, 일본
+- 재패니즈 스타일 디럭스 스위트 룸 침대 5개
+- 싱글 침대 2개(너비: 1m) 및 요이불 세트 3개(너비: 1m)
+- 위치:지하철역 및 주요 관광지와 도보 5~30분 이내 거리에 위치하며, 게이한 전철과 도자이선과도 접근성이 뛰어남.（12개 리뷰 기준）
+- 객실:일본 기준으로 넓은 방 크기와 쾌적한 인테리어, 분리된 거실 및 침실 구조, 풀/사우나 시설, 욕조 공간이 넓음.（1개 리뷰 기준）
+- 편의 시설:건조기 기능이 있는 세탁기, 완비된 주방, 바alcony 및 테이블/주방 공간 제공.（7개 리뷰 기준）
+- 서비스:QR 기반 스마트 체크인, 일본어/영어 선택 가능한 안내 서비스 제공.（2개 리뷰 기준）
+- 손님 제안:일부 고객은 제안합니다. 방의 냄새가 지속적으로 악화되어 청소 및 환기 절차 개선이 필요하며, 침구의 습기와 위생 관리가 부족하다는 점을 개선해야 한다고 제안합니다.（2개 리뷰 기준）`,
+            imgUrls: [
+                "https://ak-d.tripcdn.com/images/1mc4n12000jvkmur7FBE2_R_960_660_R5_D.jpg",
+                "https://ak-d.tripcdn.com/images/1mc6r12000jvloilm3B82_R_600_400_R5.webp",
+                "https://ak-d.tripcdn.com/images/1mc4912000jvlnlvi8CD3_R_600_400_R5.webp",
+                "https://ak-d.tripcdn.com/images/1mc1l12000jvlosmb06A4_R_600_400_R5.webp",
+                "https://ak-d.tripcdn.com/images/1mc6d12000jvlqgn8F22E_R_600_400_R5.webp",
+                "https://ak-d.tripcdn.com/images/1mc2y12000jvlq9x91386_R_600_400_R5.webp",
+                "https://ak-d.tripcdn.com/images/1mc5f12000jvlpvnnE1AB_R_600_400_R5.webp",
+                "https://ak-d.tripcdn.com/images/1mc2v12000jvlpumnF99E_R_600_400_R5.webp",
+                "https://ak-d.tripcdn.com/images/1mc4n12000jvlpumr9634_R_600_400_R5.webp",
+                "https://ak-d.tripcdn.com/images/1mc2v12000jvlpumnF99E_R_600_400_R5.webp",
+                "https://ak-d.tripcdn.com/images/1mc4n12000jvlpumr9634_R_600_400_R5.webp",
+                "https://ak-d.tripcdn.com/images/1mc0m12000jvlovadFDFA_R_600_400_R5.webp",
+                "https://ak-d.tripcdn.com/images/1mc1d12000jvlqbd11CBB_R_600_400_R5.webp",
+                "https://ak-d.tripcdn.com/images/1mc3g12000jvlqeplD879_R_600_400_R5.webp",
+            ]
         }
     ],
     "돈키호테": [
@@ -309,3 +372,4 @@ window.KYOTO_GALLERY_CONFIG = {
 //가와라마치 & 시조 거리
 //기온 & 하나미코지 거리 (Gion & Hanamikoji Street)
 //데라마치 & 신쿄고쿠 상점가
+//헤이안
