@@ -58,7 +58,7 @@
         /* Modal Swipe Layer */
         #gallery-layer {
             transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 1000;
         }
 
@@ -72,6 +72,7 @@
             scroll-snap-type: x mandatory;
             scrollbar-width: none;
             -ms-overflow-style: none;
+            height: 100%;
         }
 
         .swipe-container::-webkit-scrollbar {
@@ -81,16 +82,56 @@
         .swipe-card {
             flex: 0 0 100%;
             scroll-snap-align: start;
-            padding: 1rem;
+            padding: 1.5rem;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Vertical Image Scroll */
+        .img-scroll-container {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            scroll-snap-type: y mandatory;
+            height: 220px;
+            border-radius: 1.5rem;
+            background: #f1f5f9;
+        }
+
+        .img-scroll-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .img-scroll-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .img-scroll-item {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 100%;
+            scroll-snap-align: start;
+            object-fit: cover;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
         }
 
         .spinner {
-            border: 3px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
+            border: 3px solid rgba(0, 0, 0, 0.05);
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            border-left-color: #1e293b;
-            animation: spin 1s linear infinite;
+            border-left-color: #0f172a;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
@@ -218,7 +259,13 @@
 
         <!-- Tab: Spots Gallery -->
         <section id="spots" class="tab-content hidden space-y-4">
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div class="mb-4">
+                <button onclick="openRealSearch('ALL')"
+                    class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-lg btn-press flex items-center justify-center space-x-2">
+                    <span>✨ 전체 장소 한눈에 보기</span>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="spot-buttons-grid">
                 <button onclick="openRealSearch('이네노후나야')"
                     class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">이네노후나야</button>
                 <button onclick="openRealSearch('아마노하시다테')"
@@ -237,6 +284,16 @@
                     class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">후시미</button>
                 <button onclick="openRealSearch('히가시야마')"
                     class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">히가시야마</button>
+                <button onclick="openRealSearch('돈키호테')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">돈키호테</button>
+                <button onclick="openRealSearch('로피아')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">로피아 마트</button>
+                <button onclick="openRealSearch('aeonmall')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">이온몰</button>
+                <button onclick="openRealSearch('교토역')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">교토역</button>
+                <button onclick="openRealSearch('하루카')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">하루카 공항이동</button>
             </div>
         </section>
     </main>
@@ -298,7 +355,7 @@
                 day: "1/23 (금) | 도착 및 장보기",
                 desc: "오사카 공항 13시 도착 후 하루카 탑승. 교토역 체크인 후 9인 대량 보급을 마칩니다.",
                 steps: [
-                    { time: "13:00", spot: "간사이 공항 도착", note: "입국 수속 및 하루카 티켓 발권." },
+                    { time: "13:00", spot: "간사이 공항 도착", note: "입국 수속 및 하루카 탑승.", search: "하루카" },
                     { time: "16:00", spot: "교토역 도착 & 숙소 체크인", note: "민기온 산조 숙소 도보 3분 이동. 짐 풀기.", search: "교토역" },
                     { time: "17:30", spot: "이온몰 & 돈키호테", note: "생수, 1월 제철 과일, 위스키 등 4박 5일분 보급.", search: "aeonmall" },
                     { time: "19:30", spot: "숙소 첫 저녁 식사", note: "이온몰 델리와 과일로 즐거운 가족 파티." }
@@ -320,7 +377,7 @@
                 desc: "교토의 상징적인 사찰과 시장의 활기를 느끼는 날입니다.",
                 steps: [
                     { time: "09:30", spot: "기요미즈데라 & 히가시야마", note: "청수사 산책 및 산넨자카 쇼핑.", search: "히가시야마" },
-                    { time: "13:00", spot: "니시키 시장 투어", note: "먹거리 탐방 및 저녁 반찬(절임류) 구매.", search: "히가시야마" },
+                    { time: "13:00", spot: "니시키 시장 투어", note: "먹거리 탐방 및 저녁 반찬(절임류) 구매.", search: "니시키" },
                     { time: "15:30", spot: "철학자의 길 & 기온", note: "겨울 운치 수로 길 산책 후 기온 시라카와 야경.", search: "철학자의 길" }
                 ]
             },
@@ -403,17 +460,27 @@
             const dots = document.getElementById('gallery-dots');
             const titleEl = document.getElementById('gallery-title');
 
-            const photos = window.KYOTO_GALLERY_CONFIG[spotKey] || [];
+            let photos = [];
+            if (spotKey === 'ALL') {
+                photos = Object.values(window.KYOTO_GALLERY_CONFIG).flat();
+                titleEl.innerText = `전체 장소 한눈에 보기`;
+            } else {
+                photos = window.KYOTO_GALLERY_CONFIG[spotKey] || [];
+                titleEl.innerText = `${spotKey} 상세 정보`;
+            }
+
             if (photos.length === 0) {
-                alert("해당 장소의 이미지가 준비 중입니다.");
+                alert("해당 장소의 데이터가 준비 중입니다.");
                 return;
             }
 
-            titleEl.innerText = `${spotKey} 상세 정보`;
             layer.classList.remove('hidden');
-            setTimeout(() => layer.classList.add('open'), 10);
+            setTimeout(() => {
+                layer.classList.add('open');
+                // 보안: 뒤로가기 방지를 위한 상태 추가
+                history.pushState({ gallery: true }, '');
+            }, 10);
 
-            // AI Loader skip
             loader.classList.add('hidden');
             content.classList.remove('hidden');
 
@@ -423,40 +490,64 @@
 
             photos.forEach((photo, idx) => {
                 const item = document.createElement('div');
-                item.className = 'swipe-card flex flex-col items-center h-full justify-center';
+                item.className = 'swipe-card';
 
-                // Use direct URL if provided, otherwise use Bing search
-                const imgUrl = photo.imgUrl || `https://tse2.mm.bing.net/th?q=${encodeURIComponent(photo.imgKeyword)}&w=600&h=400&c=7&rs=1&p=0`;
+                // Handle single image or multiple images
+                let imgHtml = '';
+                const urls = photo.imgUrls || (photo.imgUrl ? [photo.imgUrl] : []);
+
+                if (urls.length > 0) {
+                    imgHtml = `<div class="img-scroll-container">`;
+                    urls.forEach(url => {
+                        imgHtml += `<img src="${url}" class="img-scroll-item" onerror="this.src='https://placehold.co/600x400?text=No+Image'">`;
+                    });
+                    imgHtml += `</div>`;
+                } else {
+                    const singleUrl = `https://tse2.mm.bing.net/th?q=${encodeURIComponent(photo.imgKeyword)}&w=600&h=400&c=7&rs=1&p=0`;
+                    imgHtml = `<div class="img-scroll-container">
+                        <img src="${singleUrl}" class="img-scroll-item" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
+                    </div>`;
+                }
 
                 item.innerHTML = `
-                    <div class="bg-white p-6 rounded-[2.5rem] shadow-2xl border border-slate-100 w-full max-w-xs h-[450px] flex flex-col overflow-hidden">
-                        <div class="w-full h-40 bg-slate-100 rounded-2xl overflow-hidden mb-5">
-                            <img src="${imgUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
+                    <div class="glass-panel p-6 rounded-[2.5rem] w-full max-w-sm h-[520px] flex flex-col overflow-hidden animate-fade-in">
+                        ${imgHtml}
+                        <div class="mt-5 overflow-y-auto pr-1 flex-grow">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase mb-1 tracking-widest block italic">Kyoto 2025 Archive</span>
+                            <h4 class="text-lg font-bold mb-3 text-slate-800 leading-tight">${photo.title}</h4>
+                            <p class="text-[11px] text-slate-600 leading-relaxed whitespace-pre-wrap">${cleanMarkdown(photo.desc)}</p>
                         </div>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest italic">Kyoto 2025 Real View</span>
-                        <h4 class="text-lg font-bold mb-3 text-slate-800 leading-tight">${photo.title}</h4>
-                        <p class="text-xs text-slate-600 leading-relaxed mb-4">${photo.desc}</p>
-                        <div class="mt-auto text-[9px] text-slate-300 font-medium">Curated Data System</div>
+                        <div class="pt-4 mt-auto border-t border-slate-100 flex justify-between items-center">
+                            <span class="text-[8px] text-slate-300 font-medium">9-PEOPLE MASTER PLAN</span>
+                            <span class="text-[8px] text-slate-300 font-medium italic">Spot ${idx + 1} / ${photos.length}</span>
+                        </div>
                     </div>
                 `;
                 slider.appendChild(item);
 
                 const dot = document.createElement('div');
-                dot.className = `w-1.5 h-1.5 rounded-full transition-colors ${idx === 0 ? 'bg-slate-900' : 'bg-slate-200'}`;
+                dot.className = `w-1.5 h-1.5 rounded-full transition-all ${idx === 0 ? 'bg-slate-900 w-4' : 'bg-slate-200'}`;
                 dots.appendChild(dot);
             });
 
-            // Update Navigation Visibility
             updateNavButtons(slider, photos.length);
 
             slider.onscroll = () => {
                 const active = Math.round(slider.scrollLeft / slider.offsetWidth);
                 dots.querySelectorAll('div').forEach((d, i) => {
-                    d.className = `w-1.5 h-1.5 rounded-full transition-colors ${i === active ? 'bg-slate-900' : 'bg-slate-200'}`;
+                    d.className = `w-1.5 h-1.5 rounded-full transition-all ${i === active ? 'bg-slate-900 w-4' : 'bg-slate-200'}`;
                 });
                 updateNavButtons(slider, photos.length);
             };
         }
+
+        // 보안: 브라우저 뒤로가기 버튼 처리
+        window.onpopstate = function (event) {
+            const layer = document.getElementById('gallery-layer');
+            if (layer.classList.contains('open')) {
+                closeGallery();
+            }
+        };
 
         function moveGallery(direction) {
             const slider = document.getElementById('gallery-slider');
@@ -469,11 +560,9 @@
             const prev = document.getElementById('nav-prev-container');
             const next = document.getElementById('nav-next-container');
 
-            if (prev) prev.style.visibility = active === 0 ? 'hidden' : 'visible';
-            if (next) next.style.visibility = active >= count - 1 ? 'hidden' : 'visible';
+            if (prev) prev.style.display = (active === 0 || count <= 1) ? 'none' : 'block';
+            if (next) next.style.display = (active >= count - 1 || count <= 1) ? 'none' : 'block';
         }
-
-        // Remove old AI Search Code
 
         function closeGallery() {
             const layer = document.getElementById('gallery-layer');

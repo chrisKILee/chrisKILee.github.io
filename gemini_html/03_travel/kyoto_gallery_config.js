@@ -38,12 +38,12 @@ window.KYOTO_GALLERY_CONFIG = {
         },
         {
             title: "아마노하시다테: 해변으로 떠나는 여행",
-            desc: "아마노하시다테는 교토부 북부 해변에 위치해 있으며, 감탄을 자아내는 자연의 경이로움을 간직하고 있습니다. 일본 3대 절경 중 하나로 꼽히는 아름다운 모래톱이 미야즈만의 깊고 푸른 바다에 펼쳐져 있어 마치 하늘과 땅이 이어진 듯한 매혹적인 경관을 연출합니다.",
+            desc: "아마노하시다테는 교토부 북부 해변에 위치해 있으며, 감탄을 자아내는 자연의 경이로움을 간직하고 있습니다. \n일본 3대 절경 중 하나로 꼽히는 아름다운 모래톱이 미야즈만의 깊고 푸른 바다에 펼쳐져 있어 마치 하늘과 땅이 이어진 듯한 매혹적인 경관을 연출합니다.",
             imgUrl: "https://www.kyototourism.org/wp/wp-content/uploads/2021/01/Sea_Amanohashidate-01-1-1024x683.jpg"
         },
         {
             title: "아마노하시다테: 케이블카, 리프트",
-            desc: "아마노하시다테의 아름다움을 마음껏 감상하려면 케이블카나 리프트를 타고 아마노하시다테 정상까지 올라가 보세요. 울창한 숲과 산을 배경으로 모래톱의 전경을 한눈에 담을 수 있습니다.\n 탁 트인 경치를 만끽한 후에는 모래톱 기슭까지 내려가 매력적인 미야즈의 거리를 거닐어 보세요. 그림처럼 아름다운 거리를 돌아다니거나 현지 신사나 절을 방문할 수도 있으며, 해산물을 만끽하거나 해변 카페에서 휴식을 취할 수도 있습니다. 아마노하시다테는 자전거, 도보, 유람선을 이용할 때도 교토 모험에서 빼놓을 수 없는 곳입니다.",
+            desc: "아마노하시다테의 아름다움을 마음껏 감상하려면 케이블카나 리프트를 타고 아마노하시다테 정상까지 올라가 보세요. \n울창한 숲과 산을 배경으로 모래톱의 전경을 한눈에 담을 수 있습니다.\n 탁 트인 경치를 만끽한 후에는 모래톱 기슭까지 내려가 매력적인 미야즈의 거리를 거닐어 보세요. 그림처럼 아름다운 거리를 돌아다니거나 현지 신사나 절을 방문할 수도 있으며, 해산물을 만끽하거나 해변 카페에서 휴식을 취할 수도 있습니다. 아마노하시다테는 자전거, 도보, 유람선을 이용할 때도 교토 모험에서 빼놓을 수 없는 곳입니다.",
             imgUrl: "https://www.kyototourism.org/wp/wp-content/uploads/2021/01/Sea_Amanohashidate-01-1-1024x683.jpg"
         }
     ],
@@ -237,9 +237,75 @@ window.KYOTO_GALLERY_CONFIG = {
             imgKeyword: "Kyoto Station Sky Garden"
         },
         {
-            title: "하루카",
-            desc: "간사이에서 오사카 정차 없이 바로 교토로 갈수 있다.\n 미리 예약해야함 \n 클룩 기준 2만원(편도)",
-            imgUrl: "https://postfiles.pstatic.net/MjAyNTAxMDFfMTMz/MDAxNzM1NzM1Mzk0ODQ3.oCLiWivilFe56gvi4Gxyq6KJeEpviPC5RTnm3siafwog.akuRTrux03zLWKh6xAyNDIBTGsRrlFLZmlm-k7zowZcg.JPEG/IMG_2742.jpg?type=w386"
+            title: "하루카 JR특급열차",
+            desc: `- 노선 : 공항 - 덴노지 - 오사카(우메다) - 신오사카 - 교토
+- 공항 - 교토 이동시간 : 80분
+- 배차 간격 : 약 30분`,
+            imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDJfMTk5/MDAxNzY3MjgyNTcwODk0.bTaRmIwK_H8r9ihnEONbgmecO4OlDsM-TWKYGFL8G4Eg.9DjC9IU8YPnaaqaw7kYRgBslcygV3B-unP4pkzKJpYcg.JPEG/SE-89f4e438-e721-11f0-99f4-e353563ad000.jpg?type=w400"
+        }
+    ],
+    "돈키호테": [
+        {
+            title: "부르봉 과자",
+            desc: "영어로 BOURBON 써있는 것들이 다 부르봉인데 위에 초콜릿 과자 혹은 브라우니 과자들이 한 번 다 먹어보시길 추천드립니다.",
+            imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDJfMTAy/MDAxNzY3MjgxNTYyMTQ1.RyFxeb_r_TLHqDJjdow7WU5TXVFFYp68TuYvJiLWZokg._EGxGruvD4Q5Oa8FbQKfhdK7uUAQl0Ldvie67465cTAg.JPEG/SE-89dec41a-e721-11f0-99f4-73df7e8da612.jpg?type=w800"
+        },
+        {
+            title: "부르봉 과자",
+            desc: "영어로 BOURBON 써있는 것들이 다 부르봉인데 위에 초콜릿 과자 혹은 브라우니 과자들이 한 번 다 먹어보시길 추천드립니다.",
+            imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDJfNDEg/MDAxNzY3MjgxNTYwNzMy.tqe6xSGlQtNWn8gzcBZOwYtAEbHzlnDOhuAMu0JAPr8g.IVxMEgV3AYsB6W9LCLi1jt_DZKVrJ1O7QAbBoZNkq8Ig.JPEG/SE-1b2483a7-bbf3-4a46-bd4b-49d16163cb2c.jpg?type=w800"
+        },
+        {
+            title: "부르봉 과자",
+            desc: "영어로 BOURBON 써있는 것들이 다 부르봉인데 위에 초콜릿 과자 혹은 브라우니 과자들이 한 번 다 먹어보시길 추천드립니다.",
+            imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDJfNjUg/MDAxNzY3MjgxNzYzNTc3.LqK_yKIOzxQnZFZJuE-uB9znyJnMLIEgkelRJUE-N4wg.fM85wIBRLZ1z7arssG7WaMAWGGqgd-IrQH50Us3_oRAg.JPEG/SE-08e23689-b25d-4c9d-8d9b-e419c33c5eab.jpg?type=w800"
+        },
+        {
+            title: "타케노코노사토(죽순마을)",
+            desc: "일본에 초코송이 비슷한 과자들이 굉장히 많은데요. 그 중에 타케노코노사토(죽순마을) 과자가 정말 맛있습니다. 말차맛, 초콜렛 맛도 다 맛있고, 과자 부분이 우리나라보다 더 크리미한 맛이 나서 맛있더라구요",
+            imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDJfMTE3/MDAxNzY3MjgyMDA0Mzk3.FjznjywQ6rZve9lHnFOFw7CHg8Hz6RswkqDHSUTMOY0g.4iy3fn6AZu9B0eje-J10Pcm7u9AzLLzY89P15YbDHqog.JPEG/SE-89dfd58b-e721-11f0-99f4-23ba8dd5e259.jpg?type=w400"
+        },
+        {
+            title: "타케노코노사토(죽순마을)",
+            desc: "일본에 초코송이 비슷한 과자들이 굉장히 많은데요. 그 중에 타케노코노사토(죽순마을) 과자가 정말 맛있습니다. 말차맛, 초콜렛 맛도 다 맛있고, 과자 부분이 우리나라보다 더 크리미한 맛이 나서 맛있더라구요",
+            imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDJfMTAy/MDAxNzY3MjgxOTkyMzg1.OW5qyQI7p3gzDBzQTzOOFlSyKhxu8K3B23XLC_raGWwg.NuSr1Du6sTMlIo9-Zo6lpeAH5p2ykQiTQBHzyQJaB_wg.JPEG/SE-89ead212-e721-11f0-99f4-a1405e190904.jpg?type=w400"
+        },
+        {
+            title: "멜티 키스(Meltykiss)",
+            desc: "개인적으로 멜티키스가 맛있고 베이크는 너무 달아서 좀 질리더라구요",
+            imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDFfMTE2/MDAxNzY3Mjc5MTc0NzYw.bGntkPub6GuVhgdP_XssJpQFm8pvEtlUyoSg7ZlVOAgg.eUwmjV54d7Zruy0Xk9xzcOT0hzJwET7r5EN6mGkMflIg.JPEG/900%EF%BC%BF20251124%EF%BC%BF220352.jpg?type=w400"
+        },
+        {
+            title: "베이크(BAKE)",
+            desc: "개인적으로 멜티키스가 맛있고 베이크는 너무 달아서 좀 질리더라구요",
+            imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDFfMzgg/MDAxNzY3Mjc5MTcyMDI1.4yECaacC70l-1lpfKxJk9DAkkRW8-t-4CBYxzXwm9Hwg._OwApimy-_c6MxeuIbQAnhbyBM_qnq1EWrHzgrtNflQg.JPEG/900%EF%BC%BF20251124%EF%BC%BF220402.jpg?type=w400"
+        },
+        {
+            title: " 후리가케",
+            desc: "밥에다가 뿌려먹으면 정말 맛있습니다. 다양한 맛으로 사오시길 추천",
+            imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDJfMTk5/MDAxNzY3MjgyNTcwODk0.bTaRmIwK_H8r9ihnEONbgmecO4OlDsM-TWKYGFL8G4Eg.9DjC9IU8YPnaaqaw7kYRgBslcygV3B-unP4pkzKJpYcg.JPEG/SE-89f4e438-e721-11f0-99f4-e353563ad000.jpg?type=w400"
+        }
+    ],
+    "하루카": [
+        {
+            title: "하루카 JR특급열차",
+            desc: "- 노선 : 공항 - 덴노지 - 오사카(우메다) - 신오사카 - 교토\n- 공항 - 교토 이동시간 : 80분\n- 배차 간격 : 약 30분",
+            imgUrls: [
+                "https://mblogthumb-phinf.pstatic.net/MjAyNTEyMzBfNzkg/MDAxNzY3MDI3ODU1NTEx.G8G1qCzQ_allKdgo9G7xbs0d-ufjJxHtyw8HitRswuQg.hPDZBPHbMnopO3oEY785nLMfk8q3tCIx_31M9uWArpAg.JPEG/SE-72d3cc9b-e4d7-11f0-8fa5-31fd468981c9.jpg?type=w800",
+                "https://mblogthumb-phinf.pstatic.net/MjAyNTEyMzBfMTg5/MDAxNzY3MDI3ODUyNTYy.rg4d54QGBZpUk9UdMJKCrQHKRbRQV4GNfNtO29gxV3Eg.nfGlIXjCOqW0Hdr32tkgeUYzDJg2MbFmHGblb60fPO4g.JPEG/SE-72d6d9dd-e4d7-11f0-8fa5-d576154feaa2.jpg?type=w800",
+                "https://mblogthumb-phinf.pstatic.net/MjAyNTEyMzBfMTc5/MDAxNzY3MDI3ODY1Mzc2.63OcgLYQW7xBEtf4rAm64PfnsR88LViobEeRoY8KQZYg.S-QggPxf-TB53K7xzetDpOn0-bkYXYUf6umD1PJt4v0g.JPEG/SE-72d5533c-e4d7-11f0-8fa5-6ff696e639d2.jpg?type=w800",
+                "https://mblogthumb-phinf.pstatic.net/MjAyNTEyMzBfMjk5/MDAxNzY3MDI3ODQ4ODIx.hDBYW-rbL6JrE7-UlvFALmZstbleerNtXqARQ9Tt9lEg.bvGndCrLG4pUex3m4fLqDke3X5XgsTB9wNKRRmWdz-Ug.JPEG/SE-72d0bf59-e4d7-11f0-8fa5-c3dd87387018.jpg?type=w800",
+                "https://mblogthumb-phinf.pstatic.net/MjAyNTEyMzBfMzQg/MDAxNzY3MDI3ODYxNTk4.kq90KFIyIrlW2Ookl94NZV3ob3A58zDjevpUDgnZrfIg.J_boHK5rxz4DBVCm_6fbMVj7u0QwXfHLkU5Y9RFBxjcg.JPEG/SE-72d8125e-e4d7-11f0-8fa5-f1ae9e38b285.jpg?type=w800"
+            ]
+        },
+        {
+            title: "헬로키티 하루카",
+            desc: "**귀여운 헬로키티 테마**의 하루카 열차입니다.\n\n외관뿐만 아니라 내부 시트 등 곳곳에서 키티를 만날 수 있어 여행의 시작부터 즐거움을 줍니다.",
+            imgKeyword: "Hello Kitty Haruka train"
         }
     ]
+
 };
+//가와라마치 & 시조 거리
+//기온 & 하나미코지 거리 (Gion & Hanamikoji Street)
+//데라마치 & 신쿄고쿠 상점가
