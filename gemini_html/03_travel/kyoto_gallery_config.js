@@ -23,7 +23,7 @@ window.KYOTO_GALLERY_CONFIG = {
             title: "이네만",
             desc: `세계에서 가장 아름다운 만 중 하나로 불리는 이네만
 🌊 웅장한 자연의 아름다움에 흠뻑 빠져드는 여행: 후나야 전망대에 서서 세계에서 가장 아름다운 만 중 하나로 손꼽히는 이네만을 감상해 보세요. 푸른 보석💎처럼 빛나는 이네만은 바다와 산 사이에 자리 잡고 있어 마치 한 폭의 그림 속에 들어온 듯한 황홀경을 선사하며, 마음의 평안을 가져다줍니다~`,
-            imgUrl: [
+            imgUrls: [
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_727/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/zpjujq3uqszfjicgaitr/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_728/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/ndzgc7u0hlqen49sbunm/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_727/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/hd1upbmsjxtmf7v8ignb/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
@@ -37,7 +37,7 @@ window.KYOTO_GALLERY_CONFIG = {
             title: "이네 후나야",
             desc: `‘일본의 베네치아’라고 불리는 이네 후나야
 👘 역사적 풍미를 깊이 탐구하는 여행: 고풍스럽고 우아한 후나야 거리를 거닐며 에도 시대로 시간 여행을 떠나보세요. 이네우라 공원에 들어가 이네초 특유의 후나야 건축물을 가까이에서 감상하며 그윽한 역사적 정취를 느껴보세요~`,
-            imgUrl: [
+            imgUrls: [
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_728/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/rnmzk9dioqolcylkr3kv/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_971/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/pvtbniwmvh3incdiljmk/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_974/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/g0j4dubqmezdcfccfsx4/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
@@ -53,7 +53,7 @@ window.KYOTO_GALLERY_CONFIG = {
 INE CAFE는 그림처럼 아름다운 이네 만(伊根灣) 해변에 자리 잡고 있습니다~
 INE CAFE는 산과 바다를 끼고 있어, 푸른 물결이 넘실대는 아름다운 바다를 마음껏 감상할 수 있습니다~
 INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모를 그대로 간직하고 있습니다~`,
-            imgUrl: [
+            imgUrls: [
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_863/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/uvpbwgjq91xfsjin4hkv/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_728/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/aw8ule6jg70tgbs6bkxz/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_971/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/tzvvnorj0akovstbpcpo/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
@@ -64,7 +64,7 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             title: "이네후나야 유람선",
             desc: `🛳️해상 액티비티를 통해 친밀하게 교감하는 여행: 유람선을 타고 이네만 깊숙이 들어가 아름다운 해경과 후나야의 진기한 풍경을 감상해 보세요. 유람선이 천천히 나아감에 따라, 배를 따라 나는 갈매기️들과 교감하며 특별한 해상 액티비티와 정취를 만끽할 수 있습니다~
 유람선을 타고 이네 만의 아름다운 해경과 후나야의 기이한 풍경을 감상하세요~`,
-            imgUrl: [
+            imgUrls: [
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_728/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/ltggyhqysjjfxpdt1ypi/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_728/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/pidiv2jigy1mprwvpw9u/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_971/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/dxwx4seh0zqxoy9mdte8/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
@@ -95,15 +95,10 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             imgUrl: "https://www.kyototourism.org/wp/wp-content/uploads/2021/01/Sea_Amanohashidate-01-1-1024x683.jpg"
         },
         {
-            title: "아마노하시다테: 케이블카, 리프트",
-            desc: "아마노하시다테의 아름다움을 마음껏 감상하려면 케이블카나 리프트를 타고 아마노하시다테 정상까지 올라가 보세요. \n울창한 숲과 산을 배경으로 모래톱의 전경을 한눈에 담을 수 있습니다.\n 탁 트인 경치를 만끽한 후에는 모래톱 기슭까지 내려가 매력적인 미야즈의 거리를 거닐어 보세요. 그림처럼 아름다운 거리를 돌아다니거나 현지 신사나 절을 방문할 수도 있으며, 해산물을 만끽하거나 해변 카페에서 휴식을 취할 수도 있습니다. 아마노하시다테는 자전거, 도보, 유람선을 이용할 때도 교토 모험에서 빼놓을 수 없는 곳입니다.",
-            imgUrl: "https://www.kyototourism.org/wp/wp-content/uploads/2021/01/Sea_Amanohashidate-01-1-1024x683.jpg"
-        },
-        {
-            titel: "아마노하시다테",
+            title: "아마노하시다테",
             desc: `아마노하시다테는 ‘일본 3경 중 하나
 🚠케이블카를 타고 하늘에서 감상하는 웅장한 풍경: 아마노하시다테에서만 볼 수 있는 독특한 1인용 그네식 케이블카를 타고 하늘 높이 올라가 히류칸 전망대에 도착합니다. 이곳에서는 거꾸로 된 독특한 시각으로 하늘을 나는 용과 같은 아마노하시다테의 웅장한 절경을 눈에 담을 수 있습니다`,
-            imgUrl: [
+            imgUrls: [
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_863/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/pwdxb8gvhgwcjlfvhueh/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1280,h_853/w_79,x_14,y_14,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/dso0nzdjqqmunqhxa1l6/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1280,h_854/w_79,x_14,y_14,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/hgkovsgmhgxxgathspoe/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
@@ -118,7 +113,7 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             title: "아마노하시다테의 회전교",
             desc: `🏖️회전교와 해변을 거닐며 여유를 만끽하는 여행: 독특한 회전교를 건너 아마노하시다테의 깨끗한 해변에 도착합니다. 
 이곳에서 여유롭게 산책하며 몸과 마음을 편안하게 하고 자연의 고요함과 아름다움을 만끽해 보세요~`,
-            imgUrl: [
+            imgUrls: [
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_728/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/hz8cawd4lmf6pbm01ybw/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_971/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/j3hshhxzkysqozllcdyd/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_971/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/siyjnchsquvj7gzj0kk2/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
@@ -134,7 +129,7 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             desc: `🏯오래된 사찰에서 지혜를 기원하는 여행: 지온지에 들어서면 엄숙하고 신비로운 기운을 느낄 수 있습니다. 
 이곳에서 지혜를 관장하는 문수보살에게 학업 성취와 사업 번창을 기원해 보세요. 
 또한, 고풍스러운 사찰 건축 양식과 독특한 부채 점괘의 매력을 느껴볼 수 있습니다🎐`,
-            imgUrl: [
+            imgUrls: [
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1280,h_853/w_79,x_14,y_14,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/rpagkqa7ls69g1szfo7b/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_863/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/ysw3thr1cuu8pjrcxpok/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
                 "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_975/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/zvpszm4nmwozv1gnob4p/%EA%B5%90%ED%86%A0%EC%95%84%EB%A7%88%EB%85%B8%ED%95%98%EC%8B%9C%EB%8B%A4%ED%85%8C%EC%9D%B4%EB%84%A4%ED%9B%84%EB%82%98%EC%95%BC%EC%9D%B4%EB%84%A4%EB%A7%8C%EC%A0%88%EA%B2%BD%EA%B0%90%EC%83%81%EC%9D%BC%EC%9D%BC%ED%88%AC%EC%96%B4(%EC%98%A4%EC%82%AC%EC%B9%B4%EB%98%90%EB%8A%94%EA%B5%90%ED%86%A0%EC%B6%9C%EB%B0%9C).webp",
@@ -224,11 +219,6 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
         {
             title: "녹차와 말차의 본고장인 우지를 방문하자",
             desc: "우지차의 명산지로 알려진 우지는 교토시의 바로 남쪽 즉 교토 차의 고향에 위치해 있습니다. \n차밭을 산책한 후, 차 재배와 제조의 복잡한 과정을 배울 수 있습니다. 또한 현지 찻집에 들러 전통적인 다도를 즐기며 우지 고급 말차의 풍부하고 다양한 풍미를 느껴 보세요.",
-            imgUrl: "https://www.kyototourism.org/wp/wp-content/uploads/2024/10/Uji.jpg"
-        },
-        {
-            title: "뵤도인 절",
-            desc: "우지에는 교토에서 가장 귀중한 사적도 있습니다. 상징적인 호오도 불당으로 유명하며 유네스코 세계유산에 등재된 '뵤도인 절'\n 헤이안 시대(794~1185)의 건축 양식을 현재에 전하는 호오도 불당은 세세한 부분까지 장식이 되어 있습니다. 또한 이곳에는 아름다운 연못도 있습니다. ",
             imgUrl: "https://www.kyototourism.org/wp/wp-content/uploads/2024/10/Uji.jpg"
         }
     ],
