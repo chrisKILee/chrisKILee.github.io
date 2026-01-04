@@ -11,6 +11,7 @@ window.FOLDER_CONFIG['03_travel'] = {
         "kyoto_family_trip.html",
         "yangyang_2025-christmas.html",
         "kyoto_plan_2026.html",
+        "kyoto_travel.html",
         "north_kyoto.html",
         "north_kyoto2_html"
     ],
@@ -23,6 +24,7 @@ window.FOLDER_CONFIG['03_travel'] = {
     "kyoto_family_trip.html": "2026년 가족 여행 계획: 목적지 교토",
     "yangyang_2025-christmas.html": "양양·속초 크리스마스 가족 여행 계획",
     "kyoto_plan_2026.html": "2026년 교토 가족 여행 계획",
+    "kyoto_travel.html": "교토 여행지 교통",
     "north_kyoto.html": "교토 북부 여행 계획",
     "north_kyoto2_html": "교토 북부 여행 전략 분석 리포트"
 };
