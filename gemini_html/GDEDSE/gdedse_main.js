@@ -1,6 +1,6 @@
 
 // --- Configuration ---
-const KNOWN_FOLDERS = ['01_rnd', '02_work', '03_travel', '04_AI_Study', '05_Private'];
+const KNOWN_FOLDERS = ['01_rnd', '02_work', '03_travel', '04_AI_Study', '05_Private', '06_VNTG_AI_STUDY'];
 
 // Hash Mappings for Security/Obfuscation
 const HASH_MAPPINGS = {
@@ -8,7 +8,8 @@ const HASH_MAPPINGS = {
     '02_work': 'BF7K2M9',
     '03_travel': 'C8PQ4X1',
     '04_AI_Study': 'QT38XYX',
-    '05_Private': 'RU4TYZ1'
+    '05_Private': 'RU4TYZ1',
+    '06_VNTG_AI_STUDY': 'VNTG7S2'
 };
 
 // --- Logic ---
