@@ -95,23 +95,25 @@ echo "✏️  Updating index.html..."
 INDEX_FILE="$HASH_DIR/index.html"
 
 # Replace title
-sed -i "s|<title>🔬 R&D - Research & Development</title>|<title>$EMOJI $TITLE</title>|g" "$INDEX_FILE"
+sed -i "s|<title>🔬 R\&D - Research \& Development</title>|<title>$EMOJI $TITLE</title>|g" "$INDEX_FILE"
 
 # Replace header
-sed -i "s|<h1>🔬 R&D</h1>|<h1>$EMOJI $TITLE</h1>|g" "$INDEX_FILE"
-sed -i "s|<p>Research & Development Projects</p>|<p>$TITLE Content</p>|g" "$INDEX_FILE"
+sed -i "s|<h1 class=\"page-title\">Research \& Development</h1>|<h1 class=\"page-title\">$TITLE</h1>|g" "$INDEX_FILE"
+sed -i "s|<p class=\"page-desc\">Exploring new technologies and architectures.</p>|<p class=\"page-desc\">$TITLE Content</p>|g" "$INDEX_FILE"
+sed -i "s|placeholder=\"Search R\&D docs...\"|placeholder=\"Search $TITLE docs...\"|g" "$INDEX_FILE"
 
-# Replace gradient
-sed -i "s|background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);|background: $GRADIENT;|g" "$INDEX_FILE"
+# Replace secondary gradient
+sed -i "s|--primary-gradient: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);|--primary-gradient: $GRADIENT;|g" "$INDEX_FILE"
+sed -i "s|--accent-color: #005bea;|--accent-color: #2a5298;|g" "$INDEX_FILE"
 
 # Replace API path
-sed -i "s|const GITHUB_PATH = 'gemini_html/01_rnd';|const GITHUB_PATH = 'gemini_html/$FOLDER_NAME';|g" "$INDEX_FILE"
+sed -i "s|contents/gemini_html/01_rnd|contents/gemini_html/$FOLDER_NAME|g" "$INDEX_FILE"
 
 # Replace config path
-sed -i "s|fetch('../01_rnd/files.json')|fetch('../$FOLDER_NAME/files.json')|g" "$INDEX_FILE"
+sed -i "s|CONFIG_PATH = '../01_rnd/files.json'|CONFIG_PATH = '../$FOLDER_NAME/files.json'|g" "$INDEX_FILE"
 
 # Replace file content path
-sed -i "s|fetch(\`../01_rnd/\${filename}\`)|fetch(\`../$FOLDER_NAME/\${filename}\`)|g" "$INDEX_FILE"
+sed -i "s|CONTENT_BASE_PATH = '../01_rnd/'|CONTENT_BASE_PATH = '../$FOLDER_NAME/'|g" "$INDEX_FILE"
 
 echo "   ✓ index.html updated"
 

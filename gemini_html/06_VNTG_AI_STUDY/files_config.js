@@ -1,6 +1,6 @@
 window.FOLDER_CONFIG = window.FOLDER_CONFIG || {};
 window.FOLDER_CONFIG['06_VNTG_AI_STUDY'] = {
-    "_folderName": "🤖 VNTG AI Study",
+    "_folderName": "🚀 VNTG AI SDD",
     "_order": [
         "sdd.html"
     ],

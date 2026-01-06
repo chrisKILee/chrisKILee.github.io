@@ -76,23 +76,25 @@ Write-Host "✏️  Updating index.html..." -ForegroundColor Yellow
 $content = Get-Content $IndexFile -Raw -Encoding UTF8
 
 # Replace title
-$content = $content -replace '<title>🔬 R&D - Research & Development</title>', "<title>$Emoji $Title</title>"
+$content = $content -replace '<title>🔬 R\&D - Research \& Development</title>', "<title>$Emoji $Title</title>"
 
 # Replace header
-$content = $content -replace '<h1>🔬 R&D</h1>', "<h1>$Emoji $Title</h1>"
-$content = $content -replace '<p>Research & Development Projects</p>', "<p>$Title Content</p>"
+$content = $content -replace '<h1 class="page-title">Research \& Development</h1>', "<h1 class=\"page-title\">$Title</h1>"
+$content = $content -replace '<p class="page-desc">Exploring new technologies and architectures.</p>', "<p class=\"page-desc\">$Title Content</p>"
+$content = $content -replace 'placeholder="Search R\&D docs..."', "placeholder=\"Search $Title docs...\""
 
-# Replace gradient
-$content = $content -replace 'background: linear-gradient\(135deg, #00d2ff 0%, #3a7bd5 100%\);', "background: $Gradient;"
+# Replace secondary gradient
+$content = $content -replace '--primary-gradient: linear-gradient\(135deg, #00c6fb 0%, #005bea 100%\);', "--primary-gradient: $Gradient;"
+$content = $content -replace '--accent-color: #005bea;', "--accent-color: $(if($Gradient -match '#([a-fA-F0-9]{6})'){$Matches[0]}else{'#2a5298'});"
 
 # Replace API path
-$content = $content -replace "const GITHUB_PATH = 'gemini_html/01_rnd';", "const GITHUB_PATH = 'gemini_html/$FolderName';"
+$content = $content -replace "contents/gemini_html/01_rnd", "contents/gemini_html/$FolderName"
 
 # Replace config path
-$content = $content -replace "fetch\('\.\./01_rnd/files\.json'\)", "fetch('../$FolderName/files.json')"
+$content = $content -replace "CONFIG_PATH = '../01_rnd/files.json'", "CONFIG_PATH = '../$FolderName/files.json'"
 
 # Replace file content path
-$content = $content -replace "fetch\(`\.\./01_rnd/\$\{filename\}`\)", "fetch(``../$FolderName/`${filename}``)"
+$content = $content -replace "CONTENT_BASE_PATH = '../01_rnd/'", "CONTENT_BASE_PATH = '../$FolderName/'"
 
 $content | Out-File -FilePath $IndexFile -Encoding UTF8 -NoNewline
 
