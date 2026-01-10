@@ -326,24 +326,109 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             imgKeyword: "Kiyomizu Dera stage"
         },
         {
-            title: "기요미즈데라 무대",
-            desc: "못을 사용하지 않고 조립된 거대한 목조 무대에서 바라보는 교토 시내의 전경입니다.",
-            imgKeyword: "Kiyomizu Dera stage"
+            title: "하나미코지도리",
+            desc: `교토식 전통가옥들이 즐비한 곳으로 보통 차야라고 해서
+게이샤들을 불러서 식사나 술을 마시는 곳이에요
+간판과 디자인이 해당 거리를 전혀 손상 시키지 않는 분위기라서 잘 보지 않으면 그냥 지나칠 수도 있겠더군요.`,
+            imgUrls: [
+                "https://postfiles.pstatic.net/MjAxNjExMjNfMTI4/MDAxNDc5ODczMjUyMzgw.g_3_3BKn3Ql_lVo9GIajQi3cKgQ0MXiJm91wxQ4Is6sg.7C-QmD-J1L9-Na3RESfmOnHRK5Ygi-BZbspu72h20Y0g.JPEG.skli0612/1.JPG?type=w966",
+                "https://postfiles.pstatic.net/MjAyMzA3MTRfMTcy/MDAxNjg5MjkzOTM1OTAw.V4T0Q1yGvOCTnFdtqv56Gp_Xhe55YGbW6CSkkkjoSbgg.Mc4WwpPPsxK652SuGg8-UGtO5X8leil-640mdUG0z0sg.JPEG.qlwwoddl3/IMG_4023.jpg?type=w966",
+                "https://postfiles.pstatic.net/MjAxNjExMjNfMjUg/MDAxNDc5ODczMjUyMzM2.sa7XknyotcFE8fZSX0AwRxDxLhDRKJVNX5Tmnw9-46Ug.9HADfzp-DyKnh781WnhdsgKkNWfzwU0aV7SVp-tJJMsg.JPEG.skli0612/2.JPG?type=w966",
+                "https://postfiles.pstatic.net/MjAxNjExMjNfMTcg/MDAxNDc5ODczMjUyMzcy.dljcdr1d43QmHDl98Zm9ohXwryVebgG84qlDIBWigwUg.sall72zt1UA9Tp6YoElAdGUd482cgrs9njxNgLFpogUg.JPEG.skli0612/3.JPG?type=w966",
+                "https://postfiles.pstatic.net/MjAxNjExMjNfMTU2/MDAxNDc5ODczMjUyNDg5.dGIjvaQlQy2q46TPUzOqNdcdEW2sR32LUwnvvhaKjYsg.N2PkQNyE-7kuI2-HI53-Op5-uLnABMejX0OWrhxWsI0g.JPEG.skli0612/4.JPG?type=w966",
+                "https://postfiles.pstatic.net/MjAxNjExMjNfNjQg/MDAxNDc5ODczMjUzMjgz.8Lb5vCOQklgO9uop4WCWxq4kJOLc6vhCA9OxLfNhmL0g.J2eDM1hc3CaNuwB-WpcCMklmoAKoOoxpx6nuc923iqUg.JPEG.skli0612/14.JPG?type=w966",
+                "https://postfiles.pstatic.net/MjAxNjExMjNfNjUg/MDAxNDc5ODczMjUzNjU1.cZoA5rJA3fYoqGzOEKSkl3As2cxCKSuOFbjeTThKt4cg.HkXmxiNHMK2vmCFvU5E_XUYVUjyF1WBON5CFWMbwFuQg.JPEG.skli0612/21.JPG?type=w966",
+                "https://postfiles.pstatic.net/MjAxNjExMjNfMjYg/MDAxNDc5ODczMjU1Mzg3.DhvVDPHDDd6rnfZY--YiSdUgKq3czDnKnfW89nBs_nYg.jHOHGXxnKCGJ__jrh9VJlgw-s2ZS2SfMFegMuN0Wpcog.JPEG.skli0612/40.JPG?type=w966",
+                "https://postfiles.pstatic.net/MjAxNjExMjNfMjQ5/MDAxNDc5ODczMjU1OTUx.AGoIR3ROdyWeUpawMIQpy41PfiipvJdYVJlh8i7jbOYg.mP9LAP69PZqVfKypbCVg3EVJHH6Ff0SP0WovVz-04fQg.JPEG.skli0612/49.JPG?type=w966",
+                "https://postfiles.pstatic.net/MjAxNjExMjNfMTkz/MDAxNDc5ODczMjU2MTc2.mvxjUIXz51JlKQbQyexUTegXKDW4UJ_Y26zyLS0txeog.AAhZIzuxz7mlG3HlpyazEZlsgdPuCPWmA9GMkMG3qtgg.JPEG.skli0612/50.JPG?type=w966",
+            ]
         },
         {
-            title: "산넨자카/니넨자카",
-            desc: "전통 가옥과 다양한 상점들이 밀집된 거리로, 교토의 활기찬 낮과 고요한 밤을 모두 즐길 수 있습니다.",
-            imgKeyword: "Sannenzaka Ninenzaka"
+            title: "니넨자카 (二年坂) / 산넨자카(三年坂)",
+            desc: `니넨자카(二年坂)807년 -일본의 연호로는 다이도 2년(大同2年)에 만들어져서 니넨자카(二年坂)로 불리워졌습니다.
+이곳 계단에서 구르면 2년안에 죽는다는 속설이 있다고...  
+산넨자카(三年坂) - 다이도3년(大同３年)에 지어져 산넨자카(三年坂)로 불리기도 하고,옛날에 기요미즈데라(清水寺) 경내에 순산을 비는 고야스노토(子安の塔)에 계속 비탈이 있어서 산네이자카(産寧坂)로 불렸다고 합니다. 
+이 자카를 지나 기요미즈데라의 고야스노토에 빌면 순산한다고 하는 설이 있습니다.
+또 여기서 넘어지면 3년안에 죽는 다는 끔직한 설도 있으니... 조심해서 걸어야 합니다. ^^;`,
+            imgUrls: [
+                "https://mblogthumb-phinf.pstatic.net/20110615_227/nanoki71_1308130545169FSMIG_JPEG/NINEN.jpg?type=w2",
+                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_1280,w_1280/9500b467-8193-47f0-a82d-904bb5402e32.jpeg",
+                "https://tourimage.interpark.com//Spot/200/17110/201511/6358414483284109271.jpg",
+                "https://rimage.gnst.jp/livejapan.com/public/article/detail/a/20/00/a2000419/img/ko/a2000419_parts_5ea90965cc648.jpg?20210203143357&q=80&rw=686&rh=490",
+                "https://mblogthumb-phinf.pstatic.net/20110615_227/nanoki71_1308130545169FSMIG_JPEG/NINEN.jpg?type=w2"
+            ]
         },
         {
-            title: "니넨자카 (二年坂)",
-            desc: "니넨자카(二年坂)807년 -일본의 연호로는 다이도 2년(大同2年)에 만들어져서 니넨자카(二年坂)로 불리워졌습니다.이곳 계단에서 구르면 2년안에 죽는다는 속설이 있다고...  ",
-            imgUrl: "https://mblogthumb-phinf.pstatic.net/20110615_227/nanoki71_1308130545169FSMIG_JPEG/NINEN.jpg?type=w2"
+            title: "기요미즈데라",
+            desc: `못을 사용하지 않고 조립된 거대한 목조 무대에서 바라보는 교토 시내의 전경입니다.`,
+            imgUrls: [
+                "https://mblogthumb-phinf.pstatic.net/MjAyMzExMTFfMTAy/MDAxNjk5NjkxMjMxNDUy.4QBopW3UcauxqRTZPI4PRM82ciyJLwdvLJoNtRh2D70g.tElP4AT7uGBcMlgLNJLHNFgY0404jS2sf_NeW70sHfIg.JPEG.khssh/SE-cab6f9a2-d7c6-4b25-9627-122a35b5ca7a.jpg?type=w800",
+                "https://us.123rf.com/450wm/junce/junce1608/junce160800753/62235971-kyoto-japan-march-13-2016-tourists-are-crowded-at-kiyomizu-dera-in-late-winter-season.jpg",
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPVjmSOVgpx3T226Qu9Ifavs4JkllfiOE1Kw&s",
+                "https://joygoers.com/wp-content/uploads/2023/09/%EA%B5%90%ED%86%A0-%EA%B8%B0%EC%9A%94%EB%AF%B8%EC%A6%88%EB%8D%B0%EB%9D%BC.jpg",
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1dGQzXEQ8rDi1l8Ls2y6ZmI_UYX7f41G53g&s",
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFlHgtsP-IMI5oIISJPwfq5LQapIPTkwl5Nw&s",
+                "https://mblogthumb-phinf.pstatic.net/MjAyMzEwMDhfMTA0/MDAxNjk2NzUyOTk4MDg1.xIjsC1XopBnapHDuNT5eFRwqDEGgcB-i15XuETD2sP8g.VftcNd5V5G1poIbJoR-5avyw2voDJyyIwQg0PtVxn90g.JPEG.mokin57/IMG_9913.jpg?type=w8000"
+            ]
         },
         {
-            title: "산넨자카(三年坂)",
-            desc: "다이도3년(大同３年)에 지어져 산넨자카(三年坂)로 불리기도 하고,옛날에 기요미즈데라(清水寺) 경내에 순산을 비는 고야스노토(子安の塔)에 계속 비탈이 있어서 산네이자카(産寧坂)로 불렸다고 합니다. 이 자카를 지나 기요미즈데라의 고야스노토에 빌면 순산한다고 하는 설이 있습니다.또 여기서 넘어지면 3년안에 죽는 다는 끔직한 설도 있으니... 조심해서 걸어야 합니다. ^^;",
-            imgUrl: "https://mblogthumb-phinf.pstatic.net/20110615_227/nanoki71_1308130545169FSMIG_JPEG/NINEN.jpg?type=w2"
+            title: "가모강",
+            desc: `교토인의 휴식의 장소? 교토를 대표하는 강 「가모가와」`,
+            imgUrls: [
+                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_1024,w_1024/21852cba-37d9-46c8-877c-c40ce267b36c.jpeg",
+                "https://kinabal.co.jp/gokyoto/wp-content/uploads/kamogawa-2-1.jpg",
+                "https://kinabal.co.jp/gokyoto/wp-content/uploads/kamogawa-1-1.jpg",
+                "https://kinabal.co.jp/gokyoto/wp-content/uploads/kamogawa-3.jpg",
+                "https://postfiles.pstatic.net/MjAxOTAxMTlfMTU5/MDAxNTQ3ODg0NDA1MDY1.SNGH8ecsn-YSsbVeWzo5eLgvB-HGowroKJ23aNKRp-og.ClJK0MEONjCyn5zhsGUsx_RMEy1b0w1Wo3o2BzopNMog.JPEG.scarlette_k/-20180520_195946.jpg?type=w966"
+            ]
+        },
+        {
+            title: "디즈니스토어 교토",
+            desc: `디즈니 스토어 교토 시조가와라마치점은 코토크로스 한큐 가와라마치(コトクロス阪急河原町) 1, 2층에 위치하고 있습니다. 이 매장은 넓은 규모와 다양한 디즈니 공식 상품으로 인기가 많습니다`,
+            imgUrls: [
+                "https://postfiles.pstatic.net/MjAxOTA1MjFfMjU2/MDAxNTU4Mzc2NzcwNzE4.8EEaAAVg5mZIMsOKCbz9FCy5q9NBN3wyJFJ6v0qgXLUg.cFw9qwrqgroEZCVcM3y527UyCL0kjIUIy0UCLY50casg.JPEG.rii89/1558376763044.jpg?type=w966",
+                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_2048,w_2048/b5e591e2-190d-46fd-984c-37cb643e2410.jpeg",
+                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_1280,w_1280/6aab2334-d141-4f1d-ae0f-f8e45874b2c8.jpeg",
+                "https://i.ytimg.com/vi/LWfuLjy7pR4/oardefault.jpg?sqp=-oaymwEYCJUDENAFSFqQAgHyq4qpAwcIARUAAIhC&rs=AOn4CLAI9Rl5qUwhUh_TjhMPeGb7mlA0rg",
+                "https://mblogthumb-phinf.pstatic.net/MjAxODAyMjVfMTA5/MDAxNTE5NTEzOTQzNTI0.aEEAQ9rNB6nf2LEqfRiLP4fwpm6tcowgUXaDxd9uvI0g.-ATXTjtCHSDDUGWonK-wwJFY6tsOrQt7GEWqYlTNVnAg.JPEG.moon_920/IMG_8111.jpg?type=w800",
+                "https://mblogthumb-phinf.pstatic.net/MjAxOTA1MjFfNTYg/MDAxNTU4Mzc2NzcxNzQw.YvfSb-UtMezqdgAjwyVhl4wk_rdkv-u_hQQy7HLWVhAg.Nif8eaYdSX8_gWXlGKlCuWVf1mxeCDmCiKqBDHzt0v0g.JPEG.rii89/1558376763444.jpg?type=w800"
+            ]
+        },
+        {
+            title: "돈키호테 시조카와라마치",
+            desc: `교토 최대 번화가에 위치한 돈키호테 시조카와라마치점은 니시키 시장과 가모 강 인근에 있어 접근성이 매우 뛰어난 매장입니다`,
+            imgUrls: [
+                "https://postfiles.pstatic.net/MjAyMzEwMTJfOTgg/MDAxNjk3MDk1MjY5Mzg2.wgC4vA7QbboxnoapCXGwQZqKTwLBmlKqE_hVyAyL7SEg._ue3o5hgNdS82cq5iVkpLEPAEnfWs4CcX4Tm8Gb1jPcg.JPEG.cjsthfl24/SE-5616227C-7BFF-4263-9237-A5EDA8B0FFCC.jpg?type=w275",
+                "https://postfiles.pstatic.net/MjAyMzEwMTJfMjEz/MDAxNjk3MDk1MjcwMjk1.iCOCA_0xE7h0yvnof6szUOdwn6cliHeFRl7T16SOpLkg.Qrlb2p17yJIp2CczgCfpV1XkbShbV9go2INsssOopvgg.JPEG.cjsthfl24/SE-40B00758-9B04-4880-96C8-21F1652AEBFE.jpg?type=w580",
+                "https://postfiles.pstatic.net/MjAyMzEwMTJfMTk3/MDAxNjk3MDk1MjkwMTQz.Xsrzh7nF4uIzufehbToBmQmfLsPeQRPA9vIKSHym-Owg.lGQugz7ZC_pxf1oUZAO7Fdtuzd8q0u9DjG5tPCZzBBYg.JPEG.cjsthfl24/SE-88C8E757-9F40-4567-8741-548DD2DDEAA4.jpg?type=w580",
+                "https://postfiles.pstatic.net/MjAyMzEwMTJfMjQ0/MDAxNjk3MDk1Mjk3NzU3.7nsA3b5by0NZcBM_6KQG0xf4bzNYJV7r-13OkBFhXCIg.0TNTb-We03dFfYtoDlyIDAkPai9aovyjlPbTv-dyfr8g.JPEG.cjsthfl24/SE-4E94DC7F-E28D-477A-B069-DC36311D60B5.jpg?type=w580"
+            ]
+        },
+        {
+            title: "니시키 시장",
+            desc: `400년 전통의 교토의 부엌 니시키 시장
+일본 교토부(京都府)남부 교토에 있는 니시키 시장(錦市場). 동쪽 신쿄고쿠(新京), 서쪽 다카쿠라(高倉)를 잇는 재래식 시장으로 빨강, 노랑, 초록으로 이루어진 컬러풀한 삼색 지붕 아래 다양한 상점이 가득 들어서 있다. 교토 사람들은 흔히 '니시키'라고 부른다.`,
+            imgUrls: [
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131432202.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131442791.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131543870.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131603952.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131235446.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826132113633.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826132143412.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826132143429.jpg"
+            ]
+        },
+        {
+            title: "본토초 공원",
+            desc: `폰토초 공원은 일본 교토의 폰토초 거리에 위치한 작고 평화로운 공원입니다. 이곳은 특히 고양이를 좋아하는 사람들에게 방문하기 좋은 장소로 알려져 있으며, 현지인들이 고양이에게 먹이를 주러 오기도 합니다
+폰토초 골목: 전통 목조 건물과 이자카야, 레스토랑, 바가 즐비한 매력적인 골목입니다. 낮에는 조용하지만 밤에는 활기를 띱니다.`,
+            imgUrls: [
+                "https://mblogthumb-phinf.pstatic.net/MjAxOTA1MjRfMTgw/MDAxNTU4NzAxNjIxNDY4._XKoLQiWqMT94irtaqniy4a10aDVZyBDqzy_V0Tup8Ag.K6RgrAWuzhhmP-Wr7ZQgoWB9TkRD76buqUs_D1wqfqwg.PNG.ssunnong/SE-61d6230b-fab7-4c66-a7c2-017a932dac89.png?type=w800",
+                "https://cdn.getyourguide.com/image/format=auto,fit=contain,gravity=center,quality=60,width=1440,height=650,dpr=1/tour_img/123eb382dfa159b2.jpeg",
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEBudA3e4UoQa0cgZA5D0JmI7ru4HA5gR4YQ&s",
+                "https://cdn.jeepe.jp/uploads/public_image/image/150/normal_webp_7245ae09-34b1-446f-983c-7be491e73905.webp"
+            ]
         },
         {
             title: "야사카의 탑 (호칸지)",
