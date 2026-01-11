@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교토 쇼핑 내비게이터 | Kyoto Shopping Navigator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #fdfbf7;
+            /* Warm rice paper white */
+            color: #333;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 350px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .active-tab {
+            background-color: #374151;
+            /* Gray-700 */
+            color: white;
+            border-color: #374151;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .matcha-accent {
+            color: #5F7161;
+        }
+
+        .shrine-accent {
+            background-color: #D65A4F;
+        }
+    </style>
+    <!-- Chosen Palette: Kyoto Modern (Warm Off-White, Charcoal, Matcha Green, Shrine Red) -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Sets the context of Kyoto shopping.
+         2. "The Big 4" Interactive Dashboard: The core navigation. Users click tabs (Lopia, Aeon, Avanti, Donki) to switch the content of a detailed view panel. This minimizes scrolling and groups related info.
+         3. Don Quijote Comparison: A dedicated section for the specific comparison request. Uses a Bar Chart to visualize the pros/cons of the 3 branches.
+         4. Tourist Store Finder: A filtering interactive list. Users select a mall to see the "Must-Visit" sub-stores inside. 
+         5. Footer: Summary.
+         Why: This structure breaks dense information into digestible, interactive chunks (Progressive Disclosure). -->
+    <!-- Visualization & Content Choices:
+         1. Comparison Radar Chart: To show the "Shopping Personality" of each mall (Price, Variety, Food, Fashion). Goal: Compare.
+         2. Branch Bar Chart: To compare Don Quijote locations. Goal: Compare/Decide.
+         3. Interactive Lists: For the store directory. Goal: Organize/Inform.
+         4. NO SVG/Mermaid: All icons are CSS/Unicode. Charts are Canvas (Chart.js). -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl font-bold tracking-tighter text-gray-800">KYOTO<span
+                        class="text-red-500">.</span>SHOP</span>
+            </div>
+            <nav class="hidden md:flex space-x-6 text-sm font-medium text-gray-600">
+                <a href="#main-explorer" class="hover:text-red-500 transition">쇼핑 스팟 4선</a>
+                <a href="#donki-battle" class="hover:text-red-500 transition">돈키호테 비교</a>
+                <a href="#store-finder" class="hover:text-red-500 transition">인기 매장 찾기</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Intro Section -->
+    <section class="max-w-4xl mx-auto px-4 py-12 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">교토 쇼핑 완전 정복</h1>
+        <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+            관광객들이 가장 많이 찾는 교토의 4대 쇼핑 성지.<br>
+            <span class="font-bold text-gray-800">로피아, 이온몰, 아반티, 돈키호테</span>의 특징부터<br>
+            숨겨진 추천 아이템까지 한눈에 비교하고 확인하세요.
+        </p>
+    </section>
+
+    <!-- Main Content: The Big 4 Explorer -->
+    <main class="max-w-6xl mx-auto px-4 pb-20">
+
+        <!-- Interactive Dashboard -->
+        <section id="main-explorer" class="mb-16 scroll-mt-24">
+            <div class="mb-6 border-l-4 border-red-500 pl-4">
+                <h2 class="text-2xl font-bold text-gray-800">쇼핑 스팟 상세 탐색</h2>
+                <p class="text-gray-500 text-sm mt-1">아래 탭을 클릭하여 각 쇼핑몰의 특징과 추천 상품을 확인하세요.</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
+                <button onclick="updateVenue('lopia')" id="btn-lopia"
+                    class="venue-btn active-tab py-4 px-2 rounded-lg text-center font-bold border transition duration-200">
+                    🥩 로피아 (Lopia)
+                </button>
+                <button onclick="updateVenue('aeon')" id="btn-aeon"
+                    class="venue-btn bg-white hover:bg-gray-50 text-gray-600 py-4 px-2 rounded-lg text-center font-bold border transition duration-200">
+                    🛍️ 이온몰 (AEON)
+                </button>
+                <button onclick="updateVenue('avanti')" id="btn-avanti"
+                    class="venue-btn bg-white hover:bg-gray-50 text-gray-600 py-4 px-2 rounded-lg text-center font-bold border transition duration-200">
+                    👗 아반티 (Avanti)
+                </button>
+                <button onclick="updateVenue('donki')" id="btn-donki"
+                    class="venue-btn bg-white hover:bg-gray-50 text-gray-600 py-4 px-2 rounded-lg text-center font-bold border transition duration-200">
+                    🐧 돈키호테 (Donki)
+                </button>
+            </div>
+
+            <!-- Dynamic Content Container -->
+            <div class="bg-white rounded-2xl p-6 md:p-8 card-shadow grid md:grid-cols-2 gap-8 animate-fade-in">
+                <!-- Left: Text Info -->
+                <div id="venue-info">
+                    <h3 id="v-title" class="text-3xl font-bold text-gray-800 mb-2">로피아 (Lopia)</h3>
+                    <p id="v-subtitle" class="text-sm text-red-500 font-bold mb-6 uppercase tracking-wide">식료품 / 가성비 /
+                        현금필수</p>
+
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-bold text-gray-700 flex items-center mb-2">
+                                <span
+                                    class="bg-gray-200 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">1</span>
+                                주요 특징
+                            </h4>
+                            <p id="v-desc" class="text-gray-600 text-sm leading-relaxed">
+                                '일본의 코스트코'라 불리는 초저가 고퀄리티 슈퍼마켓입니다. 정육점 출신답게 고기 품질이 압도적이며,
+                                도시락과 즉석식품이 매우 저렴합니다. 교토역 요도바시 카메라 지하에 위치해 접근성이 뛰어납니다.
+                                <br><strong class="text-red-600 mt-1 block">⚠️ 주의: 오직 현금 결제만 가능합니다.</strong>
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-gray-700 flex items-center mb-2">
+                                <span
+                                    class="bg-gray-200 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">2</span>
+                                관광객 주요 쇼핑 품목
+                            </h4>
+                            <ul id="v-items" class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                <li>가성비 최강 와규 스테이크 및 구이용 고기</li>
+                                <li>대용량 장어 덮밥 및 초밥 세트</li>
+                                <li>로피아 자체 브랜드(PB) 소스 및 드레싱</li>
+                                <li>푸딩 및 일본 디저트류 (편의점보다 저렴)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Chart & Stats -->
+                <div class="flex flex-col justify-center items-center bg-gray-50 rounded-xl p-4">
+                    <h4 class="text-sm font-bold text-gray-500 mb-4 self-start w-full text-center">쇼핑 스타일 분석</h4>
+                    <div class="chart-container">
+                        <canvas id="venueRadarChart"></canvas>
+                    </div>
+                    <div id="v-tip"
+                        class="mt-4 text-xs bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded-lg w-full">
+                        💡 <strong>TIP:</strong> 숙소가 취사가 가능하다면 무조건 저녁 거리를 여기서 사세요. 가성비가 압도적입니다.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="border-gray-200 my-12">
+
+        <!-- Don Quijote Battle Section -->
+        <section id="donki-battle" class="scroll-mt-24">
+            <div class="grid md:grid-cols-12 gap-8">
+                <!-- Text Analysis -->
+                <div class="md:col-span-5">
+                    <div class="mb-4">
+                        <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">비교 분석</span>
+                        <h2 class="text-2xl font-bold text-gray-900 mt-2">돈키호테 3대장 비교</h2>
+                        <p class="text-gray-600 text-sm mt-2">
+                            교토에는 주요 돈키호테 지점이 3곳 있습니다.
+                            <br>여행 동선과 목적에 따라 최적의 지점을 선택하세요.
+                        </p>
+                    </div>
+
+                    <div class="space-y-4 mt-6">
+                        <div class="bg-white border-l-4 border-gray-800 p-4 shadow-sm hover:shadow-md transition cursor-pointer"
+                            onclick="highlightDonki(0)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-bold text-lg">1. 교토 아반티점 (교토역)</h3>
+                                <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">관광객 선호
+                                    1위</span>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-1">교토역 바로 뒤 아반티 몰 2층. 한 층을 통째로 써서 동선이 가장 편리하고 에스컬레이터 이동이
+                                없어 쾌적함.</p>
+                        </div>
+
+                        <div class="bg-white border-l-4 border-gray-400 p-4 shadow-sm hover:shadow-md transition cursor-pointer"
+                            onclick="highlightDonki(1)">
+                            <h3 class="font-bold text-lg">2. 가와라마치점 (시내)</h3>
+                            <p class="text-sm text-gray-500 mt-1">번화가 중심. 접근성은 좋으나 좁고 층이 많아(B1~4F) 이동이 불편하고 매우 붐빔. 심야
+                                쇼핑에 적합.</p>
+                        </div>
+
+                        <div class="bg-white border-l-4 border-gray-400 p-4 shadow-sm hover:shadow-md transition cursor-pointer"
+                            onclick="highlightDonki(2)">
+                            <h3 class="font-bold text-lg">3. 가라스마 시치조점</h3>
+                            <p class="text-sm text-gray-500 mt-1">교토역에서 도보 5-7분. 비교적 덜 붐비지만 규모가 애매할 수 있음. 조용히 쇼핑하고 싶다면
+                                추천.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Comparison -->
+                <div class="md:col-span-7 bg-white rounded-2xl p-6 card-shadow flex flex-col">
+                    <h3 class="font-bold text-gray-700 mb-4 text-center">지점별 쇼핑 쾌적도 비교</h3>
+                    <div class="flex-grow flex items-center justify-center w-full">
+                        <div class="chart-container" style="height: 300px;">
+                            <canvas id="donkiBarChart"></canvas>
+                        </div>
+                    </div>
+                    <p class="text-center text-xs text-gray-400 mt-4">* 점수는 접근성, 통로 넓이, 계산대 대기시간 등을 종합한 주관적 지표입니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="border-gray-200 my-12">
+
+        <!-- Popular Stores Filter -->
+        <section id="store-finder" class="scroll-mt-24 bg-gray-50 rounded-3xl p-6 md:p-10">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900">관광객 인기 매장 리스트</h2>
+                <p class="text-gray-500 text-sm mt-2">각 몰 안에 입점해 있는, 한국인들이 꼭 방문하는 필수 매장들입니다.</p>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="flex justify-center space-x-2 md:space-x-4 mb-8">
+                <button onclick="filterStores('all')"
+                    class="filter-btn bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-bold shadow hover:bg-gray-700 transition">전체
+                    보기</button>
+                <button onclick="filterStores('이온몰')"
+                    class="filter-btn bg-white text-gray-600 px-4 py-2 rounded-full text-sm font-bold shadow hover:bg-gray-100 transition">이온몰
+                    (KYOTO)</button>
+                <button onclick="filterStores('아반티')"
+                    class="filter-btn bg-white text-gray-600 px-4 py-2 rounded-full text-sm font-bold shadow hover:bg-gray-100 transition">아반티</button>
+                <button onclick="filterStores('로피아')"
+                    class="filter-btn bg-white text-gray-600 px-4 py-2 rounded-full text-sm font-bold shadow hover:bg-gray-100 transition">요도바시
+                    (로피아 건물)</button>
+            </div>
+
+            <!-- Store Grid -->
+            <div id="store-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Stores generated by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 text-center">
+        <div class="max-w-6xl mx-auto px-4">
+            <p class="text-sm text-gray-400 mb-2">교토 쇼핑 가이드 © 2024</p>
+            <p class="text-xs text-gray-500">본 정보는 최신 현지 상황에 따라 변경될 수 있습니다.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. Data Store ---
+        const venueData = {
+            lopia: {
+                title: "로피아 (Lopia)",
+                subtitle: "식료품 / 가성비 / 현금필수",
+                desc: "'일본의 코스트코'라 불리는 초저가 고퀄리티 슈퍼마켓입니다. 정육점 출신답게 고기 품질이 압도적이며, 도시락과 즉석식품이 매우 저렴합니다. 교토역 요도바시 카메라 지하에 위치해 접근성이 뛰어납니다.<br><strong class='text-red-600 mt-1 block'>⚠️ 주의: 오직 현금 결제만 가능합니다.</strong>",
+                items: [
+                    "가성비 최강 와규 스테이크 및 구이용 고기",
+                    "대용량 장어 덮밥 및 초밥 세트",
+                    "로피아 자체 브랜드(PB) 소스 및 드레싱",
+                    "푸딩 및 일본 디저트류 (편의점보다 저렴)"
+                ],
+                tip: "💡 <strong>TIP:</strong> 숙소가 취사가 가능하다면 무조건 저녁 거리를 여기서 사세요. 가성비가 압도적입니다.",
+                radar: [95, 20, 90, 40] // [Price(Cheapness), Fashion, Food, Comfort]
+            },
+            aeon: {
+                title: "이온몰 (AEON Mall KYOTO)",
+                subtitle: "가족 쇼핑 / 종합 쇼핑몰 / 다이소",
+                desc: "교토역 하치조구치에서 도보 5분 거리의 거대 쇼핑몰입니다. 사쿠라관과 카에데관으로 나뉘며, 슈퍼마켓부터 의류, 장난감, 100엔샵까지 모든 것이 갖춰져 있습니다. 가족 단위 여행객에게 최적입니다.",
+                items: [
+                    "1층 슈퍼마켓 (다양한 식료품 및 기념품 과자)",
+                    "유니클로 & GU (대형 매장)",
+                    "토이저러스 & 베이비저러스 (유아동 용품)",
+                    "다이소 (100엔샵)"
+                ],
+                tip: "💡 <strong>TIP:</strong> 1층 인포메이션 센터에서 여권을 제시하면 할인 쿠폰북을 받을 수 있습니다.",
+                radar: [80, 85, 80, 90]
+            },
+            avanti: {
+                title: "교토 아반티 (Avanti)",
+                subtitle: "서브컬처 / 캐릭터 / 10-20대 패션",
+                desc: "교토역 바로 맞은편에 위치한 쇼핑몰입니다. 2층의 돈키호테가 가장 유명하지만, 애니메이션 굿즈(라신반), 캐릭터 상품, 아이돌 관련 샵 등 '덕질'과 젊은 층을 위한 패션 브랜드가 많습니다.",
+                items: [
+                    "돈키호테 (2층 전체)",
+                    "라신반 (중고 피규어 및 애니 굿즈)",
+                    "GU (저렴한 의류)",
+                    "산큐 마트 (390엔 샵)"
+                ],
+                tip: "💡 <strong>TIP:</strong> 오타쿠 문화에 관심이 있다면 4~5층을 집중 공략하세요. 돈키호테 쇼핑 후 같은 건물에서 식사하기도 좋습니다.",
+                radar: [85, 90, 50, 70]
+            },
+            donki: {
+                title: "돈키호테 (Don Quijote)",
+                subtitle: "만물상 / 심야 쇼핑 / 기념품",
+                desc: "일본 여행의 필수 코스. 의약품, 화장품, 과자, 캐리어 등 없는 게 없습니다. 교토에는 주로 아반티점(교토역)과 가와라마치점(시내)을 많이 방문합니다. 텍스 리펀(면세) 카운터가 항상 붐빕니다.",
+                items: [
+                    "킷캣 등 녹차맛 과자 (교토 한정판)",
+                    "동전 파스, 샤론 파스 등 의약품",
+                    "퍼펙트 휩 등 저렴한 화장품",
+                    "산토리 위스키 등 주류"
+                ],
+                tip: "💡 <strong>TIP:</strong> 할인 쿠폰(카카오톡 채널 등)을 미리 준비하고, 면세 줄이 기니 여유 시간을 두세요.",
+                radar: [90, 60, 70, 60]
+            }
+        };
+
+        const storesList = [
+            { name: "유니클로 (Uniqlo)", mall: "이온몰", type: "패션" },
+            { name: "GU", mall: "이온몰", type: "패션" },
+            { name: "GU", mall: "아반티", type: "패션" },
+            { name: "다이소 (DAISO)", mall: "이온몰", type: "생활" },
+            { name: "토이저러스", mall: "이온몰", type: "키즈/취미" },
+            { name: "무인양품 (MUJI)", mall: "이온몰", type: "생활" },
+            { name: "라신반 (Lashinban)", mall: "아반티", type: "애니/굿즈" },
+            { name: "돈키호테", mall: "아반티", type: "종합" },
+            { name: "산큐마트 (390엔)", mall: "아반티", type: "잡화" },
+            { name: "가챠가챠 (캡슐토이)", mall: "이온몰", type: "취미" },
+            { name: "요도바시 카메라", mall: "요도바시", type: "전자/취미" },
+            { name: "유니클로", mall: "요도바시", type: "패션" },
+            { name: "ABC 마트", mall: "이온몰", type: "신발" },
+            { name: "마츠모토 키요시", mall: "아반티", type: "드럭스토어" }
+        ];
+
+        // --- 2. Chart Initialization ---
+        let radarChartInstance = null;
+        let barChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initRadarChart();
+            initBarChart();
+            renderStores(storesList);
+        });
+
+        // Function: Initialize Radar Chart (Venue Characteristics)
+        function initRadarChart() {
+            const ctx = document.getElementById('venueRadarChart').getContext('2d');
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['가격 경쟁력', '패션/잡화', '식료품', '쇼핑 쾌적도'],
+                    datasets: [{
+                        label: '로피아 (Lopia)',
+                        data: venueData.lopia.radar,
+                        backgroundColor: 'rgba(214, 90, 79, 0.2)', // Shrine Red low opacity
+                        borderColor: 'rgba(214, 90, 79, 1)',
+                        pointBackgroundColor: 'rgba(214, 90, 79, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e5e7eb' },
+                            grid: { color: '#e5e7eb' },
+                            pointLabels: {
+                                font: { size: 12, family: "'Noto Sans KR', sans-serif", weight: 'bold' },
+                                color: '#4b5563'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: { display: false } // Hide numbers for cleaner look
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Function: Initialize Bar Chart (Donki Comparison)
+        function initBarChart() {
+            const ctx = document.getElementById('donkiBarChart').getContext('2d');
+            barChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['아반티점 (교토역)', '가와라마치점 (시내)', '가라스마점'],
+                    datasets: [
+                        {
+                            label: '쇼핑 동선/편의성',
+                            data: [95, 60, 75], // Avanti wins on layout (one big floor)
+                            backgroundColor: '#D65A4F',
+                        },
+                        {
+                            label: '혼잡도 (낮을수록 좋음)',
+                            data: [70, 30, 80], // Kawaramachi is extremely crowded (low score)
+                            backgroundColor: '#5F7161',
+                        },
+                        {
+                            label: '제품 다양성',
+                            data: [85, 95, 80], // Kawaramachi has slightly more niche items due to floors
+                            backgroundColor: '#374151',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y', // Horizontal Bar Chart for better label reading
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { display: false }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { weight: 'bold' } }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.dataset.label + ': ' + context.raw + '점';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- 3. Interaction Logic ---
+
+        // Update Venue Details & Radar Chart
+        function updateVenue(key) {
+            const data = venueData[key];
+
+            // Text Updates with Animation
+            const infoContainer = document.getElementById('venue-info');
+            infoContainer.style.opacity = '0';
+
+            setTimeout(() => {
+                document.getElementById('v-title').textContent = data.title;
+                document.getElementById('v-subtitle').textContent = data.subtitle;
+                document.getElementById('v-desc').innerHTML = data.desc;
+                document.getElementById('v-tip').innerHTML = data.tip;
+
+                const list = document.getElementById('v-items');
+                list.innerHTML = '';
+                data.items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    list.appendChild(li);
+                });
+
+                infoContainer.style.opacity = '1';
+            }, 200);
+
+            // Button Styles
+            document.querySelectorAll('.venue-btn').forEach(btn => {
+                btn.classList.remove('active-tab', 'bg-gray-800', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-600');
+            });
+            const activeBtn = document.getElementById(`btn-${key}`);
+            activeBtn.classList.remove('bg-white', 'text-gray-600');
+            activeBtn.classList.add('active-tab');
+
+            // Chart Update
+            radarChartInstance.data.datasets[0].data = data.radar;
+            radarChartInstance.data.datasets[0].label = data.title;
+
+            // Dynamic Color Change based on selection
+            let color = '#374151'; // Default
+            if (key === 'lopia') color = 'rgba(214, 90, 79, 1)';
+            if (key === 'aeon') color = 'rgba(236, 72, 153, 1)'; // Pinkish for Aeon
+            if (key === 'avanti') color = 'rgba(59, 130, 246, 1)'; // Blue for Avanti
+            if (key === 'donki') color = 'rgba(234, 179, 8, 1)'; // Yellow for Donki
+
+            radarChartInstance.data.datasets[0].borderColor = color;
+            radarChartInstance.data.datasets[0].pointBackgroundColor = color;
+            radarChartInstance.data.datasets[0].backgroundColor = color.replace('1)', '0.2)');
+            radarChartInstance.update();
+        }
+
+        // Highlight Donki in Chart
+        function highlightDonki(index) {
+            // A visual effect to focus on a specific bar group could go here
+            // For now, we scroll to the chart
+            document.getElementById('donkiBarChart').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Filter Stores
+        function filterStores(category) {
+            // Button Styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-gray-800', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-600');
+            });
+            event.target.classList.remove('bg-white', 'text-gray-600');
+            event.target.classList.add('bg-gray-800', 'text-white');
+
+            // Filter Logic
+            const filtered = category === 'all'
+                ? storesList
+                : storesList.filter(store => store.mall.includes(category) || (category === '요도바시' && store.mall === '요도바시'));
+
+            renderStores(filtered);
+        }
+
+        // Render Stores Grid
+        function renderStores(list) {
+            const grid = document.getElementById('store-grid');
+            grid.innerHTML = '';
+
+            list.forEach(store => {
+                const el = document.createElement('div');
+                el.className = 'bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center hover:shadow-md transition';
+
+                // Icon selection based on type
+                let icon = '🛍️';
+                if (store.type.includes('패션')) icon = '👗';
+                if (store.type.includes('식료품') || store.type.includes('드럭')) icon = '💊';
+                if (store.type.includes('애니') || store.type.includes('취미')) icon = '🎮';
+                if (store.type.includes('생활')) icon = '🏠';
+
+                el.innerHTML = `
+                    <span class="text-2xl mb-2">${icon}</span>
+                    <h4 class="font-bold text-gray-800 text-sm">${store.name}</h4>
+                    <span class="text-xs text-gray-500 mt-1 bg-gray-100 px-2 py-0.5 rounded">${store.mall}</span>
+                `;
+                grid.appendChild(el);
+            });
+        }
+    </script>
+</body>
+
+</html>
