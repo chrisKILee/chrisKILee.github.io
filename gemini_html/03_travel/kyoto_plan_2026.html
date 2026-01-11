@@ -205,6 +205,34 @@
             font-weight: 700;
             color: #111;
         }
+
+        /* Subway Line Highlights */
+        .line-karasuma {
+            color: #008a6b;
+            background: rgba(0, 138, 107, 0.08);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.95em;
+        }
+
+        .line-tozai {
+            color: #f34f1c;
+            background: rgba(243, 79, 28, 0.08);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.95em;
+        }
+
+        .text-highlight {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
     </style>
 </head>
 
@@ -407,17 +435,23 @@
                     {
                         name: "Plan A (정석 코스)",
                         steps: [
-                            { time: "16:00", spot: "교토역 도착 & 숙소 체크인", note: "민기온 산조 숙소 도보 3분 이동. 짐 풀기.", search: "교토역" },
-                            { time: "17:30", spot: "이온몰 & 돈키호테", note: "생수, 1월 제철 과일, 위스키 등 4박 5일분 보급.", search: "aeonmall" },
-                            { time: "19:30", spot: "숙소 첫 저녁 식사", note: "이온몰 델리와 과일로 즐거운 가족 파티." }
+                            { time: "16:00", spot: "교토역 도착", note: "로피아로 이동하기", search: "교토역" },
+                            { time: "16:30", spot: "로피아", note: "쇼핑, 식사 등 (식료품 준비)-2시간", search: "로피아" },
+                            { time: "18:30", spot: "산조케이한", note: "교토역 - `가라스마선` - 가라스마오이케역 - `도자이선` - 산조케이한" },
+                            { time: "19:00", spot: "교토역", note: "교토역 - `가라스마선` - 가라스마오이케역 - `도자이선` - 산조케이한" },
+                            { time: "19:30", spot: "Minn Gion Sanjo", note: "체크인", search: "Minn Gion Sanjo" }
                         ]
                     },
                     {
-                        name: "Plan B (휴식/현지식)",
+                        name: "Plan B (하루카 13:44 차를 탔을경우,)",
                         steps: [
-                            { time: "17:00", spot: "교토역 도착 & 숙소 체크인", note: "늦은 도착 시 빠른 체크인 후 여독 풀기.", search: "교토역" },
-                            { time: "18:30", spot: "숙소 인근 로컬 맛집", note: "숙소 근처 조용한 라멘 또는 이자카야 탐방." },
-                            { time: "20:00", spot: "편의점 털기", note: "편의점 한정판 디저트와 음료 보급 후 조기 휴식." }
+                            { time: "15:04", spot: "교토역 도착", note: "수화물 맡기고 '여우신사'가기", search: "교토역수화물" },
+                            { time: "16:00", spot: "후시미이나리", note: "후시미이나리 관광 (1시간)", search: "후시미" },
+                            { time: "17:30", spot: "교토역", note: "교토역 귀환" },
+                            { time: "18:00", spot: "로피아", note: "쇼핑, 식사 등 (식료품 준비)-2시간", search: "로피아" },
+                            { time: "20:00", spot: "교토역", note: "교토역 - `가라스마선` - 가라스마오이케역 - `도자이선` - 산조케이한" },
+                            { time: "20:30", spot: "Minn Gion Sanjo", note: "체크인", search: "Minn Gion Sanjo" }
+
                         ]
                     }
                 ]
@@ -507,7 +541,7 @@
                         <div class="flex-grow pr-4">
                             <span class="text-[10px] font-bold text-slate-400 tracking-tighter">${s.time}</span>
                             <h4 class="font-bold text-sm text-slate-800">${s.spot}</h4>
-                            <p class="text-[11px] text-slate-600 mt-0.5 leading-relaxed">${s.note}</p>
+                            <p class="text-[11px] text-slate-600 mt-0.5 leading-relaxed">${formatText(s.note)}</p>
                         </div>
                         ${s.search ? `<button onclick="openRealSearch('${s.search}')" class="shrink-0 bg-slate-50 border p-2 rounded-xl text-[9px] font-bold shadow-sm btn-press">📸 정보확인</button>` : ''}
                     </div>
@@ -541,10 +575,14 @@
             container.innerHTML = html;
         }
 
-        // --- Markdown Sanitizer ---
-        function cleanMarkdown(text) {
+        // --- Text Formatter (Markdown & Subway Lines) ---
+        function formatText(text) {
             if (!text) return "";
-            return text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*/g, '');
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/`가라스마선`/g, '<span class="line-karasuma">가라스마선</span>')
+                .replace(/`도자이선`/g, '<span class="line-tozai">도자이선</span>')
+                .replace(/`(.*?)`/g, '<span class="text-highlight">$1</span>');
         }
 
         // --- Gallery Engine (Static & Dynamic) ---
@@ -611,7 +649,7 @@
                         <div class="mt-4 overflow-y-auto pr-1 flex-grow scroll-smooth">
                             <span class="text-[8px] font-bold text-slate-400 uppercase mb-1 tracking-widest block italic opacity-60">Kyoto 2026 Archive</span>
                             <h4 class="text-xl font-bold mb-2 text-slate-800 leading-tight">${photo.title}</h4>
-                            <p class="text-[12px] text-slate-600 leading-relaxed whitespace-pre-wrap">${cleanMarkdown(photo.desc)}</p>
+                            <p class="text-[12px] text-slate-600 leading-relaxed whitespace-pre-wrap">${formatText(photo.desc)}</p>
                         </div>
                         <div class="pt-3 mt-auto border-t border-slate-100/50 flex justify-between items-center">
                             <span class="text-[7px] text-slate-300 font-medium tracking-widest">9-PEOPLE MASTER PLAN</span>
