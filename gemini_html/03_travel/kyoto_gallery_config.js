@@ -424,6 +424,8 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
                 "https://postfiles.pstatic.net/MjAxNjExMjNfMTkz/MDAxNDc5ODczMjU2MTc2.mvxjUIXz51JlKQbQyexUTegXKDW4UJ_Y26zyLS0txeog.AAhZIzuxz7mlG3HlpyazEZlsgdPuCPWmA9GMkMG3qtgg.JPEG.skli0612/50.JPG?type=w966",
             ]
         },
+    ],
+    "니넨자카": [
         {
             title: "니넨자카 (二年坂) / 산넨자카(三年坂)",
             desc: `니넨자카(二年坂)807년 -일본의 연호로는 다이도 2년(大同2年)에 만들어져서 니넨자카(二年坂)로 불리워졌습니다.
@@ -438,7 +440,9 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
                 "https://rimage.gnst.jp/livejapan.com/public/article/detail/a/20/00/a2000419/img/ko/a2000419_parts_5ea90965cc648.jpg?20210203143357&q=80&rw=686&rh=490",
                 "https://mblogthumb-phinf.pstatic.net/20110615_227/nanoki71_1308130545169FSMIG_JPEG/NINEN.jpg?type=w2"
             ]
-        },
+        }
+    ],
+    "기요미즈데라": [
         {
             title: "기요미즈데라",
             desc: `못을 사용하지 않고 조립된 거대한 목조 무대에서 바라보는 교토 시내의 전경입니다.`,
@@ -450,65 +454,6 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
                 "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1dGQzXEQ8rDi1l8Ls2y6ZmI_UYX7f41G53g&s",
                 "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFlHgtsP-IMI5oIISJPwfq5LQapIPTkwl5Nw&s",
                 "https://mblogthumb-phinf.pstatic.net/MjAyMzEwMDhfMTA0/MDAxNjk2NzUyOTk4MDg1.xIjsC1XopBnapHDuNT5eFRwqDEGgcB-i15XuETD2sP8g.VftcNd5V5G1poIbJoR-5avyw2voDJyyIwQg0PtVxn90g.JPEG.mokin57/IMG_9913.jpg?type=w8000"
-            ]
-        },
-        {
-            title: "가모강",
-            desc: `교토인의 휴식의 장소? 교토를 대표하는 강 「가모가와」`,
-            imgUrls: [
-                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_1024,w_1024/21852cba-37d9-46c8-877c-c40ce267b36c.jpeg",
-                "https://kinabal.co.jp/gokyoto/wp-content/uploads/kamogawa-2-1.jpg",
-                "https://kinabal.co.jp/gokyoto/wp-content/uploads/kamogawa-1-1.jpg",
-                "https://kinabal.co.jp/gokyoto/wp-content/uploads/kamogawa-3.jpg",
-                "https://postfiles.pstatic.net/MjAxOTAxMTlfMTU5/MDAxNTQ3ODg0NDA1MDY1.SNGH8ecsn-YSsbVeWzo5eLgvB-HGowroKJ23aNKRp-og.ClJK0MEONjCyn5zhsGUsx_RMEy1b0w1Wo3o2BzopNMog.JPEG.scarlette_k/-20180520_195946.jpg?type=w966"
-            ]
-        },
-        {
-            title: "디즈니스토어 교토",
-            desc: `디즈니 스토어 교토 시조가와라마치점은 코토크로스 한큐 가와라마치(コトクロス阪急河原町) 1, 2층에 위치하고 있습니다. 이 매장은 넓은 규모와 다양한 디즈니 공식 상품으로 인기가 많습니다`,
-            imgUrls: [
-                "https://postfiles.pstatic.net/MjAxOTA1MjFfMjU2/MDAxNTU4Mzc2NzcwNzE4.8EEaAAVg5mZIMsOKCbz9FCy5q9NBN3wyJFJ6v0qgXLUg.cFw9qwrqgroEZCVcM3y527UyCL0kjIUIy0UCLY50casg.JPEG.rii89/1558376763044.jpg?type=w966",
-                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_2048,w_2048/b5e591e2-190d-46fd-984c-37cb643e2410.jpeg",
-                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_1280,w_1280/6aab2334-d141-4f1d-ae0f-f8e45874b2c8.jpeg",
-                "https://i.ytimg.com/vi/LWfuLjy7pR4/oardefault.jpg?sqp=-oaymwEYCJUDENAFSFqQAgHyq4qpAwcIARUAAIhC&rs=AOn4CLAI9Rl5qUwhUh_TjhMPeGb7mlA0rg",
-                "https://mblogthumb-phinf.pstatic.net/MjAxODAyMjVfMTA5/MDAxNTE5NTEzOTQzNTI0.aEEAQ9rNB6nf2LEqfRiLP4fwpm6tcowgUXaDxd9uvI0g.-ATXTjtCHSDDUGWonK-wwJFY6tsOrQt7GEWqYlTNVnAg.JPEG.moon_920/IMG_8111.jpg?type=w800",
-                "https://mblogthumb-phinf.pstatic.net/MjAxOTA1MjFfNTYg/MDAxNTU4Mzc2NzcxNzQw.YvfSb-UtMezqdgAjwyVhl4wk_rdkv-u_hQQy7HLWVhAg.Nif8eaYdSX8_gWXlGKlCuWVf1mxeCDmCiKqBDHzt0v0g.JPEG.rii89/1558376763444.jpg?type=w800"
-            ]
-        },
-        {
-            title: "돈키호테 시조카와라마치",
-            desc: `교토 최대 번화가에 위치한 돈키호테 시조카와라마치점은 니시키 시장과 가모 강 인근에 있어 접근성이 매우 뛰어난 매장입니다`,
-            imgUrls: [
-                "https://postfiles.pstatic.net/MjAyMzEwMTJfOTgg/MDAxNjk3MDk1MjY5Mzg2.wgC4vA7QbboxnoapCXGwQZqKTwLBmlKqE_hVyAyL7SEg._ue3o5hgNdS82cq5iVkpLEPAEnfWs4CcX4Tm8Gb1jPcg.JPEG.cjsthfl24/SE-5616227C-7BFF-4263-9237-A5EDA8B0FFCC.jpg?type=w275",
-                "https://postfiles.pstatic.net/MjAyMzEwMTJfMjEz/MDAxNjk3MDk1MjcwMjk1.iCOCA_0xE7h0yvnof6szUOdwn6cliHeFRl7T16SOpLkg.Qrlb2p17yJIp2CczgCfpV1XkbShbV9go2INsssOopvgg.JPEG.cjsthfl24/SE-40B00758-9B04-4880-96C8-21F1652AEBFE.jpg?type=w580",
-                "https://postfiles.pstatic.net/MjAyMzEwMTJfMTk3/MDAxNjk3MDk1MjkwMTQz.Xsrzh7nF4uIzufehbToBmQmfLsPeQRPA9vIKSHym-Owg.lGQugz7ZC_pxf1oUZAO7Fdtuzd8q0u9DjG5tPCZzBBYg.JPEG.cjsthfl24/SE-88C8E757-9F40-4567-8741-548DD2DDEAA4.jpg?type=w580",
-                "https://postfiles.pstatic.net/MjAyMzEwMTJfMjQ0/MDAxNjk3MDk1Mjk3NzU3.7nsA3b5by0NZcBM_6KQG0xf4bzNYJV7r-13OkBFhXCIg.0TNTb-We03dFfYtoDlyIDAkPai9aovyjlPbTv-dyfr8g.JPEG.cjsthfl24/SE-4E94DC7F-E28D-477A-B069-DC36311D60B5.jpg?type=w580"
-            ]
-        },
-        {
-            title: "니시키 시장",
-            desc: `400년 전통의 교토의 부엌 니시키 시장
-일본 교토부(京都府)남부 교토에 있는 니시키 시장(錦市場). 동쪽 신쿄고쿠(新京), 서쪽 다카쿠라(高倉)를 잇는 재래식 시장으로 빨강, 노랑, 초록으로 이루어진 컬러풀한 삼색 지붕 아래 다양한 상점이 가득 들어서 있다. 교토 사람들은 흔히 '니시키'라고 부른다.`,
-            imgUrls: [
-                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131432202.jpg",
-                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131442791.jpg",
-                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131543870.jpg",
-                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131603952.jpg",
-                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131235446.jpg",
-                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826132113633.jpg",
-                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826132143412.jpg",
-                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826132143429.jpg"
-            ]
-        },
-        {
-            title: "본토초 공원",
-            desc: `폰토초 공원은 일본 교토의 폰토초 거리에 위치한 작고 평화로운 공원입니다. 이곳은 특히 고양이를 좋아하는 사람들에게 방문하기 좋은 장소로 알려져 있으며, 현지인들이 고양이에게 먹이를 주러 오기도 합니다
-폰토초 골목: 전통 목조 건물과 이자카야, 레스토랑, 바가 즐비한 매력적인 골목입니다. 낮에는 조용하지만 밤에는 활기를 띱니다.`,
-            imgUrls: [
-                "https://mblogthumb-phinf.pstatic.net/MjAxOTA1MjRfMTgw/MDAxNTU4NzAxNjIxNDY4._XKoLQiWqMT94irtaqniy4a10aDVZyBDqzy_V0Tup8Ag.K6RgrAWuzhhmP-Wr7ZQgoWB9TkRD76buqUs_D1wqfqwg.PNG.ssunnong/SE-61d6230b-fab7-4c66-a7c2-017a932dac89.png?type=w800",
-                "https://cdn.getyourguide.com/image/format=auto,fit=contain,gravity=center,quality=60,width=1440,height=650,dpr=1/tour_img/123eb382dfa159b2.jpeg",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEBudA3e4UoQa0cgZA5D0JmI7ru4HA5gR4YQ&s",
-                "https://cdn.jeepe.jp/uploads/public_image/image/150/normal_webp_7245ae09-34b1-446f-983c-7be491e73905.webp"
             ]
         },
         {
@@ -527,11 +472,92 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             imgKeyword: "Beautiful winter season of Red Pagoda at Kiyomizu-dera temple"
         }
     ],
+    "가모강": [
+        {
+            title: "가모강",
+            desc: `교토인의 휴식의 장소? 교토를 대표하는 강 「가모가와」`,
+            imgUrls: [
+                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_1024,w_1024/21852cba-37d9-46c8-877c-c40ce267b36c.jpeg",
+                "https://kinabal.co.jp/gokyoto/wp-content/uploads/kamogawa-2-1.jpg",
+                "https://kinabal.co.jp/gokyoto/wp-content/uploads/kamogawa-1-1.jpg",
+                "https://kinabal.co.jp/gokyoto/wp-content/uploads/kamogawa-3.jpg",
+                "https://postfiles.pstatic.net/MjAxOTAxMTlfMTU5/MDAxNTQ3ODg0NDA1MDY1.SNGH8ecsn-YSsbVeWzo5eLgvB-HGowroKJ23aNKRp-og.ClJK0MEONjCyn5zhsGUsx_RMEy1b0w1Wo3o2BzopNMog.JPEG.scarlette_k/-20180520_195946.jpg?type=w966"
+            ]
+        }
+    ],
+    "디즈니스토어 교토": [
+        {
+            title: "디즈니스토어 교토",
+            desc: `디즈니 스토어 교토 시조가와라마치점은 코토크로스 한큐 가와라마치(コトクロス阪急河原町) 1, 2층에 위치하고 있습니다. 이 매장은 넓은 규모와 다양한 디즈니 공식 상품으로 인기가 많습니다`,
+            imgUrls: [
+                "https://postfiles.pstatic.net/MjAxOTA1MjFfMjU2/MDAxNTU4Mzc2NzcwNzE4.8EEaAAVg5mZIMsOKCbz9FCy5q9NBN3wyJFJ6v0qgXLUg.cFw9qwrqgroEZCVcM3y527UyCL0kjIUIy0UCLY50casg.JPEG.rii89/1558376763044.jpg?type=w966",
+                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_2048,w_2048/b5e591e2-190d-46fd-984c-37cb643e2410.jpeg",
+                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_1280,w_1280/6aab2334-d141-4f1d-ae0f-f8e45874b2c8.jpeg",
+                "https://i.ytimg.com/vi/LWfuLjy7pR4/oardefault.jpg?sqp=-oaymwEYCJUDENAFSFqQAgHyq4qpAwcIARUAAIhC&rs=AOn4CLAI9Rl5qUwhUh_TjhMPeGb7mlA0rg",
+                "https://mblogthumb-phinf.pstatic.net/MjAxODAyMjVfMTA5/MDAxNTE5NTEzOTQzNTI0.aEEAQ9rNB6nf2LEqfRiLP4fwpm6tcowgUXaDxd9uvI0g.-ATXTjtCHSDDUGWonK-wwJFY6tsOrQt7GEWqYlTNVnAg.JPEG.moon_920/IMG_8111.jpg?type=w800",
+                "https://mblogthumb-phinf.pstatic.net/MjAxOTA1MjFfNTYg/MDAxNTU4Mzc2NzcxNzQw.YvfSb-UtMezqdgAjwyVhl4wk_rdkv-u_hQQy7HLWVhAg.Nif8eaYdSX8_gWXlGKlCuWVf1mxeCDmCiKqBDHzt0v0g.JPEG.rii89/1558376763444.jpg?type=w800"
+            ]
+        }
+    ],
+    "돈키호테 시조카와라마치": [
+        {
+            title: "돈키호테 시조카와라마치",
+            desc: `교토 최대 번화가에 위치한 돈키호테 시조카와라마치점은 니시키 시장과 가모 강 인근에 있어 접근성이 매우 뛰어난 매장입니다`,
+            imgUrls: [
+                "https://postfiles.pstatic.net/MjAyMzEwMTJfOTgg/MDAxNjk3MDk1MjY5Mzg2.wgC4vA7QbboxnoapCXGwQZqKTwLBmlKqE_hVyAyL7SEg._ue3o5hgNdS82cq5iVkpLEPAEnfWs4CcX4Tm8Gb1jPcg.JPEG.cjsthfl24/SE-5616227C-7BFF-4263-9237-A5EDA8B0FFCC.jpg?type=w275",
+                "https://postfiles.pstatic.net/MjAyMzEwMTJfMjEz/MDAxNjk3MDk1MjcwMjk1.iCOCA_0xE7h0yvnof6szUOdwn6cliHeFRl7T16SOpLkg.Qrlb2p17yJIp2CczgCfpV1XkbShbV9go2INsssOopvgg.JPEG.cjsthfl24/SE-40B00758-9B04-4880-96C8-21F1652AEBFE.jpg?type=w580",
+                "https://postfiles.pstatic.net/MjAyMzEwMTJfMTk3/MDAxNjk3MDk1MjkwMTQz.Xsrzh7nF4uIzufehbToBmQmfLsPeQRPA9vIKSHym-Owg.lGQugz7ZC_pxf1oUZAO7Fdtuzd8q0u9DjG5tPCZzBBYg.JPEG.cjsthfl24/SE-88C8E757-9F40-4567-8741-548DD2DDEAA4.jpg?type=w580",
+                "https://postfiles.pstatic.net/MjAyMzEwMTJfMjQ0/MDAxNjk3MDk1Mjk3NzU3.7nsA3b5by0NZcBM_6KQG0xf4bzNYJV7r-13OkBFhXCIg.0TNTb-We03dFfYtoDlyIDAkPai9aovyjlPbTv-dyfr8g.JPEG.cjsthfl24/SE-4E94DC7F-E28D-477A-B069-DC36311D60B5.jpg?type=w580"
+            ]
+        }
+    ],
+    "니시키시장": [
+        {
+            title: "니시키 시장",
+            desc: `400년 전통의 교토의 부엌 니시키 시장
+일본 교토부(京都府)남부 교토에 있는 니시키 시장(錦市場). 동쪽 신쿄고쿠(新京), 서쪽 다카쿠라(高倉)를 잇는 재래식 시장으로 빨강, 노랑, 초록으로 이루어진 컬러풀한 삼색 지붕 아래 다양한 상점이 가득 들어서 있다. 교토 사람들은 흔히 '니시키'라고 부른다.`,
+            imgUrls: [
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131432202.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131442791.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131543870.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131603952.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826131235446.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826132113633.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826132143412.jpg",
+                "https://storage.doopedia.co.kr/upload/_upload/image5/travel/editor/2025/08/26/20250826132143429.jpg"
+            ]
+        }
+    ],
+    "본토초공원": [
+        {
+            title: "본토초 공원",
+            desc: `폰토초 공원은 일본 교토의 폰토초 거리에 위치한 작고 평화로운 공원입니다. 이곳은 특히 고양이를 좋아하는 사람들에게 방문하기 좋은 장소로 알려져 있으며, 현지인들이 고양이에게 먹이를 주러 오기도 합니다
+폰토초 골목: 전통 목조 건물과 이자카야, 레스토랑, 바가 즐비한 매력적인 골목입니다. 낮에는 조용하지만 밤에는 활기를 띱니다.`,
+            imgUrls: [
+                "https://mblogthumb-phinf.pstatic.net/MjAxOTA1MjRfMTgw/MDAxNTU4NzAxNjIxNDY4._XKoLQiWqMT94irtaqniy4a10aDVZyBDqzy_V0Tup8Ag.K6RgrAWuzhhmP-Wr7ZQgoWB9TkRD76buqUs_D1wqfqwg.PNG.ssunnong/SE-61d6230b-fab7-4c66-a7c2-017a932dac89.png?type=w800",
+                "https://cdn.getyourguide.com/image/format=auto,fit=contain,gravity=center,quality=60,width=1440,height=650,dpr=1/tour_img/123eb382dfa159b2.jpeg",
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEBudA3e4UoQa0cgZA5D0JmI7ru4HA5gR4YQ&s",
+                "https://cdn.jeepe.jp/uploads/public_image/image/150/normal_webp_7245ae09-34b1-446f-983c-7be491e73905.webp"
+            ]
+        }
+    ],
     "교토역": [
         {
             title: "교토역 스카이 가든",
             desc: "현대적인 건축미가 돋보이는 교토역 옥상에서 즐기는 시내 야경과 자유로운 공간입니다.",
             imgKeyword: "Kyoto Station Sky Garden"
+        },
+        {
+            title: "교토역",
+            desc: `교토의 현관으로 유명한 교토역은 매일 많은 이용객들로 붐비는 일본 유수의 터미널 역입니다. 
+대중교통으로 방문한 관광객들이 가장 먼저 내리는 장소이며, 도보권 내에 호텔이나 상업시설 등도 있어서 매일 많은 사람들이 왕래합니다. 
+다만, 구조가 조금 복잡해서 자칫하면 현지인도 길을 헤매는 경우가 종종 있습니다`,
+            imgUrls: [
+                "https://kyoto.travel/wp-content/uploads/2025/03/Kyoto_Station2.jpg",
+                "https://kyoto.travel/wp-content/uploads/2025/03/Kyoto_Station3-1024x768.jpg",
+                "https://kyoto.travel/wp-content/uploads/2025/03/a1713253740879.png",
+                "https://ak-d.tripcdn.com/images/1mi1a12000q1j4w1m7B42_W_640_0_R5_Q80.jpg?proc=source/trip"
+            ]
         },
         {
             title: "하루카 JR특급열차",
@@ -690,6 +716,17 @@ EVE는 총 3가지 제품이 있으며 효과는 동일 합니다만 이부프�
             title: "헬로키티 하루카",
             desc: "**귀여운 헬로키티 테마**의 하루카 열차입니다.\n\n외관뿐만 아니라 내부 시트 등 곳곳에서 키티를 만날 수 있어 여행의 시작부터 즐거움을 줍니다.",
             imgKeyword: "Hello Kitty Haruka train"
+        }
+    ],
+    "하치조구치": [
+        {
+            title: "교토역 남문",
+            desc: `- 교토역 하치조구치(八条口) 근처의 역 앞 관광버스 주차장은 주로 단체 관광객 수송용 버스들이 이용하며, 일반 개인 차량 주차장과는 구분되지만, 역 바로 앞 남쪽 출구(하치조구치) 주변에 위치하여 접근성이 좋고, 주요 관광지로 이동하는 버스 노선들이 출발하는 곳 근처에 위치해 있습니다
+- JR선 교토역 하치조 동쪽 출구에서 도보 3분`,
+            imgUrls: [
+                "https://kyoto.travel/wp-content/uploads/2025/03/a1713253977219-1.png",
+                "https://postfiles.pstatic.net/MjAyMDA2MDNfNjUg/MDAxNTkxMTUyMDAyNjM2.25Q5MHEYhdKFuef20d_5yS5w0zNGyn6G2rovvlD98Mgg.ebGO1c61OSRJcQtMsAfmyJOzv9xDbKuV8sZFN8z5w5Ag.PNG.sanatmo/SE-02102118-8883-4970-87bf-3deba1ede5c2.png?type=w773"
+            ]
         }
     ]
 
