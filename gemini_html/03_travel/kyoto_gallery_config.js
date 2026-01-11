@@ -171,6 +171,26 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             imgKeyword: "Nonomiya Shrine"
         }
     ],
+    "란덴트램": [
+        {
+            title: "란덴트램",
+            desc: `- 일본 교토부 교토시를 운행구역으로 하는 케이후쿠 전기철도의 노선 중 하나이다. 키타노선과 같이 '아라시야마선', '란덴'이라고 불린다. 주로 아라시야마 부근의 관광지에 수요가 많다. 원래는 '아라시야마 전차궤도'가 운행하던 노선이었으나, '교토 전등'에 합병되었고, 다시 케이후쿠 전기철도에 양도되었다.
+- 오랫동안 지하철과의 연계가 없었으나, 2008년 토자이선이 우즈마사텐진가와역까지 연장하면서 동시에 란덴텐진가와역을 개업하게 되었다.
+- 평일 평시나 주말에는 10분 간격으로 운행한다. 평일 러시아워 시간대에는 5~8분 간격으로 줄어든다. 전 구간 소요시간은 24분이다.`,
+            imgKeyword: "Landen tram"
+        },
+        {
+            title: "란덴선",
+            desc: "",
+            imgUrls: [
+                "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSxAOvsUT2W518wyZ71zfE5I2wMoUQTuSWYrgbVhC7hoCF6xduz58X6Rvi0e0TNA78WkdGVXPdrtU-Q6bwyDk54JeP1Mwx-_sNuUV-Z3QdsILDTRWtuRSlQmM32uJGV7fzwEVfdlbg=s680-w680-h510-rw",
+                "https://thumb.tidesquare.com/tour/public/product/PRV3000022101/PRD3000028610/editor/20220728074503037_l2Lwq.jpg",
+                "https://d2mgzmtdeipcjp.cloudfront.net/files/good/2024/04/29/17143727150062.jpg",
+                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_1024,w_1024/5d6ab98b-77ec-4978-8198-97d867b8cc9b.jpeg",
+                "https://d2mgzmtdeipcjp.cloudfront.net/files/good/2022/07/25/16587301673688.jpg"
+            ]
+        }
+    ],
     "쿠라마&키부네": [
         {
             title: "키부네 신사 설경",
@@ -222,6 +242,69 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             imgUrl: "https://www.kyototourism.org/wp/wp-content/uploads/2024/10/Uji.jpg"
         }
     ],
+    "아반티": [
+        {
+            title: "아반티",
+            desc: `교토 아반티(Kyoto Avanti)는 JR 교토역 하치조구치(남쪽 출구) 바로 맞은편에 위치한 대형 복합 쇼핑몰입니다. 2026년 현재 패션, 잡화, 서브컬처 굿즈 및 식당가가 조화를 이루고 있어 현지인과 관광객 모두에게 인기 있는 쇼핑 명소입니다
+- 영업시간:
+  - 쇼핑 구역: 10:00 ~ 21:00
+  - 2층 돈키호테: 09:00 ~ 24:00 (쇼핑몰 전체 폐점 후에도 이용 가능)
+  - 지하 1층 식당가: 11:00 ~ 22:00
+- 위치: JR 교토역 하치조구치 도보 1분 (교토역 남쪽 출구 정면)
+💡 이용 팁
+- 접근성: 교토역 하치조구치에서 지하 통로로 바로 연결되어 있어 비가 오는 날에도 편리하게 방문할 수 있습니다.
+- 쇼핑 편의: 2층 돈키호테는 인근의 다른 지점보다 상대적으로 덜 붐벼 쾌적한 쇼핑이 가능하며, 면세 혜택을 받을 수 있습니다.
+- 기타 시설: 1층에는 세븐은행 ATM이 있어 해외 카드 현금 인출이 가능하며, 짐 보관함 서비스도 제공합니다.`,
+            imgKeyword: "Kyoto Avanti"
+        },
+        {
+            title: "아반티",
+            desc: "아반티 층별 상점 + 다이소",
+            imgUrls: [
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZgzWf-5h9SRm6x3kEBODErcm7iD4TIC0SBA&s",
+                "https://postfiles.pstatic.net/MjAyNDA4MTRfMiAg/MDAxNzIzNjM0MzU4NzY4.baOIhwwxzc2wYGsrtUgeMTuAtDfJFPxHqdEw1Z0M20gg.GY8TRzdW1yjlF1JYZqQ3DW8OJo_YDk2h_J7zu9ODAdog.JPEG/SE-fe1fc341-e315-49d4-82fe-85d1aa552fb3.jpg?type=w966",
+                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_1024,w_1024/bae6c062-0449-41c4-87cd-6ee68c07f46f.jpeg"
+            ]
+        },
+        {
+            title: "돈키호테 교토 아반티",
+            desc: `- 상품들 전체적으로 비교해 본 결과,
+  - 돈키호테 교토 가라스마시치조점이 더 저렴
+- 교토 유일한 돈키호테였지만, 지금은 교토 최대의 중심지 가와라마치에 10층짜리 돈키호테가 있기에
+  - 교토에서 일부러 돈키호테를 찾는다면 “카와라마치점”을 추천, 
+- 물론 온김에 들른다는 수준이면 이곳도 기본적으로 인기있는 라인업은 많기에 들러보는것도 좋다. `,
+            imgUrls: [
+                "https://postfiles.pstatic.net/MjAyMjEwMDhfMjY1/MDAxNjY1MTg3NDUyMTg5._aNjmh0ohRk0RD6La5j-JrZvIoWNlsSYiFhCX7YZLCsg.rGQhBUL5lu9Kzse7-2u6omQzt-5vycpohKbiEf-NxvAg.JPEG.fpsks1004/output_4193324305.jpg?type=w773",
+                "https://postfiles.pstatic.net/MjAyMjEwMDhfNDYg/MDAxNjY1MTg3NDUxMDA5._53ETBT6BamQjcb1mVcIP7FpmsLyu8YSDZYOLSYVc30g.hrJR-garo4--3QhwNjaPusnBcBhrqrTzbT-5gFRLPfUg.JPEG.fpsks1004/output_2171005257.jpg?type=w773",
+                "https://postfiles.pstatic.net/MjAyMjEwMDhfMTIz/MDAxNjY1MTg3NDQ1NzUw.oJTKUxNpP80EzVMSjR4uR4Hs_oZtx24NHjrGgXSgTPsg.-xnQUoeyr_m7p62134iqb7iYlGcBFvvUovnhe6Rj7iQg.JPEG.fpsks1004/output_227197461.jpg?type=w773",
+                "https://postfiles.pstatic.net/MjAyMjEwMDhfODMg/MDAxNjY1MTg3NDUxMzE4.7MhV4bdg0gW3spkwWlDbVdtr3bun2ozXFIFv8KMqefcg.QL1DRmkdMXOSnjRy_i1mlq9ZMsWT_oebBkJQjo1j7AAg.JPEG.fpsks1004/output_1607775764.jpg?type=w773"
+            ]
+        }
+    ],
+    "가라돈키호테": [
+        {
+            title: "돈키호테 가라스마 시치조 점",
+            desc: `- 교통: 교토역(Kyoto Station)에서 도보 약 3~5분 거리로 접근성이 매우 뛰어납니다. 
+  - 교토역 북쪽 출구 방면이며, 히가시 혼간지 사찰 바로 인근에 위치해 있습니다
+- 구성: 1층부터 3층까지 운영되는 대형 매장입니다.
+- 주요 품목: 식품, 의약품, 화장품, 주류(위스키 등), 잡화 및 기념품 등 다양한 상품을 취급합니다.
+- 면세 정보: 당일 세금 포함 5,500엔 이상 구매 시 면세 혜택을 받을 수 있으며, 반드시 여권을 지참해야 합니다. 면세 카운터는 주로 2층에 위치해 있습니다.
+- 비교: 교토역 남쪽의 '교토 아반티점'보다 대체로 가격이 저렴하거나 쇼핑 환경이 쾌적하다는 방문 후기가 많습니다
+- 의약품: 의약품은 전용 계산대(2층)에서 먼저 결제해야 할 수 있으므로, 다른 층 물건을 모두 고른 뒤 2층에서 일괄 계산하는 것이 편리합니다.
+- 편의 시설: 엘리베이터가 설치되어 있으나 에스컬레이터는 없으며, 계단 층고가 다소 높은 편입니다.
+주의 화장실은 없다 `,
+            imgUrls: [
+                "https://media.triple.guide/triple-cms/c_limit,f_auto,h_1024,w_1024/40022ab3-1dce-40be-99aa-2b1fc4f48337.jpeg",
+                "https://postfiles.pstatic.net/MjAyNDA4MTRfODAg/MDAxNzIzNjMzNTc1ODY3.tDXckyWHrdDUZAGNdYKqLE24IN2LhyWkvRQw6EsloL4g.c-kZ7lzbXhKSrF11Pte7cwyknd7h2-QTXXEMi4w0328g.JPEG/SE-0b585b7f-b0a6-4b47-91e6-0f682cc68ae8.jpg?type=w966",
+                "https://postfiles.pstatic.net/MjAyNDA4MTRfMjI2/MDAxNzIzNjMzNTc5NjUx.6KLfAxQ-YzmdlxCFdXeQOvxrQC7YuIiF-7RHDvUf9K4g.-IYEZNyMonVKgdZZ4ju2wZMoRrMZDOXPyrGmgcvwxm8g.JPEG/SE-cc346046-a6f4-4852-bc4b-bdedb7b7c5b3.jpg?type=w966",
+                "https://postfiles.pstatic.net/MjAyNDA4MTRfMTk5/MDAxNzIzNjMzNTgzMzc5.IHut-mutrVn7-9P7Uwlrad9kMH5AVCfsY2M36QJj-8cg.DJ4TWRnEmusIbCvRiOrQ9bX2wwB69VXGbr0vqBsGZI8g.JPEG/SE-92421758-b179-4e90-808d-50e03ea89730.jpg?type=w966",
+                "https://postfiles.pstatic.net/MjAyNDA4MTRfMTMy/MDAxNzIzNjMzNzIxODc3.nrPLCrixRCknm4eetOknFl87zZk9rDnxyfnhKfKMyOgg.WbCPK3uI4iY14roA6EJ6T8dwx0PJVZlKbwFGkU5di7Eg.JPEG/SE-770e3c44-cc64-43ee-b72a-94f3f6812634.jpg?type=w966",
+                "",
+                "",
+                "",
+            ]
+        }
+    ],
     "철학자의 길": [
         {
             title: "겨울 운치 수로",
@@ -232,6 +315,11 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             title: "은각사 (지쇼지)",
             desc: "화려하지 않지만 절제된 미학의 정수를 보여주는 모래 정원과 사찰 건축입니다.",
             imgKeyword: "Ginkakuji Temple winter"
+        },
+        {
+            title: "주의",
+            desc: "⚠️ 주의: 화장실은 없다",
+            imgKeyword: "public toilet"
         }
     ],
     "기온(Gion)": [
@@ -456,9 +544,12 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             title: "하루카 JR특급열차",
             desc: `- 노선 : 공항 - 덴노지 - 오사카(우메다) - 신오사카 - 교토
 - 공항 - 교토 이동시간 : 80분
-- 배차 간격 : 약 30분`,
+- 배차 간격 : 약 30분
+- 우리는 13시 44분 부터 탈수 있음`,
             imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDJfMTk5/MDAxNzY3MjgyNTcwODk0.bTaRmIwK_H8r9ihnEONbgmecO4OlDsM-TWKYGFL8G4Eg.9DjC9IU8YPnaaqaw7kYRgBslcygV3B-unP4pkzKJpYcg.JPEG/SE-89f4e438-e721-11f0-99f4-e353563ad000.jpg?type=w400"
         },
+    ],
+    "Minn Gion Sanjo": [
         {
             title: "민 기온 산조",
             desc: `우리 숙소다
