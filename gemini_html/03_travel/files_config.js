@@ -16,7 +16,8 @@ window.FOLDER_CONFIG['03_travel'] = {
         "north_kyoto2_html",
         "kyoto_subway.html",
         "kyoto_transit.html",
-        "kyoto_malls.html"
+        "kyoto_malls.html",
+        "kyoto_food.html"
     ],
     "japan_trip.html": "일본 겨울여행",
     "2026winter_island_compraison.html": "2026년 1월 동남아 가고싶은 섬 비교",
@@ -32,5 +33,6 @@ window.FOLDER_CONFIG['03_travel'] = {
     "north_kyoto2_html": "교토 북부 여행 전략 분석 리포트",
     "kyoto_subway.html": "교토 지하철",
     "kyoto_transit.html": "교토 교통",
-    "kyoto_malls.html": "교토 쇼핑"
+    "kyoto_malls.html": "교토 쇼핑",
+    "kyoto_food.html": "교토 맛집"
 };
