@@ -292,16 +292,14 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
 - 비교: 교토역 남쪽의 '교토 아반티점'보다 대체로 가격이 저렴하거나 쇼핑 환경이 쾌적하다는 방문 후기가 많습니다
 - 의약품: 의약품은 전용 계산대(2층)에서 먼저 결제해야 할 수 있으므로, 다른 층 물건을 모두 고른 뒤 2층에서 일괄 계산하는 것이 편리합니다.
 - 편의 시설: 엘리베이터가 설치되어 있으나 에스컬레이터는 없으며, 계단 층고가 다소 높은 편입니다.
-주의 화장실은 없다 `,
+⚠️주의 :  화장실은 없다 `,
             imgUrls: [
                 "https://media.triple.guide/triple-cms/c_limit,f_auto,h_1024,w_1024/40022ab3-1dce-40be-99aa-2b1fc4f48337.jpeg",
                 "https://postfiles.pstatic.net/MjAyNDA4MTRfODAg/MDAxNzIzNjMzNTc1ODY3.tDXckyWHrdDUZAGNdYKqLE24IN2LhyWkvRQw6EsloL4g.c-kZ7lzbXhKSrF11Pte7cwyknd7h2-QTXXEMi4w0328g.JPEG/SE-0b585b7f-b0a6-4b47-91e6-0f682cc68ae8.jpg?type=w966",
                 "https://postfiles.pstatic.net/MjAyNDA4MTRfMjI2/MDAxNzIzNjMzNTc5NjUx.6KLfAxQ-YzmdlxCFdXeQOvxrQC7YuIiF-7RHDvUf9K4g.-IYEZNyMonVKgdZZ4ju2wZMoRrMZDOXPyrGmgcvwxm8g.JPEG/SE-cc346046-a6f4-4852-bc4b-bdedb7b7c5b3.jpg?type=w966",
                 "https://postfiles.pstatic.net/MjAyNDA4MTRfMTk5/MDAxNzIzNjMzNTgzMzc5.IHut-mutrVn7-9P7Uwlrad9kMH5AVCfsY2M36QJj-8cg.DJ4TWRnEmusIbCvRiOrQ9bX2wwB69VXGbr0vqBsGZI8g.JPEG/SE-92421758-b179-4e90-808d-50e03ea89730.jpg?type=w966",
                 "https://postfiles.pstatic.net/MjAyNDA4MTRfMTMy/MDAxNzIzNjMzNzIxODc3.nrPLCrixRCknm4eetOknFl87zZk9rDnxyfnhKfKMyOgg.WbCPK3uI4iY14roA6EJ6T8dwx0PJVZlKbwFGkU5di7Eg.JPEG/SE-770e3c44-cc64-43ee-b72a-94f3f6812634.jpg?type=w966",
-                "",
-                "",
-                "",
+                "https://postfiles.pstatic.net/MjAyNDA4MTRfMTc4/MDAxNzIzNjMzNzM5NjYw.w2ZkKF9-6D1_8hZuVk1Isx2SDWxy2OBvHrArzImSFfIg.nLctAkUjgUj88soCjqkyiFSEFv7fsccI_fqwFw7qKEQg.JPEG/SE-72401351-68e4-4006-a890-13a45267ab53.jpg?type=w966"
             ]
         }
     ],
@@ -315,11 +313,6 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             title: "은각사 (지쇼지)",
             desc: "화려하지 않지만 절제된 미학의 정수를 보여주는 모래 정원과 사찰 건축입니다.",
             imgKeyword: "Ginkakuji Temple winter"
-        },
-        {
-            title: "주의",
-            desc: "⚠️ 주의: 화장실은 없다",
-            imgKeyword: "public toilet"
         }
     ],
     "기온(Gion)": [
@@ -383,7 +376,7 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             title: "후시미이나리",
             desc: `이나리 신은 원래 풍요로움을 관장하는 신인데, 시대가 흐르면서 풍요뿐만 아니라 사업 번창, 안전, 소원 성취 등을 위해 믿는 경우도 생겼고, 공식 홈페이지 인사말에서는 이나리 신사를 〈여러 사람들이 행복을 바라는 '서민 신앙 신사'(人々が幸せを求める「庶民の信仰の社」)〉라고 소개한다
 이나리 신이 부리는 사자(使者)는 여우 모습을 하고 있는데 야생에서 보이는 여우가 아니라 우리 눈에는 보이지 않는 투명한 여우라고 한다. 그래서 이나리 신사 곳곳에는 하얀 여우 상징들이 있다. `,
-            imgUrl: [
+            imgUrls: [
                 "https://postfiles.pstatic.net/MjAyMzExMTBfMTMz/MDAxNjk5NjA4NDUzNTg3.XfUmfWj5jM8hf8aTdr_czI18EXNcFbzkssFx6Q-rEd0g.SOPJnFGJlVbjxL9x3DAntI_4OUBR188FiC1dMB0soIkg.JPEG.momsy/IMG_3898.JPG?type=w966",
                 "https://postfiles.pstatic.net/MjAyMzExMTBfNDcg/MDAxNjk5NjA4NDQ4NTUz.lAVJ-SkSHJ01BDRhpMp-a9ElRUzvimCQ4KnhW5on0KUg.DWw6BDNtJCW7GuM3f2OuPVBDQcZfvXuJ3WLIPyWG5nYg.JPEG.momsy/IMG_3902.JPG?type=w966",
                 "https://postfiles.pstatic.net/MjAyMzExMTBfMjk2/MDAxNjk5NjA5NzM5ODYx.M11l9aLq2PSZyAjBTc5jOH5y_ADXFAkg-Kb44SXhtM4g.dbz8KXEsDVB6W9tcvmP-elImDg66CiPTKfog6MDpamgg.JPEG.momsy/DSC08518.JPG?type=w966",
@@ -587,6 +580,17 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             imgUrl: "https://postfiles.pstatic.net/MjAyNDA3MzFfMTI0/MDAxNzIyMzk3OTUwOTEw.auZuAUe44nXBFRGDZrXtvqzikTpuGU9Nl4bHopV7Bqwg.5nUFS93xioluyM9iCMnm1pUBkc-CArNBoT6JbUtQmUEg.PNG/SE-5c265ec7-a9d6-45ae-971c-05a5a9268bcd.png?type=w966"
         },
         {
+            title: "참고리스트 2",
+            desc: "참고용~~",
+            imgUrls: [
+                "https://cdn.imweb.me/upload/S20231103281549476c824/0fa147b6a2a63.jpg",
+                "https://cdn.imweb.me/upload/S20231103281549476c824/78b5cb072b2c9.jpg",
+                "https://cdn.imweb.me/upload/S20231103281549476c824/968dc9dc1f33d.jpg",
+                "https://cdn.imweb.me/upload/S20231103281549476c824/b8868767d936d.jpg",
+                "https://cdn.imweb.me/upload/S20231103281549476c824/4fe80abbd28e6.jpg"
+            ]
+        },
+        {
             title: "부르봉 과자",
             desc: "영어로 BOURBON 써있는 것들이 다 부르봉인데 위에 초콜릿 과자 혹은 브라우니 과자들이 한 번 다 먹어보시길 추천드립니다.",
             imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDJfMTAy/MDAxNzY3MjgxNTYyMTQ1.RyFxeb_r_TLHqDJjdow7WU5TXVFFYp68TuYvJiLWZokg._EGxGruvD4Q5Oa8FbQKfhdK7uUAQl0Ldvie67465cTAg.JPEG/SE-89dec41a-e721-11f0-99f4-73df7e8da612.jpg?type=w800"
@@ -625,6 +629,49 @@ INE CAFE는 전통적인 후나야를 개조하여 후나야의 독특한 풍모
             title: " 후리가케",
             desc: "밥에다가 뿌려먹으면 정말 맛있습니다. 다양한 맛으로 사오시길 추천",
             imgUrl: "https://mblogthumb-phinf.pstatic.net/MjAyNjAxMDJfMTk5/MDAxNzY3MjgyNTcwODk0.bTaRmIwK_H8r9ihnEONbgmecO4OlDsM-TWKYGFL8G4Eg.9DjC9IU8YPnaaqaw7kYRgBslcygV3B-unP4pkzKJpYcg.JPEG/SE-89f4e438-e721-11f0-99f4-e353563ad000.jpg?type=w400"
+        },
+        {
+            title: "오타이산",
+            desc: `일본 국민 소화제라 불리는 오타이산 입니다. 
+생약 성분의 종합 위장약으로 속이 더부룩하거나 소화가 안될때는 물론 위나 복부 팽만감, 속이 메슥거릴 때에도 효과가 좋습니다.
+분말로 되어 있는 것도 있고 알약으로 되어 있는 것도 있습니다. 
+낱개로 포장되어 있는 것도 있어 여행 다닐 때 항상 휴대하고 다니는 편 입니다. 
+집에 비치할 용도로 구매한다면 75g, 140g, 210g 중 깡통에 들어 있는 걸 선택하면 되고 낱개로 포장되어 있는 건 박스에 들어 있는 걸 고르면 됩니다. 
+성인 권장량은 하루 3회이며 8세 미만은 복용하면 안됩니다.`,
+            imgUrl: "https://img1.daumcdn.net/thumb/R1280x0.fjpg/?fname=http://t1.daumcdn.net/brunch/service/user/qbB/image/5FNT-_7KrS0JqlZnowrxf4UVD8k.jpg"
+        },
+        {
+            title: "로이히츠보코(동전파스)",
+            desc: `원래 이름보다 동전파스로 불리는 로이히츠보코 입니다. 
+어깨 결림이나 허리통, 관절통, 근육통 등에 효과가 있는 것으로 유명 합니다. 
+크기가 작은 건 156개, 큰 건 78개 들어 있습니다. 
+이건 사용해 보니 통증이 있는 부위에 붙이면 뜨겁고 가려워 개인적으로 선호하는 제품은 아닙니다. 
+나이든 분들은 상당히 선호한다고 합니다.`,
+            imgUrl: "https://img1.daumcdn.net/thumb/R1280x0.fjpg/?fname=http://t1.daumcdn.net/brunch/service/user/qbB/image/Sa73ftAOfm_4DGGP_fVEnbnsR9Q.jpg"
+        },
+        {
+            title: "샤론파스",
+            desc: `개인적으로 위에 소개한 동전파스 보다애용하는  샤론파스 입니다. 접착력도 좋고 크기도 명함 사이즈만해 여기저기 붙이기도 좋습니다. 
+샤론파스 30은 식물성 성분 배합으로 피부에 좋고, 라 샤론파스는 신축성이 있어 팔꿈치나 무릎 등에 잘 붙습니다. 
+마지막으로 샤론파스 하이는 얇은 반투명 소재로 되어 있어 눈에 띄지 않아 노출되는 부위에 붙이기 좋습니다. 
+주변 사람에게 가볍게 선물하기에도 좋고 받은 사람 역시 좋다고 다음에 또 사다달라고 부탁받을 정도 입니다. `,
+            imgUrl: "https://img1.daumcdn.net/thumb/R1280x0.fjpg/?fname=http://t1.daumcdn.net/brunch/service/user/qbB/image/nJB8zLupji2V6YRv1MdBfMyVUBc.jpg"
+        },
+        {
+            title: "EVE",
+            desc: `일본에서 가장 유명한 진통제 입니다. 
+생리통이나 두통, 치통, 인후통, 근육통, 신경통 등에 효과가 있어 남녀노소 누구나 많이 이용하는 제품 입니다. 
+EVE는 총 3가지 제품이 있으며 효과는 동일 합니다만 이부프로펜 함량이 다릅니다. 
+프로펜 아나필락시스가 있는 사람이나 출산 예정일 12주 이내의 임신부, 15세 미만은 복용하면 안됩니다.`,
+            imgUrl: "https://img1.daumcdn.net/thumb/R1280x0.fwebp/?fname=http://t1.daumcdn.net/brunch/service/user/qbB/image/QevHJQP_3J7PmI_ikROptInKhA8.jpeg"
+        },
+        {
+            title: "파브론",
+            desc: `일본에서 가자 유명한 종합 감기약 입니다. 
+가족 모두가 사용할 수 있는 상비약이라는 데 가래를 수반하는 일이 많다면 파브론 S골드W를 어른아이가 있고 일반적이고 가격도 적당한 것은 파브론S알파 가장 싼 것은 파브론 골드 A등이 좋습니다. 
+목의 통증이나 부종이 심해질 때는 파브론 에이스 AX, 일과 공부 등에서 졸음을 수반하지 않는 감기약이 필요하다면 파브론 50이 좋습니다. 
+파브론 키즈 시리즈는 시럽은 3개월 ~ 11개월, 미립은 1세부터 정제는 5세부터 복용해야 합니다.`,
+            imgUrl: "https://img1.daumcdn.net/thumb/R1280x0.fpng/?fname=http://t1.daumcdn.net/brunch/service/user/qbB/image/g2mKyt_lNa5Xd3bKrOm8OivVpcg.png"
         }
     ],
     "하루카": [
