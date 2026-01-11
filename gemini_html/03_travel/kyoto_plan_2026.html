@@ -108,12 +108,33 @@
         }
 
         .img-scroll-container::-webkit-scrollbar-thumb {
-            background: #64748b;
+            background: #ef4444;
+            /* Rojo/Red */
             border-radius: 10px;
         }
 
         .img-scroll-container::-webkit-scrollbar-thumb:hover {
-            background: #475569;
+            background: #dc2626;
+        }
+
+        .img-scroll-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .v-scroll-indicator {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            backdrop-filter: blur(4px);
+            z-index: 20;
+            pointer-events: none;
         }
 
         .img-scroll-item {
@@ -696,16 +717,20 @@
                 const urls = photo.imgUrls || (photo.imgUrl ? [photo.imgUrl] : []);
 
                 if (urls.length > 0) {
-                    imgHtml = `<div class="img-scroll-container">`;
+                    imgHtml = `
+                    <div class="img-scroll-wrapper">
+                        ${urls.length > 1 ? `<div class="v-scroll-indicator" id="v-indicator-${idx}">1 / ${urls.length}</div>` : ''}
+                        <div class="img-scroll-container" onscroll="onVerticalScroll(this, ${idx}, ${urls.length})">
+                    `;
                     urls.forEach(url => {
                         imgHtml += `<img src="${url}" class="img-scroll-item" onerror="this.src='https://placehold.co/600x400?text=No+Image'">`;
                     });
-                    imgHtml += `</div>`;
+                    imgHtml += `</div></div>`;
                 } else {
                     const singleUrl = `https://tse2.mm.bing.net/th?q=${encodeURIComponent(photo.imgKeyword)}&w=600&h=400&c=7&rs=1&p=0`;
-                    imgHtml = `<div class="img-scroll-container">
+                    imgHtml = `<div class="img-scroll-wrapper"><div class="img-scroll-container">
                         <img src="${singleUrl}" class="img-scroll-item" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
-                    </div>`;
+                    </div></div>`;
                 }
 
                 item.innerHTML = `
@@ -745,6 +770,14 @@
                     isScrolling = true;
                 }
             };
+        }
+
+        function onVerticalScroll(el, idx, total) {
+            const indicator = document.getElementById(`v-indicator-${idx}`);
+            if (indicator) {
+                const current = Math.round(el.scrollTop / el.offsetHeight) + 1;
+                indicator.innerText = `${current} / ${total}`;
+            }
         }
 
         // 보안: 브라우저 뒤로가기 버튼 처리
