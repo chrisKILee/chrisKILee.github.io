@@ -339,6 +339,17 @@
             border-top-left-radius: 0.5rem;
             border-bottom-left-radius: 0.5rem;
         }
+
+        /* Mall Tab Styles */
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .active-venue-tab {
+            background-color: #374151 !important;
+            color: white !important;
+            border-color: #374151 !important;
+        }
     </style>
 </head>
 
@@ -355,6 +366,7 @@
             <nav class="flex space-x-4 text-sm font-medium">
                 <button onclick="switchTab('plan')" id="btn-plan" class="tab-active py-1">일정</button>
                 <button onclick="switchTab('shopping')" id="btn-shopping" class="py-1">쇼핑</button>
+                <button onclick="switchTab('malls')" id="btn-malls" class="py-1">몰분석</button>
                 <button onclick="switchTab('spots')" id="btn-spots" class="py-1">장소</button>
                 <button onclick="switchTab('transit')" id="btn-transit" class="py-1">교통카드</button>
             </nav>
@@ -445,6 +457,116 @@
                         </p>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- Tab: Kyoto Malls Analysis -->
+        <section id="malls" class="tab-content hidden space-y-10 pb-10">
+            <!-- Intro -->
+            <div class="text-center py-6">
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">교토 쇼핑 완전 정복</h2>
+                <p class="text-xs text-slate-500">로피아, 이온몰, 아반티, 돈키호테 상세 비교</p>
+            </div>
+
+            <!-- Big 4 Explorer -->
+            <div class="space-y-6">
+                <!-- Mall Selector Tabs -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <button onclick="updateVenue('lopia')" id="btn-venue-lopia"
+                        class="venue-btn active-venue-tab py-3 px-2 rounded-2xl text-center font-bold border text-[10px] transition duration-200 bg-white">🥩
+                        로피아</button>
+                    <button onclick="updateVenue('aeon')" id="btn-venue-aeon"
+                        class="venue-btn py-3 px-2 rounded-2xl text-center font-bold border text-[10px] transition duration-200 bg-white text-slate-600">🛍️
+                        이온몰</button>
+                    <button onclick="updateVenue('avanti')" id="btn-venue-avanti"
+                        class="venue-btn py-3 px-2 rounded-2xl text-center font-bold border text-[10px] transition duration-200 bg-white text-slate-600">👗
+                        아반티</button>
+                    <button onclick="updateVenue('donki')" id="btn-venue-donki"
+                        class="venue-btn py-3 px-2 rounded-2xl text-center font-bold border text-[10px] transition duration-200 bg-white text-slate-600">🐧
+                        돈키호테</button>
+                </div>
+
+                <!-- Detail Panel -->
+                <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 grid md:grid-cols-2 gap-8">
+                    <div id="mall-venue-info">
+                        <h3 id="mall-v-title" class="text-2xl font-bold text-slate-800 mb-1">로피아 (Lopia)</h3>
+                        <p id="mall-v-subtitle"
+                            class="text-[10px] text-red-500 font-bold mb-6 uppercase tracking-widest">식료품 / 가성비 / 현금필수
+                        </p>
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="font-bold text-slate-700 flex items-center mb-2 text-xs">
+                                    <span
+                                        class="bg-slate-100 rounded-full w-5 h-5 flex items-center justify-center text-[10px] mr-2">1</span>
+                                    주요 특징
+                                </h4>
+                                <p id="mall-v-desc" class="text-slate-600 text-[11px] leading-relaxed"></p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-700 flex items-center mb-2 text-xs">
+                                    <span
+                                        class="bg-slate-100 rounded-full w-5 h-5 flex items-center justify-center text-[10px] mr-2">2</span>
+                                    인기 품목
+                                </h4>
+                                <ul id="mall-v-items"
+                                    class="list-disc list-inside text-[11px] text-slate-600 space-y-1"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col justify-center items-center bg-slate-50 rounded-3xl p-6">
+                        <h4 class="text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-tighter">쇼핑 성향 분석</h4>
+                        <div class="chart-container h-[250px]">
+                            <canvas id="mallRadarCanvas"></canvas>
+                        </div>
+                        <div id="mall-v-tip"
+                            class="mt-4 text-[10px] bg-amber-50 border border-amber-100 text-amber-900 p-4 rounded-2xl w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Donki Battle -->
+            <div class="bg-white rounded-[2rem] p-8 border border-slate-100 space-y-8">
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-slate-900">돈키호테 지점별 비교</h2>
+                    <p class="text-[10px] text-slate-500 mt-1">교토역 vs 시내 중심</p>
+                </div>
+                <div class="chart-container h-[300px]">
+                    <canvas id="mallDonkiBarCanvas"></canvas>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 bg-slate-50 rounded-2xl">
+                        <h4 class="font-bold text-xs mb-1">1. 아반티점 (교토역)</h4>
+                        <p class="text-[10px] text-slate-500 leading-snug">강추. 한 층이 매우 넓어 쇼핑이 쾌적함. 동선 최고.</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-2xl">
+                        <h4 class="font-bold text-xs mb-1">2. 가와라마치점 (시내)</h4>
+                        <p class="text-[10px] text-slate-500 leading-snug">심야 쇼핑 전용. 층이 많고 매우 좁아 9명 이동은 지옥.</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-2xl">
+                        <h4 class="font-bold text-xs mb-1">3. 가라스마 시치조점</h4>
+                        <p class="text-[10px] text-slate-500 leading-snug">조용한 쇼핑. 물량은 적지만 사람이 없어 쾌적함.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Store Finder -->
+            <div class="bg-slate-50 rounded-[2.5rem] p-8 space-y-6">
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-slate-900">입점 매장 리워드</h2>
+                    <p class="text-[10px] text-slate-500">어디에 무엇이 있을까?</p>
+                </div>
+                <div class="flex justify-center flex-wrap gap-2" id="mall-filter-container">
+                    <button onclick="filterMallStores('all')"
+                        class="mall-filter-btn active bg-slate-900 text-white px-4 py-1.5 rounded-full text-[10px] font-bold transition">전체</button>
+                    <button onclick="filterMallStores('이온몰')"
+                        class="mall-filter-btn bg-white text-slate-600 px-4 py-1.5 rounded-full text-[10px] font-bold border border-slate-200 transition">이온몰</button>
+                    <button onclick="filterMallStores('아반티')"
+                        class="mall-filter-btn bg-white text-slate-600 px-4 py-1.5 rounded-full text-[10px] font-bold border border-slate-200 transition">아반티</button>
+                    <button onclick="filterMallStores('요도바시')"
+                        class="mall-filter-btn bg-white text-slate-600 px-4 py-1.5 rounded-full text-[10px] font-bold border border-slate-200 transition">요도바시(로피아)</button>
+                </div>
+                <div id="mall-store-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
             </div>
         </section>
 
@@ -792,7 +914,8 @@
         };
 
         // --- Core Logics ---
-        let chartsInitialized = false;
+        let transitChartsInitialized = false;
+        let mallChartsInitialized = false;
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
@@ -801,9 +924,13 @@
             document.getElementById(`btn-${tabId}`).classList.add('tab-active');
             window.scrollTo(0, 0);
 
-            if (tabId === 'transit' && !chartsInitialized) {
+            if (tabId === 'transit' && !transitChartsInitialized) {
                 initTransitLogic();
-                chartsInitialized = true;
+                transitChartsInitialized = true;
+            }
+            if (tabId === 'malls' && !mallChartsInitialized) {
+                initMallsLogic();
+                mallChartsInitialized = true;
             }
         }
 
@@ -1128,6 +1255,129 @@
             });
 
             renderGrid();
+        }
+
+        // --- Mall Analysis Tab Logic (Imported from kyoto_malls.html) ---
+        function initMallsLogic() {
+            const mallVenueData = {
+                lopia: {
+                    title: "로피아 (Lopia)", subtitle: "식료품 / 가성비 / 현금필수",
+                    desc: "'일본의 코스트코'라 불리는 초저가 고퀄리티 슈퍼마켓입니다. 정육점 출신답게 고기 품질이 압도적입니다.<br><strong class='text-red-600 mt-1 block'>⚠️ 주의: 오직 현금 결제만 가능합니다.</strong>",
+                    items: ["가성비 최강 와규 스테이크", "대용량 장어 덮밥 및 초밥 세트", "자체 브랜드 소스류", "편의점보다 저렴한 디저트"],
+                    tip: "💡 <strong>TIP:</strong> 숙소에서 취사가 가능하다면 무조건 저녁 거리를 여기서 사세요.",
+                    radar: [95, 20, 90, 40]
+                },
+                aeon: {
+                    title: "이온몰 (AEON Mall)", subtitle: "가족 쇼핑 / 종합 쇼핑몰 / 다이소",
+                    desc: "교토역 하치조구치에서 도보 5분 거리의 거대 쇼핑몰입니다. 슈퍼마켓부터 의류, 장난감까지 모든 것이 갖춰져 있습니다.",
+                    items: ["1층 슈퍼마켓 (기념품 과자)", "유니클로 & GU 대형 매장", "토이저러스 (유아용품)", "대규모 다이소 매장"],
+                    tip: "💡 <strong>TIP:</strong> 인포메이션 센터에서 여권을 제시하면 할인 쿠폰북을 받을 수 있습니다.",
+                    radar: [80, 85, 80, 90]
+                },
+                avanti: {
+                    title: "교표 아반티 (Avanti)", subtitle: "서브컬처 / 캐릭터 / 젊은 패션",
+                    desc: "교토역 바로 맞은편 쇼핑몰입니다. 2층 돈키호테가 유명하지만 애니메이션 굿즈 등 젊은 층을 위한 샵이 많습니다.",
+                    items: ["돈키호테 (2층 전체)", "라신반 (중고 피규어 & 굿즈)", "산큐 마트 (390엔 샵)", "다양한 캐릭터 상품점"],
+                    tip: "💡 <strong>TIP:</strong> 오타쿠 문화에 관심이 있다면 4~5층을 집중 공략하세요.",
+                    radar: [85, 90, 50, 70]
+                },
+                donki: {
+                    title: "돈키호테 (Don Quijote)", subtitle: "만물상 / 심야 쇼핑 / 기념품",
+                    desc: "일본 여행의 필수 코스. 의약품, 화장품, 과자 등 없는 게 없습니다. 텍스 리펀 카운터가 항상 붐빕니다.",
+                    items: ["킷캣 녹차맛 (교토 한정판)", "동전 파스 & 샤론 파스", "저렴한 화장품 & 화장솜", "산토리 위스키 등 주류"],
+                    tip: "💡 <strong>TIP:</strong> 할인 쿠폰을 미리 준비하고 면세 줄을 고려해 여유 시간을 두세요.",
+                    radar: [90, 60, 70, 60]
+                }
+            };
+
+            const mallStoresList = [
+                { name: "유니클로", mall: "이온몰", type: "패션" },
+                { name: "GU", mall: "이온몰", type: "패션" },
+                { name: "GU", mall: "아반티", type: "패션" },
+                { name: "다이소", mall: "이온몰", type: "생활" },
+                { name: "무인양품", mall: "이온몰", type: "생활" },
+                { name: "라신반", mall: "아반티", type: "애니" },
+                { name: "돈키호테", mall: "아반티", type: "종합" },
+                { name: "산큐마트", mall: "아반티", type: "잡화" },
+                { name: "요도바시 카메라", mall: "요도바시", type: "전자" },
+                { name: "ABC 마트", mall: "이온몰", type: "신발" }
+            ];
+
+            let mallRadarChart = null;
+            let mallBarChart = null;
+
+            window.updateVenue = (key) => {
+                const data = mallVenueData[key];
+                const info = document.getElementById('mall-venue-info');
+                info.style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('mall-v-title').innerText = data.title;
+                    document.getElementById('mall-v-subtitle').innerText = data.subtitle;
+                    document.getElementById('mall-v-desc').innerHTML = data.desc;
+                    document.getElementById('mall-v-tip').innerHTML = data.tip;
+                    document.getElementById('mall-v-items').innerHTML = data.items.map(i => `<li>${i}</li>`).join('');
+                    info.style.opacity = '1';
+                }, 200);
+
+                document.querySelectorAll('.venue-btn').forEach(b => b.classList.remove('active-venue-tab'));
+                document.getElementById(`btn-venue-${key}`).classList.add('active-venue-tab');
+
+                mallRadarChart.data.datasets[0].data = data.radar;
+                mallRadarChart.data.datasets[0].label = data.title;
+                mallRadarChart.update();
+            };
+
+            window.filterMallStores = (cat) => {
+                document.querySelectorAll('.mall-filter-btn').forEach(b => b.classList.remove('bg-slate-900', 'text-white'));
+                event.target.classList.add('bg-slate-900', 'text-white');
+                const filtered = cat === 'all' ? mallStoresList : mallStoresList.filter(s => s.mall.includes(cat));
+                renderMallStores(filtered);
+            };
+
+            function renderMallStores(list) {
+                const grid = document.getElementById('mall-store-grid');
+                grid.innerHTML = list.map(s => `
+                    <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center">
+                        <span class="text-xl mb-1">${s.type === '패션' ? '👗' : s.type === '생활' ? '🏠' : '🎁'}</span>
+                        <h4 class="font-bold text-slate-800 text-[10px]">${s.name}</h4>
+                        <span class="text-[8px] text-slate-400 mt-1">${s.mall}</span>
+                    </div>
+                `).join('');
+            }
+
+            const chartFont = { family: "'Noto Sans KR', sans-serif", size: 9 };
+
+            mallRadarChart = new Chart(document.getElementById('mallRadarCanvas').getContext('2d'), {
+                type: 'radar',
+                data: {
+                    labels: ['가격', '패션', '식료품', '쾌적도'],
+                    datasets: [{ label: '로피아', data: mallVenueData.lopia.radar, backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: '#ef4444', borderWidth: 2 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { r: { suggestedMin: 0, suggestedMax: 100, ticks: { display: false }, pointLabels: { font: chartFont } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            mallBarChart = new Chart(document.getElementById('mallDonkiBarCanvas').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['아반티(역)', '가와라마치', '가라스마'],
+                    datasets: [
+                        { label: '편의성', data: [95, 60, 75], backgroundColor: '#0f172a' },
+                        { label: '여유도', data: [70, 30, 80], backgroundColor: '#64748b' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    scales: { x: { max: 100, ticks: { font: chartFont } }, y: { ticks: { font: chartFont } } },
+                    plugins: { legend: { labels: { font: chartFont } } }
+                }
+            });
+
+            updateVenue('lopia');
+            renderMallStores(mallStoresList);
         }
 
         // 보안: 브라우저 뒤로가기 버튼 처리
