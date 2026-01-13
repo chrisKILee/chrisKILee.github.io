@@ -6,11 +6,17 @@ window.FOLDER_CONFIG['06_VNTG_AI_STUDY'] = {
         "sdd.html",
         "ai_model_compare.html",
         "ai_security.html",
-        "vntg_ai_study.html"
+        "vntg_ai_guide.html",
+        "guide.html",
+        "guide2.html",
+        "guide3.html"
     ],
     "rag_ai_dev_guide.html": "RAG AI 개발 가이드",
     "sdd.html": "SDD 설명",
     "ai_model_compare.html": "AI 모델 비교",
     "ai_security.html": "AI 와 정보보호 거버넌스",
-    "vntg_ai_study.html": "AI 용어 가이드"
+    "vntg_ai_guide.html": "AI 용어 가이드",
+    "guide.html": "ai 용어 참고 1",
+    "guide2.html": "ai 용어 참고 2",
+    "guide3.html": "ai 용어 참고 3"
 };
