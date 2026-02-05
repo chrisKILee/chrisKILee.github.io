@@ -13,7 +13,8 @@ window.FOLDER_CONFIG['02_work'] = {
         "cursor_teams.html",
         "Observability_Stack_Layers.html",
         "k8s architecture.html",
-        "k8s.html"
+        "k8s.html",
+        "monitoring_pipeline.html"
     ],
     "changwon.html": "창원특수강 공정",
     "changwon-process.html": "창원특수강 공정 v2",
@@ -26,5 +27,6 @@ window.FOLDER_CONFIG['02_work'] = {
     "opsdev.html": "OpsDeveloper 란?",
     "Observability_Stack_Layers.html": "Observability Stack Layers",
     "k8s architecture.html": "K8s Architecture",
-    "k8s.html": "K8s 플로우"
+    "k8s.html": "K8s 플로우",
+    "monitoring_pipeline.html": "통합서버 모니터링 파이프라인"
 };

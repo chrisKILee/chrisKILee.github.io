@@ -3,10 +3,9 @@
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### Language & Documentation
+All guides, documentation, and commit messages must be written in Korean.
+<!-- 모든 가이드와 문서, 커밋 메시지는 반드시 한글로 작성해야 합니다. -->
 
 ### [PRINCIPLE_2_NAME]
 <!-- Example: II. CLI Interface -->

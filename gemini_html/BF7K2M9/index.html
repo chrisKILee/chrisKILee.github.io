@@ -258,6 +258,7 @@
         </div>
     </div>
 
+    <script src="../02_work/files_config.js"></script>
     <script>
         const GITHUB_API = `https://api.github.com/repos/chrisKILee/chrisKILee.github.io/contents/gemini_html/02_work`;
         const CONFIG_PATH = '../02_work/files.json';
@@ -267,21 +268,47 @@
 
         async function loadFiles() {
             try {
-                const filesResp = await fetch(GITHUB_API);
-                if (!filesResp.ok) throw new Error('GitHub API Error');
-                const rawFiles = await filesResp.json();
+                let rawFiles = [];
+                // 1. Try to use local FOLDER_CONFIG first (for local dev/speed)
+                // 1. Try to use local FOLDER_CONFIG first (for local dev/speed)
+                if (window.FOLDER_CONFIG && window.FOLDER_CONFIG['02_work']) {
+                    console.log("[DEBUG] Using local FOLDER_CONFIG");
+                    const localConfig = window.FOLDER_CONFIG['02_work'];
+                    // Construct file list from config keys
+                    rawFiles = Object.keys(localConfig)
+                        .filter(key => key !== '_folderName' && key !== '_order')
+                        .map(key => ({
+                            name: key,
+                            type: 'file',
+                            size: 0 // Local config doesn't have size, but it's fine
+                        }));
+                } else {
+                    console.warn("[DEBUG] FOLDER_CONFIG not found or empty");
+                }
 
+                // 2. If no local config or empty, fallback to GitHub API
+                if (rawFiles.length === 0) {
+                    const filesResp = await fetch(GITHUB_API);
+                    if (filesResp.ok) {
+                        rawFiles = await filesResp.json();
+                    }
+                }
+
+                console.log("[DEBUG] rawFiles:", rawFiles);
                 filesData = rawFiles.filter(item =>
                     item.type === 'file' &&
                     !['files.json', 'files_config.js', 'index.html'].includes(item.name) &&
                     !item.name.endsWith('.Identifier')
                 );
+                console.log("[DEBUG] filesData:", filesData);
 
-                let config = {};
-                try {
-                    const cfgResp = await fetch(CONFIG_PATH);
-                    if (cfgResp.ok) config = await cfgResp.json();
-                } catch (e) { }
+                let config = window.FOLDER_CONFIG && window.FOLDER_CONFIG['02_work'] ? window.FOLDER_CONFIG['02_work'] : {};
+                if (Object.keys(config).length === 0) {
+                    try {
+                        const cfgResp = await fetch(CONFIG_PATH);
+                        if (cfgResp.ok) config = await cfgResp.json();
+                    } catch (e) { }
+                }
 
                 const order = config._order || [];
                 const sorted = [...filesData].sort((a, b) => {
