@@ -470,61 +470,29 @@
             }
         }
 
-        async function loadContent(filename) {
+        function loadContent(filename) {
             const frame = document.getElementById('contentFrame');
-            if (!filename) {
-                frame.innerHTML = '';
-                return;
-            }
+            frame.innerHTML = '';
 
-            frame.innerHTML = '<div style="text-align:center; padding:40px; color:#6ee7b7;">Loading...</div>';
+            const iframe = document.createElement('iframe');
+            iframe.src = CONTENT_BASE_PATH + filename;
+            iframe.style.cssText = 'width:100%; border:none; min-height:100vh;';
 
-            document.querySelectorAll('.imported-style').forEach(el => el.remove());
-            document.querySelectorAll('.imported-script').forEach(el => {
-                if (el.src && el.src.startsWith('blob:')) URL.revokeObjectURL(el.src);
-                el.remove();
-            });
+            iframe.onload = function() {
+                try {
+                    const body = iframe.contentDocument.body;
+                    const html = iframe.contentDocument.documentElement;
+                    const height = Math.max(
+                        body.scrollHeight, body.offsetHeight,
+                        html.clientHeight, html.scrollHeight, html.offsetHeight
+                    );
+                    iframe.style.height = height + 'px';
+                } catch(e) {
+                    iframe.style.height = '100vh';
+                }
+            };
 
-            try {
-                const response = await fetch(CONTENT_BASE_PATH + filename);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const html = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-
-                doc.querySelectorAll('style').forEach(style => {
-                    const newStyle = document.createElement('style');
-                    newStyle.textContent = style.textContent;
-                    newStyle.classList.add('imported-style');
-                    document.head.appendChild(newStyle);
-                });
-
-                doc.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-                    const newLink = document.createElement('link');
-                    newLink.rel = 'stylesheet';
-                    newLink.classList.add('imported-style');
-                    const href = link.getAttribute('href');
-                    if (href) {
-                        newLink.href = (href.startsWith('http') || href.startsWith('//')) ? href : CONTENT_BASE_PATH + href;
-                        document.head.appendChild(newLink);
-                    }
-                });
-
-                frame.style.padding = '0';
-                frame.style.background = 'transparent';
-                frame.innerHTML = doc.body.innerHTML;
-
-                frame.querySelectorAll('img').forEach(img => {
-                    const src = img.getAttribute('src');
-                    if (src && !src.startsWith('http') && !src.startsWith('//') && !src.startsWith('data:')) {
-                        img.setAttribute('src', CONTENT_BASE_PATH + src);
-                    }
-                });
-
-            } catch (e) {
-                console.error(e);
-                frame.innerHTML = `<div style="padding:40px; color:#ef4444;">Error: ${e.message}</div>`;
-            }
+            frame.appendChild(iframe);
         }
 
         document.getElementById('searchInput').addEventListener('input', (e) => {

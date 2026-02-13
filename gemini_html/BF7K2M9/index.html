@@ -485,99 +485,29 @@
             }
         }
 
-        async function loadContent(filename) {
+        function loadContent(filename) {
             const frame = document.getElementById('contentFrame');
-            const SCOPE_CLASS = 'imported-content';
+            frame.innerHTML = '';
 
-            if (!filename) {
-                frame.innerHTML = '';
-                return;
-            }
+            const iframe = document.createElement('iframe');
+            iframe.src = CONTENT_BASE_PATH + filename;
+            iframe.style.cssText = 'width:100%; border:none; min-height:100vh;';
 
-            frame.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8;">Loading...</div>';
-
-            document.querySelectorAll('.imported-style').forEach(el => el.remove());
-            document.querySelectorAll('.imported-script').forEach(el => {
-                if (el.src && el.src.startsWith('blob:')) URL.revokeObjectURL(el.src);
-                el.remove();
-            });
-
-            try {
-                const response = await fetch(CONTENT_BASE_PATH + filename);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const html = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-
-                doc.querySelectorAll('style').forEach(style => {
-                    const newStyle = document.createElement('style');
-                    newStyle.textContent = style.textContent.replace(/(^|[\s,}])(body|html)([\s,{])/gi, `$1.${SCOPE_CLASS}$3`);
-                    newStyle.classList.add('imported-style');
-                    document.head.appendChild(newStyle);
-                });
-
-                doc.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-                    const newLink = document.createElement('link');
-                    newLink.rel = 'stylesheet';
-                    newLink.classList.add('imported-style');
-                    const href = link.getAttribute('href');
-                    if (href) {
-                        newLink.href = (href.startsWith('http') || href.startsWith('//')) ? href : CONTENT_BASE_PATH + href;
-                        document.head.appendChild(newLink);
-                    }
-                });
-
-                const bodyClasses = doc.body.className;
-                const bodyStyles = doc.body.getAttribute('style') || '';
-                frame.style.padding = '0';
-                frame.style.background = 'transparent';
-                frame.style.boxShadow = 'none';
-                frame.innerHTML = `<div id="importedRoot" class="${SCOPE_CLASS} ${bodyClasses}" style="${bodyStyles}; width:100%; min-height:100%; position:relative;">${doc.body.innerHTML}</div>`;
-
-                frame.querySelectorAll('img').forEach(img => {
-                    const src = img.getAttribute('src');
-                    if (src && !src.startsWith('http') && !src.startsWith('//') && !src.startsWith('data:')) {
-                        img.setAttribute('src', CONTENT_BASE_PATH + src);
-                    }
-                });
-
-                const scriptsArr = Array.from(doc.querySelectorAll('script'));
-                await new Promise(r => setTimeout(r, 200));
-
-                for (const s of scriptsArr) {
-                    await new Promise(async (resolve) => {
-                        const newS = document.createElement('script');
-                        newS.classList.add('imported-script');
-
-                        Array.from(s.attributes).forEach(attr => {
-                            if (attr.name !== 'src' && attr.name !== 'type') newS.setAttribute(attr.name, attr.value);
-                        });
-
-                        const src = s.getAttribute('src');
-                        const type = s.getAttribute('type');
-
-                        if (src) {
-                            if (src.includes('node_modules')) {
-                                newS.src = `https://cdn.jsdelivr.net/npm/${src.split('node_modules/')[1]}`;
-                            } else {
-                                newS.src = (src.startsWith('http') || src.startsWith('//')) ? src : CONTENT_BASE_PATH + src;
-                            }
-                            newS.onload = () => resolve();
-                            newS.onerror = () => resolve();
-                            document.body.appendChild(newS);
-                        } else {
-                            newS.textContent = s.textContent;
-                            if (type) newS.type = type;
-                            document.body.appendChild(newS);
-                            resolve();
-                        }
-                    });
+            iframe.onload = function() {
+                try {
+                    const body = iframe.contentDocument.body;
+                    const html = iframe.contentDocument.documentElement;
+                    const height = Math.max(
+                        body.scrollHeight, body.offsetHeight,
+                        html.clientHeight, html.scrollHeight, html.offsetHeight
+                    );
+                    iframe.style.height = height + 'px';
+                } catch(e) {
+                    iframe.style.height = '100vh';
                 }
+            };
 
-            } catch (e) {
-                console.error(e);
-                frame.innerHTML = `<div style="padding:40px; color:#ef4444;">Error: ${e.message}</div>`;
-            }
+            frame.appendChild(iframe);
         }
 
         document.getElementById('searchInput').addEventListener('input', (e) => {
