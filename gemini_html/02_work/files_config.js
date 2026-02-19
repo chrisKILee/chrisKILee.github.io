@@ -16,7 +16,8 @@ window.FOLDER_CONFIG['02_work'] = {
         "k8s.html",
         "monitoring_pipeline.html",
         "IT_RESILIENCE.HTML",
-        "cto_synergy.html"
+        "cto_synergy.html",
+        "k8s_study_guide.html"
     ],
     "changwon.html": "창원특수강 공정",
     "changwon-process.html": "창원특수강 공정 v2",
@@ -32,5 +33,6 @@ window.FOLDER_CONFIG['02_work'] = {
     "k8s.html": "K8s 플로우",
     "monitoring_pipeline.html": "통합서버 모니터링 파이프라인",
     "IT_RESILIENCE.HTML": "IT 장애 대응 플레이북",
-    "cto_synergy.html": "CTO 조직 역할 및 시너지 분석"
+    "cto_synergy.html": "CTO 조직 역할 및 시너지 분석",
+    "k8s_study_guide.html": "K8s 스터디 가이드"
 };
