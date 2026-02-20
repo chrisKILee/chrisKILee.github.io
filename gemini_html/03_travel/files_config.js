@@ -18,7 +18,8 @@ window.FOLDER_CONFIG['03_travel'] = {
         "kyoto_transit.html",
         "kyoto_malls.html",
         "kyoto_food.html",
-        "wonju.html"
+        "wonju.html",
+        "wishlist.html"
     ],
     "japan_trip.html": "일본 겨울여행",
     "2026winter_island_compraison.html": "2026년 1월 동남아 가고싶은 섬 비교",
@@ -36,5 +37,6 @@ window.FOLDER_CONFIG['03_travel'] = {
     "kyoto_transit.html": "교토 교통",
     "kyoto_malls.html": "교토 쇼핑",
     "kyoto_food.html": "교토 맛집",
-    "wonju.html": "원주 오크밸리 여행 계획"
+    "wonju.html": "원주 오크밸리 여행 계획",
+    "wishlist.html": "휴양지 보고서: 8개 지역 비교"
 };
