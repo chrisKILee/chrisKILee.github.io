@@ -12,7 +12,9 @@ window.FOLDER_CONFIG['04_AI_Study'] = {
         "NanoBanana_prompt.html",
         "curor_security.html",
         "antigravity_cursor_security_analys.html",
-        "claude.html"
+        "claude.html",
+        "mcp.html",
+        "skill.html"
     ],
     "MCP_Research.html": "MCP 연구 및 트렌드 리포트",
     "mcp_info.html": "MCP 가이드",
@@ -24,5 +26,7 @@ window.FOLDER_CONFIG['04_AI_Study'] = {
     "NanoBanana_prompt.html": "NanoBanana Pro Prompt",
     "curor_security.html": "Cursor IDE 보안 감사 분석 리포트",
     "antigravity_cursor_security_analys.html": "Antigravity Cursor Security Analysis",
-    "claude.html": "Claude Code: 공식 문서 가이드"
+    "claude.html": "Claude Code: 공식 문서 가이드",
+    "mcp.html": "MCP 가이드",
+    "skill.html": "claude - Skill"
 };
