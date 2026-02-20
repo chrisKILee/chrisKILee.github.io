@@ -18,7 +18,8 @@ window.FOLDER_CONFIG['02_work'] = {
         "IT_RESILIENCE.HTML",
         "cto_synergy.html",
         "k8s_study_guide.html",
-        "aws-gcp.html"
+        "aws-gcp.html",
+        "aws-gcp-sub.html"
     ],
     "changwon.html": "창원특수강 공정",
     "changwon-process.html": "창원특수강 공정 v2",
@@ -36,5 +37,6 @@ window.FOLDER_CONFIG['02_work'] = {
     "IT_RESILIENCE.HTML": "IT 장애 대응 플레이북",
     "cto_synergy.html": "CTO 조직 역할 및 시너지 분석",
     "k8s_study_guide.html": "K8s 스터디 가이드",
-    "aws-gcp.html": "AWS vs GCP"
+    "aws-gcp.html": "AWS vs GCP",
+    "aws-gcp-sub.html": "GCP 서버리스"
 };
