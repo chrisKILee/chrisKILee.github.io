@@ -23,6 +23,7 @@
 - 04_AI_Study → QT38XYX/index.html (Clean Pastel Blue Theme)
 - 05_Private → RU4TYZ1/index.html (Soft Pastel Pink Theme)
 - 06_VNTG_AI_STUDY → VNTG7S2/index.html (Corporate Green Glassmorphism Theme)
+- 07_RD_HOT_NEWS → RDH10WS/index.html (Energetic Red & Dark Theme)
 
 ## index (메인 포털)
 - product type : landing page, portal gate 
@@ -114,6 +115,20 @@
   - 호버 시 glow + lift 효과
   - 타이포그래피: Inter Bold
   - 아이콘: Heroicons (lightning-bolt, cube, rocket)
+
+## 07_RD_HOT_NEWS (R&D HOT News - 트렌드 및 소식)
+- product type : energetic news card gallery
+- style : **bold**, modern, **energetic**
+- industry : technology, R&D, news, trends
+- stack : html-tailwind (SPA)
+- color theme : **energetic red & dark** (Red 600-900)
+- **특별 요구사항**:
+  - 다크 레드 그라디언트 배경 (Slate 950 → Red 900)
+  - 카드: **강한 Glassmorphism** (투명 + backdrop-blur-xl + Red 500 테두리)
+  - 텍스트: White & Red 100
+  - 호버 시 Red Glow + Scale up 효과
+  - 타이포그래피: Poppins Bold
+  - 아이콘: Heroicons (fire, globe-alt, newspaper)
 
 ## 새로운 디렉토리
 - 새로운 디렉토리가 생기면 디렉토리 이름과 연관된 **프리미엄 테마**를 적용합니다

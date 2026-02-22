@@ -1,6 +1,6 @@
 
 // --- Configuration ---
-const KNOWN_FOLDERS = ['01_rnd', '02_work', '03_travel', '04_AI_Study', '05_Private', '06_VNTG_AI_STUDY'];
+const KNOWN_FOLDERS = ['01_rnd', '02_work', '03_travel', '04_AI_Study', '05_Private', '06_VNTG_AI_STUDY', '07_RD_HOT_NEWS'];
 
 // Hash Mappings for Security/Obfuscation
 const HASH_MAPPINGS = {
@@ -9,7 +9,8 @@ const HASH_MAPPINGS = {
     '03_travel': 'C8PQ4X1',
     '04_AI_Study': 'QT38XYX',
     '05_Private': 'RU4TYZ1',
-    '06_VNTG_AI_STUDY': 'VNTG7S2'
+    '06_VNTG_AI_STUDY': 'VNTG7S2',
+    '07_RD_HOT_NEWS': 'RDH10WS'
 };
 
 // --- Logic ---
@@ -78,7 +79,7 @@ function init() {
             // The user said "Test success then commit". 
             // I will implement the FIX here immediately to pass the test, as efficient agent.)
 
-            // Fix: remove extension and add hash
+            // Fix: remove extension and add hash for the SPA news rooms
             const fileNameNoExt = fileName.replace(/\.[^/.]+$/, "");
             const linkUrl = `../${hashPath}/#${fileNameNoExt}`;
 
@@ -90,7 +91,7 @@ function init() {
                                 <span>Gemini</span>
                             </div>
                             <div class="file-title">${displayName}</div>
-                            <div class="file-desc">${fileName}</div> 
+                            <div class="file-desc">${displayName}</div> 
                         </a>
                     `;
         }).join('')}
