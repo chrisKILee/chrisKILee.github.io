@@ -13,6 +13,16 @@ const HASH_MAPPINGS = {
     '07_RD_HOT_NEWS': 'RDH10WS'
 };
 
+const SECRET_LIST_HASHES = {
+    '01_rnd': 'r-research-lock-24',
+    '02_work': 'w-work-auth-88',
+    '03_travel': 't-travel-auth-55',
+    '04_AI_Study': 'a-ai-study-lock-99',
+    '05_Private': 'p-private-key-12',
+    '06_VNTG_AI_STUDY': 'l-life-auth-77',
+    '07_RD_HOT_NEWS': 'n-news-auth-2024'
+};
+
 // --- Logic ---
 
 async function fetchAllFolderConfigs() {
@@ -76,15 +86,18 @@ async function init() {
         const hashPath = HASH_MAPPINGS[folderKey] || folderKey;
         const folderName = folderData._folderName || folderKey;
 
+        const secretHash = SECRET_LIST_HASHES[folderKey] || '';
+        const listAccessUrl = `../${hashPath}/#${secretHash}`;
+
         section.innerHTML = `
             <div class="folder-header">
                 <div class="folder-title">${folderName}</div>
                 <div class="folder-count">${sortedKeys.length} posts</div>
                 <div style="display:flex; gap:10px;">
-                    <button class="copy-link-btn" onclick="window.location.href='../${hashPath}/'">
+                    <button class="copy-link-btn" onclick="window.location.href='${listAccessUrl}'">
                         <i class="fas fa-external-link-alt"></i> 바로가기
                     </button>
-                    <button class="copy-link-btn" onclick="copyLink('${hashPath}')">
+                    <button class="copy-link-btn" onclick="copyLink('${hashPath}', '${secretHash}')">
                         <i class="fas fa-link"></i> 링크 복사
                     </button>
                 </div>
@@ -148,14 +161,16 @@ async function init() {
 
 // --- Toast Logic ---
 // --- Toast Logic ---
-window.copyLink = function (hashPath) {
+window.copyLink = function (hashPath, secretHash) {
     console.log('Copying link for:', hashPath);
-    const url = `${window.location.origin}/gemini_html/${hashPath}/`;
+    // Construct the full URL including the hash for list access
+    const baseUrl = window.location.href.split('/GDEDSE/')[0];
+    const url = `${baseUrl}/${hashPath}/#${secretHash}`;
+
     navigator.clipboard.writeText(url).then(() => {
         showToast();
     }).catch(err => {
         console.error('Clipboard failed, using fallback', err);
-        // Fallback
         const input = document.createElement('textarea');
         input.value = url;
         document.body.appendChild(input);
