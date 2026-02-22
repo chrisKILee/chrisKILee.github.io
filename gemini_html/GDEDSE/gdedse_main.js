@@ -46,15 +46,15 @@ async function fetchAllFolderConfigs() {
 
 async function init() {
     const container = document.getElementById('contentArea');
-    container.innerHTML = `<div class="loading" style="text-align:center; padding:50px; color:white; opacity:0.5;">
-        <i class="fas fa-spinner fa-spin"></i> 최신 데이터를 동기화 중입니다...
+    container.innerHTML = `<div class="loading" style="text-align:center; padding:50px; color:#191919; opacity:0.5;">
+        <i class="fas fa-spinner fa-spin"></i> Loading archive items...
     </div>`;
 
     // Load configs dynamically at runtime (Zero-Sync)
     const config = await fetchAllFolderConfigs();
 
     if (Object.keys(config).length === 0) {
-        container.innerHTML = `<div class="loading">설정 데이터를 불러올 수 없습니다. 로컬 서버 상태를 확인해주세요.</div>`;
+        container.innerHTML = `<div class="loading">Could not load archive data. Please check connection.</div>`;
         return;
     }
 
@@ -93,14 +93,6 @@ async function init() {
             <div class="folder-header">
                 <div class="folder-title">${folderName}</div>
                 <div class="folder-count">${sortedKeys.length} posts</div>
-                <div style="display:flex; gap:10px;">
-                    <button class="copy-link-btn" onclick="window.location.href='${listAccessUrl}'">
-                        <i class="fas fa-external-link-alt"></i> 바로가기
-                    </button>
-                    <button class="copy-link-btn" onclick="copyLink('${hashPath}', '${secretHash}')">
-                        <i class="fas fa-link"></i> 링크 복사
-                    </button>
-                </div>
             </div>
             <div class="file-grid">
                 ${sortedKeys.map(fileName => {
@@ -113,15 +105,18 @@ async function init() {
             const linkUrl = `../${hashPath}/#${fileNameNoExt}`;
 
             return `
-                        <a href="${linkUrl}" class="file-card" data-search="${displayName.toLowerCase()} ${fileName.toLowerCase()}">
+                        <div class="file-card" onclick="window.location.href='${linkUrl}'" data-search="${displayName.toLowerCase()} ${fileName.toLowerCase()}">
                             <div class="file-meta">
                                 <span>${fileType}</span>
-                                <span style="color: #ddd;">|</span>
-                                <span>Gemini</span>
+                                <div class="card-actions">
+                                     <button class="action-btn" onclick="event.stopPropagation(); copyDirectLink('${hashPath}', '${fileNameNoExt}')" title="문서 링크 복사">
+                                        <i class="fas fa-link"></i>
+                                     </button>
+                                </div>
                             </div>
                             <div class="file-title">${displayName}</div>
                             <div class="file-desc">${displayName}</div> 
-                        </a>
+                        </div>
                     `;
         }).join('')}
             </div>
@@ -161,18 +156,20 @@ async function init() {
 
 // --- Toast Logic ---
 // --- Toast Logic ---
-window.copyLink = function (hashPath, secretHash) {
-    console.log('Copying link for:', hashPath);
-    // Construct the full URL including the hash for list access
-    const baseUrl = window.location.href.split('/GDEDSE/')[0];
-    const url = `${baseUrl}/${hashPath}/#${secretHash}`;
+// window.copyLink removed to comply with "Stealth/No-List" rule
 
-    navigator.clipboard.writeText(url).then(() => {
+window.copyDirectLink = function (hashPath, fileNameNoExt) {
+    const baseUrl = window.location.href.split('/GDEDSE/')[0];
+    const url = `${baseUrl}/${hashPath}/#${fileNameNoExt}`;
+    doCopy(url);
+}
+
+function doCopy(text) {
+    navigator.clipboard.writeText(text).then(() => {
         showToast();
     }).catch(err => {
-        console.error('Clipboard failed, using fallback', err);
         const input = document.createElement('textarea');
-        input.value = url;
+        input.value = text;
         document.body.appendChild(input);
         input.select();
         document.execCommand('copy');

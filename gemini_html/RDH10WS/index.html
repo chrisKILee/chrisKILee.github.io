@@ -4,15 +4,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔥 R&D HOT News</title>
-    <script>
-        // Production Redirect to Main Portal
-        window.location.href = '../GDEDSE/';
-    </script>
+    <title>📰 News - RD HOT NEWS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #0F172A;
+            min-height: 100vh;
+            color: #CBD5E1;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .header {
+            margin-bottom: 40px;
+            border-left: 8px solid #38BDF8;
+            padding-left: 25px;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: white;
+            letter-spacing: -0.02em;
+        }
+
+        .btn {
+            background: #1E293B;
+            color: white;
+            border: 1px solid #334155;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #334155;
+            border-color: #38BDF8;
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .file-card {
+            background: #1E293B;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+            border: 1px solid #334155;
+            transition: all 0.2s;
+        }
+
+        .file-card:hover {
+            background: #334155;
+            transform: translateX(10px);
+            border-color: #38BDF8;
+        }
+
+        .file-icon {
+            font-size: 1.5rem;
+            color: #38BDF8;
+        }
+
+        .file-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .content-view {
+            animation: fadeIn 0.4s ease;
+            background: white;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .content-header {
+            padding: 15px 25px;
+            background: #1E293B;
+            border-bottom: 1px solid #38BDF8;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #38BDF8;
+            color: #0F172A;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            opacity: 0;
+            transition: 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <p>Redirecting to Gemini Archive...</p>
+    <div id="fileListView" class="container">
+        <div class="header">
+            <h1>HOT NEWS</h1>
+            <p>Real-time updates and architectural insights</p>
+        </div>
+        <div id="filesContainer" class="file-grid"></div>
+    </div>
+
+    <div id="fileContentView" class="content-view" style="display:none;">
+        <div class="content-header">
+            <button onclick="copyCurrentLink()" class="btn"><i class="fas fa-link"></i> 링크 복사</button>
+        </div>
+        <div id="contentFrame"></div>
+    </div>
+
+    <div id="toast" class="toast">링크가 복사되었습니다!</div>
+
+    <script>
+        const SECRET_LIST_HASH = 'n-news-auth-2024';
+        const CONFIG_PATH = './files.json';
+        let filesData = [];
+        let folderConfig = {};
+
+        async function init() {
+            try {
+                const resp = await fetch(`${CONFIG_PATH}?v=${new Date().getTime()}`);
+                folderConfig = await resp.json();
+                filesData = (folderConfig._order || []).map(name => ({ name }));
+                renderGrid(); checkHash();
+            } catch (e) { showStealth404(); }
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('filesContainer');
+            container.innerHTML = filesData.map(file => `
+                <div class="file-card" onclick="window.location.hash='${file.name.replace(/\.[^/.]+$/, "")}'">
+                    <div class="file-icon"><i class="fas fa-bolt"></i></div>
+                    <div class="file-name">${folderConfig[file.name] || file.name}</div>
+                </div>`).join('');
+        }
+
+        function checkHash() {
+            const hash = decodeURIComponent(window.location.hash.substring(1));
+            if (!hash) return showStealth404();
+            if (hash === SECRET_LIST_HASH) toggleView('list');
+            else {
+                const file = filesData.find(f => f.name.replace(/\.[^/.]+$/, "") === hash);
+                if (file) { toggleView('content'); loadContent(file.name); } else showStealth404();
+            }
+        }
+
+        function toggleView(view) {
+            document.getElementById('fileListView').style.display = view === 'list' ? 'block' : 'none';
+            document.getElementById('fileContentView').style.display = view === 'content' ? 'block' : 'none';
+        }
+
+        async function loadContent(filename) {
+            const frame = document.getElementById('contentFrame');
+            frame.innerHTML = '<div style="padding: 20px; color: #38BDF8;">Fetching hot news...</div>';
+
+            try {
+                const resp = await fetch(`./${filename}?v=${new Date().getTime()}`);
+                if (!resp.ok) throw new Error('Not found');
+                const text = await resp.text();
+
+                if (!frame.shadowRoot) frame.attachShadow({ mode: 'open' });
+                const shadow = frame.shadowRoot;
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+                const styles = Array.from(doc.querySelectorAll('style, link[rel="stylesheet"]')).map(s => s.outerHTML).join('');
+
+                shadow.innerHTML = `
+                    <style>
+                        :host { display: block; background: #0f172a; min-height: 100vh; color: #f8fafc; }
+                        @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+                        * { font-family: 'Inter', sans-serif !important; }
+                    </style>
+                    ${styles}
+                    <div class="shadow-content-wrapper">${doc.body.innerHTML}</div>
+                `;
+
+                doc.querySelectorAll('script').forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    if (oldScript.src) newScript.src = oldScript.src;
+                    else newScript.textContent = oldScript.textContent;
+                    shadow.appendChild(newScript);
+                });
+            } catch (e) {
+                frame.innerHTML = '<div style="padding: 20px; color: #ef4444;">News feed unavailable.</div>';
+            }
+        }
+
+        function copyCurrentLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            });
+        }
+
+        function showStealth404() { document.body.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100vh; background:#0F172A;"><h1>404</h1></div>`; }
+        window.addEventListener('hashchange', checkHash);
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 
 </html>

@@ -80,22 +80,6 @@
             display: flex;
             align-items: center;
         }
-
-        .nav-back {
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        iframe {
-            width: 100%;
-            border: none;
-            height: calc(100vh - 80px);
-        }
     </style>
 </head>
 
@@ -108,8 +92,6 @@
         <div id="filesContainer" class="file-grid"></div>
     </div>
     <div id="fileContentView" class="content-view" style="display:none;">
-        <div class="content-header"><button onclick="window.location.hash=SECRET_LIST_HASH" class="nav-back">←
-                Back</button></div>
         <div id="contentFrame"></div>
     </div>
     <script>
@@ -146,11 +128,40 @@
             document.getElementById('fileListView').style.display = view === 'list' ? 'block' : 'none';
             document.getElementById('fileContentView').style.display = view === 'content' ? 'block' : 'none';
         }
-        function loadContent(filename) {
-            const iframe = document.createElement('iframe');
-            iframe.src = `./${filename}?v=${new Date().getTime()}`;
-            document.getElementById('contentFrame').innerHTML = '';
-            document.getElementById('contentFrame').appendChild(iframe);
+        async function loadContent(filename) {
+            const frame = document.getElementById('contentFrame');
+            frame.innerHTML = '<div style="padding: 20px; color: #059669;">Brewing style...</div>';
+
+            try {
+                const resp = await fetch(`./${filename}?v=${new Date().getTime()}`);
+                if (!resp.ok) throw new Error('Not found');
+                const text = await resp.text();
+
+                if (!frame.shadowRoot) frame.attachShadow({ mode: 'open' });
+                const shadow = frame.shadowRoot;
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+                const styles = Array.from(doc.querySelectorAll('style, link[rel="stylesheet"]')).map(s => s.outerHTML).join('');
+
+                shadow.innerHTML = `
+                    <style>
+                        :host { display: block; background: white; min-height: 100vh; }
+                        @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+                        * { font-family: 'Inter', sans-serif !important; }
+                    </style>
+                    ${styles}
+                    <div class="shadow-content-wrapper">${doc.body.innerHTML}</div>
+                `;
+
+                doc.querySelectorAll('script').forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    if (oldScript.src) newScript.src = oldScript.src;
+                    else newScript.textContent = oldScript.textContent;
+                    shadow.appendChild(newScript);
+                });
+            } catch (e) {
+                frame.innerHTML = '<div style="padding: 20px; color: #ef4444;">Failed to load.</div>';
+            }
         }
         function showStealth404() { document.body.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100vh; color:#94a3b8; background:#f8fafc;"><h1>404 Not Found</h1></div>`; }
         window.addEventListener('hashchange', checkHash); window.addEventListener('DOMContentLoaded', init);
