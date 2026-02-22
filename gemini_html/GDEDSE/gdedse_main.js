@@ -15,12 +15,36 @@ const HASH_MAPPINGS = {
 
 // --- Logic ---
 
-function init() {
+async function fetchAllFolderConfigs() {
+    const config = {};
+    for (const folderKey of KNOWN_FOLDERS) {
+        const hashPath = HASH_MAPPINGS[folderKey] || folderKey;
+        try {
+            // Fetch files.json from the relative path of the hash directory
+            const response = await fetch(`../${hashPath}/files.json?v=${new Date().getTime()}`);
+            if (response.ok) {
+                config[folderKey] = await response.json();
+            } else {
+                console.warn(`Could not load files.json for ${folderKey} (${hashPath})`);
+            }
+        } catch (e) {
+            console.error(`Error fetching config for ${folderKey}:`, e);
+        }
+    }
+    return config;
+}
+
+async function init() {
     const container = document.getElementById('contentArea');
-    const config = window.FOLDER_CONFIG || {};
+    container.innerHTML = `<div class="loading" style="text-align:center; padding:50px; color:white; opacity:0.5;">
+        <i class="fas fa-spinner fa-spin"></i> 최신 데이터를 동기화 중입니다...
+    </div>`;
+
+    // Load configs dynamically at runtime (Zero-Sync)
+    const config = await fetchAllFolderConfigs();
 
     if (Object.keys(config).length === 0) {
-        container.innerHTML = `<div class="loading">설정 파일을 찾을 수 없습니다. (files_config.js 로딩 실패)</div>`;
+        container.innerHTML = `<div class="loading">설정 데이터를 불러올 수 없습니다. 로컬 서버 상태를 확인해주세요.</div>`;
         return;
     }
 
@@ -33,19 +57,19 @@ function init() {
         if (!folderData) return;
 
         totalFolders++;
+        // Identify files: items that are not metadata keys
         const fileKeys = Object.keys(folderData).filter(k => k !== '_folderName' && k !== '_order');
+
         // Use _order if available for sorting
         let sortedKeys = fileKeys;
         if (folderData._order) {
             sortedKeys = folderData._order.filter(k => fileKeys.includes(k));
-            // Add any unordered files at the end
             const unordered = fileKeys.filter(k => !folderData._order.includes(k));
             sortedKeys = [...sortedKeys, ...unordered];
         }
 
         totalFiles += sortedKeys.length;
 
-        // Render Folder Section
         const section = document.createElement('div');
         section.className = 'folder-section';
 
@@ -67,19 +91,11 @@ function init() {
             </div>
             <div class="file-grid">
                 ${sortedKeys.map(fileName => {
-            const desc = folderData[fileName]; // The value in JSON is the description/title
+            const desc = folderData[fileName] || fileName.replace('.html', '');
             const displayName = desc;
-            const size = "2 KB"; // Mock or derived if available
-            const date = "Jan 2025";
             const fileType = fileName.split('.').pop().toUpperCase();
 
-            // Link to Hash Path
-            // OLD (Broken): const linkUrl = `../${hashPath}/${fileName}`;
-            // NEW (Fixing ... but keeping old for TDD 'Red' state first, or user wanted to skip manual? 
-            // The user said "Test success then commit". 
-            // I will implement the FIX here immediately to pass the test, as efficient agent.)
-
-            // Fix: remove extension and add hash for the SPA news rooms
+            // SPA hash link logic
             const fileNameNoExt = fileName.replace(/\.[^/.]+$/, "");
             const linkUrl = `../${hashPath}/#${fileNameNoExt}`;
 
@@ -97,12 +113,6 @@ function init() {
         }).join('')}
             </div>
         `;
-
-        // Debugging verification
-        if (!section.innerHTML.includes('copy-link-btn')) {
-            console.error('Failed to generate copy link button for', folderKey);
-        }
-
         container.appendChild(section);
     });
 
@@ -125,7 +135,6 @@ function init() {
                 }
             });
 
-            // Hide empty sections
             document.querySelectorAll('.folder-section').forEach(sec => {
                 let hasVisible = false;
                 sec.querySelectorAll('.file-card').forEach(c => {

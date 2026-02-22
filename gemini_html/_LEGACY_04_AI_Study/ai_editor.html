@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>윈도우 AI 동영상 편집 도구 추천 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Warm Neutral & Calm Blue (Minimalistic) -->
+    <!-- Palette: Background #F9FAFB (Warm Grey), Primary #3B82F6 (Blue), Secondary #64748B (Slate), Accent #F59E0B (Amber for ratings) -->
+
+    <!-- Application Structure Plan: 
+         1. Hero Section: Addresses user pain points (Time, Cost, AI).
+         2. Interactive Recommender (The Core): A filtering system based on User Priorities (Automation, Cost, Stickers/Subs).
+         3. Software Cards: Detailed cards for CapCut, Vrew, Filmora, Movavi, DaVinci.
+         4. Comparative Analysis: Chart.js visualizations comparing 'Effort Required' vs 'AI Capability'.
+         5. Feature Spotlight: Specific section for 'Photo-to-Video' and 'Auto-Subtitles' capabilities.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Scatter Plot (Chart.js): Visualizing "Ease of Use" vs. "AI Power". Justification: User wants "Least Effort" but high "AI Features".
+         2. Radar Chart (Chart.js): Comparing specific tools across 5 axes: Price, AI Features, Asset Library (Stickers), Subtitles, Learning Curve.
+         3. Interactive Cards: Javascript-driven filtering to show/hide tools based on tags (Free, Lifetime, AI-Heavy).
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F9FAFB;
+            color: #1F2937;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-active {
+            border-bottom: 2px solid #3B82F6;
+            color: #3B82F6;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-blue-600">AI Editor Finder</span>
+                </div>
+                <div class="hidden sm:flex space-x-8 items-center">
+                    <button onclick="navigate('dashboard')" id="nav-dashboard"
+                        class="nav-btn nav-active px-3 py-2 text-sm font-medium text-gray-900">추천 대시보드</button>
+                    <button onclick="navigate('compare')" id="nav-compare"
+                        class="nav-btn px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900">비교 분석</button>
+                    <button onclick="navigate('features')" id="nav-features"
+                        class="nav-btn px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900">상세 기능
+                        가이드</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main id="main-content" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- View: Dashboard (Default) -->
+        <section id="view-dashboard" class="space-y-8 animate-fade-in">
+            <div class="text-center space-y-4 mb-12">
+                <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">당신의 시간을 아껴줄<br><span
+                        class="text-blue-600">최적의 AI 편집 도구</span>를 찾아드립니다.</h1>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    "가장 적은 노력으로, AI 기능을 활용해 사진과 영상을 멋지게 만드세요."<br>
+                    무료 또는 평생 라이선스 위주의 윈도우용 추천 리스트입니다.
+                </p>
+            </div>
+
+            <!-- Intro to this section -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-8">
+                <h3 class="font-bold text-blue-900 text-lg mb-2">💡 추천 시스템 가이드</h3>
+                <p class="text-blue-800 text-sm leading-relaxed">
+                    아래 버튼을 눌러 가장 중요하게 생각하는 요소를 선택하세요. 사용자의 우선순위(완전 자동화, 가성비, 자막 특화 등)에 맞춰 가장 적합한 소프트웨어를 필터링하여 보여드립니다. 각
+                    카드는 AI 편집, 자동 음악 매칭, 스티커/자막 기능의 강점을 요약합니다.
+                </p>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <button onclick="filterTools('all')"
+                    class="filter-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-6 rounded-full transition active"
+                    data-filter="all">전체 보기</button>
+                <button onclick="filterTools('lowest-effort')"
+                    class="filter-btn bg-white border border-gray-300 hover:bg-blue-50 text-gray-600 font-semibold py-2 px-6 rounded-full transition"
+                    data-filter="lowest-effort">⚡ 최소 노력 (AI 자동화)</button>
+                <button onclick="filterTools('lifetime')"
+                    class="filter-btn bg-white border border-gray-300 hover:bg-blue-50 text-gray-600 font-semibold py-2 px-6 rounded-full transition"
+                    data-filter="lifetime">💰 평생 라이선스/무료</button>
+                <button onclick="filterTools('assets')"
+                    class="filter-btn bg-white border border-gray-300 hover:bg-blue-50 text-gray-600 font-semibold py-2 px-6 rounded-full transition"
+                    data-filter="assets">🎨 자막/스티커 특화</button>
+            </div>
+
+            <!-- Tools Grid -->
+            <div id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cards will be injected via JS -->
+            </div>
+        </section>
+
+        <!-- View: Comparison Analysis -->
+        <section id="view-compare" class="hidden space-y-8">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-900">데이터로 보는 편집 도구 비교</h2>
+                <p class="text-gray-600 mt-2">각 프로그램의 난이도, AI 성능, 가격 정책을 시각적으로 비교 분석합니다.</p>
+            </div>
+
+            <!-- Section Intro -->
+            <div class="bg-gray-50 p-6 rounded-xl mb-8">
+                <h3 class="font-bold text-gray-900 text-lg mb-2">📊 분석 차트 가이드</h3>
+                <p class="text-gray-600 text-sm">
+                    왼쪽 차트는 <strong>'노력 대비 AI 효과'</strong>를 보여줍니다. 오른쪽 위로 갈수록 적은 노력으로 높은 퀄리티를 낼 수 있습니다.<br>
+                    오른쪽 차트는 <strong>'종합 역량 평가'</strong>입니다. 가격 경쟁력, 자산 라이브러리(음악/스티커), 자막 편의성 등을 다각도로 비교합니다.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Chart 1: Scatter Plot -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 text-center">⚡ 노력 대비 AI 효율성 (Effort vs Impact)</h3>
+                    <div class="chart-container">
+                        <canvas id="scatterChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-gray-500 mt-4">* Y축이 높을수록 AI 기능이 강력함 / X축이 낮을수록 배우기 쉬움</p>
+                </div>
+
+                <!-- Chart 2: Radar Chart -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 text-center">🏆 주요 3대장 상세 스펙 비교</h3>
+                    <div class="chart-container">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-8">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h3 class="font-bold text-gray-800">📋 빠른 요약 비교표</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    프로그램</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    가격 정책</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    AI 주요 기능</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    난이도</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="comparison-table-body">
+                            <!-- JS populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- View: Feature Guide -->
+        <section id="view-features" class="hidden space-y-12">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-900">기능별 상세 가이드</h2>
+                <p class="text-gray-600 mt-2">사용자가 요청한 핵심 기능(사진 영상화, 자막, 스티커)을 가장 잘 수행하는 방법입니다.</p>
+            </div>
+
+            <!-- Feature Block 1: Photo to Video -->
+            <div class="flex flex-col md:flex-row bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+                <div class="md:w-1/3 bg-blue-600 p-8 flex flex-col justify-center text-white">
+                    <div class="text-5xl mb-4">📸 ➡️ 🎥</div>
+                    <h3 class="text-2xl font-bold">사진을 영상으로 + AI 음악</h3>
+                    <p class="mt-2 text-blue-100">사진만 골라주면 비트에 맞춰 영상을 만들고 음악까지 입혀주는 기능입니다.</p>
+                </div>
+                <div class="p-8 md:w-2/3 space-y-4">
+                    <h4 class="text-xl font-bold text-gray-800">추천 도구: CapCut (PC) & Vrew</h4>
+                    <p class="text-gray-600">
+                        <strong>CapCut의 'AutoCut' 기능:</strong> 템플릿 탭에서 사진을 여러 장 선택하면, AI가 자동으로 어울리는 음악과 트랜지션 효과를 적용해 완성된
+                        영상을 만들어줍니다. <br><br>
+                        <strong>Vrew의 '텍스트로 비디오 만들기':</strong> 대본이 없어도 주제만 입력하면 AI가 관련 무료 이미지/영상을 찾고, 배경음악과 성우 목소리까지 한
+                        번에 생성합니다.
+                    </p>
+                    <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                        <span class="font-bold text-yellow-800">Tip:</span> 시간을 가장 많이 아끼려면 <strong>CapCut 템플릿</strong>을
+                        먼저 사용해보세요. 퀄리티가 매우 높습니다.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature Block 2: Stickers & Subtitles -->
+            <div class="flex flex-col md:flex-row bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+                <div class="md:w-1/3 bg-indigo-600 p-8 flex flex-col justify-center text-white">
+                    <div class="text-5xl mb-4">💬 ✨</div>
+                    <h3 class="text-2xl font-bold">자막 & 스티커 꾸미기</h3>
+                    <p class="mt-2 text-indigo-100">말소리를 자동으로 자막으로 바꾸고, 귀여운 스티커로 영상을 꾸미는 기능입니다.</p>
+                </div>
+                <div class="p-8 md:w-2/3 space-y-4">
+                    <h4 class="text-xl font-bold text-gray-800">추천 도구: Vrew & Movavi</h4>
+                    <p class="text-gray-600">
+                        <strong>Vrew (최강의 자막 툴):</strong> 영상의 음성을 분석해 99% 정확도의 자막을 자동으로 생성합니다. 타임라인을 편집하듯 텍스트를 지우면 영상도
+                        잘립니다. 스티커 라이브러리도 무료로 제공됩니다.<br><br>
+                        <strong>Movavi (이펙트 스토어):</strong> 유료지만 평생 라이선스가 저렴하며, '이펙트 팩'을 통해 예능 스타일의 자막과 스티커를 드래그 앤 드롭으로
+                        넣기 가장 쉽습니다.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-400 text-sm">이 추천 가이드는 사용자의 요청(윈도우, AI기능, 저노력, 평생/무료)에 기반하여 작성되었습니다.</p>
+            <p class="text-gray-500 text-xs mt-2">© 2024 AI Video Editor Guide Generator</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Data Layer ---
+        const softwareData = [
+            {
+                id: 'capcut',
+                name: 'CapCut PC',
+                tags: ['lowest-effort', 'assets'],
+                priceType: 'Free / 구독형 (선택)',
+                priceDetail: '기본 기능 무료 (매우 강력), Pro 기능 월 구독',
+                aiScore: 9,
+                easeScore: 9.5,
+                stickerScore: 10,
+                desc: '현재 가장 인기 있는 숏폼/브이로그 편집기. "AutoCut" 기능으로 사진만 넣으면 영상 완성.',
+                pros: ['압도적인 무료 템플릿 양', '가장 쉬운 자동 자막', '트렌디한 스티커/음악 무료 제공'],
+                bestFor: '트렌디한 영상, 시간 절약'
+            },
+            {
+                id: 'vrew',
+                name: 'Vrew (브루)',
+                tags: ['lowest-effort', 'assets', 'lifetime'], // Technically free tier exists forever
+                priceType: '부분 유료 (Free 충분)',
+                priceDetail: '월별 무료 사용량 넉넉함',
+                aiScore: 8.5,
+                easeScore: 9,
+                stickerScore: 7,
+                desc: '문서 편집하듯 영상을 편집. 음성 인식 자막 생성 능력은 독보적.',
+                pros: ['영상 속 무음 구간 자동 삭제', '텍스트 입력만으로 AI 영상 생성', '성우 TTS 포함'],
+                bestFor: '정보 전달, 유튜브 자막 작업'
+            },
+            {
+                id: 'movavi',
+                name: 'Movavi Video Editor',
+                tags: ['lifetime', 'assets'],
+                priceType: '평생 라이선스',
+                priceDetail: '약 7-9만원 (할인 자주 함)',
+                aiScore: 6,
+                easeScore: 8.5,
+                stickerScore: 8,
+                desc: '전통적인 타임라인 방식 중 가장 배우기 쉬움. 평생 소장 가능.',
+                pros: ['직관적인 인터페이스', '깔끔한 예능 자막 프리셋', '저사양 PC에서도 원활'],
+                bestFor: '가족 영상, 여행 영상 소장용'
+            },
+            {
+                id: 'filmora',
+                name: 'Wondershare Filmora',
+                tags: ['lifetime', 'assets'],
+                priceType: '평생 라이선스',
+                priceDetail: '약 10만원 (버전별 구매)',
+                aiScore: 8,
+                easeScore: 7.5,
+                stickerScore: 9,
+                desc: '전문가급 기능을 쉽게 구현. AI 썸네일, AI 음악 등 고급 기능 다수.',
+                pros: ['풍부한 에셋 스토어', 'AI 스마트 컷아웃(배경 제거)', '세련된 디자인'],
+                bestFor: '퀄리티 있는 유튜브 영상'
+            },
+            {
+                id: 'davinci',
+                name: 'DaVinci Resolve',
+                tags: ['lifetime'], // Free version is lifetime
+                priceType: '완전 무료 (강력)',
+                priceDetail: '유료 버전은 비싸지만 무료로 충분',
+                aiScore: 7,
+                easeScore: 3,
+                stickerScore: 4,
+                desc: '헐리우드에서도 쓰는 전문 툴. 배우긴 어렵지만 무료 버전 기능이 막강.',
+                pros: ['업계 표준 색보정', '워터마크 없는 완전 무료', '매직 마스크(AI)'],
+                bestFor: '진지하게 영상 편집을 배울 때'
+            }
+        ];
+
+        // --- State Management ---
+        let currentFilter = 'all';
+
+        // --- Navigation Logic ---
+        function navigate(viewId) {
+            // Update UI tabs
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('nav-active', 'text-blue-600');
+                btn.classList.add('text-gray-500');
+            });
+            document.getElementById(`nav-${viewId}`).classList.add('nav-active', 'text-blue-600');
+            document.getElementById(`nav-${viewId}`).classList.remove('text-gray-500');
+
+            // Show/Hide Sections
+            ['dashboard', 'compare', 'features'].forEach(section => {
+                const el = document.getElementById(`view-${section}`);
+                if (section === viewId) {
+                    el.classList.remove('hidden');
+                    if (section === 'compare') renderCharts(); // Re-render charts to ensure size is correct
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- Filtering Logic ---
+        function filterTools(filter) {
+            currentFilter = filter;
+
+            // Button Styling
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === filter) {
+                    btn.classList.remove('bg-white', 'text-gray-600');
+                    btn.classList.add('bg-gray-200', 'text-gray-800', 'active');
+                } else {
+                    btn.classList.add('bg-white', 'text-gray-600');
+                    btn.classList.remove('bg-gray-200', 'text-gray-800', 'active');
+                }
+            });
+
+            const grid = document.getElementById('tools-grid');
+            grid.innerHTML = '';
+
+            const filteredData = filter === 'all'
+                ? softwareData
+                : softwareData.filter(item => item.tags.includes(filter));
+
+            filteredData.forEach(tool => {
+                grid.innerHTML += createCardHTML(tool);
+            });
+        }
+
+        // --- HTML Generators ---
+        function createCardHTML(tool) {
+            const tagsHTML = tool.tags.map(tag => {
+                let label = '';
+                let color = '';
+                if (tag === 'lowest-effort') { label = '⚡ 초간단'; color = 'bg-yellow-100 text-yellow-800'; }
+                if (tag === 'lifetime') { label = '💰 평생/무료'; color = 'bg-green-100 text-green-800'; }
+                if (tag === 'assets') { label = '🎨 자막/스티커'; color = 'bg-pink-100 text-pink-800'; }
+                return `<span class="px-2 py-1 text-xs font-semibold rounded-full ${color}">${label}</span>`;
+            }).join(' ');
+
+            return `
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover flex flex-col h-full">
+                <div class="p-6 flex-grow">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-gray-900">${tool.name}</h3>
+                        <div class="flex space-x-1">
+                            ${tagsHTML}
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4 h-12">${tool.desc}</p>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">가격 정책</span>
+                            <span class="font-medium text-blue-600">${tool.priceType}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">AI 편의성</span>
+                            <span class="font-medium text-gray-900">★ ${tool.aiScore}/10</span>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg text-xs text-gray-500">
+                            <strong>장점:</strong> ${tool.pros.join(', ')}
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                    <button onclick="showDetails('${tool.id}')" class="w-full bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded hover:bg-gray-50 transition text-sm">
+                        상세 스펙 확인
+                    </button>
+                </div>
+            </div>
+            `;
+        }
+
+        function populateTable() {
+            const tbody = document.getElementById('comparison-table-body');
+            tbody.innerHTML = softwareData.map(tool => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${tool.name}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-500">${tool.priceType}</div>
+                        <div class="text-xs text-gray-400">${tool.priceDetail}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-500 max-w-xs truncate">${tool.pros[1]}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${tool.easeScore >= 8 ? 'bg-green-100 text-green-800' : (tool.easeScore >= 5 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')}">
+                            ${tool.easeScore >= 8 ? '쉬움' : (tool.easeScore >= 5 ? '보통' : '어려움')}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showDetails(id) {
+            // In a full app, this might open a modal. 
+            // For this SPA, we'll auto-navigate to Compare and alert simply.
+            navigate('compare');
+            // Highlight the row logic could go here
+        }
+
+        // --- Chart Generation ---
+        let scatterChartInstance = null;
+        let radarChartInstance = null;
+
+        function renderCharts() {
+            // Scatter Plot: Effort vs AI Power
+            const scatterCtx = document.getElementById('scatterChart').getContext('2d');
+
+            // Prepare Data for Scatter
+            const scatterDataPoints = softwareData.map(tool => ({
+                x: 10 - tool.easeScore, // Invert ease score so X axis = "Learning Curve" (Low to High)
+                y: tool.aiScore,
+                toolName: tool.name
+            }));
+
+            if (scatterChartInstance) scatterChartInstance.destroy();
+
+            scatterChartInstance = new Chart(scatterCtx, {
+                type: 'bubble', // Using bubble to show tool names easier in tooltip
+                data: {
+                    datasets: [{
+                        label: 'Software Landscape',
+                        data: scatterDataPoints.map(p => ({ x: p.x, y: p.y, r: 8 })),
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const point = scatterDataPoints[context.dataIndex];
+                                    return point.toolName + ': (난이도: ' + point.x + ', AI성능: ' + point.y + ')';
+                                }
+                            }
+                        },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: '배우는 난이도 (낮음 → 높음)' },
+                            min: 0, max: 10
+                        },
+                        y: {
+                            title: { display: true, text: 'AI 기능 강력함 (낮음 → 높음)' },
+                            min: 0, max: 12
+                        }
+                    }
+                }
+            });
+
+            // Radar Chart: Comparison of Top 3 for "Easy AI"
+            const radarCtx = document.getElementById('radarChart').getContext('2d');
+            const topTools = softwareData.filter(t => ['capcut', 'vrew', 'movavi'].includes(t.id));
+
+            if (radarChartInstance) radarChartInstance.destroy();
+
+            radarChartInstance = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['AI 기능', '사용 편의성', '자막 기능', '스티커/에셋', '가격 경쟁력'],
+                    datasets: topTools.map((tool, index) => {
+                        const colors = [
+                            { bg: 'rgba(59, 130, 246, 0.2)', b: 'rgb(59, 130, 246)' }, // Blue
+                            { bg: 'rgba(16, 185, 129, 0.2)', b: 'rgb(16, 185, 129)' }, // Green
+                            { bg: 'rgba(245, 158, 11, 0.2)', b: 'rgb(245, 158, 11)' }  // Orange
+                        ];
+                        const priceScore = tool.tags.includes('lifetime') || tool.id === 'capcut' ? 9 : 7;
+
+                        return {
+                            label: tool.name,
+                            data: [tool.aiScore, tool.easeScore, tool.id === 'vrew' ? 10 : 8, tool.stickerScore, priceScore],
+                            fill: true,
+                            backgroundColor: colors[index % 3].bg,
+                            borderColor: colors[index % 3].b,
+                            pointBackgroundColor: colors[index % 3].b,
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: colors[index % 3].b
+                        };
+                    })
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: { line: { borderWidth: 3 } },
+                    scales: {
+                        r: {
+                            angleLines: { display: false },
+                            suggestedMin: 0,
+                            suggestedMax: 10
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            filterTools('all');
+            populateTable();
+        });
+
+    </script>
+</body>
+
+</html>
