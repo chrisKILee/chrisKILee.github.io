@@ -92,7 +92,15 @@ async function init() {
         section.innerHTML = `
             <div class="folder-header">
                 <div class="folder-title">${folderName}</div>
-                <div class="folder-count">${sortedKeys.length} posts</div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="folder-count">${sortedKeys.length} posts</div>
+                    <button class="copy-link-btn" onclick="copyListLink('${hashPath}', '${secretHash}')">
+                        <i class="fas fa-link"></i> 목록 복사
+                    </button>
+                    <a href="${listAccessUrl}" class="copy-link-btn" style="text-decoration:none; background:var(--accent-color); color:white;">
+                        <i class="fas fa-external-link-alt"></i> 목록 바로가기
+                    </a>
+                </div>
             </div>
             <div class="file-grid">
                 ${sortedKeys.map(fileName => {
@@ -108,14 +116,17 @@ async function init() {
                         <div class="file-card" onclick="window.location.href='${linkUrl}'" data-search="${displayName.toLowerCase()} ${fileName.toLowerCase()}">
                             <div class="file-meta">
                                 <span>${fileType}</span>
-                                <div class="card-actions">
-                                     <button class="action-btn" onclick="event.stopPropagation(); copyDirectLink('${hashPath}', '${fileNameNoExt}')" title="문서 링크 복사">
-                                        <i class="fas fa-link"></i>
-                                     </button>
-                                </div>
                             </div>
                             <div class="file-title">${displayName}</div>
                             <div class="file-desc">${displayName}</div> 
+                            <div class="card-actions" style="margin-top:20px; border-top:1px solid #eee; padding-top:15px; justify-content: space-between;">
+                                <button class="action-btn" onclick="event.stopPropagation(); window.location.href='${linkUrl}'" style="color:var(--accent-color); font-weight:600;">
+                                    <i class="fas fa-play-circle"></i> 바로가기
+                                </button>
+                                <button class="action-btn" onclick="event.stopPropagation(); copyDirectLink('${hashPath}', '${fileNameNoExt}')">
+                                    <i class="fas fa-copy"></i> 링크 복사
+                                </button>
+                            </div>
                         </div>
                     `;
         }).join('')}
@@ -161,6 +172,12 @@ async function init() {
 window.copyDirectLink = function (hashPath, fileNameNoExt) {
     const baseUrl = window.location.href.split('/GDEDSE/')[0];
     const url = `${baseUrl}/${hashPath}/#${fileNameNoExt}`;
+    doCopy(url);
+}
+
+window.copyListLink = function (hashPath, secretHash) {
+    const baseUrl = window.location.href.split('/GDEDSE/')[0];
+    const url = `${baseUrl}/${hashPath}/#${secretHash}`;
     doCopy(url);
 }
 
