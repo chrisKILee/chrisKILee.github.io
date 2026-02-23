@@ -181,7 +181,8 @@
         iframe {
             width: 100%;
             border: none;
-            height: calc(100vh - 70px);
+            height: 100vh;
+            display: block;
         }
 
         @keyframes fadeIn {
@@ -288,56 +289,20 @@
             document.body.style.background = view === 'list' ? 'linear-gradient(135deg, #2563EB 0%, #1E40AF 100%)' : 'white';
         }
 
-        async function loadContent(filename) {
+        function loadContent(filename) {
             const frame = document.getElementById('contentFrame');
-            frame.innerHTML = '<div style="padding: 20px; color: #666;">Loading content...</div>';
-
-            try {
-                const resp = await fetch(`${CONTENT_BASE_PATH}${filename}?v=${new Date().getTime()}`);
-                if (!resp.ok) throw new Error('Content not found');
-                const text = await resp.text();
-
-                // Use Shadow DOM for isolation without iframe
-                if (!frame.shadowRoot) {
-                    frame.attachShadow({ mode: 'open' });
-                }
-
-                const shadow = frame.shadowRoot;
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(text, 'text/html');
-
-                // Extract styles and body content
-                const styles = Array.from(doc.querySelectorAll('style, link[rel="stylesheet"]')).map(s => s.outerHTML).join('');
-                const body = doc.body.innerHTML;
-
-                shadow.innerHTML = `
-                    <style>
-                        :host { display: block; background: white; min-height: 100vh; }
-                        @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
-                        * { font-family: 'Inter', sans-serif !important; }
-                    </style>
-                    ${styles}
-                    <div class="shadow-content-wrapper">
-                        ${body}
-                    </div>
-                `;
-
-                // Re-run scripts if necessary (simplified)
-                const scripts = doc.querySelectorAll('script');
-                scripts.forEach(oldScript => {
-                    const newScript = document.createElement('script');
-                    if (oldScript.src) {
-                        newScript.src = oldScript.src;
-                    } else {
-                        newScript.textContent = oldScript.textContent;
-                    }
-                    shadow.appendChild(newScript);
-                });
-
-            } catch (e) {
-                frame.innerHTML = '<div style="padding: 20px; color: #ef4444;">Error: Failed to load content autonomously.</div>';
-                console.error(e);
-            }
+            frame.innerHTML = '';
+            const iframe = document.createElement('iframe');
+            iframe.src = `${CONTENT_BASE_PATH}${filename}?v=${new Date().getTime()}`;
+            iframe.onload = () => {
+                try {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    const style = doc.createElement('style');
+                    style.textContent = "@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap'); body { font-family: 'Inter', sans-serif !important; }";
+                    doc.head.appendChild(style);
+                } catch (e) { }
+            };
+            frame.appendChild(iframe);
         }
 
         function showStealth404() {

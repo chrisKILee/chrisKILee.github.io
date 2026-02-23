@@ -111,15 +111,11 @@
             min-height: 100vh;
         }
 
-        .content-header {
-            padding: 15px 25px;
-            background: #F8FAFC;
-            border-bottom: 1px solid #E2E8F0;
-            display: flex;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        iframe {
+            width: 100%;
+            border: none;
+            height: 100vh;
+            display: block;
         }
 
 
@@ -204,40 +200,20 @@
             document.body.style.background = view === 'list' ? 'linear-gradient(135deg, #93C5FD 0%, #3B82F6 100%)' : 'white';
         }
 
-        async function loadContent(filename) {
+        function loadContent(filename) {
             const frame = document.getElementById('contentFrame');
-            frame.innerHTML = '<div style="padding: 20px; color: #3B82F6;">Processing AI data...</div>';
-
-            try {
-                const resp = await fetch(`${CONTENT_BASE_PATH}${filename}?v=${new Date().getTime()}`);
-                if (!resp.ok) throw new Error('404');
-                const text = await resp.text();
-
-                if (!frame.shadowRoot) frame.attachShadow({ mode: 'open' });
-                const shadow = frame.shadowRoot;
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(text, 'text/html');
-                const styles = Array.from(doc.querySelectorAll('style, link[rel="stylesheet"]')).map(s => s.outerHTML).join('');
-
-                shadow.innerHTML = `
-                    <style>
-                        :host { display: block; background: #ffffff; min-height: 100vh; color: #1e293b; }
-                        @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
-                        * { font-family: 'Inter', sans-serif !important; }
-                    </style>
-                    ${styles}
-                    <div class="shadow-content-wrapper">${doc.body.innerHTML}</div>
-                `;
-
-                doc.querySelectorAll('script').forEach(oldScript => {
-                    const newScript = document.createElement('script');
-                    if (oldScript.src) newScript.src = oldScript.src;
-                    else newScript.textContent = oldScript.textContent;
-                    shadow.appendChild(newScript);
-                });
-            } catch (e) {
-                frame.innerHTML = '<div style="padding: 20px; color: #ef4444;">Failed to load study notes.</div>';
-            }
+            frame.innerHTML = '';
+            const iframe = document.createElement('iframe');
+            iframe.src = `${CONTENT_BASE_PATH}${filename}?v=${new Date().getTime()}`;
+            iframe.onload = () => {
+                try {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    const style = doc.createElement('style');
+                    style.textContent = "@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap'); body { font-family: 'Inter', sans-serif !important; color: #1e293b; }";
+                    doc.head.appendChild(style);
+                } catch (e) { }
+            };
+            frame.appendChild(iframe);
         }
 
         function showStealth404() {

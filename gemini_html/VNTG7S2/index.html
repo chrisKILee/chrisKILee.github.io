@@ -73,12 +73,11 @@
             min-height: 100vh;
         }
 
-        .content-header {
-            padding: 20px;
-            background: #F0FDF4;
-            border-bottom: 1px solid #DCFCE7;
-            display: flex;
-            align-items: center;
+        iframe {
+            width: 100%;
+            border: none;
+            height: 100vh;
+            display: block;
         }
     </style>
 </head>
@@ -128,40 +127,20 @@
             document.getElementById('fileListView').style.display = view === 'list' ? 'block' : 'none';
             document.getElementById('fileContentView').style.display = view === 'content' ? 'block' : 'none';
         }
-        async function loadContent(filename) {
+        function loadContent(filename) {
             const frame = document.getElementById('contentFrame');
-            frame.innerHTML = '<div style="padding: 20px; color: #059669;">Brewing style...</div>';
-
-            try {
-                const resp = await fetch(`./${filename}?v=${new Date().getTime()}`);
-                if (!resp.ok) throw new Error('Not found');
-                const text = await resp.text();
-
-                if (!frame.shadowRoot) frame.attachShadow({ mode: 'open' });
-                const shadow = frame.shadowRoot;
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(text, 'text/html');
-                const styles = Array.from(doc.querySelectorAll('style, link[rel="stylesheet"]')).map(s => s.outerHTML).join('');
-
-                shadow.innerHTML = `
-                    <style>
-                        :host { display: block; background: white; min-height: 100vh; }
-                        @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
-                        * { font-family: 'Inter', sans-serif !important; }
-                    </style>
-                    ${styles}
-                    <div class="shadow-content-wrapper">${doc.body.innerHTML}</div>
-                `;
-
-                doc.querySelectorAll('script').forEach(oldScript => {
-                    const newScript = document.createElement('script');
-                    if (oldScript.src) newScript.src = oldScript.src;
-                    else newScript.textContent = oldScript.textContent;
-                    shadow.appendChild(newScript);
-                });
-            } catch (e) {
-                frame.innerHTML = '<div style="padding: 20px; color: #ef4444;">Failed to load.</div>';
-            }
+            frame.innerHTML = '';
+            const iframe = document.createElement('iframe');
+            iframe.src = `./${filename}?v=${new Date().getTime()}`;
+            iframe.onload = () => {
+                try {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    const style = doc.createElement('style');
+                    style.textContent = "@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap'); body { font-family: 'Inter', sans-serif !important; }";
+                    doc.head.appendChild(style);
+                } catch (e) { }
+            };
+            frame.appendChild(iframe);
         }
         function showStealth404() { document.body.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100vh; color:#94a3b8; background:#f8fafc;"><h1>404 Not Found</h1></div>`; }
         window.addEventListener('hashchange', checkHash); window.addEventListener('DOMContentLoaded', init);
