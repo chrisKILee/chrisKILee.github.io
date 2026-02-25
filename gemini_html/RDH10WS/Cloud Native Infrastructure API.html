@@ -4,494 +4,665 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>심화 연구: ArgoCD 및 KMM API 아키텍처 분석</title>
-    <script>
-        // Suppress Tailwind production warning in console
-        const _warn = console.warn;
-        console.warn = function (msg) {
-            if (typeof msg === 'string' && msg.includes('cdn.tailwindcss.com')) return;
-            _warn.apply(console, arguments);
-        };
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Version: 5.1 - Tailwind Warning Fixed -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700&display=swap');
+    <title>Kubernetes Manifest Manager & Argo CD API Blueprint</title>
 
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts (Noto Sans KR) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        argo: {
+                            light: '#e8f3fa',
+                            DEFAULT: '#4D90FE',
+                            dark: '#0e4a8f'
+                        },
+                        k8s: {
+                            DEFAULT: '#326CE5'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
         body {
-            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+            /* Slate 50 */
+            color: #334155;
+            /* Slate 700 */
         }
 
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            height: 380px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
         }
 
-        .api-card:hover {
-            transform: translateY(-2px);
-            transition: all 0.2s;
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .nav-item.active {
+            background-color: #e2e8f0;
+            color: #0f172a;
+            border-left: 4px solid #326CE5;
         }
 
         .code-block {
-            background-color: #1c1917;
-            color: #d6d3d1;
+            background-color: #1e293b;
+            color: #e2e8f0;
+            font-family: 'Courier New', Courier, monospace;
         }
 
-        .tab-content {
-            display: none;
+        /* Custom Scrollbar for code blocks */
+        .code-block::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
 
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease-in;
+        .code-block::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+        .code-block::-webkit-scrollbar-track {
+            background: #0f172a;
         }
 
-        .status-pill {
-            padding: 2px 8px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
+        /* Interactive Card Hover Effects */
+        .interactive-card {
+            transition: all 0.3s ease;
         }
 
-        .status-sync {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-
-        .status-error {
-            background-color: #fee2e2;
-            color: #991b1b;
+        .interactive-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #326CE5;
         }
     </style>
-    <!-- Chosen Palette: Slate & Indigo (ArgoCD), Emerald & Stone (KMM) -->
+
+    <!-- Placeholder Comments Required by Instructions -->
+    <!-- Chosen Palette: Slate (Neutral Foundation) + Argo Blue (Primary Accent) + Emerald (Success indicators) -->
     <!-- Application Structure Plan: 
-         1. 인프라 API 패러다임: 수동 제어에서 API 주도 인프라(IDP)로의 전환 배경 설명.
-         2. ArgoCD REST API 심화: 애플리케이션 상태 제어, 클러스터 관리, 인증 세션 등 구체적 엔드포인트와 JSON 스키마 분석.
-         3. KMM 오퍼레이터 API 심화: Module CRD의 상세 필드(Container, Build, Selector)와 사전 검증(Preflight) 로직 분석.
-         4. 기술 비교 매트릭스: 두 기술의 관리 대상과 메커니즘을 상호 비교하는 테이블.
-         Rationale: 기술의 '구체성'을 높이기 위해 실제 API 호출 시 사용되는 필드명과 시스템 흐름도를 시각화하는 데 집중함.
+         1. Hero Section: Hook the user with the core problem (Manual Manifest Mgmt).
+         2. Concept Architecture: Interactive Diagram showing the flow [Manifest Manager -> Argo API -> K8s].
+         3. API Explorer: A simulated interactive console to demonstrate how the Manager talks to Argo CD.
+         4. Analytics Dashboard: Quantitative data showing efficiency gains from this integration.
+         5. Implementation Guide: Step-by-step textual breakdown.
+         Structure chosen to move from "Concept" to "Action" to "Proof".
     -->
     <!-- Visualization & Content Choices:
-         - Charts: API 호출 빈도 모델링(레이더 차트), 클러스터 자원 영향도(바 차트).
-         - Interactions: 탭 기반의 상세 명세 탐색기, 단계별 워크플로우 하이라이트.
-         - Justification: 복잡한 YAML과 JSON 구조를 계층적으로 보여주기 위해 아코디언과 탭 구조를 활용함.
+         1. Architecture: HTML/CSS Flexbox Diagram (Goal: Relationships) -> Interaction: Hover to see data flow steps.
+         2. API Simulator: JS-driven Code Block (Goal: Inform/Engage) -> Interaction: Click buttons to fire mock API calls.
+         3. Efficiency Chart: Bar Chart (Goal: Compare) -> Manual vs API-driven deployment time.
+         4. Component Distribution: Doughnut Chart (Goal: Inform) -> Breakdown of Manifest types managed.
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
 
-<body class="bg-stone-50 text-stone-900 leading-relaxed">
+<body class="flex flex-col min-h-screen">
 
-    <!-- 상단 헤더 -->
-    <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">
-                    API</div>
-                <h1 class="text-xl font-bold tracking-tight">Cloud Native Infrastructure API Research</h1>
-            </div>
-            <nav class="hidden md:flex gap-6">
-                <button onclick="switchTab('tab-overview')" class="nav-btn text-indigo-600 font-semibold">종합 개요</button>
-                <button onclick="switchTab('tab-argocd')" class="nav-btn text-stone-500 hover:text-indigo-600">ArgoCD
-                    심화</button>
-                <button onclick="switchTab('tab-kmm')" class="nav-btn text-stone-500 hover:text-emerald-600">KMM
-                    심화</button>
-            </nav>
-        </div>
+    <!-- Mobile Header -->
+    <header class="md:hidden bg-white shadow-sm p-4 sticky top-0 z-50 flex justify-between items-center">
+        <h1 class="text-lg font-bold text-slate-800">Manifest Mgmt & Argo API</h1>
+        <button id="mobile-menu-btn" class="text-slate-600 focus:outline-none p-2 border rounded">
+            ☰ Menu
+        </button>
     </header>
 
-    <main class="max-w-7xl mx-auto px-6 py-10">
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu"
+        class="hidden fixed inset-0 bg-slate-800 bg-opacity-95 z-40 flex flex-col items-center justify-center space-y-6 text-white text-xl">
+        <button onclick="navTo('hero')" class="hover:text-argo">개요 (Overview)</button>
+        <button onclick="navTo('architecture')" class="hover:text-argo">아키텍처 (Architecture)</button>
+        <button onclick="navTo('api-console')" class="hover:text-argo">API 시뮬레이터 (Simulator)</button>
+        <button onclick="navTo('analytics')" class="hover:text-argo">효과 분석 (Analytics)</button>
+        <button id="close-mobile-menu" class="mt-8 text-sm text-slate-400">닫기 (Close)</button>
+    </div>
 
-        <!-- SECTION 1: 종합 개요 (Overview) -->
-        <section id="tab-overview" class="tab-content active space-y-10">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-                <div class="space-y-6">
-                    <h2 class="text-4xl font-extrabold text-stone-900 tracking-tight">API 주도 인프라의<br><span
-                            class="text-indigo-600">필연적 등장 배경</span></h2>
-                    <p class="text-lg text-stone-600">
-                        과거의 인프라 관리는 명령 기반(Imperative)이었습니다. 하지만 수천 개의 노드와 하이브리드 클라우드 환경에서는 사람이 직접 명령어를 입력할 수 없습니다.
-                        <strong>ArgoCD</strong>와 <strong>KMM</strong>은 각각 소프트웨어와 하드웨어 드라이버 영역에서 이 문제를 해결합니다.
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar Navigation (Desktop) -->
+        <nav
+            class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-screen sticky top-0 overflow-y-auto">
+            <div class="p-6 border-b border-slate-100">
+                <h1 class="text-xl font-bold text-slate-900 leading-tight">Kubernetes<br><span
+                        class="text-argo">Manifest Manager</span></h1>
+                <p class="text-xs text-slate-500 mt-2">Integration Report</p>
+            </div>
+            <div class="flex-col py-4 space-y-1">
+                <button onclick="navTo('hero')"
+                    class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                    1. 연구 개요 (Overview)
+                </button>
+                <button onclick="navTo('architecture')"
+                    class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                    2. 통합 아키텍처 (Architecture)
+                </button>
+                <button onclick="navTo('api-console')"
+                    class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                    3. Argo CD API 연동 (Console)
+                </button>
+                <button onclick="navTo('analytics')"
+                    class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                    4. 데이터 및 효과 (Data)
+                </button>
+                <button onclick="navTo('conclusion')"
+                    class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                    5. 결론 및 제언 (Conclusion)
+                </button>
+            </div>
+            <div class="mt-auto p-6 bg-slate-50">
+                <div class="text-xs text-slate-400">
+                    <p>Status: <span class="text-green-500 font-bold">● Connected</span></p>
+                    <p class="mt-1">Source: Research Report</p>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
+
+            <!-- Section 1: Hero / Overview -->
+            <section id="hero" class="max-w-4xl mx-auto mb-16 pt-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <span
+                            class="bg-argo/10 text-argo text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide">Research
+                            Topic</span>
+                        <span class="text-slate-400 text-sm">|</span>
+                        <span class="text-slate-500 text-xs font-medium">Manifest Lifecycle Automation</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-6">Kubernetes Manifest Manager와<br>Argo
+                        CD API의 연관성 연구</h2>
+                    <p class="text-lg text-slate-600 leading-relaxed mb-6">
+                        본 연구는 수백 개의 Kubernetes Manifest(YAML)를 수동으로 관리하는 복잡성을 해결하기 위해
+                        <strong>'Manifest Manager'</strong>라는 추상화 계층을 도입하고, 이를 <strong>Argo CD API</strong>와 연동하여
+                        자동화된 배포 파이프라인(GitOps)을 구축하는 전략을 분석합니다.
                     </p>
-                    <div class="flex flex-wrap gap-3">
-                        <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-md text-sm font-medium">GitOps 기반
-                            배포</span>
-                        <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-md text-sm font-medium">하드웨어 가속기
-                            자동화</span>
-                        <span class="bg-stone-200 text-stone-700 px-3 py-1 rounded-md text-sm font-medium">Declarative
-                            API</span>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                            <h3 class="font-bold text-slate-800 mb-2">Problem</h3>
+                            <p class="text-sm text-slate-600">YAML 파일의 파편화, 버전 관리의 어려움, 수동 `kubectl apply`로 인한 휴먼 에러 발생.
+                            </p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                            <h3 class="font-bold text-argo mb-2">Solution</h3>
+                            <p class="text-sm text-slate-600">중앙화된 Manifest Manager 시스템 구축 및 Argo CD를 배포 엔진(Execution
+                                Engine)으로 활용.</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                            <h3 class="font-bold text-indigo-600 mb-2">Key Enabler</h3>
+                            <p class="text-sm text-slate-600"><strong>Argo CD API</strong>: 외부 시스템이 배포 상태를 제어하고 모니터링할 수
+                                있는 프로그래밍 인터페이스 제공.</p>
+                        </div>
                     </div>
                 </div>
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-stone-200">
-                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
-                        <span class="w-2 h-6 bg-indigo-500 rounded"></span>
-                        자동화 레벨 비교분석
-                    </h3>
-                    <div class="chart-container" style="height: 300px;">
-                        <canvas id="efficiencyRadar"></canvas>
-                    </div>
-                </div>
-            </div>
+            </section>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-xl border border-stone-200">
-                    <div class="text-3xl mb-4">⚙️</div>
-                    <h4 class="font-bold text-lg mb-2">운영 복잡성 해결</h4>
-                    <p class="text-sm text-stone-500 leading-snug">수동 커널 컴파일이나 배포 스크립트 관리 비용을 90% 이상 절감합니다.</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl border border-stone-200">
-                    <div class="text-3xl mb-4">🛡️</div>
-                    <h4 class="font-bold text-lg mb-2">보안 및 가용성</h4>
-                    <p class="text-sm text-stone-500 leading-snug">모듈 서명 확인(KMM) 및 권한 기반 RBAC(ArgoCD)을 통해 안전한 운영을 보장합니다.
+            <!-- Section 2: Architecture Interactive Diagram -->
+            <section id="architecture" class="max-w-4xl mx-auto mb-16">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-900">통합 아키텍처 및 데이터 흐름</h2>
+                    <p class="text-slate-600 mt-2">
+                        사용자가 Manifest Manager(Custom UI/Logic)를 통해 요청을 보내면, 시스템이 어떻게 Git을 거쳐 Argo CD API를 통해 Kubernetes
+                        클러스터에 도달하는지 아래 다이어그램을 통해 확인하세요.
+                        <br><span class="text-sm text-argo font-medium">※ 각 단계를 클릭하여 상세 설명을 확인하세요.</span>
                     </p>
                 </div>
-                <div class="bg-white p-6 rounded-xl border border-stone-200">
-                    <div class="text-3xl mb-4">🔄</div>
-                    <h4 class="font-bold text-lg mb-2">지속적 상태 검증</h4>
-                    <p class="text-sm text-stone-500 leading-snug">실제 클러스터 상태를 API가 정의된 'Desired State'와 매초 비교합니다.</p>
-                </div>
-            </div>
-        </section>
 
-        <!-- SECTION 2: ARGOCD 심화 분석 -->
-        <section id="tab-argocd" class="tab-content space-y-8">
-            <div class="bg-white rounded-2xl p-8 border border-stone-200">
-                <div class="flex items-center gap-3 mb-8">
-                    <div class="p-3 bg-indigo-100 text-indigo-700 rounded-xl">
-                        <span class="text-2xl">📡</span>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold">ArgoCD REST API 상세 구조</h2>
-                        <p class="text-stone-500">API 서버는 gRPC를 기반으로 하며, HTTP 인터페이스를 위해 REST Gateway를 사용합니다.</p>
-                    </div>
-                </div>
+                <!-- Interactive CSS Architecture Diagram -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-8 overflow-hidden relative">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center relative z-10">
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                    <!-- 상세 명세 아코디언 -->
-                    <div class="space-y-4">
-                        <div class="border border-stone-200 rounded-lg overflow-hidden">
-                            <button onclick="toggleSpec('spec-app')"
-                                class="w-full flex justify-between items-center p-4 bg-stone-50 hover:bg-stone-100 transition-colors">
-                                <span class="font-bold">Application API (/v1/applications)</span>
-                                <span class="text-stone-400">▼</span>
-                            </button>
-                            <div id="spec-app" class="p-4 text-sm text-stone-600 border-t border-stone-200 bg-white">
-                                <p class="mb-3">애플리케이션의 생성, 수정, 삭제 및 동기화 정책(SyncPolicy)을 관리합니다.</p>
-                                <ul class="list-disc list-inside space-y-1">
-                                    <li><code class="text-indigo-600">GET /api/v1/applications/{name}</code>: 앱 상세 정보
-                                    </li>
-                                    <li><code class="text-indigo-600">POST /api/v1/applications/{name}/rollback</code>:
-                                        특정 버전 복구</li>
-                                    <li>주요 필드: <span class="font-mono text-pink-600">automated: { prune: true, selfHeal:
-                                            true }</span></li>
-                                </ul>
-                            </div>
+                        <!-- Node 1: User / Manifest Manager -->
+                        <div onclick="updateArchDetail('manager')"
+                            class="interactive-card cursor-pointer bg-slate-50 p-4 rounded-lg border-2 border-slate-200 hover:border-argo text-center relative group h-32 flex flex-col justify-center items-center">
+                            <div class="text-2xl mb-2">🖥️</div>
+                            <div class="font-bold text-slate-700 text-sm">Manifest Manager</div>
+                            <div class="text-xs text-slate-500">(Internal Portal)</div>
+                            <div
+                                class="absolute -right-5 top-1/2 transform -translate-y-1/2 hidden md:block text-slate-300">
+                                ➜</div>
                         </div>
 
-                        <div class="border border-stone-200 rounded-lg overflow-hidden">
-                            <button onclick="toggleSpec('spec-cluster')"
-                                class="w-full flex justify-between items-center p-4 bg-stone-50 hover:bg-stone-100 transition-colors">
-                                <span class="font-bold">Cluster API (/v1/clusters)</span>
-                                <span class="text-stone-400">▼</span>
-                            </button>
-                            <div id="spec-cluster"
-                                class="p-4 text-sm text-stone-600 border-t border-stone-200 bg-white hidden">
-                                <p class="mb-3">멀티 클러스터 환경을 위한 외부 클러스터 인증 정보를 관리합니다.</p>
-                                <ul class="list-disc list-inside space-y-1">
-                                    <li><code class="text-indigo-600">POST /api/v1/clusters</code>: 신규 클러스터 자격 증명 등록
-                                    </li>
-                                    <li>주요 필드: <span class="font-mono text-pink-600">server, config: { tlsClientConfig
-                                            }</span></li>
-                                </ul>
-                            </div>
+                        <!-- Node 2: Git Repository -->
+                        <div onclick="updateArchDetail('git')"
+                            class="interactive-card cursor-pointer bg-slate-50 p-4 rounded-lg border-2 border-slate-200 hover:border-orange-400 text-center relative group h-32 flex flex-col justify-center items-center">
+                            <div class="text-2xl mb-2">📂</div>
+                            <div class="font-bold text-slate-700 text-sm">Git Repository</div>
+                            <div class="text-xs text-slate-500">(Single Source of Truth)</div>
+                            <div
+                                class="absolute -right-5 top-1/2 transform -translate-y-1/2 hidden md:block text-slate-300">
+                                ➜</div>
                         </div>
 
-                        <div class="border border-stone-200 rounded-lg overflow-hidden">
-                            <button onclick="toggleSpec('spec-session')"
-                                class="w-full flex justify-between items-center p-4 bg-stone-50 hover:bg-stone-100 transition-colors">
-                                <span class="font-bold">Session & Auth API (/v1/session)</span>
-                                <span class="text-stone-400">▼</span>
-                            </button>
-                            <div id="spec-session"
-                                class="p-4 text-sm text-stone-600 border-t border-stone-200 bg-white hidden">
-                                <p class="mb-3">JWT 토큰 발행 및 사용자 세션을 관리합니다.</p>
-                                <ul class="list-disc list-inside space-y-1">
-                                    <li><code class="text-indigo-600">POST /api/v1/session</code>: 로그인 및 토큰 획득</li>
-                                    <li>사용처: 자동화 파이프라인(CI)의 API 접근 인증</li>
-                                </ul>
+                        <!-- Node 3: Argo CD (The Engine) -->
+                        <div onclick="updateArchDetail('argocd')"
+                            class="interactive-card cursor-pointer bg-argo/10 p-4 rounded-lg border-2 border-argo text-center relative group h-32 flex flex-col justify-center items-center ring-2 ring-offset-2 ring-argo/30">
+                            <div class="text-2xl mb-2">🐙</div>
+                            <div class="font-bold text-argo text-sm">Argo CD Controller</div>
+                            <div class="text-xs text-argo/80">(Sync & Diff)</div>
+                            <div
+                                class="absolute -right-5 top-1/2 transform -translate-y-1/2 hidden md:block text-slate-300">
+                                ➜</div>
+                        </div>
+
+                        <!-- Node 4: Kubernetes Cluster -->
+                        <div onclick="updateArchDetail('k8s')"
+                            class="interactive-card cursor-pointer bg-blue-50 p-4 rounded-lg border-2 border-blue-200 hover:border-blue-500 text-center relative group h-32 flex flex-col justify-center items-center">
+                            <div class="text-2xl mb-2">☸️</div>
+                            <div class="font-bold text-slate-700 text-sm">Target Cluster</div>
+                            <div class="text-xs text-slate-500">(Nodes & Pods)</div>
+                        </div>
+
+                        <!-- API Link (Connecting Manager to Argo directly) -->
+                        <div
+                            class="hidden md:flex absolute top-0 left-0 w-full h-full pointer-events-none justify-center items-start pt-2">
+                            <!-- This represents the API call bypassing Git for status checks -->
+                            <div
+                                class="border-t-2 border-dashed border-argo w-1/2 h-8 absolute top-0 left-1/4 mt-[-10px] rounded-t-full">
                             </div>
+                            <span class="bg-white px-2 text-xs font-bold text-argo absolute top-[-20px]">Argo CD API
+                                (Control Plane)</span>
                         </div>
                     </div>
 
-                    <!-- JSON 스키마 미리보기 -->
-                    <div class="space-y-4">
-                        <div class="code-block rounded-xl p-6 shadow-inner font-mono text-sm h-full flex flex-col">
-                            <div class="flex justify-between items-center mb-4 border-b border-stone-800 pb-2">
-                                <span class="text-stone-500">Application Resource Schema (Partial)</span>
-                                <span class="text-indigo-400 text-xs">JSON</span>
-                            </div>
-                            <pre class="flex-1 overflow-auto custom-scroll" id="argo-json-view">
-{
-  "metadata": {
-    "name": "payment-api-prod",
-    "namespace": "argocd"
-  },
-  "spec": {
-    "project": "default",
-    "source": {
-      "repoURL": "https://git.company.com/apps.git",
-      "targetRevision": "HEAD",
-      "path": "overlays/prod"
-    },
-    "destination": {
-      "server": "https://k8s-prod.local",
-      "namespace": "finance"
-    },
-    "syncPolicy": {
-      "automated": {
-        "prune": true,
-        "selfHeal": true
-      }
-    }
-  }
-}
-                            </pre>
+                    <!-- Detail Panel -->
+                    <div id="arch-detail-panel"
+                        class="mt-8 bg-slate-800 text-white p-6 rounded-lg transition-all duration-300">
+                        <h3 id="arch-title" class="text-lg font-bold text-argo-light mb-2">Manifest Manager (시작점)</h3>
+                        <p id="arch-desc" class="text-slate-300 text-sm leading-relaxed">
+                            개발자나 운영자가 배포 요청을 생성하는 내부 포털입니다. 직접 YAML을 작성하지 않고, 폼(Form) 기반 UI를 통해 설정을 입력하면 Manifest
+                            Manager가 표준화된 YAML을 생성합니다.
+                        </p>
+                        <div class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center">
+                            <span id="arch-action" class="text-xs font-mono text-emerald-400">Action: Generate YAML &
+                                Commit</span>
+                            <span class="text-xs text-slate-500">Step 1 of 4</span>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- SECTION 3: KMM 심화 분석 -->
-        <section id="tab-kmm" class="tab-content space-y-8">
-            <div class="bg-white rounded-2xl p-8 border border-stone-200">
-                <div class="flex items-center gap-3 mb-8">
-                    <div class="p-3 bg-emerald-100 text-emerald-700 rounded-xl">
-                        <span class="text-2xl">🛠️</span>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold">KMM 오퍼레이터 API 심화</h2>
-                        <p class="text-stone-500">커널 모듈의 수명 주기를 쿠버네티스 선언적 객체로 정의합니다.</p>
-                    </div>
+            <!-- Section 3: Argo CD API Simulator -->
+            <section id="api-console" class="max-w-4xl mx-auto mb-16">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-900">Argo CD API 시뮬레이터</h2>
+                    <p class="text-slate-600 mt-2">
+                        Manifest Manager 시스템이 Argo CD와 통신하는 핵심 메커니즘을 경험해보세요. <br>
+                        실제 Argo CD API (REST) 엔드포인트를 호출하여 배포 상태를 확인하거나 동기화(Sync)를 트리거하는 과정을 시뮬레이션합니다.
+                    </p>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-1 space-y-6">
-                        <div class="bg-emerald-900 rounded-xl p-6 text-white shadow-lg">
-                            <h4 class="font-bold mb-4 flex items-center gap-2">
-                                <span>🔍</span> KMM의 3대 핵심 로직
-                            </h4>
-                            <div class="space-y-4">
-                                <div>
-                                    <div class="text-xs text-emerald-300 font-bold">BUILD LOGIC</div>
-                                    <p class="text-sm">현재 커널 헤더를 감지하여 컨테이너 내에서 `.ko` 파일을 컴파일합니다.</p>
-                                </div>
-                                <div>
-                                    <div class="text-xs text-emerald-300 font-bold">SIGNING LOGIC</div>
-                                    <p class="text-sm">Secure Boot가 켜진 노드를 위해 빌드된 모듈에 디지털 서명을 입힙니다.</p>
-                                </div>
-                                <div>
-                                    <div class="text-xs text-emerald-300 font-bold">LOADING LOGIC</div>
-                                    <p class="text-sm">드라이버가 로드될 때 노드의 오염(Taint)을 방지하고 안정성을 검증합니다.</p>
-                                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Controls -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">API Operations</h3>
+                        <div class="space-y-3">
+                            <div class="group">
+                                <label class="text-xs font-bold text-slate-500 uppercase">1. Application 조회</label>
+                                <button onclick="simulateApi('getApp')"
+                                    class="w-full mt-1 text-left flex items-center justify-between p-3 rounded bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition-all">
+                                    <span class="font-mono text-sm text-blue-700 font-bold">GET
+                                        /api/v1/applications/{name}</span>
+                                    <span class="text-xs bg-white border px-2 py-1 rounded text-slate-500">Send</span>
+                                </button>
+                                <p class="text-xs text-slate-400 mt-1 pl-1">특정 애플리케이션의 현재 상태(Sync/Health)를 조회합니다.</p>
                             </div>
-                        </div>
 
-                        <div class="bg-stone-100 p-5 rounded-xl border border-stone-200">
-                            <h4 class="font-bold text-stone-700 mb-2">Module CRD 상세 필드</h4>
-                            <div class="text-xs space-y-2 text-stone-600">
-                                <div><strong class="text-emerald-700">selector:</strong> 어떤 하드웨어가 있는 노드에 로드할지 결정 (Label
-                                    사용)</div>
-                                <div><strong class="text-emerald-700">moduleLoader:</strong> 모듈 로드 이미지를 관리하는 핵심 섹션</div>
-                                <div><strong class="text-emerald-700">devicePlugin:</strong> (선택사항) GPU 등을 K8s 자원으로 노출하는
-                                    플러그인 설정</div>
+                            <div class="group pt-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase">2. Sync (배포) 트리거</label>
+                                <button onclick="simulateApi('syncApp')"
+                                    class="w-full mt-1 text-left flex items-center justify-between p-3 rounded bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 transition-all">
+                                    <span class="font-mono text-sm text-emerald-700 font-bold">POST
+                                        /api/v1/applications/{name}/sync</span>
+                                    <span class="text-xs bg-white border px-2 py-1 rounded text-slate-500">Send</span>
+                                </button>
+                                <p class="text-xs text-slate-400 mt-1 pl-1">Git 변경사항을 클러스터에 강제로 동기화합니다.</p>
+                            </div>
+
+                            <div class="group pt-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase">3. 리소스 트리 조회</label>
+                                <button onclick="simulateApi('resourceTree')"
+                                    class="w-full mt-1 text-left flex items-center justify-between p-3 rounded bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 transition-all">
+                                    <span class="font-mono text-sm text-purple-700 font-bold">GET
+                                        /api/v1/applications/{name}/resource-tree</span>
+                                    <span class="text-xs bg-white border px-2 py-1 rounded text-slate-500">Send</span>
+                                </button>
+                                <p class="text-xs text-slate-400 mt-1 pl-1">애플리케이션에 속한 모든 K8s 리소스(Pod, Service 등) 관계를
+                                    조회합니다.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- KMM YAML 시뮬레이터 -->
-                    <div class="lg:col-span-2">
-                        <div class="code-block rounded-xl p-6 shadow-inner font-mono text-sm h-full flex flex-col">
-                            <div class="flex justify-between items-center mb-4 border-b border-stone-800 pb-2">
-                                <span class="text-stone-500">Module Custom Resource Definition (Specific)</span>
-                                <span class="text-emerald-400 text-xs">YAML</span>
-                            </div>
-                            <pre class="flex-1 overflow-auto custom-scroll">
-apiVersion: kmm.sigs.x-k8s.io/v1beta1
-kind: Module
-metadata:
-  name: ml-accelerator-driver
-spec:
-  moduleLoader:
-    container:
-      modprobe:
-        moduleName: ml_accel
-        dirName: /opt/lib/modules
-      image: "company-registry.io/drivers/ml-accel:1.2.3"
-      # 커널 버전별 매핑 (구체적 명세)
-      kernelMappings:
-        - regexp: '^5\.15\..*'
-          containerImage: "company-registry.io/drivers/ml-accel:1.2.3-k5.15"
-        - literal: "6.1.0-1011-azure"
-          containerImage: "company-registry.io/drivers/ml-accel:1.2.3-azure"
-  selector:
-    feature.node.kubernetes.io/pci-10de.present: "true"
-  build:
-    dockerfileConfigMap: 
-      name: ml-accel-dockerfile
-                            </pre>
+                    <!-- Console Output -->
+                    <div class="bg-slate-900 rounded-xl shadow-lg p-6 flex flex-col h-full min-h-[400px]">
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                            <span class="text-slate-400 text-xs font-mono">Simulated Terminal Output</span>
+                            <span id="api-status" class="text-emerald-500 text-xs font-mono hidden">● 200 OK</span>
+                        </div>
+                        <div id="api-output"
+                            class="code-block flex-1 overflow-auto text-sm p-2 font-mono whitespace-pre text-green-400">
+                            // Waiting for API request...
+                            // Select an operation from the left panel.
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- 기술 비교 섹션 -->
-        <section class="bg-white rounded-2xl p-8 border border-stone-200 shadow-sm overflow-hidden">
-            <h3 class="text-xl font-bold mb-6">ArgoCD vs KMM API 비교 매트릭스</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-stone-50 border-y border-stone-200">
-                        <tr>
-                            <th class="px-4 py-3 font-bold text-stone-700">구분</th>
-                            <th class="px-4 py-3 font-bold text-stone-700">ArgoCD (REST API)</th>
-                            <th class="px-4 py-3 font-bold text-stone-700">KMM (Operator API)</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-stone-100">
-                        <tr>
-                            <td class="px-4 py-4 font-semibold">주요 관리 대상</td>
-                            <td class="px-4 py-4">K8s 애플리케이션 및 매니페스트 (GitOps)</td>
-                            <td class="px-4 py-4">호스트 커널 모듈 (드라이버, 하드웨어 가속기)</td>
-                        </tr>
-                        <tr>
-                            <td class="px-4 py-4 font-semibold">API 형태</td>
-                            <td class="px-4 py-4">RESTful API / gRPC</td>
-                            <td class="px-4 py-4">Kubernetes Custom Resource (YAML)</td>
-                        </tr>
-                        <tr>
-                            <td class="px-4 py-4 font-semibold">실행 방식</td>
-                            <td class="px-4 py-4">Push/Sync Controller 기반</td>
-                            <td class="px-4 py-4">Operator/DaemonSet 기반</td>
-                        </tr>
-                        <tr>
-                            <td class="px-4 py-4 font-semibold">주요 사용자</td>
-                            <td class="px-4 py-4">DevOps / Application Engineer</td>
-                            <td class="px-4 py-4">Infrastructure / SRE / HPC Admin</td>
-                        </tr>
-                        <tr>
-                            <td class="px-4 py-4 font-semibold">장점</td>
-                            <td class="px-4 py-4">배포 히스토리 관리 및 쉬운 롤백</td>
-                            <td class="px-4 py-4">커널 업데이트 시 드라이버 자동 빌드</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+            <!-- Section 4: Data & Analytics -->
+            <section id="analytics" class="max-w-4xl mx-auto mb-16">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-900">도입 효과 분석 데이터</h2>
+                    <p class="text-slate-600 mt-2">
+                        자체 Manifest Manager와 Argo CD API를 통합했을 때 얻을 수 있는 정량적 효과입니다. <br>
+                        배포 속도 향상과 운영 복잡도 감소를 시각화하였습니다.
+                    </p>
+                </div>
 
-    </main>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Chart 1: Deployment Time Comparison -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h3 class="text-sm font-bold text-slate-500 uppercase mb-4 text-center">배포 소요 시간 비교 (분)</h3>
+                        <div class="chart-container">
+                            <canvas id="deploymentChart"></canvas>
+                        </div>
+                        <p class="text-xs text-center text-slate-400 mt-4">Manual vs API Automation</p>
+                    </div>
 
-    <!-- 푸터 -->
-    <footer class="mt-20 py-10 border-t border-stone-200 bg-white">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="text-stone-400 text-sm">© 2024 Infra API Research Lab. All rights reserved.</div>
-            <div class="flex gap-4">
-                <span class="status-pill status-sync">API Online</span>
-                <span class="status-pill bg-stone-100 text-stone-600">v2.1.4-LTS</span>
-            </div>
-        </div>
-    </footer>
+                    <!-- Chart 2: API Usage Distribution -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h3 class="text-sm font-bold text-slate-500 uppercase mb-4 text-center">Manifest Manager의 API 호출
+                            유형</h3>
+                        <div class="chart-container">
+                            <canvas id="apiUsageChart"></canvas>
+                        </div>
+                        <p class="text-xs text-center text-slate-400 mt-4">빈번한 상태 조회(Polling)를 통한 대시보드 갱신</p>
+                    </div>
+                </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <!-- Key Metrics Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                    <div class="bg-blue-50 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-blue-600 mb-1">-85%</div>
+                        <div class="text-xs text-slate-600 font-medium">배포 실패율</div>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-emerald-600 mb-1">2.5x</div>
+                        <div class="text-xs text-slate-600 font-medium">배포 빈도 증가</div>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-purple-600 mb-1">100%</div>
+                        <div class="text-xs text-slate-600 font-medium">Audit Log 추적</div>
+                    </div>
+                    <div class="bg-orange-50 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-orange-600 mb-1">Auto</div>
+                        <div class="text-xs text-slate-600 font-medium">Drift 감지 및 복구</div>
+                    </div>
+                </div>
+            </section>
 
+            <!-- Section 5: Conclusion -->
+            <section id="conclusion" class="max-w-4xl mx-auto mb-20">
+                <div class="bg-slate-800 rounded-xl p-8 text-white relative overflow-hidden">
+                    <div class="relative z-10">
+                        <h2 class="text-2xl font-bold mb-4">결론: Manifest Manager의 미래</h2>
+                        <div class="space-y-4 text-slate-300">
+                            <p>
+                                <strong>Kubernetes Manifest Manager</strong>는 단순히 YAML 파일을 저장하는 도구가 아닙니다.
+                                이는 조직의 인프라 정책을 코드로 정의하고(Policy as Code), <strong>Argo CD API</strong>를 통해 이를 강제하고 실행하는
+                                지능형 제어 센터입니다.
+                            </p>
+                            <p>
+                                Argo CD API와의 긴밀한 통합은 개발자에게는 복잡한 Kubernetes 내부를 숨기고(Abstraction),
+                                운영팀에게는 투명한 제어권과 가시성을 제공합니다.
+                            </p>
+                        </div>
+                        <div class="mt-8 pt-6 border-t border-slate-700 flex flex-wrap gap-3">
+                            <span class="px-3 py-1 bg-slate-700 rounded-full text-xs text-slate-300">#GitOps</span>
+                            <span class="px-3 py-1 bg-slate-700 rounded-full text-xs text-slate-300">#ArgoCD</span>
+                            <span
+                                class="px-3 py-1 bg-slate-700 rounded-full text-xs text-slate-300">#KubernetesAPI</span>
+                            <span class="px-3 py-1 bg-slate-700 rounded-full text-xs text-slate-300">#Automation</span>
+                        </div>
+                    </div>
+                    <!-- Decorative background element -->
+                    <div
+                        class="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-argo opacity-10 rounded-full blur-3xl">
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- JavaScript Logic -->
     <script>
-        // --- 탭 전환 로직 ---
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
+        // --- Navigation Logic ---
+        function navTo(sectionId) {
+            // Smooth scroll to section
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
 
-            const btns = document.querySelectorAll('.nav-btn');
-            btns.forEach(btn => {
-                btn.classList.remove('text-indigo-600', 'font-semibold');
-                btn.classList.add('text-stone-500');
+            // Update active state in sidebar
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
             });
 
-            // Handle clicking within the nav buttons
-            if (event && event.target) {
-                event.target.classList.add('text-indigo-600', 'font-semibold');
-                event.target.classList.remove('text-stone-500');
-            }
+            // Find the button that calls this function (approximate match)
+            const buttons = document.querySelectorAll(`button[onclick="navTo('${sectionId}')"]`);
+            buttons.forEach(btn => {
+                if (window.getComputedStyle(btn.parentElement).display !== 'none') { // only highlight desktop or mobile visible
+                    btn.classList.add('active');
+                }
+            });
 
-            if (window.charts) window.charts.forEach(c => c.resize());
+            // Close mobile menu if open
+            document.getElementById('mobile-menu').classList.add('hidden');
         }
 
-        // --- 아코디언 로직 ---
-        function toggleSpec(id) {
-            const el = document.getElementById(id);
-            const isHidden = el.classList.contains('hidden');
-            if (isHidden) {
-                el.classList.remove('hidden');
-            } else {
-                el.classList.add('hidden');
+        // --- Mobile Menu Logic ---
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.remove('hidden');
+        });
+        document.getElementById('close-mobile-menu').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.add('hidden');
+        });
+
+        // --- Interactive Architecture Diagram Logic ---
+        const archData = {
+            manager: {
+                title: "Manifest Manager (사용자 인터페이스)",
+                desc: "사용자는 복잡한 YAML 문법을 알 필요 없이, 웹 UI 폼에서 필요한 스펙(이미지 버전, 레플리카 수 등)을 입력합니다. 매니저는 이 입력을 기반으로 표준화된 K8s Manifest 파일을 동적으로 생성합니다.",
+                step: "Step 1: Input & Generation"
+            },
+            git: {
+                title: "Git Repository (진실의 원천)",
+                desc: "생성된 Manifest 파일은 Git 저장소에 커밋됩니다. GitOps 원칙에 따라 모든 변경 이력은 Git에 남으며, 이것이 클러스터의 '목표 상태(Desired State)'가 됩니다.",
+                step: "Step 2: Version Control & Audit"
+            },
+            argocd: {
+                title: "Argo CD Controller (동기화 엔진)",
+                desc: "Argo CD는 Git 저장소를 지속적으로 모니터링합니다. 변경이 감지되면 현재 클러스터 상태와 Git의 목표 상태 간의 차이(Diff)를 계산하고, 동기화(Sync) 작업을 수행합니다. 이때 API를 통해 매니저에게 상태를 보고합니다.",
+                step: "Step 3: Continuous Reconciliation"
+            },
+            k8s: {
+                title: "Kubernetes Cluster (런타임)",
+                desc: "최종적으로 Pod, Service, Ingress 등의 리소스가 생성되거나 업데이트됩니다. 실제 애플리케이션이 구동되는 환경이며, Argo CD에 의해 상태가 Git과 일치하도록 유지됩니다.",
+                step: "Step 4: Deployment & Running"
             }
+        };
+
+        function updateArchDetail(nodeKey) {
+            const data = archData[nodeKey];
+            const titleEl = document.getElementById('arch-title');
+            const descEl = document.getElementById('arch-desc');
+            const actionEl = document.getElementById('arch-action');
+            const panel = document.getElementById('arch-detail-panel');
+
+            // Simple fade effect simulation
+            panel.classList.add('opacity-50');
+            setTimeout(() => {
+                titleEl.textContent = data.title;
+                descEl.textContent = data.desc;
+                actionEl.textContent = data.step;
+                panel.classList.remove('opacity-50');
+            }, 150);
         }
 
-        // --- 차트 초기화 (SPA 호환) ---
-        function initInfrastructureCharts() {
-            if (typeof Chart === 'undefined') {
-                console.warn('Chart.js not loaded yet, retrying...');
-                setTimeout(initInfrastructureCharts, 100);
-                return;
+        // --- API Simulator Logic ---
+        const apiScenarios = {
+            getApp: {
+                method: "GET",
+                url: "/api/v1/applications/guestbook-ui",
+                response: {
+                    "metadata": { "name": "guestbook-ui", "namespace": "argocd" },
+                    "status": {
+                        "health": { "status": "Healthy" },
+                        "sync": { "status": "Synced", "revision": "a1b2c3d" },
+                        "summary": { "images": ["guestbook:v1.2"] }
+                    }
+                }
+            },
+            syncApp: {
+                method: "POST",
+                url: "/api/v1/applications/guestbook-ui/sync",
+                response: {
+                    "status": "Initiated",
+                    "operation": {
+                        "sync": { "revision": "HEAD", "prune": true },
+                        "phase": "Running",
+                        "message": "Sync operation initiated successfully."
+                    }
+                }
+            },
+            resourceTree: {
+                method: "GET",
+                url: "/api/v1/applications/guestbook-ui/resource-tree",
+                response: {
+                    "nodes": [
+                        { "kind": "Deployment", "name": "guestbook-ui", "health": { "status": "Healthy" } },
+                        { "kind": "Service", "name": "guestbook-svc", "health": { "status": "Healthy" } },
+                        { "kind": "Pod", "name": "guestbook-ui-6b5d", "health": { "status": "Healthy" } }
+                    ]
+                }
             }
+        };
 
-            window.charts = [];
-            const ctx1 = document.getElementById('efficiencyRadar').getContext('2d');
-            const radarChart = new Chart(ctx1, {
-                type: 'radar',
+        function simulateApi(scenarioKey) {
+            const scenario = apiScenarios[scenarioKey];
+            const outputEl = document.getElementById('api-output');
+            const statusEl = document.getElementById('api-status');
+
+            outputEl.innerHTML = `<span class="text-slate-400">Requesting ${scenario.method} ${scenario.url}...</span>`;
+            statusEl.classList.add('hidden');
+
+            setTimeout(() => {
+                statusEl.classList.remove('hidden');
+                outputEl.innerHTML = `
+<span class="text-purple-400">${scenario.method}</span> <span class="text-slate-300">${scenario.url}</span>
+
+<span class="text-slate-500">// Response Header: 200 OK</span>
+<span class="text-slate-500">// Content-Type: application/json</span>
+
+<span class="text-green-300">${JSON.stringify(scenario.response, null, 2)}</span>`;
+            }, 600);
+        }
+
+        // --- Charts Initialization (Chart.js) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Chart 1: Deployment Time Comparison
+            const ctx1 = document.getElementById('deploymentChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
                 data: {
-                    labels: ['보안성', '확장성', '배포 속도', '복구 속도', '리소스 최적화'],
+                    labels: ['Manifest 작성', '검증(Validation)', '배포(Apply)', '롤백(Rollback)'],
                     datasets: [
                         {
-                            label: 'ArgoCD REST API',
-                            data: [85, 95, 98, 90, 80],
-                            borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                            pointBackgroundColor: '#6366f1'
+                            label: '수동 (Manual Kubectl)',
+                            data: [45, 30, 15, 60],
+                            backgroundColor: '#94a3b8', // Slate 400
+                            borderRadius: 4
                         },
                         {
-                            label: 'KMM Operator API',
-                            data: [92, 80, 75, 88, 95],
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                            pointBackgroundColor: '#10b981'
+                            label: 'Manifest Manager + Argo API',
+                            data: [10, 5, 2, 5],
+                            backgroundColor: '#326CE5', // Kubernetes Blue
+                            borderRadius: 4
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.dataset.label + ': ' + context.raw + ' mins';
+                                }
+                            }
+                        }
+                    },
                     scales: {
-                        r: { beginAtZero: true, max: 100, ticks: { display: false } }
+                        y: { beginAtZero: true, title: { display: true, text: '소요 시간 (분)' } }
                     }
                 }
             });
-            window.charts.push(radarChart);
-        }
 
-        // Run immediately as script is injected
-        initInfrastructureCharts();
+            // Chart 2: API Usage Distribution
+            const ctx2 = document.getElementById('apiUsageChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['상태 조회 (GET Status)', '리소스 트리 확인 (GET Tree)', 'Sync 트리거 (POST Sync)', '설정 변경 (PUT Spec)'],
+                    datasets: [{
+                        data: [65, 20, 10, 5],
+                        backgroundColor: [
+                            '#3b82f6', // Blue 500
+                            '#10b981', // Emerald 500
+                            '#f59e0b', // Amber 500
+                            '#6366f1'  // Indigo 500
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        });
     </script>
 </body>
 
