@@ -127,20 +127,54 @@
             document.getElementById('fileListView').style.display = view === 'list' ? 'block' : 'none';
             document.getElementById('fileContentView').style.display = view === 'content' ? 'block' : 'none';
         }
-        function loadContent(filename) {
-            const frame = document.getElementById('contentFrame');
-            frame.innerHTML = '';
-            const iframe = document.createElement('iframe');
-            iframe.src = `./${filename}?v=${new Date().getTime()}`;
-            iframe.onload = () => {
-                try {
-                    const doc = iframe.contentDocument || iframe.contentWindow.document;
-                    const style = doc.createElement('style');
-                    style.textContent = "@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap'); body { font-family: 'Inter', sans-serif !important; }";
-                    doc.head.appendChild(style);
-                } catch (e) { }
-            };
-            frame.appendChild(iframe);
+        async function loadContent(filename) {
+            const container = document.getElementById('contentFrame');
+            container.innerHTML = '<div style="text-align:center; padding:100px; color:#059669; opacity:0.5;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+
+            try {
+                const resp = await fetch(`./${filename}?v=${new Date().getTime()}`);
+                if (!resp.ok) throw new Error('Failed to load content');
+                const html = await resp.text();
+
+                // Parse HTML to extract body content, scripts, and styles
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Clear container
+                container.innerHTML = '';
+
+                // Inject Styles
+                doc.querySelectorAll('style').forEach(s => {
+                    const newStyle = document.createElement('style');
+                    newStyle.textContent = s.textContent;
+                    container.appendChild(newStyle);
+                });
+
+                // Inject Body Content
+                const bodyContent = doc.body.innerHTML;
+                const bodyDiv = document.createElement('div');
+                bodyDiv.innerHTML = bodyContent;
+                container.appendChild(bodyDiv);
+
+                // Inject and Execute Scripts
+                doc.querySelectorAll('script').forEach(s => {
+                    const newScript = document.createElement('script');
+                    if (s.src) {
+                        newScript.src = s.src;
+                    } else {
+                        newScript.textContent = s.textContent;
+                    }
+                    document.body.appendChild(newScript);
+                });
+
+                // Apply Global Font Override
+                const globalStyle = document.createElement('style');
+                globalStyle.textContent = "@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap'); * { font-family: 'Inter', sans-serif !important; }";
+                container.appendChild(globalStyle);
+
+            } catch (e) {
+                container.innerHTML = `<div style="padding:100px; text-align:center; color:#ef4444;"><h1>Error Loading Content</h1><p>${e.message}</p></div>`;
+            }
         }
         function showStealth404() { document.body.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100vh; color:#94a3b8; background:#f8fafc;"><h1>404 Not Found</h1></div>`; }
         window.addEventListener('hashchange', checkHash); window.addEventListener('DOMContentLoaded', init);
