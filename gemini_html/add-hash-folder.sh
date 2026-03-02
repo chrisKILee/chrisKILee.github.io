@@ -1,138 +1,144 @@
 #!/bin/bash
-
-# Hash Folder Generator Script (Updated for Hash Routing)
-# Usage: ./add-hash-folder.sh <folder_name> <title> <emoji> <hash> [gradient]
+# ================================================
+# 새 폴더 생성기 v2.0
+# ================================================
+# 사용법:
+#   ./add-hash-folder.sh "표시 이름" [이모지] [dir_id]
 #
-# Example: ./add-hash-folder.sh 04_projects "Projects" "🚀" "PRJ8X2Y"
+# 예시:
+#   ./add-hash-folder.sh "Security Study"
+#   ./add-hash-folder.sh "Security Study" "🔐" "dir_ai"
+#
+# dir_id 목록은 gemini_html/site.json 의 directories[].id 참고
+# ================================================
 
 set -e
+GEMINI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SITE_JSON="$GEMINI_DIR/site.json"
+TEMPLATE="$GEMINI_DIR/VNTG7S2/index.html"
 
-# Check arguments
-if [ $# -lt 4 ]; then
-    echo "Usage: $0 <folder_name> <title> <emoji> <hash> [gradient]"
+# ── 인수 확인 ────────────────────────────────────
+if [ $# -lt 1 ]; then
     echo ""
-    echo "Example:"
-    echo "  $0 04_projects \"Projects\" \"🚀\" \"PRJ8X2Y\""
+    echo "사용법: $0 \"표시 이름\" [이모지] [dir_id]"
     echo ""
-    echo "Arguments:"
-    echo "  folder_name  - Folder name (e.g., 04_projects)"
-    echo "  title        - Display title (e.g., \"Projects\")"
-    echo "  emoji        - Emoji icon (e.g., \"🚀\")"
-    echo "  hash         - 7-character hash code (e.g., PRJ8X2Y)"
-    echo "  gradient     - Optional CSS gradient (default: purple)"
+    echo "예시:"
+    echo "  $0 \"Security Study\""
+    echo "  $0 \"Security Study\" \"🔐\" \"dir_ai\""
+    echo ""
+    echo "사용 가능한 dir_id:"
+    node -e "
+      const s = require('$SITE_JSON');
+      s.directories.forEach(d => console.log('  ' + d.id + '  —  ' + d.name));
+    " 2>/dev/null || echo "  (site.json 없음)"
+    echo ""
     exit 1
 fi
 
-FOLDER_NAME=$1
-TITLE=$2
-EMOJI=$3
-HASH=$4
-GRADIENT=${5:-"linear-gradient(135deg, #667eea 0%, #764ba2 100%)"}
+DISPLAY_NAME="$1"
+EMOJI="${2:-📁}"
+DIR_ID="${3:-}"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GEMINI_HTML_DIR="$SCRIPT_DIR"
+# ── 해시 자동 생성 ────────────────────────────────
+# 기존 폴더와 충돌하지 않는 7자리 대문자+숫자 해시 생성
+HASH=$(node -e "
+  const fs = require('fs');
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 혼동 문자 제외 (O,0,I,1)
+  const existing = fs.readdirSync('$GEMINI_DIR').filter(f =>
+    fs.statSync('$GEMINI_DIR/' + f).isDirectory()
+  );
+  let hash;
+  do {
+    hash = Array.from({length: 7}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  } while (existing.includes(hash));
+  console.log(hash);
+")
 
-echo "🚀 Creating hash folder for: $FOLDER_NAME"
-echo "   Title: $EMOJI $TITLE"
-echo "   Hash: $HASH"
+# 시크릿 해시 생성 (폴더 목록 접근용 URL)
+SECRET_HASH=$(node -e "
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const rand = Array.from({length: 8}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  console.log('f-' + rand);
+")
+
 echo ""
-
-# Step 1: Update hash_config.json
-echo "📝 Updating hash_config.json..."
-CONFIG_FILE="$GEMINI_HTML_DIR/hash_config.json"
-
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "{}" > "$CONFIG_FILE"
-fi
-
-# Add new entry to config (using jq if available)
-if command -v jq &> /dev/null; then
-    TEMP_FILE=$(mktemp)
-    jq --arg folder "$FOLDER_NAME" \
-       --arg hash "$HASH" \
-       --arg title "$EMOJI $TITLE" \
-       --arg desc "Description for $TITLE" \
-       --arg gradient "$GRADIENT" \
-       '.[$folder] = {
-           "hash": $hash,
-           "title": $title,
-           "description": $desc,
-           "gradient": $gradient
-       }' "$CONFIG_FILE" > "$TEMP_FILE"
-    mv "$TEMP_FILE" "$CONFIG_FILE"
-    echo "   ✓ Config updated with jq"
+echo "🆕 새 폴더 생성 중..."
+echo "   표시명:  $EMOJI $DISPLAY_NAME"
+echo "   해시:    $HASH  (폴더 URL, 변경 불가)"
+echo "   시크릿:  $SECRET_HASH  (목록 공유 URL)"
+if [ -n "$DIR_ID" ]; then
+    echo "   디렉토리: $DIR_ID"
 else
-    echo "   ⚠ jq not found, please manually add to hash_config.json:"
-    echo "   \"$FOLDER_NAME\": {"
-    echo "     \"hash\": \"$HASH\","
-    echo "     \"title\": \"$EMOJI $TITLE\","
-    echo "     \"description\": \"Description\","
-    echo "     \"gradient\": \"$GRADIENT\""
-    echo "   }"
+    echo "   디렉토리: 미분류 (어드민에서 배정 가능)"
 fi
-
-# Step 2: Create hash folder
 echo ""
-echo "📁 Creating hash folder: $HASH/"
-HASH_DIR="$GEMINI_HTML_DIR/$HASH"
 
-if [ -d "$HASH_DIR" ]; then
-    echo "   ⚠ Folder $HASH already exists, skipping..."
-else
-    mkdir -p "$HASH_DIR"
-    echo "   ✓ Folder created"
+# ── 1. 폴더 생성 ─────────────────────────────────
+mkdir -p "$GEMINI_DIR/$HASH"
+echo "   ✓ 폴더 생성: $HASH/"
+
+# ── 2. files.json 생성 ───────────────────────────
+cat > "$GEMINI_DIR/$HASH/files.json" << FILESJSON
+{
+  "_folderName": "$EMOJI $DISPLAY_NAME",
+  "_order": []
+}
+FILESJSON
+echo "   ✓ files.json 생성 (비어있음, 파일 추가 후 업데이트)"
+
+# ── 3. index.html 생성 (VNTG7S2 템플릿 기반) ─────
+if [ ! -f "$TEMPLATE" ]; then
+    echo "   ❌ 템플릿 없음: $TEMPLATE"
+    exit 1
 fi
+cp "$TEMPLATE" "$GEMINI_DIR/$HASH/index.html"
 
-# Step 3: Copy template from AED13WE
+# 타이틀 교체
+node -e "
+  const fs = require('fs');
+  let html = fs.readFileSync('$GEMINI_DIR/$HASH/index.html', 'utf8');
+  html = html.replace(/<title>.*?<\/title>/, '<title>$EMOJI $DISPLAY_NAME</title>');
+  html = html.replace(/const SECRET_LIST_HASH = '.*?';/, \"const SECRET_LIST_HASH = '$SECRET_HASH';\");
+  fs.writeFileSync('$GEMINI_DIR/$HASH/index.html', html, 'utf8');
+"
+echo "   ✓ index.html 생성 (SPA 쉘 템플릿)"
+
+# ── 4. site.json 업데이트 ────────────────────────
+node -e "
+  const fs = require('fs');
+  const site = JSON.parse(fs.readFileSync('$SITE_JSON', 'utf8'));
+
+  // 기존 폴더 중 최대 order 값 계산
+  const maxOrder = Object.values(site.folders).reduce((m, f) => Math.max(m, f.order || 0), 0);
+
+  site.folders['$HASH'] = {
+    dirId: '$DIR_ID' || null,
+    displayName: '$EMOJI $DISPLAY_NAME',
+    secretHash: '$SECRET_HASH',
+    visible: true,
+    order: maxOrder + 1
+  };
+
+  // dirId가 빈 문자열이면 null로
+  if (!site.folders['$HASH'].dirId) site.folders['$HASH'].dirId = null;
+
+  fs.writeFileSync('$SITE_JSON', JSON.stringify(site, null, 2), 'utf8');
+"
+echo "   ✓ site.json 업데이트"
+
+# ── 완료 메시지 ──────────────────────────────────
 echo ""
-echo "📋 Copying template from AED13WE..."
-cp "$GEMINI_HTML_DIR/AED13WE/index.html" "$HASH_DIR/index.html"
-echo "   ✓ Template copied"
-
-# Step 4: Update the copied index.html
+echo "✅ 완료!"
 echo ""
-echo "✏️  Updating index.html..."
-INDEX_FILE="$HASH_DIR/index.html"
-
-# Replace title
-sed -i "s|<title>🔬 R\&D - Research \& Development</title>|<title>$EMOJI $TITLE</title>|g" "$INDEX_FILE"
-
-# Replace header
-sed -i "s|<h1 class=\"page-title\">Research \& Development</h1>|<h1 class=\"page-title\">$TITLE</h1>|g" "$INDEX_FILE"
-sed -i "s|<p class=\"page-desc\">Exploring new technologies and architectures.</p>|<p class=\"page-desc\">$TITLE Content</p>|g" "$INDEX_FILE"
-sed -i "s|placeholder=\"Search R\&D docs...\"|placeholder=\"Search $TITLE docs...\"|g" "$INDEX_FILE"
-
-# Replace secondary gradient
-sed -i "s|--primary-gradient: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);|--primary-gradient: $GRADIENT;|g" "$INDEX_FILE"
-sed -i "s|--accent-color: #005bea;|--accent-color: #2a5298;|g" "$INDEX_FILE"
-
-# Replace API path
-sed -i "s|contents/gemini_html/01_rnd|contents/gemini_html/$FOLDER_NAME|g" "$INDEX_FILE"
-
-# Replace config path
-sed -i "s|CONFIG_PATH = '../01_rnd/files.json'|CONFIG_PATH = '../$FOLDER_NAME/files.json'|g" "$INDEX_FILE"
-
-# Replace file content path
-sed -i "s|CONTENT_BASE_PATH = '../01_rnd/'|CONTENT_BASE_PATH = '../$FOLDER_NAME/'|g" "$INDEX_FILE"
-
-echo "   ✓ index.html updated"
-
-# Step 5: Remind to update GDEDSE
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  폴더 URL (고정, 절대 변경 안됨)"
+echo "  로컬:  http://localhost:8000/$HASH/#$SECRET_HASH"
+echo "  배포:  https://page.chrisnolja.dev/gemini_html/$HASH/#$SECRET_HASH"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "🔄 Next: Update GDEDSE/index.html"
-echo "   ⚠ Please manually add to GDEDSE/index.html HASH_MAPPINGS:"
-echo "   '$FOLDER_NAME': '$HASH',"
-
+echo "📌 다음 단계:"
+echo "   1. $GEMINI_DIR/$HASH/ 에 HTML 파일 추가"
+echo "   2. $GEMINI_DIR/$HASH/files.json 에 파일 목록 등록"
+echo "   3. 어드민 모드에서 디렉토리 배정 (또는 site.json 직접 수정)"
+echo "   4. git add $HASH/ site.json && git commit && git push"
 echo ""
-echo "✅ Hash folder created successfully!"
-echo ""
-echo "📌 Next steps:"
-echo "   1. Verify hash_config.json has correct entry"
-echo "   2. Update GDEDSE/index.html HASH_MAPPINGS to include:"
-echo "      '$FOLDER_NAME': '$HASH',"
-echo "   3. Create the original folder: $FOLDER_NAME/"
-echo "   4. Add HTML files to $FOLDER_NAME/"
-echo "   5. Test the new hash URL:"
-echo "      https://chriskilee.github.io/gemini_html/$HASH/"
-echo ""
-echo "🔗 Share this link to give access to $FOLDER_NAME only!"
