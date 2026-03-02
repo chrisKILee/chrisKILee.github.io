@@ -136,41 +136,58 @@
                 if (!resp.ok) throw new Error('Failed to load content');
                 const html = await resp.text();
 
-                // Parse HTML to extract body content, scripts, and styles
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
 
-                // Clear container
                 container.innerHTML = '';
 
-                // Inject Styles
+                // Inject <link> tags (fonts, external CSS)
+                doc.querySelectorAll('head link[rel="stylesheet"], head link[rel="preconnect"]').forEach(l => {
+                    if (!document.querySelector(`link[href="${l.href}"]`)) {
+                        const newLink = l.cloneNode();
+                        document.head.appendChild(newLink);
+                    }
+                });
+
+                // Inject <style> blocks
                 doc.querySelectorAll('style').forEach(s => {
                     const newStyle = document.createElement('style');
                     newStyle.textContent = s.textContent;
                     container.appendChild(newStyle);
                 });
 
-                // Inject Body Content
-                const bodyContent = doc.body.innerHTML;
+                // Inject body content
                 const bodyDiv = document.createElement('div');
-                bodyDiv.innerHTML = bodyContent;
+                bodyDiv.innerHTML = doc.body.innerHTML;
                 container.appendChild(bodyDiv);
 
-                // Inject and Execute Scripts
+                // Collect scripts: external first, then inline
+                const extSrcs = [];
+                const inlineCodes = [];
                 doc.querySelectorAll('script').forEach(s => {
-                    const newScript = document.createElement('script');
-                    if (s.src) {
-                        newScript.src = s.src;
-                    } else {
-                        newScript.textContent = s.textContent;
-                    }
-                    document.body.appendChild(newScript);
+                    if (s.src) extSrcs.push(s.src);
+                    else if (s.textContent.trim()) inlineCodes.push(s.textContent);
                 });
 
-                // Apply Global Font Override
-                const globalStyle = document.createElement('style');
-                globalStyle.textContent = "@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap'); * { font-family: 'Inter', sans-serif !important; }";
-                container.appendChild(globalStyle);
+                // Load external scripts sequentially (skip if already loaded)
+                for (const src of extSrcs) {
+                    if (!document.querySelector(`script[src="${src}"]`)) {
+                        await new Promise(resolve => {
+                            const ns = document.createElement('script');
+                            ns.src = src;
+                            ns.onload = resolve;
+                            ns.onerror = resolve;
+                            document.body.appendChild(ns);
+                        });
+                    }
+                }
+
+                // Execute inline scripts after all external scripts are ready
+                inlineCodes.forEach(code => {
+                    const ns = document.createElement('script');
+                    ns.textContent = code;
+                    document.body.appendChild(ns);
+                });
 
             } catch (e) {
                 container.innerHTML = `<div style="padding:100px; text-align:center; color:#ef4444;"><h1>Error Loading Content</h1><p>${e.message}</p></div>`;
