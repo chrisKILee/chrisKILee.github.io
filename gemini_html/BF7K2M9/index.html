@@ -212,113 +212,118 @@
         <div id="contentFrame"></div>
     </div>
 
-    <script>
+        <script>
         const SECRET_LIST_HASH = 'w-work-auth-88';
-        const CONFIG_PATH = './files.json';
-        const CONTENT_BASE_PATH = './';
-
-        let filesData = [];
-        let folderConfig = {};
+        const CATEGORY_HASH = 'BF7K2M9';
+        let filesData = []; // [{hash, filename, displayName}]
 
         async function init() {
             try {
-                const resp = await fetch(`${CONFIG_PATH}?v=${new Date().getTime()}`);
-                if (!resp.ok) throw new Error('Config Not Found');
-                folderConfig = await resp.json();
-
-                const order = folderConfig._order || [];
-                filesData = order.map(name => ({ name, type: 'file' }));
-
-                document.getElementById('totalFiles').innerText = filesData.length;
-                renderGrid();
-                checkHash();
-            } catch (e) {
-                console.error(e);
-                showStealth404();
-            }
+                const resp = await fetch(`../site.json?v=${Date.now()}`);
+                const site = await resp.json();
+                filesData = Object.entries(site.files || {})
+                    .filter(([, f]) => f.categoryHash === CATEGORY_HASH && f.visible !== false)
+                    .sort((a, b) => (a[1].order || 999) - (b[1].order || 999))
+                    .map(([hash, f]) => ({ hash, filename: f.filename, displayName: f.displayName }));
+                renderGrid(); checkHash();
+            } catch (e) { showStealth404(); }
         }
 
         function renderGrid() {
             const container = document.getElementById('filesContainer');
-            const icons = ['briefcase', 'folder-open', 'chart-line', 'file-invoice', 'laptop-code', 'shield-alt'];
-
-            container.innerHTML = filesData.map((file, idx) => {
-                const displayName = folderConfig[file.name] || file.name.replace('.html', '');
-                const hashName = file.name.replace(/\.[^/.]+$/, "");
-                const ext = file.name.split('.').pop().toUpperCase();
-                return `
-                    <div class="file-card" onclick="window.location.hash='${hashName}'">
-                        <div class="file-icon"><i class="fas fa-${icons[idx % icons.length]}"></i></div>
-                        <div class="file-name">${displayName}</div>
-                        <div class="file-meta">
-                            <span>Business Unit</span>
-                            <span class="file-badge">${ext}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            container.innerHTML = filesData.map(file => `
+                <div class="file-card" onclick="window.location.hash='${file.hash}'">
+                    <div class="file-icon"><i class="fas fa-leaf"></i></div>
+                    <div class="file-name">${file.displayName}</div>
+                </div>`).join('');
         }
 
         function checkHash() {
             const hash = decodeURIComponent(window.location.hash.substring(1));
             if (!hash) return showStealth404();
-
-            if (hash === SECRET_LIST_HASH) {
-                toggleView('list');
-            } else {
-                const file = filesData.find(f => f.name.replace(/\.[^/.]+$/, "") === hash);
-                if (file) {
-                    toggleView('content');
-                    loadContent(file.name);
-                } else {
-                    showStealth404();
-                }
+            if (hash === SECRET_LIST_HASH) toggleView('list');
+            else {
+                const file = filesData.find(f => f.hash === hash);
+                if (file) { toggleView('content'); loadContent(file); } else showStealth404();
             }
         }
 
         function toggleView(view) {
             document.getElementById('fileListView').style.display = view === 'list' ? 'block' : 'none';
             document.getElementById('fileContentView').style.display = view === 'content' ? 'block' : 'none';
-            document.body.style.background = view === 'list' ? '#0F172A' : 'white';
         }
 
-        function loadContent(filename) {
-            const frame = document.getElementById('contentFrame');
-            frame.innerHTML = '';
-            const iframe = document.createElement('iframe');
-            iframe.src = `${CONTENT_BASE_PATH}${filename}?v=${new Date().getTime()}`;
-            iframe.onload = () => {
-                try {
-                    const doc = iframe.contentDocument || iframe.contentWindow.document;
-                    const style = doc.createElement('style');
-                    style.textContent = "@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap'); body { font-family: 'Inter', sans-serif !important; color: #1e293b; }";
-                    doc.head.appendChild(style);
-                } catch (e) { }
-            };
-            frame.appendChild(iframe);
-        }
+        async function loadContent(file) {
+            const container = document.getElementById('contentFrame');
+            container.innerHTML = '<div style="text-align:center; padding:100px; color:#059669; opacity:0.5;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
 
-        function showStealth404() {
-            document.body.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; font-family:sans-serif; color:#475569; background:#0F172A;">
-                <h1 style="font-size:10vw; opacity:0.05; color:white;">404</h1>
-                <p>The requested URL was not found on this server.</p>
-            </div>`;
-        }
+            try {
+                const resp = await fetch(`../contents/${file.hash}/${file.filename}?v=${Date.now()}`);
+                if (!resp.ok) throw new Error('Failed to load content');
+                const html = await resp.text();
 
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase();
-                document.querySelectorAll('.file-card').forEach(card => {
-                    const txt = card.innerText.toLowerCase();
-                    card.style.display = txt.includes(term) ? 'flex' : 'none';
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                container.innerHTML = '';
+
+                // Inject <link> tags (fonts, external CSS)
+                doc.querySelectorAll('head link[rel="stylesheet"], head link[rel="preconnect"]').forEach(l => {
+                    if (!document.querySelector(`link[href="${l.href}"]`)) {
+                        const newLink = l.cloneNode();
+                        document.head.appendChild(newLink);
+                    }
                 });
-            });
+
+                // Inject <style> blocks
+                doc.querySelectorAll('style').forEach(s => {
+                    const newStyle = document.createElement('style');
+                    newStyle.textContent = s.textContent;
+                    container.appendChild(newStyle);
+                });
+
+                // Inject body content
+                const bodyDiv = document.createElement('div');
+                bodyDiv.innerHTML = doc.body.innerHTML;
+                container.appendChild(bodyDiv);
+
+                // Collect scripts: external first, then inline
+                const extSrcs = [];
+                const inlineCodes = [];
+                doc.querySelectorAll('script').forEach(s => {
+                    if (s.src) extSrcs.push(s.src);
+                    else if (s.textContent.trim()) inlineCodes.push(s.textContent);
+                });
+
+                // Load external scripts sequentially
+                for (const src of extSrcs) {
+                    if (!document.querySelector(`script[src="${src}"]`)) {
+                        await new Promise(resolve => {
+                            const ns = document.createElement('script');
+                            ns.src = src;
+                            ns.onload = resolve;
+                            ns.onerror = resolve;
+                            document.body.appendChild(ns);
+                        });
+                    }
+                }
+
+                // Execute inline scripts
+                inlineCodes.forEach(code => {
+                    const ns = document.createElement('script');
+                    ns.textContent = code;
+                    document.body.appendChild(ns);
+                });
+
+            } catch (e) {
+                container.innerHTML = `<div style="padding:100px; text-align:center; color:#ef4444;"><h1>Error Loading Content</h1><p>${e.message}</p></div>`;
+            }
         }
 
-        window.addEventListener('hashchange', checkHash);
-        window.addEventListener('DOMContentLoaded', init);
+        function showStealth404() { document.body.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100vh; color:#94a3b8; background:#f8fafc;"><h1>404 Not Found</h1></div>`; }
+        window.addEventListener('hashchange', checkHash); window.addEventListener('DOMContentLoaded', init);
     </script>
+    <!-- Version: 2026-03-03 contents/ architecture -->
 </body>
 
 </html>

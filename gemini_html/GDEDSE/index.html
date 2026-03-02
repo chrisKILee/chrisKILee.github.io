@@ -381,6 +381,25 @@
     .loading { text-align: center; padding: 80px 0; color: var(--text-muted); }
     .empty-msg { color: #9ca3af; font-size: 0.82rem; padding: 8px 0; }
 
+    /* ===== HIDDEN FILE CARD ===== */
+    .file-card.is-hidden { opacity: 0.45; }
+    body:not(.admin-mode) .file-card.is-hidden { display: none; }
+
+    /* ===== DRAG & DROP ===== */
+    body.admin-mode .folder-block[draggable="true"] { cursor: grab; }
+    body.admin-mode .folder-block[draggable="true"]:active { cursor: grabbing; }
+    .folder-block.dragging { opacity: 0.35; pointer-events: none; }
+    .dir-body.drag-over {
+      outline: 2px dashed var(--accent);
+      outline-offset: 4px;
+      border-radius: 8px;
+      background: rgba(5, 150, 105, 0.04);
+    }
+    .unassigned-section.drag-over {
+      border-color: var(--accent);
+      background: rgba(5, 150, 105, 0.04);
+    }
+
     @media (max-width: 768px) {
       .hero h1 { font-size: 2rem; }
       .container { padding: 0 16px; }
@@ -539,14 +558,21 @@
           <div class="help-row">
             <div class="help-icon" style="font-size:0.7rem;padding:4px;">드롭<br>다운</div>
             <div class="help-text">
-              <strong>디렉토리 이동</strong>
+              <strong>디렉토리 이동 (드롭다운)</strong>
               <span>드롭다운에서 원하는 디렉토리를 선택하면 해당 폴더가 즉시 이동됩니다. <b>미분류</b>를 선택하면 어느 디렉토리에도 속하지 않습니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon yellow"><i class="fas fa-arrows-alt"></i></div>
+            <div class="help-text">
+              <strong>디렉토리 이동 (드래그앤드랍)</strong>
+              <span>폴더 카드를 직접 다른 디렉토리로 드래그하면 즉시 이동됩니다. 미분류 영역으로도 드래그할 수 있습니다.</span>
             </div>
           </div>
           <div class="help-row">
             <div class="help-icon"><i class="fas fa-eye"></i></div>
             <div class="help-text">
-              <strong>보이기 / 숨기기</strong>
+              <strong>폴더 보이기 / 숨기기</strong>
               <span>일반 방문자에게 이 폴더를 보여줄지 결정합니다. 해당 폴더의 모든 파일 카드가 함께 숨겨집니다.</span>
             </div>
           </div>
@@ -555,6 +581,18 @@
             <div class="help-text">
               <strong>새 탭에서 목록 열기</strong>
               <span>해당 폴더의 파일 목록 페이지를 새 탭으로 엽니다. 파일을 직접 관리할 때 사용합니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 파일 카드 컨트롤 -->
+        <div class="help-section">
+          <div class="help-section-title">📄 파일 카드 컨트롤 <span style="font-weight:400;font-size:0.8rem;">(카드 하단 오른쪽)</span></div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-eye"></i></div>
+            <div class="help-text">
+              <strong>파일 보이기 / 숨기기</strong>
+              <span>일반 방문자에게 개별 파일 카드를 보여줄지 결정합니다. 숨겨진 파일은 어드민 모드에서 반투명하게 표시됩니다. 설정은 <b>site.json</b>에 저장됩니다.</span>
             </div>
           </div>
         </div>
@@ -629,7 +667,6 @@
 
     let siteConfig = null;
     let isAdmin = false;
-    let folderContents = {};
 
     // =============================================
     // CONFIG MANAGEMENT
@@ -669,7 +706,6 @@
     async function resetToRemote() {
       if (!confirm('로컬 변경사항을 버리고 서버의 site.json으로 초기화할까요?')) return;
       localStorage.removeItem(STORAGE_KEY);
-      folderContents = {};
       try {
         const resp = await fetch(`${SITE_JSON_URL}?v=${Date.now()}`);
         if (!resp.ok) throw new Error('서버 응답 오류');
@@ -689,20 +725,6 @@
       const hash = decodeURIComponent(window.location.hash.slice(1));
       isAdmin = !!(siteConfig && hash === siteConfig.adminKey);
       document.body.classList.toggle('admin-mode', isAdmin);
-    }
-
-    // =============================================
-    // FETCH FOLDER CONTENTS
-    // =============================================
-    async function fetchFolderContents() {
-      const hashes = Object.keys(siteConfig.folders);
-      await Promise.all(hashes.map(async (hash) => {
-        if (folderContents[hash]) return;
-        try {
-          const resp = await fetch(`../${hash}/files.json?v=${Date.now()}`);
-          if (resp.ok) folderContents[hash] = await resp.json();
-        } catch (e) { /* folder may not exist */ }
-      }));
     }
 
     // =============================================
@@ -744,9 +766,7 @@
         .sort((a, b) => a[1].order - b[1].order);
 
       const totalDocs = folders.reduce((acc, [hash]) => {
-        const c = folderContents[hash];
-        if (!c) return acc;
-        return acc + getFileKeys(c).length;
+        return acc + getFilesForFolder(hash).filter(([, f]) => isAdmin || f.visible).length;
       }, 0);
 
       const adminControls = isAdmin ? `
@@ -788,10 +808,10 @@
     }
 
     function renderFolder(hash, cfg) {
-      const content = folderContents[hash];
       const displayName = cfg.displayName || hash;
       const secretHash = cfg.secretHash || '';
-      const fileKeys = content ? getFileKeys(content) : [];
+      const fileEntries = getFilesForFolder(hash);
+      const visibleEntries = isAdmin ? fileEntries : fileEntries.filter(([, f]) => f.visible);
 
       const dirOptions = siteConfig.directories
         .map(d => `<option value="${d.id}"${cfg.dirId === d.id ? ' selected' : ''}>${esc(d.name)}</option>`)
@@ -814,15 +834,15 @@
           <i class="fas fa-list"></i> 목록
         </a>`;
 
-      const cardsHtml = fileKeys.map(fileName => renderFileCard(hash, fileName, content[fileName])).join('');
+      const cardsHtml = fileEntries.map(([fileHash, fileCfg]) => renderFileCard(fileHash, fileCfg)).join('');
 
       return `
-        <div class="folder-block${!cfg.visible ? ' is-hidden' : ''}" data-hash="${hash}">
+        <div class="folder-block${!cfg.visible ? ' is-hidden' : ''}" data-hash="${hash}"${isAdmin ? ' draggable="true"' : ''}>
           <div class="folder-header">
             <div class="folder-name-group">
               <span class="folder-name">${esc(displayName)}</span>
               ${!cfg.visible ? '<span class="hidden-badge">숨김</span>' : ''}
-              <span class="folder-item-count">${fileKeys.length}</span>
+              <span class="folder-item-count">${visibleEntries.length}</span>
             </div>
             <div class="folder-actions">${adminControls}</div>
           </div>
@@ -832,22 +852,29 @@
         </div>`;
     }
 
-    function renderFileCard(hash, fileName, displayName) {
-      const fileNameNoExt = fileName.replace(/\.[^/.]+$/, '');
-      const linkUrl = `../${hash}/#${fileNameNoExt}`;
-      const name = esc(displayName || fileNameNoExt);
-      const ext = fileName.split('.').pop().toUpperCase();
-      const searchData = `${(displayName || '').toLowerCase()} ${fileName.toLowerCase()}`;
+    function renderFileCard(fileHash, fileCfg) {
+      const filename = fileCfg.filename;
+      const displayName = fileCfg.displayName || filename.replace(/\.[^/.]+$/, '');
+      const isHidden = !fileCfg.visible;
+      const linkUrl = `../contents/${fileHash}/${filename}`;
+      const ext = filename.split('.').pop().toUpperCase();
+      const searchData = `${displayName.toLowerCase()} ${filename.toLowerCase()}`;
+
+      const adminVisBtn = isAdmin ? `
+            <button class="action-btn${isHidden ? ' is-active' : ''}"
+                    onclick="event.stopPropagation(); toggleFileVisibility('${fileHash}')"
+                    title="${isHidden ? '표시하기' : '숨기기'}">
+              <i class="fas fa-eye${isHidden ? '-slash' : ''}"></i>
+            </button>` : '';
 
       return `
-        <div class="file-card"
+        <div class="file-card${isHidden ? ' is-hidden' : ''}"
              onclick="location.href='${linkUrl}'"
              data-link="${linkUrl}"
-             data-hash="${hash}"
-             data-slug="${fileNameNoExt}"
-             data-search="${searchData}">
+             data-file-hash="${fileHash}"
+             data-search="${esc(searchData)}">
           <div class="file-type-badge">${ext}</div>
-          <div class="file-title">${name}</div>
+          <div class="file-title">${esc(displayName)}</div>
           <div class="card-actions">
             <button class="action-btn primary" onclick="event.stopPropagation(); location.href='${linkUrl}'">
               <i class="fas fa-arrow-right"></i> 열기
@@ -855,6 +882,7 @@
             <button class="action-btn" onclick="event.stopPropagation(); copyCardLink(this)">
               <i class="fas fa-link"></i> 링크
             </button>
+            ${adminVisBtn}
           </div>
         </div>`;
     }
@@ -887,12 +915,20 @@
     // =============================================
     // HELPERS
     // =============================================
-    function getFileKeys(content) {
-      if (!content) return [];
-      const keys = content._order
-        ? content._order.filter(k => content[k] !== undefined && !k.startsWith('_'))
-        : Object.keys(content).filter(k => !k.startsWith('_'));
-      return keys;
+    function getFilesForFolder(folderHash) {
+      if (!siteConfig.files) return [];
+      return Object.entries(siteConfig.files)
+        .filter(([, f]) => f.categoryHash === folderHash)
+        .sort((a, b) => (a[1].order || 999) - (b[1].order || 999));
+    }
+
+    function toggleFileVisibility(fileHash) {
+      const f = siteConfig.files && siteConfig.files[fileHash];
+      if (!f) return;
+      f.visible = !f.visible;
+      persistConfig();
+      render();
+      showToast(f.visible ? '✅ 파일 표시됨' : '🙈 파일 숨김');
     }
 
     function esc(str) {
@@ -1095,6 +1131,8 @@
         const term = newInput.value.toLowerCase().trim();
 
         document.querySelectorAll('.file-card').forEach(c => {
+          const hiddenCard = !isAdmin && c.classList.contains('is-hidden');
+          if (hiddenCard) { c.style.display = 'none'; return; }
           c.style.display = (!term || (c.dataset.search || '').includes(term)) ? '' : 'none';
         });
 
@@ -1111,19 +1149,88 @@
     }
 
     // =============================================
+    // DRAG & DROP (folder → directory)
+    // =============================================
+    function initDragAndDrop() {
+      let draggedHash = null;
+
+      document.addEventListener('dragstart', e => {
+        if (!isAdmin) return;
+        const fb = e.target.closest('.folder-block[draggable="true"]');
+        if (!fb) return;
+        draggedHash = fb.dataset.hash;
+        fb.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', draggedHash);
+      });
+
+      document.addEventListener('dragend', () => {
+        document.querySelectorAll('.folder-block.dragging').forEach(el => el.classList.remove('dragging'));
+        document.querySelectorAll('.dir-body.drag-over, .unassigned-section.drag-over').forEach(el => el.classList.remove('drag-over'));
+        draggedHash = null;
+      });
+
+      document.addEventListener('dragover', e => {
+        if (!draggedHash) return;
+        const target = e.target.closest('.dir-body') || e.target.closest('.unassigned-section');
+        if (!target) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        document.querySelectorAll('.dir-body.drag-over, .unassigned-section.drag-over').forEach(el => el.classList.remove('drag-over'));
+        target.classList.add('drag-over');
+      });
+
+      document.addEventListener('drop', e => {
+        if (!draggedHash) return;
+        e.preventDefault();
+
+        const unassignedEl = e.target.closest('.unassigned-section');
+        const dirSectionEl = e.target.closest('.directory-section');
+
+        let targetDirId = null;
+        let targetName = '미분류';
+
+        if (unassignedEl) {
+          targetDirId = null;
+          targetName = '미분류';
+        } else if (dirSectionEl) {
+          targetDirId = dirSectionEl.dataset.dirId;
+          targetName = siteConfig.directories.find(d => d.id === targetDirId)?.name || '';
+        } else {
+          document.querySelectorAll('.dir-body.drag-over, .unassigned-section.drag-over').forEach(el => el.classList.remove('drag-over'));
+          draggedHash = null;
+          return;
+        }
+
+        const folderCfg = siteConfig.folders[draggedHash];
+        if (folderCfg && folderCfg.dirId !== targetDirId) {
+          folderCfg.dirId = targetDirId;
+          persistConfig();
+          render();
+          showToast(`📁 "${siteConfig.folders[draggedHash]?.displayName || draggedHash}" → ${targetName}`);
+        }
+
+        document.querySelectorAll('.dir-body.drag-over, .unassigned-section.drag-over').forEach(el => el.classList.remove('drag-over'));
+        draggedHash = null;
+      });
+    }
+
+    // =============================================
     // UTILITIES
     // =============================================
     function updateStats() {
-      document.getElementById('totalDocs').textContent =
-        document.querySelectorAll('.file-card').length;
+      const files = Object.values(siteConfig.files || {});
+      const count = isAdmin ? files.length : files.filter(f => f.visible).length;
+      document.getElementById('totalDocs').textContent = count;
     }
 
     function copyCardLink(btn) {
       const card = btn.closest('.file-card');
-      const hash = card.dataset.hash;
-      const slug = card.dataset.slug;
+      const fileHash = card.dataset.fileHash;
+      const fileCfg = siteConfig.files && siteConfig.files[fileHash];
+      if (!fileCfg) return;
       const base = location.href.split('/GDEDSE/')[0];
-      doCopy(`${base}/${hash}/#${slug}`);
+      doCopy(`${base}/contents/${fileHash}/${fileCfg.filename}`);
     }
 
     function doCopy(text) {
@@ -1156,8 +1263,8 @@
       try {
         await loadConfig();
         checkAdminMode();
-        await fetchFolderContents();
         render();
+        initDragAndDrop();
       } catch (e) {
         document.getElementById('contentArea').innerHTML = `
           <div class="loading">
@@ -1172,7 +1279,7 @@
     window.addEventListener('hashchange', () => { checkAdminMode(); render(); });
     window.addEventListener('DOMContentLoaded', init);
   </script>
-  <!-- Version: 2026-03-02 Virtual Directory System v3.0 -->
+  <!-- Version: 2026-03-02 Virtual Directory System v3.1 – file visibility, drag-and-drop -->
 </body>
 
 </html>
