@@ -102,8 +102,79 @@
     .nav-btn-primary:hover { background: #333; }
     .nav-btn-ghost { background: transparent; color: var(--admin-accent); border: 1px solid var(--admin-accent); }
     .nav-btn-ghost:hover { background: #fee2e2; }
+    .nav-btn-help { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+    .nav-btn-help:hover { background: #f3f4f6; color: var(--text); }
 
     body.admin-mode .nav-btn { display: inline-flex; }
+
+    /* ===== HELP MODAL ===== */
+    #helpModal { z-index: 600; }
+    .help-modal {
+      background: white; border-radius: 20px;
+      max-width: 640px; width: 94%;
+      max-height: 88vh; overflow-y: auto;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+    }
+    .help-header {
+      padding: 24px 28px 0;
+      position: sticky; top: 0; background: white;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px; margin-bottom: 0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .help-header h2 { font-size: 1.1rem; font-weight: 700; }
+    .help-close {
+      background: #f3f4f6; border: none; width: 32px; height: 32px;
+      border-radius: 50%; cursor: pointer; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); transition: all 0.15s; flex-shrink: 0;
+    }
+    .help-close:hover { background: #e5e7eb; color: var(--text); }
+    .help-body { padding: 20px 28px 28px; }
+    .help-section { margin-bottom: 24px; }
+    .help-section:last-child { margin-bottom: 0; }
+    .help-section-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-muted);
+      margin-bottom: 12px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .help-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 8px 0; border-bottom: 1px solid #f9fafb;
+    }
+    .help-row:last-child { border-bottom: none; }
+    .help-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: #f3f4f6; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0;
+    }
+    .help-icon.red { background: #fee2e2; border-color: #fecaca; color: var(--admin-accent); }
+    .help-icon.green { background: #d1fae5; border-color: #a7f3d0; color: var(--accent); }
+    .help-icon.blue { background: #dbeafe; border-color: #bfdbfe; color: #2563eb; }
+    .help-icon.yellow { background: #fef3c7; border-color: #fde68a; color: #d97706; }
+    .help-text { flex: 1; }
+    .help-text strong { font-size: 0.88rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 2px; }
+    .help-text span { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+    .help-flow {
+      background: #f9fafb; border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px;
+      font-size: 0.82rem; color: var(--text-muted); line-height: 2;
+    }
+    .help-flow b { color: var(--text); }
+    .help-flow .arrow { color: #9ca3af; margin: 0 4px; }
+    .help-callout {
+      background: #fffbeb; border: 1px solid #fde68a;
+      border-radius: 10px; padding: 12px 14px;
+      font-size: 0.82rem; color: #92400e; line-height: 1.6;
+    }
+    .help-kbd {
+      background: #f3f4f6; border: 1px solid #d1d5db;
+      border-bottom: 2px solid #d1d5db; border-radius: 4px;
+      padding: 1px 7px; font-size: 0.78rem; font-family: monospace;
+      color: var(--text); white-space: nowrap;
+    }
 
     /* ===== HERO ===== */
     .hero { padding: 56px 0 36px; text-align: center; }
@@ -329,6 +400,9 @@
         <div class="navbar-right">
           <span class="stats-badge"><span id="totalDocs">0</span> documents</span>
           <span class="admin-badge"><i class="fas fa-shield-alt"></i> ADMIN MODE</span>
+          <button class="nav-btn nav-btn-help" onclick="openHelp()">
+            <i class="fas fa-question-circle"></i> 도움말
+          </button>
           <button class="nav-btn nav-btn-ghost" onclick="resetToRemote()">
             <i class="fas fa-undo"></i> Reset
           </button>
@@ -363,6 +437,175 @@
 
   <!-- TOAST -->
   <div id="toast" class="toast"></div>
+
+  <!-- HELP MODAL -->
+  <div id="helpModal" class="modal-overlay">
+    <div class="help-modal">
+      <div class="help-header">
+        <h2>⚙️ 어드민 모드 사용 가이드</h2>
+        <button class="help-close" onclick="closeHelp()">✕</button>
+      </div>
+      <div class="help-body">
+
+        <!-- 진입/종료 -->
+        <div class="help-section">
+          <div class="help-section-title">🔑 어드민 모드 진입 · 종료</div>
+          <div class="help-flow">
+            <b>진입:</b> URL 끝에 <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:0.8rem;">#gdedse-adm-2026</code> 추가<br>
+            <b>종료:</b> URL에서 # 이하 삭제 후 Enter <span class="arrow">→</span> 일반 뷰로 전환
+          </div>
+          <div style="margin-top:10px;" class="help-callout">
+            💡 어드민 모드에서는 상단에 빨간 줄과 <b>ADMIN MODE</b> 뱃지가 표시됩니다.<br>
+            모든 변경사항은 <b>이 브라우저에 자동 저장</b>됩니다. 별도 저장 버튼이 없습니다.
+          </div>
+        </div>
+
+        <!-- 상단 버튼 -->
+        <div class="help-section">
+          <div class="help-section-title">🔧 상단 버튼</div>
+          <div class="help-row">
+            <div class="help-icon blue"><i class="fas fa-question-circle"></i></div>
+            <div class="help-text">
+              <strong>도움말</strong>
+              <span>지금 보고 있는 이 화면을 엽니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon red"><i class="fas fa-undo"></i></div>
+            <div class="help-text">
+              <strong>Reset</strong>
+              <span>브라우저에 저장된 로컬 변경사항을 모두 취소하고, 서버의 <code style="font-size:0.78rem;background:#f3f4f6;padding:1px 5px;border-radius:3px;">site.json</code>으로 원상복구합니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon green"><i class="fas fa-download"></i></div>
+            <div class="help-text">
+              <strong>Export site.json</strong>
+              <span>현재 설정을 파일로 다운로드합니다. 이 파일을 <code style="font-size:0.78rem;background:#f3f4f6;padding:1px 5px;border-radius:3px;">gemini_html/</code> 폴더에 덮어쓴 뒤 git commit하면 모든 기기에 영구 적용됩니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 디렉토리 컨트롤 -->
+        <div class="help-section">
+          <div class="help-section-title">📁 디렉토리 컨트롤 <span style="font-weight:400;font-size:0.8rem;">(각 디렉토리 헤더 오른쪽)</span></div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-chevron-down"></i></div>
+            <div class="help-text">
+              <strong>접기 / 펴기</strong>
+              <span>디렉토리 이름 왼쪽의 화살표 버튼입니다. 클릭하면 하위 폴더가 접히거나 펼쳐집니다. 어드민/일반 모드 모두 동작합니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-edit"></i></div>
+            <div class="help-text">
+              <strong>이름 변경</strong>
+              <span>디렉토리 제목을 수정합니다. 클릭하면 입력창이 열리고, 새 이름을 입력 후 <span class="help-kbd">Enter</span> 또는 확인 버튼을 누르면 즉시 반영됩니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-eye"></i></div>
+            <div class="help-text">
+              <strong>보이기 / 숨기기</strong>
+              <span>일반 방문자에게 이 디렉토리를 보여줄지 결정합니다. 숨기면 반투명하게 표시되고 <b>숨김</b> 뱃지가 붙습니다. 어드민 모드에서는 항상 보입니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-arrow-up"></i></div>
+            <div class="help-text">
+              <strong>위로 이동</strong>
+              <span>이 디렉토리를 목록에서 한 칸 위로 올립니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-arrow-down"></i></div>
+            <div class="help-text">
+              <strong>아래로 이동</strong>
+              <span>이 디렉토리를 목록에서 한 칸 아래로 내립니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon red"><i class="fas fa-trash"></i></div>
+            <div class="help-text">
+              <strong>디렉토리 삭제</strong>
+              <span>이 디렉토리를 삭제합니다. 안에 있던 폴더들은 삭제되지 않고 <b>미분류</b> 영역으로 이동됩니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 폴더 컨트롤 -->
+        <div class="help-section">
+          <div class="help-section-title">🗂 폴더 컨트롤 <span style="font-weight:400;font-size:0.8rem;">(각 폴더 오른쪽)</span></div>
+          <div class="help-row">
+            <div class="help-icon" style="font-size:0.7rem;padding:4px;">드롭<br>다운</div>
+            <div class="help-text">
+              <strong>디렉토리 이동</strong>
+              <span>드롭다운에서 원하는 디렉토리를 선택하면 해당 폴더가 즉시 이동됩니다. <b>미분류</b>를 선택하면 어느 디렉토리에도 속하지 않습니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-eye"></i></div>
+            <div class="help-text">
+              <strong>보이기 / 숨기기</strong>
+              <span>일반 방문자에게 이 폴더를 보여줄지 결정합니다. 해당 폴더의 모든 파일 카드가 함께 숨겨집니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon blue"><i class="fas fa-external-link-alt"></i></div>
+            <div class="help-text">
+              <strong>새 탭에서 목록 열기</strong>
+              <span>해당 폴더의 파일 목록 페이지를 새 탭으로 엽니다. 파일을 직접 관리할 때 사용합니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 추가 버튼 -->
+        <div class="help-section">
+          <div class="help-section-title">➕ 추가 버튼</div>
+          <div class="help-row">
+            <div class="help-icon green"><i class="fas fa-folder-plus"></i></div>
+            <div class="help-text">
+              <strong>폴더 배정 (각 디렉토리 하단)</strong>
+              <span>다른 디렉토리에 있거나 미분류인 폴더를 선택해 이 디렉토리로 가져옵니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon green"><i class="fas fa-plus"></i></div>
+            <div class="help-text">
+              <strong>새 디렉토리 추가 (맨 아래)</strong>
+              <span>새로운 디렉토리 그룹을 만듭니다. 이름을 입력하면 빈 디렉토리가 추가됩니다. 이후 폴더 배정으로 폴더를 넣으세요.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 미분류 영역 -->
+        <div class="help-section">
+          <div class="help-section-title">🗂 미분류 폴더 영역</div>
+          <div class="help-callout">
+            어드민 모드에서만 보이는 영역입니다. 어떤 디렉토리에도 속하지 않은 폴더들이 여기에 모입니다.<br>
+            드롭다운으로 디렉토리를 선택하면 즉시 배정됩니다.
+          </div>
+        </div>
+
+        <!-- 저장 흐름 -->
+        <div class="help-section">
+          <div class="help-section-title">💾 변경사항 저장 흐름</div>
+          <div class="help-flow">
+            <b>1.</b> 어드민 모드에서 변경<br>
+            <span class="arrow">→</span> <b>2.</b> 브라우저 localStorage에 자동 저장 (즉시, 새로고침해도 유지)<br>
+            <span class="arrow">→</span> <b>3.</b> <b>Export site.json</b> 클릭 → 파일 다운로드<br>
+            <span class="arrow">→</span> <b>4.</b> 다운로드된 파일을 <code style="background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:0.8rem;">gemini_html/site.json</code>에 덮어쓰기<br>
+            <span class="arrow">→</span> <b>5.</b> git commit &amp; push → GitHub Pages 배포 (약 30~60초)
+          </div>
+          <div style="margin-top:10px;" class="help-callout">
+            ⚠️ Export → git commit을 하지 않으면 <b>이 브라우저에서만</b> 변경사항이 유지됩니다.<br>
+            다른 기기나 브라우저에서는 이전 설정이 보입니다.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL -->
   <div id="modal" class="modal-overlay">
@@ -777,6 +1020,19 @@
     }
 
     // =============================================
+    // HELP MODAL
+    // =============================================
+    function openHelp() {
+      document.getElementById('helpModal').classList.add('show');
+    }
+    function closeHelp() {
+      document.getElementById('helpModal').classList.remove('show');
+    }
+    document.getElementById('helpModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('helpModal')) closeHelp();
+    });
+
+    // =============================================
     // MODAL
     // =============================================
     let _modalCb = null;
@@ -819,9 +1075,11 @@
     }
 
     document.addEventListener('keydown', e => {
-      const modalOpen = document.getElementById('modal').classList.contains('show');
-      if (e.key === 'Escape' && modalOpen) closeModal();
-      if (e.key === 'Enter' && modalOpen) confirmModal();
+      if (e.key === 'Escape') {
+        if (document.getElementById('helpModal').classList.contains('show')) { closeHelp(); return; }
+        if (document.getElementById('modal').classList.contains('show')) closeModal();
+      }
+      if (e.key === 'Enter' && document.getElementById('modal').classList.contains('show')) confirmModal();
     });
 
     // =============================================
