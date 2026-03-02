@@ -2,381 +2,919 @@
 <html lang="ko">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archive</title>
-    <!-- Google Fonts: Inter (Sans) only as per request -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --text-muted: #6b7280;
+      --accent: #059669;
+      --border: #e5e7eb;
+      --card-bg: #ffffff;
+      --admin-accent: #dc2626;
+      --font: 'Inter', sans-serif;
+    }
 
-    <!-- Config Loading: Handled dynamically by gdedse_main.js via runtime fetch -->
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <style>
-        :root {
-            --bg-color: #ffffff;
-            --text-primary: #191919;
-            --text-secondary: #757575;
-            --accent-color: #1a8917;
-            /* Medium Green - keeping as accent but subtle */
-            --border-color: #e0e0e0;
-            --font-main: 'Inter', sans-serif;
-            /* Unified font */
-        }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    body.admin-mode { border-top: 3px solid var(--admin-accent); }
 
-        body {
-            font-family: var(--font-main);
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-        }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
-        /* Layout */
-        .container {
-            max-width: 1200px;
-            /* Wider for grid */
-            margin: 0 auto;
-            padding: 0 24px;
-        }
+    /* ===== NAVBAR ===== */
+    .navbar {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+    }
 
-        /* Header */
-        .navbar {
-            padding: 20px 0;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .navbar .inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
 
-        .logo {
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: var(--text-primary);
-            text-decoration: none;
-            letter-spacing: -0.02em;
-        }
+    .logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
 
-        .stats-summary {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-        .stats-summary strong {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
+    .stats-badge { font-size: 0.85rem; color: var(--text-muted); }
 
-        /* Hero / Title Section */
-        .hero {
-            margin: 60px 0 40px;
-            text-align: center;
-        }
+    .admin-badge {
+      display: none;
+      background: var(--admin-accent);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
+      align-items: center;
+      gap: 5px;
+    }
 
-        .hero h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-            color: #000;
-            letter-spacing: -0.03em;
-        }
+    body.admin-mode .admin-badge { display: inline-flex; }
 
-        .hero p {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            font-weight: 400;
-        }
+    .nav-btn {
+      display: none;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
 
-        /* Search */
-        .search-container {
-            margin-bottom: 60px;
-            position: relative;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+    .nav-btn-primary { background: #111; color: white; }
+    .nav-btn-primary:hover { background: #333; }
+    .nav-btn-ghost { background: transparent; color: var(--admin-accent); border: 1px solid var(--admin-accent); }
+    .nav-btn-ghost:hover { background: #fee2e2; }
 
-        .search-input {
-            width: 100%;
-            padding: 14px 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 50px;
-            /* Pill shape */
-            font-size: 1rem;
-            font-family: var(--font-main);
-            color: var(--text-primary);
-            outline: none;
-            transition: all 0.3s;
-            background: #f9f9f9;
-        }
+    body.admin-mode .nav-btn { display: inline-flex; }
 
-        .search-input:focus {
-            border-color: var(--text-primary);
-            background: #fff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
+    /* ===== HERO ===== */
+    .hero { padding: 56px 0 36px; text-align: center; }
+    .hero h1 {
+      font-size: 2.75rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 10px;
+    }
+    .hero p { color: var(--text-muted); font-size: 1rem; }
 
-        .search-input::placeholder {
-            color: #b3b3b3;
-        }
+    /* ===== SEARCH ===== */
+    .search-wrap { margin: 0 auto 48px; max-width: 540px; position: relative; }
+    .search-input {
+      width: 100%;
+      padding: 12px 18px 12px 44px;
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-family: var(--font);
+      background: #f9fafb;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .search-input:focus { border-color: #9ca3af; background: #fff; box-shadow: 0 0 0 3px rgba(0,0,0,0.04); }
+    .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
-        .search-icon {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            pointer-events: none;
-        }
+    /* ===== DIRECTORY ===== */
+    .directory-section { margin-bottom: 60px; }
+    .directory-section.is-hidden { opacity: 0.45; }
 
-        /* Folders & Files */
-        .folder-section {
-            margin-bottom: 80px;
-        }
+    .dir-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--text);
+      margin-bottom: 20px;
+      gap: 10px;
+    }
 
-        .folder-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
+    .dir-title-group { display: flex; align-items: center; gap: 9px; min-width: 0; }
 
-        .folder-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .collapse-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); padding: 3px 6px; border-radius: 4px;
+      transition: color 0.2s; flex-shrink: 0;
+    }
+    .collapse-btn:hover { color: var(--text); }
 
-        .folder-title::before {
-            content: '';
-            display: block;
-            width: 4px;
-            height: 24px;
-            background: var(--text-primary);
-            border-radius: 2px;
-        }
+    .dir-name { font-size: 1.05rem; font-weight: 700; }
+    .dir-count { font-size: 0.75rem; color: var(--text-muted); background: #f3f4f6; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+    .hidden-badge { font-size: 0.68rem; background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
 
-        .folder-count {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
+    .dir-body { transition: height 0.25s ease; overflow: hidden; }
+    .dir-body.collapsed { display: none; }
 
-        .copy-link-btn {
-            background: #f5f5f5;
-            border: 1px solid transparent;
-            cursor: pointer;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            padding: 6px 12px;
-            border-radius: 6px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+    /* ===== ADMIN CONTROLS ===== */
+    .admin-controls {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    body.admin-mode .admin-controls { display: flex; }
 
-        .copy-link-btn:hover {
-            background: #e0e0e0;
-            color: var(--text-primary);
-        }
+    .admin-btn {
+      background: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      transition: all 0.15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-family: var(--font);
+      white-space: nowrap;
+    }
+    .admin-btn:hover { background: #f3f4f6; color: var(--text); border-color: var(--border); }
+    .admin-btn.is-active { color: var(--accent); }
+    .admin-btn.danger:hover { background: #fee2e2; color: var(--admin-accent); border-color: #fecaca; }
 
-        /* File Grid (Card Layout) */
-        .file-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 24px;
-        }
+    .dir-select {
+      font-size: 0.78rem;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: white;
+      color: var(--text);
+      cursor: pointer;
+      font-family: var(--font);
+      max-width: 140px;
+    }
 
-        .file-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            top: 0;
-        }
+    /* ===== FOLDER ===== */
+    .folder-block { margin-bottom: 28px; }
+    .folder-block.is-hidden { opacity: 0.45; }
 
-        .file-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-            border-color: var(--text-primary);
-        }
+    .folder-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 10px; }
+    .folder-name-group { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .folder-name { font-size: 0.92rem; font-weight: 600; }
+    .folder-item-count { font-size: 0.72rem; color: var(--text-muted); background: #f3f4f6; padding: 2px 7px; border-radius: 10px; }
+    .folder-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
-        .file-card .file-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .view-list-btn {
+      font-size: 0.78rem; color: var(--text-muted); text-decoration: none;
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px; transition: all 0.15s;
+    }
+    .view-list-btn:hover { background: #f3f4f6; color: var(--text); }
 
-        .card-actions {
-            display: flex;
-            gap: 8px;
-        }
+    /* ===== FILE GRID ===== */
+    .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
 
-        .action-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 4px;
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
+    .file-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+    .file-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: #d1d5db; }
 
-        .action-btn:hover {
-            color: var(--accent-color);
-        }
+    .file-type-badge { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 9px; }
+    .file-title { font-size: 0.95rem; font-weight: 600; line-height: 1.45; color: var(--text); flex-grow: 1; margin-bottom: 12px; }
 
-        .file-meta {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-        }
+    .card-actions { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border); margin-top: auto; }
+    .action-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.78rem; padding: 3px; transition: color 0.15s; display: inline-flex; align-items: center; gap: 4px; font-family: var(--font); }
+    .action-btn.primary { color: var(--accent); font-weight: 600; }
+    .action-btn:hover { color: var(--text); }
 
-        .file-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            line-height: 1.4;
-            color: var(--text-primary);
-        }
+    /* ===== ADD BUTTONS (admin only) ===== */
+    .add-folder-btn, .add-dir-btn {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: 2px dashed #d1d5db;
+      color: var(--text-muted);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all 0.2s;
+      margin: 12px 0;
+      width: 100%;
+      justify-content: center;
+    }
+    .add-folder-btn:hover, .add-dir-btn:hover { border-color: #9ca3af; color: var(--text); background: #f9fafb; }
+    body.admin-mode .add-folder-btn,
+    body.admin-mode .add-dir-btn { display: flex; }
 
-        .file-desc {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            flex-grow: 1;
-        }
+    /* ===== UNASSIGNED (admin) ===== */
+    .unassigned-section {
+      display: none;
+      margin-bottom: 40px;
+      padding: 18px 20px;
+      border: 2px dashed #e5e7eb;
+      border-radius: 12px;
+      background: #fafafa;
+    }
+    body.admin-mode .unassigned-section { display: block; }
+    .unassigned-section h3 { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; }
+    .unassigned-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .unassigned-tag { background: white; border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 8px; }
 
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            /* Bottom center is often better for toast */
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: #191919;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            opacity: 0;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            pointer-events: none;
-            z-index: 2000;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    /* ===== MODAL ===== */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 500; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: white; border-radius: 16px; padding: 28px; max-width: 440px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; }
+    .modal-field {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.92rem; font-family: var(--font);
+      outline: none; margin-bottom: 14px; color: var(--text);
+    }
+    .modal-field:focus { border-color: #9ca3af; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .btn-primary { background: var(--text); color: white; border: none; padding: 9px 18px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: var(--font); }
+    .btn-primary:hover { background: #333; }
+    .btn-secondary { background: #f3f4f6; color: var(--text); border: none; padding: 9px 18px; border-radius: 8px; font-size: 0.88rem; cursor: pointer; font-family: var(--font); }
+    .btn-secondary:hover { background: #e5e7eb; }
 
-        .toast::before {
-            content: '\f00c';
-            /* Check icon */
-            font-family: 'Font Awesome 5 Free';
-            font-weight: 900;
-            color: #4caf50;
-        }
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(14px);
+      background: #1f2937; color: white;
+      padding: 10px 18px; border-radius: 8px;
+      font-size: 0.88rem; opacity: 0; pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      z-index: 1000; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
+    .loading { text-align: center; padding: 80px 0; color: var(--text-muted); }
+    .empty-msg { color: #9ca3af; font-size: 0.82rem; padding: 8px 0; }
 
-        .loading {
-            text-align: center;
-            padding: 60px;
-            color: var(--text-secondary);
-        }
-
-        /* Responsive */
-        @media(max-width: 768px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .container {
-                padding: 0 20px;
-            }
-
-            .file-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .container { padding: 0 16px; }
+      .file-grid { grid-template-columns: 1fr; }
+      .dir-header { flex-wrap: wrap; }
+      .admin-controls { flex-wrap: wrap; }
+    }
+  </style>
 </head>
 
 <body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
     <div class="container">
-        <!-- Navigation -->
-        <nav class="navbar">
-            <div class="logo">Archive</div>
-            <div class="stats-summary">
-                <span id="totalFiles">0</span> documents
-            </div>
-        </nav>
-
-        <!-- Hero -->
-        <header class="hero">
-            <h1>Stay curious.</h1>
-            <p>프로젝트 문서, 연구 결과, 그리고 여정의 기록들.</p>
-        </header>
-
-        <!-- Search -->
-        <div class="search-container">
-            <input type="text" class="search-input" id="searchInput" placeholder="Search...">
-            <i class="fas fa-search search-icon"></i>
+      <div class="inner">
+        <div class="logo">Archive</div>
+        <div class="navbar-right">
+          <span class="stats-badge"><span id="totalDocs">0</span> documents</span>
+          <span class="admin-badge"><i class="fas fa-shield-alt"></i> ADMIN MODE</span>
+          <button class="nav-btn nav-btn-ghost" onclick="resetToRemote()">
+            <i class="fas fa-undo"></i> Reset
+          </button>
+          <button class="nav-btn nav-btn-primary" onclick="exportConfig()">
+            <i class="fas fa-download"></i> Export site.json
+          </button>
         </div>
+      </div>
+    </div>
+  </nav>
 
-        <!-- Content Area -->
-        <div id="contentArea">
-            <div class="loading">Loading library...</div>
-        </div>
+  <!-- HERO -->
+  <header class="hero">
+    <div class="container">
+      <h1>Stay curious.</h1>
+      <p>프로젝트 문서, 연구 결과, 그리고 여정의 기록들.</p>
+    </div>
+  </header>
 
-        <!-- Hidden Stats (Used by JS Logic if not present in Navbar, but we used Navbar for TotalFiles) -->
-        <div id="totalFolders" style="display:none;"></div>
+  <div class="container">
+    <!-- SEARCH -->
+    <div class="search-wrap">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="search-input" id="searchInput" placeholder="문서 검색...">
     </div>
 
-    <!-- Toast -->
-    <div id="toast" class="toast">Link copied to clipboard</div>
+    <!-- CONTENT AREA -->
+    <div id="contentArea">
+      <div class="loading"><i class="fas fa-spinner fa-spin"></i> 로딩 중...</div>
+    </div>
+  </div>
 
-    <!-- Main Logic -->
-    <script src="gdedse_main.js"></script>
-    <script>
-        // Initialize on load
-        window.addEventListener('DOMContentLoaded', init);
-    </script>
-    <!-- Version: 2025-12-18 Fixed Rendering & Button -->
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
+
+  <!-- MODAL -->
+  <div id="modal" class="modal-overlay">
+    <div class="modal">
+      <h3 id="modalTitle">입력</h3>
+      <input type="text" class="modal-field" id="modalInput" placeholder="">
+      <select class="modal-field" id="modalSelect" style="display:none;"></select>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal()">취소</button>
+        <button class="btn-primary" onclick="confirmModal()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =============================================
+    // STATE
+    // =============================================
+    const STORAGE_KEY = 'gdedse_site_config_v3';
+    const SITE_JSON_URL = '../site.json';
+
+    let siteConfig = null;
+    let isAdmin = false;
+    let folderContents = {};
+
+    // =============================================
+    // CONFIG MANAGEMENT
+    // =============================================
+    async function loadConfig() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          siteConfig = JSON.parse(stored);
+          return;
+        } catch (e) {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+      const resp = await fetch(`${SITE_JSON_URL}?v=${Date.now()}`);
+      if (!resp.ok) throw new Error('site.json 로드 실패');
+      siteConfig = await resp.json();
+      persistConfig();
+    }
+
+    function persistConfig() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(siteConfig));
+    }
+
+    function exportConfig() {
+      const json = JSON.stringify(siteConfig, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'site.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('✅ site.json 다운로드 완료. gemini_html/ 에 배치 후 커밋하세요.');
+    }
+
+    async function resetToRemote() {
+      if (!confirm('로컬 변경사항을 버리고 서버의 site.json으로 초기화할까요?')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      folderContents = {};
+      try {
+        const resp = await fetch(`${SITE_JSON_URL}?v=${Date.now()}`);
+        if (!resp.ok) throw new Error('서버 응답 오류');
+        siteConfig = await resp.json();
+        persistConfig();
+        render();
+        showToast('🔄 서버 설정으로 초기화됨');
+      } catch (e) {
+        showToast('❌ 서버에서 site.json을 불러올 수 없습니다.');
+      }
+    }
+
+    // =============================================
+    // ADMIN MODE
+    // =============================================
+    function checkAdminMode() {
+      const hash = decodeURIComponent(window.location.hash.slice(1));
+      isAdmin = !!(siteConfig && hash === siteConfig.adminKey);
+      document.body.classList.toggle('admin-mode', isAdmin);
+    }
+
+    // =============================================
+    // FETCH FOLDER CONTENTS
+    // =============================================
+    async function fetchFolderContents() {
+      const hashes = Object.keys(siteConfig.folders);
+      await Promise.all(hashes.map(async (hash) => {
+        if (folderContents[hash]) return;
+        try {
+          const resp = await fetch(`../${hash}/files.json?v=${Date.now()}`);
+          if (resp.ok) folderContents[hash] = await resp.json();
+        } catch (e) { /* folder may not exist */ }
+      }));
+    }
+
+    // =============================================
+    // RENDER
+    // =============================================
+    function render() {
+      checkAdminMode();
+      const container = document.getElementById('contentArea');
+      container.innerHTML = '';
+
+      const dirs = [...siteConfig.directories]
+        .filter(d => isAdmin || d.visible)
+        .sort((a, b) => a.order - b.order);
+
+      dirs.forEach(dir => container.appendChild(renderDirectory(dir)));
+
+      if (isAdmin) {
+        const unassigned = Object.entries(siteConfig.folders).filter(([, cfg]) => !cfg.dirId);
+        if (unassigned.length > 0) container.appendChild(renderUnassigned(unassigned));
+
+        const addBtn = document.createElement('button');
+        addBtn.className = 'add-dir-btn';
+        addBtn.innerHTML = '<i class="fas fa-plus"></i> 새 디렉토리 추가';
+        addBtn.onclick = addDirectory;
+        container.appendChild(addBtn);
+      }
+
+      updateStats();
+      initSearch();
+    }
+
+    function renderDirectory(dir) {
+      const el = document.createElement('section');
+      el.className = 'directory-section' + (!dir.visible ? ' is-hidden' : '');
+      el.setAttribute('data-dir-id', dir.id);
+
+      const folders = Object.entries(siteConfig.folders)
+        .filter(([, cfg]) => cfg.dirId === dir.id && (isAdmin || cfg.visible))
+        .sort((a, b) => a[1].order - b[1].order);
+
+      const totalDocs = folders.reduce((acc, [hash]) => {
+        const c = folderContents[hash];
+        if (!c) return acc;
+        return acc + getFileKeys(c).length;
+      }, 0);
+
+      const adminControls = isAdmin ? `
+        <div class="admin-controls">
+          <button class="admin-btn" onclick="editDirName('${dir.id}')" title="이름 변경">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="admin-btn${dir.visible ? '' : ' is-active'}" onclick="toggleDirVisibility('${dir.id}')" title="${dir.visible ? '숨기기' : '표시하기'}">
+            <i class="fas fa-eye${dir.visible ? '' : '-slash'}"></i>
+          </button>
+          <button class="admin-btn" onclick="moveDirOrder('${dir.id}', -1)" title="위로"><i class="fas fa-arrow-up"></i></button>
+          <button class="admin-btn" onclick="moveDirOrder('${dir.id}', 1)" title="아래로"><i class="fas fa-arrow-down"></i></button>
+          <button class="admin-btn danger" onclick="deleteDir('${dir.id}')" title="삭제"><i class="fas fa-trash"></i></button>
+        </div>` : '';
+
+      const foldersHtml = folders.map(([hash, cfg]) => renderFolder(hash, cfg)).join('');
+      const addFolderBtn = isAdmin
+        ? `<button class="add-folder-btn" onclick="showFolderPicker('${dir.id}')"><i class="fas fa-folder-plus"></i> 폴더 배정</button>`
+        : '';
+
+      el.innerHTML = `
+        <div class="dir-header">
+          <div class="dir-title-group">
+            <button class="collapse-btn" onclick="toggleCollapse('${dir.id}')">
+              <i class="fas fa-chevron-${dir.collapsed ? 'right' : 'down'}"></i>
+            </button>
+            <span class="dir-name">${esc(dir.name)}</span>
+            ${!dir.visible ? '<span class="hidden-badge">숨김</span>' : ''}
+            <span class="dir-count">${totalDocs} docs</span>
+          </div>
+          ${adminControls}
+        </div>
+        <div class="dir-body${dir.collapsed ? ' collapsed' : ''}">
+          ${foldersHtml || (isAdmin ? '' : '<p class="empty-msg">표시할 폴더 없음</p>')}
+          ${addFolderBtn}
+        </div>`;
+
+      return el;
+    }
+
+    function renderFolder(hash, cfg) {
+      const content = folderContents[hash];
+      const displayName = cfg.displayName || hash;
+      const secretHash = cfg.secretHash || '';
+      const fileKeys = content ? getFileKeys(content) : [];
+
+      const dirOptions = siteConfig.directories
+        .map(d => `<option value="${d.id}"${cfg.dirId === d.id ? ' selected' : ''}>${esc(d.name)}</option>`)
+        .join('');
+
+      const adminControls = isAdmin ? `
+        <div class="admin-controls">
+          <select class="dir-select" onchange="moveFolderToDir('${hash}', this.value)">
+            <option value="">미분류</option>
+            ${dirOptions}
+          </select>
+          <button class="admin-btn${cfg.visible ? '' : ' is-active'}" onclick="toggleFolderVisibility('${hash}')" title="${cfg.visible ? '숨기기' : '표시하기'}">
+            <i class="fas fa-eye${cfg.visible ? '' : '-slash'}"></i>
+          </button>
+          <a href="../${hash}/#${secretHash}" target="_blank" class="admin-btn" title="새 탭에서 목록 열기">
+            <i class="fas fa-external-link-alt"></i>
+          </a>
+        </div>` : `
+        <a href="../${hash}/#${secretHash}" class="view-list-btn">
+          <i class="fas fa-list"></i> 목록
+        </a>`;
+
+      const cardsHtml = fileKeys.map(fileName => renderFileCard(hash, fileName, content[fileName])).join('');
+
+      return `
+        <div class="folder-block${!cfg.visible ? ' is-hidden' : ''}" data-hash="${hash}">
+          <div class="folder-header">
+            <div class="folder-name-group">
+              <span class="folder-name">${esc(displayName)}</span>
+              ${!cfg.visible ? '<span class="hidden-badge">숨김</span>' : ''}
+              <span class="folder-item-count">${fileKeys.length}</span>
+            </div>
+            <div class="folder-actions">${adminControls}</div>
+          </div>
+          <div class="file-grid">
+            ${cardsHtml || '<p class="empty-msg">문서 없음</p>'}
+          </div>
+        </div>`;
+    }
+
+    function renderFileCard(hash, fileName, displayName) {
+      const fileNameNoExt = fileName.replace(/\.[^/.]+$/, '');
+      const linkUrl = `../${hash}/#${fileNameNoExt}`;
+      const name = esc(displayName || fileNameNoExt);
+      const ext = fileName.split('.').pop().toUpperCase();
+      const searchData = `${(displayName || '').toLowerCase()} ${fileName.toLowerCase()}`;
+
+      return `
+        <div class="file-card"
+             onclick="location.href='${linkUrl}'"
+             data-link="${linkUrl}"
+             data-hash="${hash}"
+             data-slug="${fileNameNoExt}"
+             data-search="${searchData}">
+          <div class="file-type-badge">${ext}</div>
+          <div class="file-title">${name}</div>
+          <div class="card-actions">
+            <button class="action-btn primary" onclick="event.stopPropagation(); location.href='${linkUrl}'">
+              <i class="fas fa-arrow-right"></i> 열기
+            </button>
+            <button class="action-btn" onclick="event.stopPropagation(); copyCardLink(this)">
+              <i class="fas fa-link"></i> 링크
+            </button>
+          </div>
+        </div>`;
+    }
+
+    function renderUnassigned(unassigned) {
+      const el = document.createElement('div');
+      el.className = 'unassigned-section';
+
+      const items = unassigned.map(([hash, cfg]) => {
+        const dirOptions = siteConfig.directories
+          .map(d => `<option value="${d.id}">${esc(d.name)}</option>`)
+          .join('');
+        return `
+          <div class="unassigned-tag">
+            <span>${esc(cfg.displayName || hash)}</span>
+            <select class="dir-select" onchange="moveFolderToDir('${hash}', this.value)">
+              <option value="">디렉토리 선택...</option>
+              ${dirOptions}
+            </select>
+            <button class="admin-btn${cfg.visible ? '' : ' is-active'}" onclick="toggleFolderVisibility('${hash}')">
+              <i class="fas fa-eye${cfg.visible ? '' : '-slash'}"></i>
+            </button>
+          </div>`;
+      }).join('');
+
+      el.innerHTML = `<h3>🗂 미분류 폴더</h3><div class="unassigned-list">${items}</div>`;
+      return el;
+    }
+
+    // =============================================
+    // HELPERS
+    // =============================================
+    function getFileKeys(content) {
+      if (!content) return [];
+      const keys = content._order
+        ? content._order.filter(k => content[k] !== undefined && !k.startsWith('_'))
+        : Object.keys(content).filter(k => !k.startsWith('_'));
+      return keys;
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // =============================================
+    // ADMIN ACTIONS
+    // =============================================
+    function toggleCollapse(dirId) {
+      const dir = siteConfig.directories.find(d => d.id === dirId);
+      if (!dir) return;
+      dir.collapsed = !dir.collapsed;
+      persistConfig();
+      render();
+    }
+
+    function toggleDirVisibility(dirId) {
+      const dir = siteConfig.directories.find(d => d.id === dirId);
+      if (!dir) return;
+      dir.visible = !dir.visible;
+      persistConfig();
+      render();
+      showToast(dir.visible ? '✅ 디렉토리 표시됨' : '🙈 디렉토리 숨김');
+    }
+
+    function toggleFolderVisibility(hash) {
+      const cfg = siteConfig.folders[hash];
+      if (!cfg) return;
+      cfg.visible = !cfg.visible;
+      persistConfig();
+      render();
+      showToast(cfg.visible ? '✅ 폴더 표시됨' : '🙈 폴더 숨김');
+    }
+
+    function moveDirOrder(dirId, delta) {
+      const dirs = [...siteConfig.directories].sort((a, b) => a.order - b.order);
+      const idx = dirs.findIndex(d => d.id === dirId);
+      const swapIdx = idx + delta;
+      if (swapIdx < 0 || swapIdx >= dirs.length) return;
+
+      const tmp = dirs[idx].order;
+      dirs[idx].order = dirs[swapIdx].order;
+      dirs[swapIdx].order = tmp;
+      dirs.sort((a, b) => a.order - b.order).forEach((d, i) => { d.order = i + 1; });
+
+      persistConfig();
+      render();
+    }
+
+    function moveFolderToDir(hash, dirId) {
+      const cfg = siteConfig.folders[hash];
+      if (!cfg) return;
+      cfg.dirId = dirId || null;
+      persistConfig();
+      render();
+      showToast('📁 폴더 이동됨');
+    }
+
+    function editDirName(dirId) {
+      const dir = siteConfig.directories.find(d => d.id === dirId);
+      if (!dir) return;
+      openModal('디렉토리 이름 변경', dir.name, false, (val) => {
+        if (val && val.trim()) {
+          dir.name = val.trim();
+          persistConfig();
+          render();
+          showToast('✅ 이름 변경됨');
+        }
+      });
+    }
+
+    function deleteDir(dirId) {
+      const dir = siteConfig.directories.find(d => d.id === dirId);
+      if (!dir) return;
+      if (!confirm(`"${dir.name}" 디렉토리를 삭제할까요?\n(하위 폴더들은 미분류로 이동됩니다.)`)) return;
+
+      Object.values(siteConfig.folders).forEach(cfg => {
+        if (cfg.dirId === dirId) cfg.dirId = null;
+      });
+      siteConfig.directories = siteConfig.directories.filter(d => d.id !== dirId);
+      persistConfig();
+      render();
+      showToast('🗑 디렉토리 삭제됨');
+    }
+
+    function addDirectory() {
+      openModal('새 디렉토리 이름', '', false, (name) => {
+        if (!name || !name.trim()) return;
+        const id = 'dir_' + Date.now().toString(36);
+        const maxOrder = Math.max(0, ...siteConfig.directories.map(d => d.order));
+        siteConfig.directories.push({
+          id, name: name.trim(), visible: true, collapsed: false, order: maxOrder + 1
+        });
+        persistConfig();
+        render();
+        showToast('✅ 디렉토리 추가됨');
+      });
+    }
+
+    function showFolderPicker(dirId) {
+      const others = Object.entries(siteConfig.folders)
+        .filter(([, cfg]) => cfg.dirId !== dirId);
+
+      if (others.length === 0) {
+        showToast('배정할 수 있는 폴더가 없습니다.');
+        return;
+      }
+
+      const options = others.map(([hash, cfg]) => {
+        const curDirName = cfg.dirId
+          ? (siteConfig.directories.find(d => d.id === cfg.dirId)?.name || '?')
+          : '미분류';
+        return `<option value="${hash}">${esc(cfg.displayName || hash)} (${curDirName})</option>`;
+      }).join('');
+
+      openModal('폴더 배정', options, true, (selectedHash) => {
+        if (selectedHash) moveFolderToDir(selectedHash, dirId);
+      });
+    }
+
+    // =============================================
+    // MODAL
+    // =============================================
+    let _modalCb = null;
+
+    function openModal(title, valueOrOptions, isSelect, callback) {
+      const modal = document.getElementById('modal');
+      const input = document.getElementById('modalInput');
+      const select = document.getElementById('modalSelect');
+
+      document.getElementById('modalTitle').textContent = title;
+      _modalCb = callback;
+
+      if (isSelect) {
+        input.style.display = 'none';
+        select.style.display = 'block';
+        select.innerHTML = valueOrOptions;
+      } else {
+        select.style.display = 'none';
+        input.style.display = 'block';
+        input.value = valueOrOptions || '';
+        setTimeout(() => input.focus(), 40);
+      }
+
+      modal.classList.add('show');
+    }
+
+    function confirmModal() {
+      const input = document.getElementById('modalInput');
+      const select = document.getElementById('modalSelect');
+      const isSelect = select.style.display !== 'none';
+      const val = isSelect ? select.value : input.value;
+
+      if (_modalCb) _modalCb(val);
+      closeModal();
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('show');
+      _modalCb = null;
+    }
+
+    document.addEventListener('keydown', e => {
+      const modalOpen = document.getElementById('modal').classList.contains('show');
+      if (e.key === 'Escape' && modalOpen) closeModal();
+      if (e.key === 'Enter' && modalOpen) confirmModal();
+    });
+
+    // =============================================
+    // SEARCH
+    // =============================================
+    function initSearch() {
+      const input = document.getElementById('searchInput');
+      // Remove old listener by cloning
+      const newInput = input.cloneNode(true);
+      input.parentNode.replaceChild(newInput, input);
+
+      newInput.addEventListener('input', () => {
+        const term = newInput.value.toLowerCase().trim();
+
+        document.querySelectorAll('.file-card').forEach(c => {
+          c.style.display = (!term || (c.dataset.search || '').includes(term)) ? '' : 'none';
+        });
+
+        document.querySelectorAll('.folder-block').forEach(fb => {
+          const visible = [...fb.querySelectorAll('.file-card')].some(c => c.style.display !== 'none');
+          fb.style.display = (!term || visible) ? '' : 'none';
+        });
+
+        document.querySelectorAll('.directory-section').forEach(ds => {
+          const visible = [...ds.querySelectorAll('.folder-block')].some(f => f.style.display !== 'none');
+          ds.style.display = (!term || visible) ? '' : 'none';
+        });
+      });
+    }
+
+    // =============================================
+    // UTILITIES
+    // =============================================
+    function updateStats() {
+      document.getElementById('totalDocs').textContent =
+        document.querySelectorAll('.file-card').length;
+    }
+
+    function copyCardLink(btn) {
+      const card = btn.closest('.file-card');
+      const hash = card.dataset.hash;
+      const slug = card.dataset.slug;
+      const base = location.href.split('/GDEDSE/')[0];
+      doCopy(`${base}/${hash}/#${slug}`);
+    }
+
+    function doCopy(text) {
+      navigator.clipboard.writeText(text)
+        .then(() => showToast('📋 링크 복사됨'))
+        .catch(() => {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          showToast('📋 링크 복사됨');
+        });
+    }
+
+    let _toastTimer;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+    }
+
+    // =============================================
+    // INIT
+    // =============================================
+    async function init() {
+      try {
+        await loadConfig();
+        checkAdminMode();
+        await fetchFolderContents();
+        render();
+      } catch (e) {
+        document.getElementById('contentArea').innerHTML = `
+          <div class="loading">
+            <p>❌ 오류: ${esc(e.message)}</p>
+            <p style="margin-top:8px; font-size:0.82rem; color:#9ca3af;">
+              gemini_html/site.json 파일이 필요합니다.
+            </p>
+          </div>`;
+      }
+    }
+
+    window.addEventListener('hashchange', () => { checkAdminMode(); render(); });
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+  <!-- Version: 2026-03-02 Virtual Directory System v3.0 -->
 </body>
-
 
 </html>
