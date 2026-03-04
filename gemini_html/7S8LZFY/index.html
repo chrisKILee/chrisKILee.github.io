@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 Life - Vintage & AI Life</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ECFDF5;
+            min-height: 100vh;
+            color: #064E3B;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #059669;
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .file-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid #D1FAE5;
+            box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.05);
+            cursor: pointer;
+        }
+
+        .file-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(5, 150, 105, 0.1);
+        }
+
+        .file-icon {
+            font-size: 2rem;
+            color: #10B981;
+            margin-bottom: 20px;
+        }
+
+        .file-name {
+            font-weight: 700;
+            color: #064E3B;
+        }
+
+        .content-view {
+            background: white;
+            min-height: 100vh;
+        }
+
+        iframe {
+            width: 100%;
+            border: none;
+            height: 100vh;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="fileListView" class="container">
+        <div class="header">
+            <h1>🌿 Life & Vintage</h1>
+            <p>Elegant living through AI and style</p>
+        </div>
+        <div id="filesContainer" class="file-grid"></div>
+    </div>
+    <div id="fileContentView" class="content-view" style="display:none;">
+        <div id="contentFrame"></div>
+    </div>
+            <script>
+        const SECRET_LIST_HASH = 'l-life-auth-77';
+        const CATEGORY_HASH = 'VNTG7S2';
+        let filesData = []; // [{hash, filename, displayName}]
+
+        async function init() {
+            try {
+                const resp = await fetch(`../site.json?v=${Date.now()}`);
+                const site = await resp.json();
+                filesData = Object.entries(site.files || {})
+                    .filter(([, f]) => f.categoryHash === CATEGORY_HASH && f.visible !== false)
+                    .sort((a, b) => (a[1].order || 999) - (b[1].order || 999))
+                    .map(([hash, f]) => ({ hash, filename: f.filename, displayName: f.displayName }));
+                renderGrid(); checkHash();
+            } catch (e) { showStealth404(); }
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('filesContainer');
+            container.innerHTML = filesData.map(file => `
+                <div class="file-card" onclick="window.location.hash='${file.hash}'">
+                    <div class="file-icon"><i class="fas fa-leaf"></i></div>
+                    <div class="file-name">${file.displayName}</div>
+                </div>`).join('');
+        }
+
+        function checkHash() {
+            const hash = decodeURIComponent(window.location.hash.substring(1));
+            if (!hash) return showStealth404();
+            if (hash === SECRET_LIST_HASH) toggleView('list');
+            else {
+                const file = filesData.find(f => f.hash === hash);
+                if (file) { toggleView('content'); loadContent(file); } else showStealth404();
+            }
+        }
+
+        function toggleView(view) {
+            document.getElementById('fileListView').style.display = view === 'list' ? 'block' : 'none';
+            document.getElementById('fileContentView').style.display = view === 'content' ? 'block' : 'none';
+        }
+
+        async function loadContent(file) {
+            const container = document.getElementById('contentFrame');
+            container.innerHTML = '<div style="text-align:center; padding:100px; color:#059669; opacity:0.5;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+
+            try {
+                const resp = await fetch(`../contents/${file.hash}/${file.filename}?v=${Date.now()}`);
+                if (!resp.ok) throw new Error('Failed to load content');
+                const html = await resp.text();
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                container.innerHTML = '';
+
+                // Inject <link> tags (fonts, external CSS)
+                doc.querySelectorAll('head link[rel="stylesheet"], head link[rel="preconnect"]').forEach(l => {
+                    if (!document.querySelector(`link[href="${l.href}"]`)) {
+                        const newLink = l.cloneNode();
+                        document.head.appendChild(newLink);
+                    }
+                });
+
+                // Inject <style> blocks
+                doc.querySelectorAll('style').forEach(s => {
+                    const newStyle = document.createElement('style');
+                    newStyle.textContent = s.textContent;
+                    container.appendChild(newStyle);
+                });
+
+                // Inject body content
+                const bodyDiv = document.createElement('div');
+                bodyDiv.innerHTML = doc.body.innerHTML;
+                container.appendChild(bodyDiv);
+
+                // Collect scripts: external first, then inline
+                const extSrcs = [];
+                const inlineCodes = [];
+                doc.querySelectorAll('script').forEach(s => {
+                    if (s.src) extSrcs.push(s.src);
+                    else if (s.textContent.trim()) inlineCodes.push(s.textContent);
+                });
+
+                // Load external scripts sequentially
+                for (const src of extSrcs) {
+                    if (!document.querySelector(`script[src="${src}"]`)) {
+                        await new Promise(resolve => {
+                            const ns = document.createElement('script');
+                            ns.src = src;
+                            ns.onload = resolve;
+                            ns.onerror = resolve;
+                            document.body.appendChild(ns);
+                        });
+                    }
+                }
+
+                // Execute inline scripts
+                inlineCodes.forEach(code => {
+                    const ns = document.createElement('script');
+                    ns.textContent = code;
+                    document.body.appendChild(ns);
+                });
+
+            } catch (e) {
+                container.innerHTML = `<div style="padding:100px; text-align:center; color:#ef4444;"><h1>Error Loading Content</h1><p>${e.message}</p></div>`;
+            }
+        }
+
+        function showStealth404() { document.body.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100vh; color:#94a3b8; background:#f8fafc;"><h1>404 Not Found</h1></div>`; }
+        window.addEventListener('hashchange', checkHash); window.addEventListener('DOMContentLoaded', init);
+    </script>
+    <!-- Version: 2026-03-03 contents/ architecture -->
+</body>
+
+</html>
