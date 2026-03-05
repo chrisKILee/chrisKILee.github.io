@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code Skills 가이드</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #111118;
+            --surface2: #1a1a24;
+            --border: #2a2a3a;
+            --accent: #7c3aed;
+            --accent2: #06b6d4;
+            --accent3: #10b981;
+            --accent4: #f59e0b;
+            --accent5: #ef4444;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Segoe UI', 'Apple SD Gothic Neo', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* NAV */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10,10,15,0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+        }
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+        }
+        .nav-logo {
+            font-weight: 700;
+            font-size: 1rem;
+            background: linear-gradient(135deg, #7c3aed, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav-links {
+            display: flex;
+            gap: 0.25rem;
+            list-style: none;
+            overflow-x: auto;
+        }
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.82rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover {
+            color: var(--text);
+            background: var(--surface2);
+        }
+
+        /* HERO */
+        .hero {
+            padding: 5rem 2rem 4rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124,58,237,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            color: var(--accent2);
+            border: 1px solid rgba(6,182,212,0.3);
+            background: rgba(6,182,212,0.08);
+            padding: 0.3rem 0.9rem;
+            border-radius: 99px;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero h1 span {
+            background: linear-gradient(135deg, #7c3aed, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-num {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #7c3aed, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        /* SECTION */
+        .section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+        .section-header {
+            margin-bottom: 2rem;
+        }
+        .section-tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-tag::before {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 2px;
+            background: var(--accent);
+        }
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .section-desc {
+            margin-top: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* WORKFLOW FLOW */
+        .flow-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .flow-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+        }
+        .flow-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .flow-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+        .flow-steps {
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+            flex-wrap: wrap;
+        }
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+        .step-num {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            background: rgba(124,58,237,0.1);
+            position: relative;
+            z-index: 1;
+        }
+        .flow-step:not(:last-child) .step-num::after {
+            content: '';
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: calc(100% + 2rem);
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), transparent);
+            z-index: -1;
+        }
+        .step-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            max-width: 100px;
+        }
+        .step-cmd {
+            font-size: 0.72rem;
+            color: var(--accent2);
+            margin-top: 0.25rem;
+            font-family: 'Consolas', monospace;
+        }
+        .arrow {
+            color: var(--border);
+            font-size: 1.2rem;
+            padding: 1.2rem 0.25rem 0;
+            flex-shrink: 0;
+        }
+
+        /* SKILL GRID */
+        .skill-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1rem;
+        }
+        .skill-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+            cursor: default;
+        }
+        .skill-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(124,58,237,0.12);
+        }
+        .skill-card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .skill-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .skill-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+        .skill-cmd {
+            font-size: 0.75rem;
+            font-family: 'Consolas', monospace;
+            color: var(--accent2);
+            margin-top: 0.15rem;
+        }
+        .skill-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-top: 0.75rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 99px;
+            border: 1px solid;
+        }
+        .tag-workflow { border-color: rgba(124,58,237,0.4); color: #a78bfa; background: rgba(124,58,237,0.08); }
+        .tag-frontend { border-color: rgba(6,182,212,0.4); color: #67e8f9; background: rgba(6,182,212,0.08); }
+        .tag-backend { border-color: rgba(16,185,129,0.4); color: #6ee7b7; background: rgba(16,185,129,0.08); }
+        .tag-quality { border-color: rgba(245,158,11,0.4); color: #fcd34d; background: rgba(245,158,11,0.08); }
+        .tag-utility { border-color: rgba(148,163,184,0.4); color: #cbd5e1; background: rgba(148,163,184,0.08); }
+        .tag-security { border-color: rgba(239,68,68,0.4); color: #fca5a5; background: rgba(239,68,68,0.08); }
+
+        /* CATEGORY BADGE */
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .cat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+        .cat-title { font-size: 1.15rem; font-weight: 700; }
+        .cat-count {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 0.1rem;
+        }
+
+        /* LIFECYCLE */
+        .lifecycle {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .lifecycle-item {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+        .lifecycle-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin: 0 auto 0.75rem;
+        }
+        .lifecycle-phase {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.4rem;
+        }
+        .lifecycle-skills {
+            font-size: 0.75rem;
+            color: var(--accent2);
+            font-family: 'Consolas', monospace;
+            line-height: 1.8;
+        }
+
+        /* CODE BLOCK */
+        .code-block {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.82rem;
+            color: var(--accent2);
+            overflow-x: auto;
+            line-height: 1.8;
+        }
+        .code-comment { color: var(--text-dim); }
+        .code-cmd { color: #a78bfa; }
+
+        /* TABLE */
+        .cheat-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .cheat-table th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+        .cheat-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(42,42,58,0.5);
+            vertical-align: top;
+        }
+        .cheat-table tr:last-child td { border-bottom: none; }
+        .cheat-table tr:hover td { background: var(--surface2); }
+        .cmd-cell {
+            font-family: 'Consolas', monospace;
+            color: var(--accent2);
+            white-space: nowrap;
+        }
+        .desc-cell { color: var(--text-muted); }
+        .when-cell { color: var(--text-dim); font-size: 0.8rem; }
+
+        /* DIVIDER */
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-dim);
+            font-size: 0.82rem;
+            border-top: 1px solid var(--border);
+            margin-top: 4rem;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 640px) {
+            .nav-links { display: none; }
+            .flow-steps { flex-direction: column; align-items: flex-start; }
+            .arrow { display: none; }
+            .flow-step { flex-direction: row; align-items: center; text-align: left; gap: 0.75rem; }
+            .step-label { max-width: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <div class="nav-inner">
+        <span class="nav-logo">Claude Code Skills</span>
+        <ul class="nav-links">
+            <li><a href="#overview">개요</a></li>
+            <li><a href="#workflow">워크플로우</a></li>
+            <li><a href="#skills-workflow">워크플로우 스킬</a></li>
+            <li><a href="#skills-frontend">프론트엔드</a></li>
+            <li><a href="#skills-backend">백엔드</a></li>
+            <li><a href="#skills-special">특수 스킬</a></li>
+            <li><a href="#cheatsheet">치트시트</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="overview">
+    <div class="hero-badge">Claude Code Power Pack</div>
+    <h1><span>Skills</span> 완전 가이드</h1>
+    <p>~/.claude/skills/ 디렉토리의 모든 스킬을 한눈에.<br>개발 워크플로우를 자동화하는 36개 스킬의 사용법과 플로우.</p>
+    <div class="hero-stats">
+        <div class="stat-item">
+            <div class="stat-num">36</div>
+            <div class="stat-label">총 스킬 수</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">13</div>
+            <div class="stat-label">워크플로우 스킬</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">10</div>
+            <div class="stat-label">기술 스킬</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">13</div>
+            <div class="stat-label">특수 스킬</div>
+        </div>
+    </div>
+</div>
+
+<!-- WORKFLOW OVERVIEW -->
+<section class="section" id="workflow">
+    <div class="section-header">
+        <div class="section-tag">개발 사이클</div>
+        <div class="section-title">스킬 활용 워크플로우</div>
+        <div class="section-desc">프로젝트 시작부터 배포까지, 각 단계에서 어떤 스킬을 쓰는지 한눈에 확인하세요.</div>
+    </div>
+
+    <!-- 메인 플로우 -->
+    <div class="flow-box">
+        <div class="flow-title">
+            <div class="flow-icon" style="background:rgba(124,58,237,0.15);">🔄</div>
+            표준 개발 사이클
+        </div>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-num">1</div>
+                <div class="step-label">계획 수립</div>
+                <div class="step-cmd">/plan</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num">2</div>
+                <div class="step-label">UI 구현</div>
+                <div class="step-cmd">/frontend</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num">3</div>
+                <div class="step-label">TDD 개발</div>
+                <div class="step-cmd">/tdd</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num">4</div>
+                <div class="step-label">코드 리뷰</div>
+                <div class="step-cmd">/review</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num">5</div>
+                <div class="step-label">검증</div>
+                <div class="step-cmd">/verify</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num">6</div>
+                <div class="step-label">단순화</div>
+                <div class="step-cmd">/simplify</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num">7</div>
+                <div class="step-label">커밋/PR</div>
+                <div class="step-cmd">/commit-push-pr</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SPEC 플로우 -->
+    <div class="flow-box">
+        <div class="flow-title">
+            <div class="flow-icon" style="background:rgba(6,182,212,0.15);">📐</div>
+            SPEC 기반 개발 플로우 (대규모 기능용)
+        </div>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent2);color:var(--accent2);background:rgba(6,182,212,0.1);">1</div>
+                <div class="step-label">인터뷰 & 명세서</div>
+                <div class="step-cmd">/spec</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent2);color:var(--accent2);background:rgba(6,182,212,0.1);">2</div>
+                <div class="step-label">새 세션 시작</div>
+                <div class="step-cmd">/clear</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent2);color:var(--accent2);background:rgba(6,182,212,0.1);">3</div>
+                <div class="step-label">SPEC 읽고 구현</div>
+                <div class="step-cmd">SPEC.md 읽기</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent2);color:var(--accent2);background:rgba(6,182,212,0.1);">4</div>
+                <div class="step-label">검증</div>
+                <div class="step-cmd">/spec-verify</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 컨텍스트 관리 플로우 -->
+    <div class="flow-box">
+        <div class="flow-title">
+            <div class="flow-icon" style="background:rgba(245,158,11,0.15);">🧹</div>
+            컨텍스트 관리 패턴 (80-100k 토큰 주의)
+        </div>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent4);color:var(--accent4);background:rgba(245,158,11,0.1);">1</div>
+                <div class="step-label">3-5개 작업</div>
+                <div class="step-cmd">작업 진행</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent4);color:var(--accent4);background:rgba(245,158,11,0.1);">2</div>
+                <div class="step-label">압축</div>
+                <div class="step-cmd">/compact</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent4);color:var(--accent4);background:rgba(245,158,11,0.1);">×3</div>
+                <div class="step-label">반복</div>
+                <div class="step-cmd">3회 반복</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent4);color:var(--accent4);background:rgba(245,158,11,0.1);">3</div>
+                <div class="step-label">인계 문서</div>
+                <div class="step-cmd">/handoff</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent4);color:var(--accent4);background:rgba(245,158,11,0.1);">4</div>
+                <div class="step-label">초기화</div>
+                <div class="step-cmd">/clear</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent4);color:var(--accent4);background:rgba(245,158,11,0.1);">5</div>
+                <div class="step-label">새 세션</div>
+                <div class="step-cmd">HANDOFF.md 읽기</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SDD 플로우 -->
+    <div class="flow-box">
+        <div class="flow-title">
+            <div class="flow-icon" style="background:rgba(16,185,129,0.15);">🏗</div>
+            SDD 프로젝트 초기화 플로우
+        </div>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent3);color:var(--accent3);background:rgba(16,185,129,0.1);">1</div>
+                <div class="step-label">SDD 초기화</div>
+                <div class="step-cmd">/sdd-init</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent3);color:var(--accent3);background:rgba(16,185,129,0.1);">2</div>
+                <div class="step-label">12문항 인터뷰</div>
+                <div class="step-cmd">AskUserQuestion</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent3);color:var(--accent3);background:rgba(16,185,129,0.1);">3</div>
+                <div class="step-label">문서 6개 생성</div>
+                <div class="step-cmd">CLAUDE.md + PRD/TRD/ADR/SPEC</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent3);color:var(--accent3);background:rgba(16,185,129,0.1);">4</div>
+                <div class="step-label">tmux 환경</div>
+                <div class="step-cmd">/tmux on</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num" style="border-color:var(--accent3);color:var(--accent3);background:rgba(16,185,129,0.1);">5</div>
+                <div class="step-label">컨펌 후 개발</div>
+                <div class="step-cmd">TDD 사이클</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 개발 단계별 스킬 매핑 -->
+    <div class="lifecycle">
+        <div class="lifecycle-item">
+            <div class="lifecycle-num">1</div>
+            <div class="lifecycle-phase">기획 / 설계</div>
+            <div class="lifecycle-skills">/plan<br>/spec<br>/sdd-init</div>
+        </div>
+        <div class="lifecycle-item">
+            <div class="lifecycle-num">2</div>
+            <div class="lifecycle-phase">구현</div>
+            <div class="lifecycle-skills">/frontend<br>/tdd<br>/build-fix</div>
+        </div>
+        <div class="lifecycle-item">
+            <div class="lifecycle-num">3</div>
+            <div class="lifecycle-phase">품질 검사</div>
+            <div class="lifecycle-skills">/review<br>/verify<br>/simplify<br>/spec-verify</div>
+        </div>
+        <div class="lifecycle-item">
+            <div class="lifecycle-num">4</div>
+            <div class="lifecycle-phase">보안 / 기술부채</div>
+            <div class="lifecycle-skills">/security-review<br>/techdebt<br>/dogfood</div>
+        </div>
+        <div class="lifecycle-item">
+            <div class="lifecycle-num">5</div>
+            <div class="lifecycle-phase">배포 / 인계</div>
+            <div class="lifecycle-skills">/commit-push-pr<br>/handoff<br>/compact-guide</div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- WORKFLOW SKILLS -->
+<section class="section" id="skills-workflow">
+    <div class="category-header">
+        <div class="cat-icon" style="background:rgba(124,58,237,0.15);">⚡</div>
+        <div>
+            <div class="cat-title">워크플로우 스킬</div>
+            <div class="cat-count">개발 사이클 전반을 자동화하는 핵심 스킬 13개</div>
+        </div>
+    </div>
+
+    <div class="skill-grid">
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(124,58,237,0.15);">📋</div>
+                <div>
+                    <div class="skill-name">Plan</div>
+                    <div class="skill-cmd">/plan</div>
+                </div>
+            </div>
+            <div class="skill-desc">복잡한 작업 전 계획을 수립합니다. 요구사항 분석 → 코드 탐색 → 접근 방식 결정 → 작업 분해 → 위험 요소 식별 순서로 진행. 계획 확정 후 auto-accept 모드로 구현.</div>
+            <div class="skill-tags">
+                <span class="tag tag-workflow">워크플로우</span>
+                <span class="tag tag-quality">필수</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(6,182,212,0.15);">📐</div>
+                <div>
+                    <div class="skill-name">Spec</div>
+                    <div class="skill-cmd">/spec</div>
+                </div>
+            </div>
+            <div class="skill-desc">SPEC 기반 개발 — 심층 인터뷰로 명세서를 작성합니다. 기술 구현·UI/UX·우려사항·트레이드오프 영역을 40개 이상 질문. 완성 후 SPEC.md 생성.</div>
+            <div class="skill-tags">
+                <span class="tag tag-workflow">워크플로우</span>
+                <span class="tag tag-quality">대규모 기능</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(6,182,212,0.15);">✅</div>
+                <div>
+                    <div class="skill-name">Spec-Verify</div>
+                    <div class="skill-cmd">/spec-verify</div>
+                </div>
+            </div>
+            <div class="skill-desc">명세서 대비 구현 완성도를 검증합니다. 서브에이전트가 SPEC.md를 읽고 기능적/비기능적 요구사항, UI/UX, 보안 항목별로 체크. SPEC-REVIEW.md 생성.</div>
+            <div class="skill-tags">
+                <span class="tag tag-workflow">워크플로우</span>
+                <span class="tag tag-quality">검증</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(139,92,246,0.15);">🎨</div>
+                <div>
+                    <div class="skill-name">Frontend</div>
+                    <div class="skill-cmd">/frontend</div>
+                </div>
+            </div>
+            <div class="skill-desc">빅테크 스타일(Stripe·Vercel·Apple·Linear·Notion) UI를 플래닝→구현까지 한 번에 진행합니다. 디자인 규격 → 사용자 확인 → frontend-developer 에이전트로 구현.</div>
+            <div class="skill-tags">
+                <span class="tag tag-frontend">프론트엔드</span>
+                <span class="tag tag-workflow">워크플로우</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(245,158,11,0.15);">🧪</div>
+                <div>
+                    <div class="skill-name">TDD</div>
+                    <div class="skill-cmd">/tdd</div>
+                </div>
+            </div>
+            <div class="skill-desc">RED → GREEN → REFACTOR 사이클로 테스트 주도 개발을 진행합니다. 인터페이스 정의 → 실패 테스트 작성 → 최소 구현 → 리팩토링. 커버리지 목표 80%+.</div>
+            <div class="skill-tags">
+                <span class="tag tag-quality">품질</span>
+                <span class="tag tag-workflow">워크플로우</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(16,185,129,0.15);">🔍</div>
+                <div>
+                    <div class="skill-name">Review</div>
+                    <div class="skill-cmd">/review</div>
+                </div>
+            </div>
+            <div class="skill-desc">현재 브랜치 변경사항을 코드 리뷰합니다. 기능·버그·보안·성능·가독성·테스트 6가지 체크리스트로 한국어 리뷰 의견 작성. 발견 패턴은 CLAUDE.md에 규칙 추가.</div>
+            <div class="skill-tags">
+                <span class="tag tag-quality">품질</span>
+                <span class="tag tag-workflow">워크플로우</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(16,185,129,0.15);">⚙️</div>
+                <div>
+                    <div class="skill-name">Verify</div>
+                    <div class="skill-cmd">/verify</div>
+                </div>
+            </div>
+            <div class="skill-desc">TypeScript 타입 체크 → 린트 → 테스트 → 빌드 순서로 코드를 검증합니다. 각 단계에서 에러 발생 시 즉시 수정 후 재검증하는 루프 반복.</div>
+            <div class="skill-tags">
+                <span class="tag tag-quality">품질</span>
+                <span class="tag tag-workflow">검증</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(139,92,246,0.15);">✨</div>
+                <div>
+                    <div class="skill-name">Simplify</div>
+                    <div class="skill-cmd">/simplify</div>
+                </div>
+            </div>
+            <div class="skill-desc">작성한 코드를 리팩토링합니다. 불필요한 추상화 제거·중복 정리·조건문 단순화·변수명 개선·console.log 제거. 함수 50줄·파일 800줄·중첩 4단계 이하 기준.</div>
+            <div class="skill-tags">
+                <span class="tag tag-quality">품질</span>
+                <span class="tag tag-workflow">리팩토링</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(239,68,68,0.15);">🔧</div>
+                <div>
+                    <div class="skill-name">Build-Fix</div>
+                    <div class="skill-cmd">/build-fix</div>
+                </div>
+            </div>
+            <div class="skill-desc">TypeScript 및 빌드 에러를 점진적으로 수정합니다. 빌드 실행 → 파일별 에러 그룹화 → 심각도 순 수정 → 재빌드 확인. 동일 에러 3회 실패 시 중단.</div>
+            <div class="skill-tags">
+                <span class="tag tag-quality">디버깅</span>
+                <span class="tag tag-workflow">에러 수정</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(245,158,11,0.15);">📤</div>
+                <div>
+                    <div class="skill-name">Commit-Push-PR</div>
+                    <div class="skill-cmd">/commit-push-pr</div>
+                </div>
+            </div>
+            <div class="skill-desc">변경사항 커밋·푸시·PR 생성을 한 번에 수행합니다. [타입] 형식 한국어 커밋 메시지 작성. main/master 브랜치에서는 실행 불가. .env 파일 자동 제외.</div>
+            <div class="skill-tags">
+                <span class="tag tag-workflow">Git</span>
+                <span class="tag tag-workflow">배포</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(245,158,11,0.15);">📋</div>
+                <div>
+                    <div class="skill-name">Handoff</div>
+                    <div class="skill-cmd">/handoff</div>
+                </div>
+            </div>
+            <div class="skill-desc">세션 종료 전 HANDOFF.md 작업 인계 문서를 생성합니다. 완료 작업·진행 중 작업·남은 작업·기술 결정사항·알려진 문제를 상세하게 기록. 다음 세션이 질문 없이 시작 가능.</div>
+            <div class="skill-tags">
+                <span class="tag tag-workflow">인계</span>
+                <span class="tag tag-utility">세션 관리</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(148,163,184,0.15);">🧹</div>
+                <div>
+                    <div class="skill-name">Compact-Guide</div>
+                    <div class="skill-cmd">/compact-guide</div>
+                </div>
+            </div>
+            <div class="skill-desc">컨텍스트 관리 가이드입니다. 80-100k 토큰 초과 전 /compact → 3회 후 /handoff → /clear → 새 세션 패턴 안내. 200k 가능하지만 80k 초과 시 품질 저하 주의.</div>
+            <div class="skill-tags">
+                <span class="tag tag-utility">컨텍스트</span>
+                <span class="tag tag-workflow">세션 관리</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(239,68,68,0.15);">🗑️</div>
+                <div>
+                    <div class="skill-name">Techdebt</div>
+                    <div class="skill-cmd">/techdebt</div>
+                </div>
+            </div>
+            <div class="skill-desc">세션 종료 전 기술 부채를 찾아 정리합니다. 중복 코드·사용하지 않는 import·console.log·any 타입·하드코딩 값·긴 함수·깊은 중첩 4가지 항목 자동 검사 및 리포트.</div>
+            <div class="skill-tags">
+                <span class="tag tag-quality">기술부채</span>
+                <span class="tag tag-workflow">정리</span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- FRONTEND SKILLS -->
+<section class="section" id="skills-frontend">
+    <div class="category-header">
+        <div class="cat-icon" style="background:rgba(6,182,212,0.15);">🎨</div>
+        <div>
+            <div class="cat-title">프론트엔드 기술 스킬</div>
+            <div class="cat-count">React, TypeScript, UI/UX 관련 전문 스킬 6개</div>
+        </div>
+    </div>
+
+    <div class="skill-grid">
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(6,182,212,0.15);">⚛️</div>
+                <div>
+                    <div class="skill-name">React-Patterns</div>
+                    <div class="skill-cmd">react-patterns</div>
+                </div>
+            </div>
+            <div class="skill-desc">React 19 전체 패턴을 커버합니다. Server Components, Actions, use() 훅, useOptimistic, useFormStatus, React Compiler, Suspense, 최신 TypeScript 패턴.</div>
+            <div class="skill-tags">
+                <span class="tag tag-frontend">React 19</span>
+                <span class="tag tag-frontend">TypeScript</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(6,182,212,0.15);">🚀</div>
+                <div>
+                    <div class="skill-name">Vercel-React-Best-Practices</div>
+                    <div class="skill-cmd">vercel-react-best-practices</div>
+                </div>
+            </div>
+            <div class="skill-desc">Vercel 엔지니어링의 React/Next.js 성능 최적화 가이드라인. 번들 최적화·렌더링 패턴·비동기 처리·서버 컴포넌트·클라이언트 최적화 규칙 50+ 개.</div>
+            <div class="skill-tags">
+                <span class="tag tag-frontend">Next.js</span>
+                <span class="tag tag-quality">성능</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(139,92,246,0.15);">🔷</div>
+                <div>
+                    <div class="skill-name">TypeScript-Advanced-Types</div>
+                    <div class="skill-cmd">typescript-advanced-types</div>
+                </div>
+            </div>
+            <div class="skill-desc">TypeScript 고급 타입 시스템 — 제네릭, 조건부 타입, 매핑 타입, 템플릿 리터럴, 유틸리티 타입. 재사용 가능한 타입 유틸리티와 컴파일 타임 타입 안전성 구현.</div>
+            <div class="skill-tags">
+                <span class="tag tag-frontend">TypeScript</span>
+                <span class="tag tag-quality">타입 안전</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(6,182,212,0.15);">🧩</div>
+                <div>
+                    <div class="skill-name">Shadcn-UI</div>
+                    <div class="skill-cmd">shadcn-ui</div>
+                </div>
+            </div>
+            <div class="skill-desc">shadcn/ui 컴포넌트 완전 가이드. 설치·설정·Button·Dialog·Dropdown·Form (React Hook Form + Zod)·Table 구현. Tailwind CSS 테마 커스터마이징.</div>
+            <div class="skill-tags">
+                <span class="tag tag-frontend">UI 컴포넌트</span>
+                <span class="tag tag-frontend">Tailwind</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(6,182,212,0.15);">💅</div>
+                <div>
+                    <div class="skill-name">Tailwind-Design-System</div>
+                    <div class="skill-cmd">tailwind-design-system</div>
+                </div>
+            </div>
+            <div class="skill-desc">Tailwind CSS 기반 확장 가능한 디자인 시스템 구축. 디자인 토큰·컴포넌트 라이브러리·반응형 패턴·테마 구성. 일관된 UI 패턴 표준화.</div>
+            <div class="skill-tags">
+                <span class="tag tag-frontend">Tailwind</span>
+                <span class="tag tag-frontend">디자인시스템</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(139,92,246,0.15);">🎭</div>
+                <div>
+                    <div class="skill-name">UI-UX-Pro-Max</div>
+                    <div class="skill-cmd">ui-ux-pro-max</div>
+                </div>
+            </div>
+            <div class="skill-desc">UI/UX 종합 가이드. 50가지 스타일·21가지 팔레트·50가지 폰트 페어링·20가지 차트·9개 스택(React, Next.js, Vue, Svelte, Flutter 등). Glassmorphism·Brutalism·Neumorphism 등 지원.</div>
+            <div class="skill-tags">
+                <span class="tag tag-frontend">UI/UX</span>
+                <span class="tag tag-frontend">다중 스택</span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- BACKEND SKILLS -->
+<section class="section" id="skills-backend">
+    <div class="category-header">
+        <div class="cat-icon" style="background:rgba(16,185,129,0.15);">🐍</div>
+        <div>
+            <div class="cat-title">백엔드 기술 스킬</div>
+            <div class="cat-count">Python, FastAPI, API 설계 관련 전문 스킬 4개</div>
+        </div>
+    </div>
+
+    <div class="skill-grid">
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(16,185,129,0.15);">⚡</div>
+                <div>
+                    <div class="skill-name">FastAPI-Templates</div>
+                    <div class="skill-cmd">fastapi-templates</div>
+                </div>
+            </div>
+            <div class="skill-desc">프로덕션 수준의 FastAPI 프로젝트 템플릿. 비동기 패턴·의존성 주입·포괄적 에러 처리·인증·API 버저닝. 새 FastAPI 앱 구축 또는 백엔드 API 프로젝트 설정 시 사용.</div>
+            <div class="skill-tags">
+                <span class="tag tag-backend">FastAPI</span>
+                <span class="tag tag-backend">Python</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(16,185,129,0.15);">🔗</div>
+                <div>
+                    <div class="skill-name">API-Design-Principles</div>
+                    <div class="skill-cmd">api-design-principles</div>
+                </div>
+            </div>
+            <div class="skill-desc">직관적·확장 가능·유지보수 가능한 REST 및 GraphQL API 설계 원칙. 네이밍 컨벤션·버저닝·에러 응답·페이지네이션·인증 패턴. API 설계 체크리스트 포함.</div>
+            <div class="skill-tags">
+                <span class="tag tag-backend">REST</span>
+                <span class="tag tag-backend">GraphQL</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(16,185,129,0.15);">🔄</div>
+                <div>
+                    <div class="skill-name">Async-Python-Patterns</div>
+                    <div class="skill-cmd">async-python-patterns</div>
+                </div>
+            </div>
+            <div class="skill-desc">Python asyncio·동시 프로그래밍·async/await 패턴 마스터. 비동기 API 구축·동시 시스템·I/O 바운드 애플리케이션용 논블로킹 작업 구현.</div>
+            <div class="skill-tags">
+                <span class="tag tag-backend">asyncio</span>
+                <span class="tag tag-backend">Python</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(16,185,129,0.15);">🧪</div>
+                <div>
+                    <div class="skill-name">Python-Testing-Patterns</div>
+                    <div class="skill-cmd">python-testing-patterns</div>
+                </div>
+            </div>
+            <div class="skill-desc">pytest·픽스처·모킹·TDD로 포괄적인 테스트 전략 구현. 테스트 스위트 설정·파라미터화 테스트·컨텍스트 매니저·커버리지 측정.</div>
+            <div class="skill-tags">
+                <span class="tag tag-backend">pytest</span>
+                <span class="tag tag-quality">테스팅</span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- SPECIAL SKILLS -->
+<section class="section" id="skills-special">
+    <div class="category-header">
+        <div class="cat-icon" style="background:rgba(245,158,11,0.15);">🛠️</div>
+        <div>
+            <div class="cat-title">특수 스킬</div>
+            <div class="cat-count">프로젝트 관리, 이미지 생성, QA 테스트 등 특수 목적 스킬</div>
+        </div>
+    </div>
+
+    <div class="skill-grid">
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(16,185,129,0.15);">🏗️</div>
+                <div>
+                    <div class="skill-name">SDD-Init</div>
+                    <div class="skill-cmd">/sdd-init</div>
+                </div>
+            </div>
+            <div class="skill-desc">Spec-Driven Development 프로젝트 초기화. 12문항 인터뷰 → CLAUDE.md (프로젝트 헌법) + PRD/TRD/ADR/SPEC/IMPLEMENTATION_PLAN 5개 문서 자동 생성 + tmux 세션 구성.</div>
+            <div class="skill-tags">
+                <span class="tag tag-workflow">프로젝트 초기화</span>
+                <span class="tag tag-workflow">SDD</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(239,68,68,0.15);">🔒</div>
+                <div>
+                    <div class="skill-name">Security-Review</div>
+                    <div class="skill-cmd">/security-review</div>
+                </div>
+            </div>
+            <div class="skill-desc">NestJS + React 스택 전용 보안 취약점 분석. OWASP Top 10 기반 — 접근 제어·암호화·인젝션·설정 오류·취약 컴포넌트·인증 실패·SSRF 순서로 검사. 명시적 호출 시에만 실행.</div>
+            <div class="skill-tags">
+                <span class="tag tag-security">OWASP</span>
+                <span class="tag tag-security">보안 감사</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(245,158,11,0.15);">🖼️</div>
+                <div>
+                    <div class="skill-name">Nano-Banana</div>
+                    <div class="skill-cmd">/nano-banana</div>
+                </div>
+            </div>
+            <div class="skill-desc">Gemini CLI의 nanobanana 확장을 사용해 이미지를 생성합니다. 블로그 피처드 이미지·YouTube 썸네일·아이콘·다이어그램·패턴·스토리. /generate, /icon, /diagram, /pattern 명령 지원.</div>
+            <div class="skill-tags">
+                <span class="tag tag-utility">이미지 생성</span>
+                <span class="tag tag-utility">Gemini CLI</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(6,182,212,0.15);">🐶</div>
+                <div>
+                    <div class="skill-name">Dogfood</div>
+                    <div class="skill-cmd">/dogfood</div>
+                </div>
+            </div>
+            <div class="skill-desc">웹 애플리케이션을 체계적으로 탐색해 버그·UX 이슈를 찾습니다. agent-browser로 스크린샷·비디오·재현 단계를 포함한 QA 보고서 자동 생성. 5-10개 이슈 목표.</desc>
+            <div class="skill-tags">
+                <span class="tag tag-quality">QA</span>
+                <span class="tag tag-quality">E2E 테스트</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(6,182,212,0.15);">🤖</div>
+                <div>
+                    <div class="skill-name">E2E-Agent-Browser</div>
+                    <div class="skill-cmd">e2e-agent-browser</div>
+                </div>
+            </div>
+            <div class="skill-desc">agent-browser CLI를 활용한 E2E 테스트 자동화. 스냅샷 기반 접근성 트리와 ref 시스템으로 안정적인 브라우저 테스트. 테스트 스위트 템플릿 포함.</div>
+            <div class="skill-tags">
+                <span class="tag tag-quality">E2E</span>
+                <span class="tag tag-quality">브라우저 테스트</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(139,92,246,0.15);">📄</div>
+                <div>
+                    <div class="skill-name">Program-Guide</div>
+                    <div class="skill-cmd">/program-guide</div>
+                </div>
+            </div>
+            <div class="skill-desc">Confluence/Google Docs 링크를 받아 비개발자용 프로그램 소개 가이드 HTML을 생성합니다. 문서 분석 → 콘텐츠 성격 분류(대시보드/자동화/협업/분석) → 패턴 선택 → HTML 생성 → site.json 자동 등록.</div>
+            <div class="skill-tags">
+                <span class="tag tag-utility">문서 생성</span>
+                <span class="tag tag-utility">HTML</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(148,163,184,0.15);">📊</div>
+                <div>
+                    <div class="skill-name">Table2MD</div>
+                    <div class="skill-cmd">/table2md</div>
+                </div>
+            </div>
+            <div class="skill-desc">이전 대화의 표를 Confluence 붙여넣기용 Markdown으로 변환합니다. /table2md 3 처럼 숫자 지정 시 최근 N개 응답에서 표를 수집. 결과는 코드 블록으로 감싸 raw MD 출력.</div>
+            <div class="skill-tags">
+                <span class="tag tag-utility">표 변환</span>
+                <span class="tag tag-utility">Confluence</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(148,163,184,0.15);">🖥️</div>
+                <div>
+                    <div class="skill-name">Tmux</div>
+                    <div class="skill-cmd">/tmux on | off | status</div>
+                </div>
+            </div>
+            <div class="skill-desc">개발 tmux 세션을 켜거나 끕니다. on 시 backend·frontend·test·terminal 4개 창 자동 구성. tmux-dev.sh 있으면 해당 스크립트 사용, 없으면 기본 레이아웃으로 즉시 생성.</div>
+            <div class="skill-tags">
+                <span class="tag tag-utility">개발 환경</span>
+                <span class="tag tag-utility">tmux</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(139,92,246,0.15);">🔀</div>
+                <div>
+                    <div class="skill-name">Stitch-Loop</div>
+                    <div class="skill-cmd">stitch-loop</div>
+                </div>
+            </div>
+            <div class="skill-desc">Stitch를 사용해 자율적으로 멀티 페이지 웹사이트를 생성하는 반복 빌드 루프 패턴. 디자인 시스템을 유지하며 페이지별 자동 생성.</div>
+            <div class="skill-tags">
+                <span class="tag tag-frontend">Stitch</span>
+                <span class="tag tag-workflow">자동화</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(139,92,246,0.15);">⚛️</div>
+                <div>
+                    <div class="skill-name">Stitch-React</div>
+                    <div class="skill-cmd">stitch-react</div>
+                </div>
+            </div>
+            <div class="skill-desc">Stitch 스크린을 React 컴포넌트 시스템으로 변환합니다. 디자인 토큰 일관성 확인 및 자동 검증 포함.</div>
+            <div class="skill-tags">
+                <span class="tag tag-frontend">Stitch</span>
+                <span class="tag tag-frontend">React</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(139,92,246,0.15);">📝</div>
+                <div>
+                    <div class="skill-name">Stitch-Design-MD</div>
+                    <div class="skill-cmd">stitch-design-md</div>
+                </div>
+            </div>
+            <div class="skill-desc">Stitch 프로젝트를 분석하여 DESIGN.md 파일을 생성합니다. 디자인 시스템을 시맨틱하고 자연스러운 언어로 문서화해 일관된 UI 생성 지원.</div>
+            <div class="skill-tags">
+                <span class="tag tag-frontend">Stitch</span>
+                <span class="tag tag-utility">문서화</span>
+            </div>
+        </div>
+
+        <div class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-icon" style="background:rgba(139,92,246,0.15);">✍️</div>
+                <div>
+                    <div class="skill-name">Stitch-Enhance-Prompt</div>
+                    <div class="skill-cmd">stitch-enhance-prompt</div>
+                </div>
+            </div>
+            <div class="skill-desc">모호한 UI 아이디어를 Stitch에 최적화된 상세 프롬프트로 변환합니다. 구체성 향상·UI/UX 키워드 추가·디자인 시스템 컨텍스트 주입.</div>
+            <div class="skill-tags">
+                <span class="tag tag-frontend">Stitch</span>
+                <span class="tag tag-utility">프롬프트</span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- CHEATSHEET -->
+<section class="section" id="cheatsheet">
+    <div class="section-header">
+        <div class="section-tag">빠른 참조</div>
+        <div class="section-title">스킬 치트시트</div>
+        <div class="section-desc">명령어와 사용 시점을 한눈에 확인하세요.</div>
+    </div>
+
+    <div class="flow-box">
+        <div class="flow-title">
+            <div class="flow-icon" style="background:rgba(124,58,237,0.15);">🔑</div>
+            키워드 트리거 — 이 단어를 입력하면 자동 활성화
+        </div>
+        <div class="code-block">
+<span class="code-comment"># 워크플로우 스킬</span>
+<span class="code-cmd">"계획" | "플랜" | "어떻게 구현"</span>         → /plan
+<span class="code-cmd">"스펙" | "명세서" | "인터뷰"</span>            → /spec
+<span class="code-cmd">"스펙 검증" | "구현 검증"</span>               → /spec-verify
+<span class="code-cmd">"프론트엔드" | "UI 만들어" | "페이지 만들어"</span> → /frontend
+<span class="code-cmd">"TDD" | "테스트 먼저" | "테스트 주도"</span>    → /tdd
+<span class="code-cmd">"리뷰" | "review" | "검토"</span>              → /review
+<span class="code-cmd">"검증" | "verify" | "빌드"</span>              → /verify
+<span class="code-cmd">"단순화" | "simplify" | "리팩토링"</span>      → /simplify
+<span class="code-cmd">"빌드 에러" | "컴파일 에러"</span>             → /build-fix
+<span class="code-cmd">"커밋" | "PR" | "푸시"</span>                  → /commit-push-pr
+<span class="code-cmd">"인계" | "handoff" | "다음에 이어서"</span>    → /handoff
+<span class="code-cmd">"컨텍스트" | "토큰" | "compact"</span>         → /compact-guide
+<span class="code-cmd">"기술부채" | "techdebt"</span>                 → /techdebt
+
+<span class="code-comment"># 특수 스킬</span>
+<span class="code-cmd">"프로젝트 시작" | "sdd init"</span>            → /sdd-init
+<span class="code-cmd">"/security-review" (명시적 호출만)</span>      → /security-review
+<span class="code-cmd">"이미지" | "생성" | "만들어" | "그려"</span>   → /nano-banana
+<span class="code-cmd">"dogfood" | "QA" | "버그 찾기"</span>         → /dogfood
+<span class="code-cmd">"프로그램 가이드" | "매뉴얼 만들어"</span>     → /program-guide
+<span class="code-cmd">"표 md로" | "confluence 붙여넣기"</span>       → /table2md
+<span class="code-cmd">"/tmux on" | "/tmux off" | "/tmux status"</span> → /tmux
+        </div>
+    </div>
+
+    <div class="flow-box">
+        <div class="flow-title">
+            <div class="flow-icon" style="background:rgba(16,185,129,0.15);">📋</div>
+            전체 스킬 참조표
+        </div>
+        <table class="cheat-table">
+            <thead>
+                <tr>
+                    <th>명령어</th>
+                    <th>설명</th>
+                    <th>사용 시점</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="cmd-cell">/plan</td><td class="desc-cell">작업 계획 수립</td><td class="when-cell">복잡한 기능 시작 전 항상</td></tr>
+                <tr><td class="cmd-cell">/spec</td><td class="desc-cell">SPEC 명세서 작성</td><td class="when-cell">대규모 기능 개발 시작 전</td></tr>
+                <tr><td class="cmd-cell">/spec-verify</td><td class="desc-cell">명세서 대비 구현 검증</td><td class="when-cell">구현 완료 후</td></tr>
+                <tr><td class="cmd-cell">/frontend</td><td class="desc-cell">빅테크 스타일 UI 개발</td><td class="when-cell">UI 컴포넌트/페이지 구현 시</td></tr>
+                <tr><td class="cmd-cell">/tdd</td><td class="desc-cell">테스트 주도 개발</td><td class="when-cell">새 기능 구현 시 (테스트 먼저)</td></tr>
+                <tr><td class="cmd-cell">/review</td><td class="desc-cell">코드 리뷰</td><td class="when-cell">PR 생성 전, 주요 변경사항 후</td></tr>
+                <tr><td class="cmd-cell">/verify</td><td class="desc-cell">타입체크/린트/테스트/빌드</td><td class="when-cell">커밋 전 항상</td></tr>
+                <tr><td class="cmd-cell">/simplify</td><td class="desc-cell">코드 단순화/리팩토링</td><td class="when-cell">구현 완료 후 품질 향상 시</td></tr>
+                <tr><td class="cmd-cell">/build-fix</td><td class="desc-cell">빌드 에러 점진적 수정</td><td class="when-cell">빌드/타입 에러 발생 시</td></tr>
+                <tr><td class="cmd-cell">/commit-push-pr</td><td class="desc-cell">커밋→푸시→PR 한번에</td><td class="when-cell">기능 완료 후 PR 생성 시</td></tr>
+                <tr><td class="cmd-cell">/handoff</td><td class="desc-cell">작업 인계 문서 생성</td><td class="when-cell">세션 종료 전, 80k 토큰 근접 시</td></tr>
+                <tr><td class="cmd-cell">/compact-guide</td><td class="desc-cell">컨텍스트 관리 안내</td><td class="when-cell">토큰 관리 방법 확인 시</td></tr>
+                <tr><td class="cmd-cell">/techdebt</td><td class="desc-cell">기술 부채 검사·정리</td><td class="when-cell">세션 종료 전, 주기적 정리</td></tr>
+                <tr><td class="cmd-cell">/sdd-init</td><td class="desc-cell">SDD 프로젝트 초기화</td><td class="when-cell">새 프로젝트 시작 시</td></tr>
+                <tr><td class="cmd-cell">/security-review</td><td class="desc-cell">OWASP 기반 보안 감사</td><td class="when-cell">배포 전, 보안 점검 시 (명시 호출만)</td></tr>
+                <tr><td class="cmd-cell">/nano-banana</td><td class="desc-cell">AI 이미지 생성</td><td class="when-cell">썸네일·아이콘·다이어그램 필요 시</td></tr>
+                <tr><td class="cmd-cell">/dogfood</td><td class="desc-cell">웹앱 QA 탐색 테스트</td><td class="when-cell">배포 전 QA, 버그 헌팅</td></tr>
+                <tr><td class="cmd-cell">/program-guide</td><td class="desc-cell">프로그램 소개 가이드 HTML</td><td class="when-cell">비개발자용 문서 생성 시</td></tr>
+                <tr><td class="cmd-cell">/table2md</td><td class="desc-cell">표 → Confluence MD 변환</td><td class="when-cell">대화의 표를 Confluence에 붙여넣기 전</td></tr>
+                <tr><td class="cmd-cell">/tmux on|off|status</td><td class="desc-cell">개발 tmux 세션 토글</td><td class="when-cell">개발 환경 시작/종료 시</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<footer>
+    <p>Claude Code Skills 가이드 &mdash; ~/.claude/skills/ 기반 &mdash; 총 36개 스킬</p>
+    <p style="margin-top:0.5rem;color:var(--text-dim)">Claude Code Power Pack · Boris Cherny 팁 기반</p>
+</footer>
+
+</body>
+</html>
