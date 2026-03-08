@@ -1,127 +1,88 @@
 # HANDOFF — 세션 인계 문서
 
-> 마지막 업데이트: 2026-03-03
-> 이 파일은 컴퓨터를 끄고 다음 세션에서 이어서 작업할 때 Claude Code에 전달하는 인계 문서입니다.
+> 마지막 업데이트: 2026-03-08
+> 브랜치: master
+> 마지막 커밋: de0dfb3 - feat: 인프라취약점 AI Agent 가이드 대폭 개선
 
----
-
-## 다음 세션 시작 방법
-
+## 새 세션 시작 방법
 ```
-새 Claude Code 세션 열고 다음 메시지를 붙여넣기:
-
-"HANDOFF.md 읽고 이어서 작업해줘"
-```
-
-또는 더 빠르게:
-```bash
-cd /home/chris/git/chrisKILee.github.io/gemini_html
-claude "HANDOFF.md 와 ARCHITECTURE.md 읽고 현재 상태 파악해줘"
+HANDOFF.md 읽고 "program-guide 스킬로 가이드 작업" 이어서 작업해줘.
 ```
 
 ---
 
-## 프로젝트 개요
+## 완료된 작업 (이번 세션)
 
-- **이름**: GDEDSE — 프라이빗 콘텐츠 포털
-- **배포 URL**: `https://page.chrisnolja.dev/gemini_html/`
-- **로컬 테스트**: `python3 -m http.server 8000` (gemini_html/ 에서 실행)
-- **아키텍처 문서**: `ARCHITECTURE.md` ← 항상 여기 먼저 읽기
+- [x] **VNTG Security Hub 사용 가이드** 생성 (커밋: cda941b)
+  - 파일: `contents/VSHU8B2/vntg_security_hub_guide.html`
+  - 이미지: `image/vntg_security_hub/` (7종 — 사용자가 직접 제공)
+  - site.json 등록: `AEJUB79` (🛡️플랫폼정보보호) 카테고리
+  - 디자인: 라이트 테마, 네이비 컬러 (패턴 A)
+  - 로그인 없음, exe 파일로 배포, 3가지 기능(AI Q&A / 악성메일 분석 / 문서 뷰어)
 
----
+- [x] **인프라취약점 점검 AI Agent 가이드** 생성 (커밋: b033e37)
+  - 파일: `contents/IAI4K7B/infra_ai_agent.html`
+  - 이미지: `contents/IAI4K7B/images/infra_ai_agent/report_sample.png` (Confluence 자동 다운로드)
+  - site.json 등록: `30BD927` (🤖 AI-Worker) 카테고리
 
-## 현재 구조 (v3.0 — contents/ 아키텍처)
+- [x] **인프라취약점 AI Agent 가이드 개선** (커밋: de0dfb3)
+  - 사용 방법에 **CSS 터미널 UI** 추가 — 전체 실행 흐름(설정 수집→항목 점검→요약)을 cmd 창 스타일로 시각화
+  - **점검결과 보고서 섹션** 신설 (nav에도 항목 추가)
+    - 요약 카드: Total 13 / PASS 5 / FAIL 5 / N/A 3
+    - PASS/FAIL/N/A 탭 필터
+    - 13개 항목 전체 목록 (Confluence 원본 그대로)
+    - FAIL 항목 클릭 시 AI 분석 펼침 (위험·영향·조치방법·설정 예시 코드)
 
-```
-gemini_html/
-├── site.json          ← 유일한 진실 소스. 항상 이 파일 기준
-├── GDEDSE/            ← 메인 포털 (어드민 포함)
-├── contents/          ← 80개 콘텐츠 파일 (contents/HASH/filename.html)
-├── QT38XYX/           ← 카테고리 SPA (🤖 AI Study)
-├── VNTG7S2/           ← 카테고리 SPA (🚀 VNTG AI Study)
-├── RDH10WS/           ← 카테고리 SPA (🔥 Hot News)
-├── AED13WE/           ← 카테고리 SPA (🔬 R&D)
-├── BF7K2M9/           ← 카테고리 SPA (💼 Work, 숨김)
-├── C8PQ4X1/           ← 카테고리 SPA (✈️ Travel, 숨김)
-├── RU4TYZ1/           ← 카테고리 SPA (🔒 Private, 숨김)
-├── add-file.sh        ← 새 파일 추가 스크립트
-├── patch-spa-shells.js← SPA shell 일괄 패치 도구
-├── ARCHITECTURE.md    ← 아키텍처 상세 문서
-└── HANDOFF.md         ← 이 파일
-```
+- [x] **`/program-guide` 스킬 업데이트**
+  - 파일: `~/.claude/skills/program-guide/SKILL.md`
+  - `~/.secrets` 소싱 안내 추가
+  - curl 대신 Python urllib 사용 권장 주의사항 추가
 
 ---
 
-## 마지막 세션에서 완료한 작업 (2026-03-03)
+## 핵심 기술 결정사항
 
-### 1. Admin Mode 강화 (GDEDSE/index.html)
-- 숨김 파일 포함 전체 표시
-- 파일/카테고리 단위 visibility 토글
-- 드래그&드롭으로 파일 카테고리 이동
-- `gdedse_site_config_v3` localStorage 캐시
+### Confluence API 접근
+- 크리덴셜: `~/.secrets` (source 필요)
+- `curl -u` 방식 → 특수문자 토큰에서 **401 발생**
+- 반드시 **Python urllib + base64** 방식 사용:
 
-### 2. contents/ 아키텍처 마이그레이션 (v2 → v3)
-- `migrate-to-contents.js` 실행 → 80개 파일을 `contents/HASH/filename.html` 로 이동
-- `site.json.files` 레지스트리 생성
-- GDEDSE/index.html — `folderContents` 제거, `getFilesForFolder()` 추가
-- 7개 카테고리 SPA shell — `../site.json` 읽도록, URL hash = 파일해시
-
-### 3. 아키텍처 문서화
-- `ARCHITECTURE.md` 생성
-
-### 4. 클린업
-- `_LEGACY_*` 7개 폴더 삭제
-- 구버전 스크립트 삭제: `add-hash-folder.sh/ps1`, `sync-files.sh`, `migrate-to-contents.js`
-- 구버전 문서 삭제: `HASH_FOLDER_README.md`, `hash_config.json`
-- 테스트/분석 폴더 삭제: `test/`, `tests/`, `docs/`, `js/`
-- `index_backup.html` 삭제
-
----
-
-## 미완료 / 다음 세션 작업 후보
-
-### 필수 (git push 전)
-- [ ] 변경사항 커밋 (콘텐츠 이동 + 클린업)
-
-### 선택 작업
-- [ ] **어드민 → site.json 직접 저장**: 현재는 JSON 다운로드 후 수동 교체 방식. API 없이는 어렵지만 GitHub API + PAT 사용하면 가능
-- [ ] **카테고리 순서 drag-and-drop**: 현재는 파일만 카테고리 간 이동 가능. 카테고리 자체 순서 변경 UI 없음
-- [ ] **검색 기능 개선**: 현재 텍스트 검색만. 카테고리 필터 추가 가능
-- [ ] **CTO조직_역할과_시너지_분석.pdf**: 루트에 방치됨. contents/에 이동할지 삭제할지 결정 필요
-
----
-
-## 핵심 명령어 치트시트
-
-```bash
-# 로컬 서버 실행
-cd /home/chris/git/chrisKILee.github.io/gemini_html
-python3 -m http.server 8000
-
-# 새 콘텐츠 파일 추가
-./add-file.sh "filename.html" "표시명" "VNTG7S2"
-
-# SPA shell 전체 패치 (코드 변경 시)
-node patch-spa-shells.js
-
-# 배포
-git add -A && git commit -m "feat: ..." && git push
-
-# 어드민 모드 접근
-http://localhost:8000/gemini_html/GDEDSE/#gdedse-adm-2026
+```python
+import urllib.request, base64, json
+auth = base64.b64encode('EMAIL:TOKEN'.encode()).decode()
+req = urllib.request.Request(URL, headers={'Authorization': f'Basic {auth}', 'Accept': 'application/json'})
+with urllib.request.urlopen(req) as r:
+    data = json.load(r)
 ```
 
+### 가이드 HTML 파일 구조
+- 위치: `gemini_html/contents/{7자리ID}/{파일명}.html`
+- 이미지: `gemini_html/contents/{7자리ID}/images/{sitesName}/` (상대 경로)
+- site.json 등록: `files` 객체에 `{ID: {filename, displayName, categoryHash, visible, order}}`
+
+### 주요 categoryHash
+| 폴더명 | categoryHash |
+|--------|-------------|
+| 🤖 AI-Worker | `30BD927` |
+| 🛡️플랫폼정보보호 | `AEJUB79` |
+| 🤖 AI Study | `QT38XYX` |
+| 🚀 VNTG AI Study | `VNTG7S2` |
+
 ---
 
-## 주요 접근 해시 (비공개)
+## 알려진 문제 / 주의사항
 
-| 카테고리 | 폴더해시 | 비밀해시 |
-|---------|---------|---------|
-| 🤖 AI Study | QT38XYX | `a-ai-study-lock-99` |
-| 🚀 VNTG AI Study | VNTG7S2 | `l-life-auth-77` |
-| 🔥 Hot News | RDH10WS | `n-news-auth-2024` |
-| 🔬 R&D Projects | AED13WE | `r-research-lock-24` |
-| 💼 Work | BF7K2M9 | `w-work-auth-88` |
-| ✈️ Travel | C8PQ4X1 | `t-travel-auth-55` |
-| 🔒 Private | RU4TYZ1 | `p-private-key-12` |
-| 🏠 어드민 포털 | GDEDSE | `gdedse-adm-2026` |
+- `VNTG Security Hub` 가이드의 exe 파일명(`VNTG_Security_Hub_Setup.exe`)은 가정으로 작성 — 실제 파일명 확인 후 수정 필요할 수 있음
+- `인프라 AI Agent` 스크린샷은 보고서 샘플 1장뿐 — 추가 화면 생기면 `contents/IAI4K7B/images/infra_ai_agent/`에 추가
+
+---
+
+## 환경 정보
+
+- 작업 디렉토리: `/home/chris/git/chrisKILee.github.io/gemini_html`
+- 크리덴셜: `~/.secrets` (CONFLUENCE_EMAIL, CONFLUENCE_API_TOKEN, CONFLUENCE_BASE_URL, GOOGLE_API_KEY)
+- 배포: `git push origin master` → GitHub Pages 자동 반영
+
+## 관련 파일
+- program-guide 스킬: `~/.claude/skills/program-guide/SKILL.md`
+- site.json: `gemini_html/site.json`
