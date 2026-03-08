@@ -283,6 +283,32 @@
   }
   .empty-state p { font-size: 15px; }
 
+  /* ── Pagination ── */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 32px 0 0;
+  }
+  .page-btn {
+    min-width: 36px; height: 36px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .page-btn:hover:not(:disabled) { border-color: #D1D5DB; color: var(--text-primary); background: var(--bg); }
+  .page-btn.active { background: var(--text-primary); border-color: var(--text-primary); color: #fff; }
+  .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .page-info { font-size: 13px; color: var(--text-muted); padding: 0 8px; }
+
   /* ── Footer ── */
   footer {
     border-top: 1px solid var(--border);
@@ -356,6 +382,7 @@
 
 <main class="grid-wrap">
   <div class="card-grid" id="card-grid"></div>
+  <div class="pagination" id="pagination"></div>
 </main>
 
 <footer>
@@ -369,6 +396,7 @@
 <script>
   const DELETED_KEY = 'ai_feed_deleted';
   const CAT_LABEL = { claude: 'Claude', gemini: 'Gemini', codex: 'Codex', usecase: '활용 사례' };
+  const PAGE_SIZE = 15;
 
   function getDeleted() {
     try { return new Set(JSON.parse(localStorage.getItem(DELETED_KEY) || '[]')); }
@@ -379,6 +407,7 @@
   }
 
   let currentCat = 'all';
+  let currentPage = 1;
   const deleted = getDeleted();
 
   function fmtDate(d) {
@@ -386,15 +415,26 @@
     return `${y}년 ${parseInt(m)}월 ${parseInt(dd)}일`;
   }
 
+  function getFiltered() {
+    return AI_ARTICLES
+      .filter(a => !deleted.has(a.id) && (currentCat === 'all' || a.category === currentCat))
+      .sort((a, b) => b.date.localeCompare(a.date)); // 최신 순
+  }
+
   function renderCards() {
     const grid = document.getElementById('card-grid');
-    const items = AI_ARTICLES.filter(a =>
-      !deleted.has(a.id) && (currentCat === 'all' || a.category === currentCat)
-    );
+    const all = getFiltered();
+    const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = 1;
+
+    const items = all.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
     if (items.length === 0) {
       grid.innerHTML = '<div class="empty-state"><p>표시할 아이템이 없습니다.</p></div>';
+      document.getElementById('pagination').innerHTML = '';
       return;
     }
+
     grid.innerHTML = items.map(a => `
       <article class="card" data-id="${a.id}" onclick="goDetail('${a.id}')">
         <div class="card-header">
@@ -409,6 +449,46 @@
         </div>
       </article>
     `).join('');
+
+    renderPagination(totalPages, all.length);
+  }
+
+  function renderPagination(totalPages, total) {
+    const pg = document.getElementById('pagination');
+    if (totalPages <= 1) { pg.innerHTML = ''; return; }
+
+    const prev = `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
+    const next = `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
+
+    // 페이지 번호 — 최대 7개 표시
+    const range = [];
+    const delta = 2;
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+        range.push(i);
+      }
+    }
+    const pages = [];
+    let prev_ = null;
+    for (const p of range) {
+      if (prev_ && p - prev_ > 1) pages.push('…');
+      pages.push(p);
+      prev_ = p;
+    }
+
+    const nums = pages.map(p =>
+      p === '…'
+        ? `<span class="page-info">…</span>`
+        : `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`
+    ).join('');
+
+    pg.innerHTML = `${prev}${nums}${next}`;
+  }
+
+  function goPage(p) {
+    currentPage = p;
+    renderCards();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function goDetail(id) {
@@ -429,6 +509,7 @@
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentCat = btn.dataset.cat;
+      currentPage = 1;
       renderCards();
     });
   });
