@@ -1,61 +1,439 @@
----
-layout: default
-title: Home
----
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Tech Feed — Chris Lee</title>
+<meta name="description" content="Claude, Gemini, Codex 최신 AI 소식을 한국어로 요약 정리">
+<link rel="icon" href="/assets/images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-{% if page.url == "/" %}
+  :root {
+    --bg: #F7F8FA;
+    --surface: #FFFFFF;
+    --border: #E5E7EB;
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --text-muted: #9CA3AF;
+    --accent: #2563EB;
+    --accent-hover: #1D4ED8;
 
-<!-- Featured
-================================================== -->
-<section class="featured-posts">
-    <div class="section-title">
-        <h2><span>Featured</span></h2>
+    --cat-claude: #7C3AED;
+    --cat-claude-bg: #F5F3FF;
+    --cat-claude-border: #DDD6FE;
+
+    --cat-gemini: #2563EB;
+    --cat-gemini-bg: #EFF6FF;
+    --cat-gemini-border: #BFDBFE;
+
+    --cat-codex: #059669;
+    --cat-codex-bg: #ECFDF5;
+    --cat-codex-border: #A7F3D0;
+
+    --cat-usecase: #D97706;
+    --cat-usecase-bg: #FFFBEB;
+    --cat-usecase-border: #FDE68A;
+
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  .nav-logo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .nav-links { display: flex; align-items: center; gap: 8px; }
+  .nav-links a {
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-links a:hover { background: var(--bg); color: var(--text-primary); }
+
+  /* ── Hero ── */
+  .hero {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 64px 24px 40px;
+  }
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+  .hero-tag::before {
+    content: '';
+    display: block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .hero h1 {
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+  .hero-sub {
+    font-size: 17px;
+    color: var(--text-secondary);
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  /* ── Filter Tabs ── */
+  .filter-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px 32px;
+  }
+  .filter-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .tab-btn:hover { border-color: #D1D5DB; color: var(--text-primary); }
+  .tab-btn.active {
+    background: var(--text-primary);
+    border-color: var(--text-primary);
+    color: #fff;
+  }
+  .tab-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+  }
+
+  /* ── Grid ── */
+  .grid-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+    border-color: #D1D5DB;
+    text-decoration: none;
+  }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .cat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .cat-badge::before {
+    content: '';
+    display: block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .cat-claude  { color: var(--cat-claude);  background: var(--cat-claude-bg);  border: 1px solid var(--cat-claude-border); }
+  .cat-gemini  { color: var(--cat-gemini);  background: var(--cat-gemini-bg);  border: 1px solid var(--cat-gemini-border); }
+  .cat-codex   { color: var(--cat-codex);   background: var(--cat-codex-bg);   border: 1px solid var(--cat-codex-border); }
+  .cat-usecase { color: var(--cat-usecase); background: var(--cat-usecase-bg); border: 1px solid var(--cat-usecase-border); }
+
+  .delete-btn {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    font-size: 14px;
+  }
+  .delete-btn:hover { background: #FEF2F2; color: #EF4444; border-color: #FECACA; }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--text-primary);
+  }
+  .card-summary {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+  .card-date {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .card-arrow {
+    font-size: 13px;
+    color: var(--text-muted);
+    transition: transform 0.15s, color 0.15s;
+  }
+  .card:hover .card-arrow { transform: translateX(3px); color: var(--accent); }
+
+  /* ── Empty ── */
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--text-muted);
+  }
+  .empty-state p { font-size: 15px; }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  footer p { font-size: 13px; color: var(--text-muted); }
+  footer a { color: var(--text-secondary); text-decoration: none; font-size: 13px; }
+  footer a:hover { color: var(--text-primary); }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .hero { padding: 40px 16px 28px; }
+    .filter-wrap, .grid-wrap { padding-left: 16px; padding-right: 16px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .nav-inner { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="/">
+      <span class="nav-logo-dot"></span>
+      AI Tech Feed
+    </a>
+    <div class="nav-links">
+      <a href="/blog/">블로그</a>
+      <a href="/about">About</a>
     </div>
-    <div class="row">
-        
-    {% for post in site.posts %}
+  </div>
+</nav>
 
-        {% if post.featured == true %}
+<header class="hero">
+  <div class="hero-tag">AI 기술 동향</div>
+  <h1>최신 AI 소식,<br>한국어로 핵심만</h1>
+  <p class="hero-sub">Claude · Gemini · Codex 새소식과 실전 활용 사례를 표와 도식 중심으로 정리합니다.</p>
+</header>
 
-            {% include featuredbox.html %}
-
-        {% endif %}
-
-    {% endfor %}
-        
-    </div>
-</section>
-
-{% endif %}
-
-<!-- Posts Index
-================================================== -->
-<section class="recent-posts">
-    
-    <div class="section-title">
-        
-        <h2><span>All Stories</span></h2>
-        
-    </div>
-    
-    <div class="row listrecent">
-
-        {% for post in paginator.posts %}
-
-               {% include postbox.html %}          
-
-        {% endfor %}
-        
-    </div>
-    
-</section>
-
-<!-- Pagination
-================================================== -->
-<div class="bottompagination">
-<div class="pointerup"><i class="fa fa-caret-up"></i></div>
-<span class="navigation" role="navigation">
-    {% include pagination.html %}
-</span>
+<div class="filter-wrap">
+  <div class="filter-tabs">
+    <button class="tab-btn active" data-cat="all">전체</button>
+    <button class="tab-btn" data-cat="claude">
+      <span class="tab-dot" style="background:var(--cat-claude)"></span>
+      Claude
+    </button>
+    <button class="tab-btn" data-cat="gemini">
+      <span class="tab-dot" style="background:var(--cat-gemini)"></span>
+      Gemini
+    </button>
+    <button class="tab-btn" data-cat="codex">
+      <span class="tab-dot" style="background:var(--cat-codex)"></span>
+      Codex
+    </button>
+    <button class="tab-btn" data-cat="usecase">
+      <span class="tab-dot" style="background:var(--cat-usecase)"></span>
+      활용 사례
+    </button>
+  </div>
 </div>
 
+<main class="grid-wrap">
+  <div class="card-grid" id="card-grid"></div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <p>© 2026 Chris Lee — AI Tech Feed</p>
+    <a href="/blog/">Jekyll Blog →</a>
+  </div>
+</footer>
+
+<script src="/assets/js/ai-articles.js"></script>
+<script>
+  const DELETED_KEY = 'ai_feed_deleted';
+  const CAT_LABEL = { claude: 'Claude', gemini: 'Gemini', codex: 'Codex', usecase: '활용 사례' };
+
+  function getDeleted() {
+    try { return new Set(JSON.parse(localStorage.getItem(DELETED_KEY) || '[]')); }
+    catch { return new Set(); }
+  }
+  function saveDeleted(set) {
+    localStorage.setItem(DELETED_KEY, JSON.stringify([...set]));
+  }
+
+  let currentCat = 'all';
+  const deleted = getDeleted();
+
+  function fmtDate(d) {
+    const [y, m, dd] = d.split('-');
+    return `${y}년 ${parseInt(m)}월 ${parseInt(dd)}일`;
+  }
+
+  function renderCards() {
+    const grid = document.getElementById('card-grid');
+    const items = AI_ARTICLES.filter(a =>
+      !deleted.has(a.id) && (currentCat === 'all' || a.category === currentCat)
+    );
+    if (items.length === 0) {
+      grid.innerHTML = '<div class="empty-state"><p>표시할 아이템이 없습니다.</p></div>';
+      return;
+    }
+    grid.innerHTML = items.map(a => `
+      <article class="card" data-id="${a.id}" onclick="goDetail('${a.id}')">
+        <div class="card-header">
+          <span class="cat-badge cat-${a.category}">${CAT_LABEL[a.category]}</span>
+          <button class="delete-btn" title="삭제" onclick="deleteItem(event,'${a.id}')">✕</button>
+        </div>
+        <h2 class="card-title">${a.title}</h2>
+        <p class="card-summary">${a.summary}</p>
+        <div class="card-footer">
+          <span class="card-date">${fmtDate(a.date)}</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </article>
+    `).join('');
+  }
+
+  function goDetail(id) {
+    window.location.href = `/ai-news/detail.html?id=${id}`;
+  }
+
+  function deleteItem(e, id) {
+    e.stopPropagation();
+    if (!confirm(`이 아이템을 숨기겠습니까?\n\n영구 삭제는 ai-articles.js에서 id: "${id}" 항목 제거 후 배포하세요.`)) return;
+    deleted.add(id);
+    saveDeleted(deleted);
+    renderCards();
+  }
+
+  // 필터 탭
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCat = btn.dataset.cat;
+      renderCards();
+    });
+  });
+
+  renderCards();
+</script>
+</body>
+</html>
