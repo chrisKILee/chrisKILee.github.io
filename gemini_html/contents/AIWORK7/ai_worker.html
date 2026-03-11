@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Worker — Workflow Automation 가이드</title>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --accent: #7c3aed;
+            --accent2: #06b6d4;
+            --accent3: #10b981;
+            --bg: #f5f3ff;
+            --surface: #ffffff;
+            --border: #ddd6fe;
+            --text: #1e1b4b;
+            --text-muted: #6b7280;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* NAV */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 64px;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            padding: 0 3rem;
+            gap: 2rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+        .nav-logo {
+            color: #fff;
+            font-size: 1.05rem;
+            font-weight: 700;
+            white-space: nowrap;
+            margin-right: auto;
+            letter-spacing: -0.01em;
+        }
+        .nav-logo span { color: #a78bfa; }
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+        .nav-links a {
+            color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: #fff; }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #312e81 55%, #4c1d95 100%);
+            color: #fff;
+            padding: 5rem 3rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -100px; right: -100px;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -80px; left: -80px;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(124,58,237,0.3);
+            border: 1px solid rgba(167,139,250,0.4);
+            color: #c4b5fd;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.3rem 0.9rem;
+            border-radius: 20px;
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.05em;
+        }
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+        .hero h1 em {
+            font-style: normal;
+            color: #a78bfa;
+        }
+        .hero p {
+            font-size: 1.05rem;
+            color: rgba(255,255,255,0.8);
+            max-width: 650px;
+            margin-bottom: 2rem;
+        }
+        .hero-stats {
+            display: flex;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+        .hero-stat {
+            text-align: center;
+        }
+        .hero-stat .value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #a78bfa;
+            display: block;
+        }
+        .hero-stat .label {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* SECTION */
+        .section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-title::before {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 1.5rem;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        /* SCREENSHOT GRID */
+        .screenshot-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        @media (max-width: 900px) {
+            .screenshot-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .screenshot-grid { grid-template-columns: 1fr; }
+        }
+        .screenshot-card {
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .screenshot-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(124,58,237,0.15);
+        }
+        .screenshot-card img {
+            width: 100%;
+            aspect-ratio: 16/10;
+            object-fit: cover;
+            object-position: top;
+            display: block;
+        }
+        .screenshot-info {
+            padding: 0.9rem 1rem;
+        }
+        .screenshot-info h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.3rem;
+        }
+        .screenshot-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+        .screenshot-tag {
+            display: inline-block;
+            background: #ede9fe;
+            color: #6d28d9;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.15rem 0.6rem;
+            border-radius: 20px;
+            margin-bottom: 0.5rem;
+        }
+
+        /* FEATURE CARDS */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        @media (max-width: 700px) {
+            .feature-grid { grid-template-columns: 1fr; }
+        }
+        .feature-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+        }
+        .feature-card.green { border-left-color: var(--accent3); }
+        .feature-card.cyan { border-left-color: var(--accent2); }
+        .feature-card.yellow { border-left-color: var(--warning); }
+        .feature-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.7rem;
+        }
+        .feature-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .feature-card p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .feature-card ul {
+            margin-top: 0.8rem;
+            padding-left: 1.2rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .feature-card ul li { margin-bottom: 0.3rem; }
+
+        /* PIPELINE */
+        .pipeline {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+        }
+        .pipeline-steps {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            flex-wrap: wrap;
+        }
+        .pipeline-step {
+            flex: 1;
+            min-width: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 1rem 0.5rem;
+        }
+        .pipeline-arrow {
+            display: flex;
+            align-items: center;
+            color: var(--accent);
+            font-size: 1.4rem;
+            padding-top: 1.5rem;
+        }
+        .step-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7c3aed, #4c1d95);
+            color: #fff;
+            font-weight: 800;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.7rem;
+        }
+        .pipeline-step h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+        .pipeline-step p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* TECH STACK */
+        .stack-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        @media (max-width: 700px) {
+            .stack-grid { grid-template-columns: 1fr; }
+        }
+        .stack-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        .stack-card h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .stack-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.85rem;
+        }
+        .stack-item:last-child { border-bottom: none; }
+        .stack-item .name { color: var(--text); font-weight: 500; }
+        .stack-item .version {
+            background: #ede9fe;
+            color: #6d28d9;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        /* ARCHITECTURE */
+        .arch-box {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+        }
+        .arch-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .arch-node {
+            background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+            border: 2px solid #c4b5fd;
+            border-radius: 10px;
+            padding: 0.7rem 1.3rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4c1d95;
+            text-align: center;
+            min-width: 120px;
+        }
+        .arch-node.blue {
+            background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+            border-color: #7dd3fc;
+            color: #075985;
+        }
+        .arch-node.green {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            border-color: #6ee7b7;
+            color: #065f46;
+        }
+        .arch-arrow {
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+
+        /* STATS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+        @media (max-width: 700px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        .stat-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+
+        /* ROADMAP */
+        .roadmap-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        @media (max-width: 700px) {
+            .roadmap-list { grid-template-columns: 1fr; }
+        }
+        .roadmap-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        .roadmap-card h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .roadmap-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            padding: 0.4rem 0;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+        .check-done { color: var(--success); font-size: 1rem; }
+        .check-todo { color: var(--text-muted); font-size: 1rem; }
+
+        /* SETUP */
+        .setup-steps {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        @media (max-width: 700px) {
+            .setup-steps { grid-template-columns: 1fr; }
+        }
+        .setup-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        .setup-card h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        pre {
+            background: #1e1b4b;
+            color: #c4b5fd;
+            padding: 1rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            line-height: 1.6;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        pre .comment { color: #6b7280; }
+        pre .cmd { color: #a78bfa; }
+
+        /* SECTION BG */
+        .section-alt {
+            background: #fff;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-inner {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        .modal-inner img {
+            max-width: 100%;
+            max-height: 85vh;
+            border-radius: 8px;
+            display: block;
+        }
+        .modal-close {
+            position: absolute;
+            top: -16px;
+            right: -16px;
+            width: 36px;
+            height: 36px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .modal-caption {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            margin-top: 0.8rem;
+            font-size: 0.88rem;
+        }
+
+        /* FOOTER */
+        footer {
+            background: var(--primary);
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.85rem;
+        }
+        footer a { color: #a78bfa; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <div class="nav-logo">AI <span>Worker</span></div>
+    <ul class="nav-links">
+        <li><a href="#screenshots">화면 안내</a></li>
+        <li><a href="#features">주요 기능</a></li>
+        <li><a href="#tech">기술 스택</a></li>
+        <li><a href="#architecture">아키텍처</a></li>
+        <li><a href="#setup">실행 방법</a></li>
+    </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-badge">✦ Workflow Automation</div>
+        <h1>AI <em>Worker</em><br>업무 자동화 플랫폼</h1>
+        <p>PPT·PDF·이미지를 업로드하면 AI가 자동으로 발표 스크립트, 면접 질문, 엑셀 데이터를 생성합니다. TDD + AI 페어 프로그래밍 방법론으로 1인 개발된 실무 자동화 플랫폼입니다.</p>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span class="value">4</span>
+                <span class="label">핵심 AI 기능</span>
+            </div>
+            <div class="hero-stat">
+                <span class="value">33</span>
+                <span class="label">총 커밋</span>
+            </div>
+            <div class="hero-stat">
+                <span class="value">39</span>
+                <span class="label">테스트 파일</span>
+            </div>
+            <div class="hero-stat">
+                <span class="value">29K</span>
+                <span class="label">코드 라인</span>
+            </div>
+            <div class="hero-stat">
+                <span class="value">10mo</span>
+                <span class="label">개발 기간</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SCREENSHOTS -->
+<section class="section" id="screenshots">
+    <h2 class="section-title">화면 안내</h2>
+    <div class="screenshot-grid">
+        <div class="screenshot-card" onclick="openModal('images/image-20260311-021748.png', '발표 스크립트 생성 — 파일 업로드 화면')">
+            <img src="images/image-20260311-021748.png" alt="발표 스크립트 생성 업로드 화면">
+            <div class="screenshot-info">
+                <span class="screenshot-tag">발표 스크립트</span>
+                <h4>파일 업로드 화면</h4>
+                <p>PPT·PPTX·PDF 파일을 드래그앤드롭 또는 클릭으로 업로드합니다.</p>
+            </div>
+        </div>
+        <div class="screenshot-card" onclick="openModal('images/image-20260311-021805.png', '발표 스크립트 생성 결과 화면')">
+            <img src="images/image-20260311-021805.png" alt="발표 스크립트 생성 결과">
+            <div class="screenshot-info">
+                <span class="screenshot-tag">발표 스크립트</span>
+                <h4>생성 결과 화면</h4>
+                <p>슬라이드별 발표 스크립트가 자동 생성됩니다. 3단계 AI 파이프라인(분석 → 생성 → 후처리)을 통해 일관성 있는 스크립트를 제공합니다.</p>
+            </div>
+        </div>
+        <div class="screenshot-card" onclick="openModal('images/image-20260311-021826.png', '이미지 분석 결과 화면')">
+            <img src="images/image-20260311-021826.png" alt="이미지 분석 결과">
+            <div class="screenshot-info">
+                <span class="screenshot-tag">이미지 분석</span>
+                <h4>표·차트 분석 결과</h4>
+                <p>복잡한 표·차트 이미지를 자연어 텍스트 설명으로 변환합니다. 이미지 유형, 주요 인사이트 3가지를 포함합니다.</p>
+            </div>
+        </div>
+        <div class="screenshot-card" onclick="openModal('images/image-20260311-021904.png', '이미지→엑셀 변환 요청 화면')">
+            <img src="images/image-20260311-021904.png" alt="이미지→엑셀 변환 요청">
+            <div class="screenshot-info">
+                <span class="screenshot-tag">이미지→엑셀</span>
+                <h4>이미지 분석 요청 화면</h4>
+                <p>영수증·명함 이미지를 최대 20장까지 다중 업로드하여 엑셀 변환을 요청합니다.</p>
+            </div>
+        </div>
+        <div class="screenshot-card" onclick="openModal('images/image-20260311-021924.png', '이미지→엑셀 변환 결과 화면')">
+            <img src="images/image-20260311-021924.png" alt="이미지→엑셀 변환 결과">
+            <div class="screenshot-info">
+                <span class="screenshot-tag">이미지→엑셀</span>
+                <h4>변환 결과 화면</h4>
+                <p>AI가 구조화한 데이터를 확인하고 엑셀 파일로 다운로드합니다. 처리 진행률도 실시간 표시됩니다.</p>
+            </div>
+        </div>
+        <div class="screenshot-card" onclick="openModal('images/image-20260311-021940.png', '면접 질문 생성기 화면')">
+            <img src="images/image-20260311-021940.png" alt="면접 질문 생성기">
+            <div class="screenshot-info">
+                <span class="screenshot-tag">면접 질문</span>
+                <h4>면접 질문 생성기</h4>
+                <p>채용 공고(JD)와 이력서를 입력하면 역량별 면접 질문 5개와 평가 기준을 자동 생성합니다.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<div class="section-alt">
+<section class="section" id="features">
+    <h2 class="section-title">주요 기능</h2>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>발표 스크립트 생성기</h3>
+            <p>PPT·PDF를 업로드하면 슬라이드별 발표 스크립트를 자동으로 생성합니다.</p>
+            <ul>
+                <li>3단계 AI 파이프라인 (병렬 분석 → 순차 생성 → 전체 후처리)</li>
+                <li>LibreOffice PDF 변환 + Gemini Vision 분석</li>
+                <li>매직바이트 이중 검증 (스푸핑 방지)</li>
+                <li>지수 백오프 재시도 (API 장애 대응)</li>
+                <li>처리 상태 실시간 표시</li>
+            </ul>
+        </div>
+        <div class="feature-card green">
+            <div class="feature-icon">🖼️</div>
+            <h3>표·차트 이미지 분석기</h3>
+            <p>복잡한 표·차트 이미지를 자연어 텍스트 설명으로 변환합니다.</p>
+            <ul>
+                <li>지원 형식: JPEG, PNG, WebP (최대 10MB)</li>
+                <li>간략/상세 모드 선택, 한국어/영어 출력</li>
+                <li>이미지 유형 분류 + 주요 인사이트 3가지</li>
+                <li>일회성 분석 (히스토리 저장 없음)</li>
+            </ul>
+        </div>
+        <div class="feature-card cyan">
+            <div class="feature-icon">📋</div>
+            <h3>이미지 → 엑셀 변환기</h3>
+            <p>영수증·명함 이미지를 구조화된 엑셀 파일로 자동 변환합니다.</p>
+            <ul>
+                <li>최대 20장 다중 업로드 지원</li>
+                <li>AI 데이터 추출 (날짜·금액·상호명·연락처)</li>
+                <li>exceljs 기반 엑셀 파일 생성 및 다운로드</li>
+                <li>처리 진행률 실시간 추적</li>
+                <li>히스토리 저장·조회</li>
+            </ul>
+        </div>
+        <div class="feature-card yellow">
+            <div class="feature-icon">🎯</div>
+            <h3>JD 기반 면접 질문 생성기</h3>
+            <p>채용 공고(JD)와 이력서를 입력하면 맞춤형 면접 질문 세트를 생성합니다.</p>
+            <ul>
+                <li>직무 유형 6종 (개발/디자인/기획/마케팅/영업/일반)</li>
+                <li>AI 출력: 5개 질문 × (역량명 + 내용 + 평가의도 + 기준)</li>
+                <li>이력서 첨부 시 개인화 질문 생성</li>
+                <li>엑셀 다운로드 지원</li>
+                <li>히스토리 저장·조회</li>
+            </ul>
+        </div>
+    </div>
+</section>
+</div>
+
+<!-- AI PIPELINE -->
+<section class="section">
+    <h2 class="section-title">AI 처리 파이프라인 (발표 스크립트)</h2>
+    <div class="pipeline">
+        <div class="pipeline-steps">
+            <div class="pipeline-step">
+                <div class="step-circle">📤</div>
+                <h4>파일 업로드</h4>
+                <p>PPT·PPTX·PDF 업로드 + 매직바이트 검증</p>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">
+                <div class="step-circle">🔄</div>
+                <h4>PDF 변환</h4>
+                <p>LibreOffice를 통해 슬라이드 이미지 분할</p>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">
+                <div class="step-circle">1</div>
+                <h4>병렬 분석</h4>
+                <p>Gemini Vision으로 각 슬라이드 동시 분석</p>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">
+                <div class="step-circle">2</div>
+                <h4>맥락 생성</h4>
+                <p>앞 슬라이드 맥락을 반영한 순차 스크립트 생성</p>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">
+                <div class="step-circle">3</div>
+                <h4>후처리</h4>
+                <p>전체 일관성·자연스러움 최종 리파인</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TECH STACK -->
+<div class="section-alt">
+<section class="section" id="tech">
+    <h2 class="section-title">기술 스택</h2>
+    <div class="stack-grid">
+        <div class="stack-card">
+            <h3>⚙️ 백엔드</h3>
+            <div class="stack-item"><span class="name">NestJS</span><span class="version">v11</span></div>
+            <div class="stack-item"><span class="name">Express</span><span class="version">v5</span></div>
+            <div class="stack-item"><span class="name">Prisma ORM</span><span class="version">v7</span></div>
+            <div class="stack-item"><span class="name">PostgreSQL</span><span class="version">DB</span></div>
+            <div class="stack-item"><span class="name">Gemini 2.5 Flash</span><span class="version">AI</span></div>
+            <div class="stack-item"><span class="name">Passport + JWT</span><span class="version">Auth</span></div>
+            <div class="stack-item"><span class="name">LibreOffice</span><span class="version">파일</span></div>
+            <div class="stack-item"><span class="name">exceljs</span><span class="version">엑셀</span></div>
+            <div class="stack-item"><span class="name">Jest</span><span class="version">테스트</span></div>
+        </div>
+        <div class="stack-card">
+            <h3>🖥️ 프론트엔드</h3>
+            <div class="stack-item"><span class="name">React</span><span class="version">v19</span></div>
+            <div class="stack-item"><span class="name">Vite</span><span class="version">v7</span></div>
+            <div class="stack-item"><span class="name">Zustand</span><span class="version">v5</span></div>
+            <div class="stack-item"><span class="name">Axios</span><span class="version">HTTP</span></div>
+            <div class="stack-item"><span class="name">Tailwind CSS</span><span class="version">v3</span></div>
+            <div class="stack-item"><span class="name">Vitest</span><span class="version">테스트</span></div>
+        </div>
+        <div class="stack-card">
+            <h3>🏗️ 인프라</h3>
+            <div class="stack-item"><span class="name">Docker</span><span class="version">컨테이너</span></div>
+            <div class="stack-item"><span class="name">Docker Compose</span><span class="version">오케스트레이션</span></div>
+            <div class="stack-item"><span class="name">Nginx</span><span class="version">웹서버</span></div>
+            <div class="stack-item"><span class="name">pnpm</span><span class="version">v10</span></div>
+            <div class="stack-item"><span class="name">Node.js</span><span class="version">≥20</span></div>
+            <div class="stack-item"><span class="name">Google OAuth 2.0</span><span class="version">SSO</span></div>
+        </div>
+    </div>
+</section>
+</div>
+
+<!-- ARCHITECTURE -->
+<section class="section" id="architecture">
+    <h2 class="section-title">시스템 아키텍처</h2>
+    <div class="arch-box">
+        <div class="arch-row">
+            <div class="arch-node blue">사용자 브라우저</div>
+        </div>
+        <div class="arch-row">
+            <span class="arch-arrow">↓</span>
+        </div>
+        <div class="arch-row">
+            <div class="arch-node">Nginx<br><small style="font-weight:400;color:#7c3aed">정적 파일 서빙 + 리버스 프록시</small></div>
+        </div>
+        <div class="arch-row">
+            <span class="arch-arrow">↓ API 요청</span>
+        </div>
+        <div class="arch-row">
+            <div class="arch-node">NestJS API Server<br><small style="font-weight:400;color:#7c3aed">port 3002</small></div>
+        </div>
+        <div class="arch-row" style="gap:3rem;">
+            <span class="arch-arrow">↙</span>
+            <span class="arch-arrow">↓</span>
+            <span class="arch-arrow">↘</span>
+        </div>
+        <div class="arch-row" style="gap:2rem;">
+            <div class="arch-node green">LibreOffice<br><small style="font-weight:400;color:#065f46">PPT→PDF 변환</small></div>
+            <div class="arch-node green">Gemini Vision API<br><small style="font-weight:400;color:#065f46">AI 분석·생성</small></div>
+            <div class="arch-node green">PostgreSQL<br><small style="font-weight:400;color:#065f46">유저·히스토리</small></div>
+        </div>
+    </div>
+</section>
+
+<!-- STATS -->
+<div class="section-alt">
+<section class="section">
+    <h2 class="section-title">프로젝트 규모 (2026-03 기준)</h2>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">33</div>
+            <div class="stat-label">총 커밋</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">204</div>
+            <div class="stat-label">총 파일</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">29K</div>
+            <div class="stat-label">코드 라인</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">39</div>
+            <div class="stat-label">테스트 파일</div>
+        </div>
+    </div>
+</section>
+</div>
+
+<!-- ROADMAP -->
+<section class="section">
+    <h2 class="section-title">기능 로드맵</h2>
+    <div class="roadmap-list">
+        <div class="roadmap-card">
+            <h3>✅ 완료된 기능 (v1.0)</h3>
+            <div class="roadmap-item"><span class="check-done">✓</span> 발표 스크립트 생성기 (3단계 AI 파이프라인)</div>
+            <div class="roadmap-item"><span class="check-done">✓</span> Google OAuth 로그인 + JWT</div>
+            <div class="roadmap-item"><span class="check-done">✓</span> 히스토리 저장·조회</div>
+            <div class="roadmap-item"><span class="check-done">✓</span> 표·차트 이미지 분석기</div>
+            <div class="roadmap-item"><span class="check-done">✓</span> 이미지 → 엑셀 변환기</div>
+            <div class="roadmap-item"><span class="check-done">✓</span> JD 기반 면접 질문 생성기</div>
+            <div class="roadmap-item"><span class="check-done">✓</span> 이력서 기반 면접 질문 개인화</div>
+        </div>
+        <div class="roadmap-card">
+            <h3>📌 향후 계획 (Backlog)</h3>
+            <div class="roadmap-item"><span class="check-todo">○</span> 업무 인수인계 문서 자동 생성기</div>
+            <div class="roadmap-item"><span class="check-todo">○</span> 발표 시간 예측 기능</div>
+            <div class="roadmap-item"><span class="check-todo">○</span> 다국어 지원 (영어 출력 강화)</div>
+            <div class="roadmap-item"><span class="check-todo">○</span> 팀 계정·공유 기능</div>
+            <div class="roadmap-item"><span class="check-todo">○</span> 모바일 최적화</div>
+        </div>
+    </div>
+</section>
+
+<!-- SETUP -->
+<div class="section-alt">
+<section class="section" id="setup">
+    <h2 class="section-title">실행 방법</h2>
+    <div class="setup-steps">
+        <div class="setup-card">
+            <h3>🐳 Docker (권장)</h3>
+            <pre><span class="comment"># 환경변수 설정</span>
+<span class="cmd">cp</span> apps/api-server/.env.example \
+   apps/api-server/.env
+<span class="comment"># .env 파일 편집 후:</span>
+
+<span class="comment"># 전체 실행</span>
+<span class="cmd">docker-compose up --build</span>
+
+<span class="comment"># 백그라운드 실행</span>
+<span class="cmd">docker-compose up -d --build</span></pre>
+        </div>
+        <div class="setup-card">
+            <h3>💻 로컬 개발</h3>
+            <pre><span class="comment"># 의존성 설치</span>
+<span class="cmd">pnpm install</span>
+
+<span class="comment"># DB 마이그레이션</span>
+<span class="cmd">cd apps/api-server</span>
+<span class="cmd">npx prisma migrate dev</span>
+
+<span class="comment"># 전체 개발 서버 실행</span>
+<span class="cmd">pnpm dev</span>
+
+<span class="comment"># 개별 실행</span>
+<span class="cmd">pnpm -F @ai-worker/api-server dev</span>     <span class="comment"># :3002</span>
+<span class="cmd">pnpm -F @ai-worker/user-client dev</span>   <span class="comment"># :5175</span></pre>
+        </div>
+        <div class="setup-card">
+            <h3>🔑 필수 환경변수</h3>
+            <pre>DATABASE_URL         <span class="comment"># PostgreSQL</span>
+GEMINI_API_KEY       <span class="comment"># Google Gemini</span>
+GOOGLE_CLIENT_ID     <span class="comment"># OAuth 클라이언트</span>
+GOOGLE_CLIENT_SECRET <span class="comment"># OAuth 시크릿</span>
+GOOGLE_CALLBACK_URL  <span class="comment"># 콜백 URL</span>
+JWT_SECRET           <span class="comment"># JWT 서명키</span>
+CORS_ORIGIN          <span class="comment"># 허용 프론트엔드 URL</span>
+PORT                 <span class="comment"># API 포트 (기본: 3002)</span></pre>
+        </div>
+        <div class="setup-card">
+            <h3>🧪 테스트</h3>
+            <pre><span class="comment"># 전체 테스트</span>
+<span class="cmd">pnpm test</span>
+
+<span class="comment"># 백엔드 커버리지</span>
+<span class="cmd">pnpm -F @ai-worker/api-server</span>
+<span class="cmd">  test:cov</span></pre>
+        </div>
+    </div>
+</section>
+</div>
+
+<footer>
+    <p>AI Worker — <a href="https://github.com/shinysky73/ai-worker" target="_blank">shinysky73/ai-worker</a> &nbsp;|&nbsp; 개발 기간: 2025.05 ~ 2026.03 &nbsp;|&nbsp; 1인 개발</p>
+    <p style="margin-top:0.4rem">TDD + AI 페어 프로그래밍 (Claude Code + Gemini 2.5 Flash)</p>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal()">
+    <div class="modal-inner" onclick="event.stopPropagation()">
+        <div class="modal-close" onclick="closeModal()">✕</div>
+        <img id="modal-img" src="" alt="">
+        <div class="modal-caption" id="modal-caption"></div>
+    </div>
+</div>
+
+<script>
+function openModal(src, caption) {
+    document.getElementById('modal-img').src = src;
+    document.getElementById('modal-caption').textContent = caption;
+    document.getElementById('modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+
+</body>
+</html>
