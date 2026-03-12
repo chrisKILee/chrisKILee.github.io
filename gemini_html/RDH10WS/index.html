@@ -281,6 +281,21 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
 
+                // 상대경로 이미지/미디어를 절대경로로 변환
+                const baseUrl = `../contents/${file.hash}/`;
+                doc.querySelectorAll('[src]').forEach(el => {
+                    const src = el.getAttribute('src');
+                    if (src && !src.startsWith('http') && !src.startsWith('//') && !src.startsWith('data:')) {
+                        el.setAttribute('src', baseUrl + src);
+                    }
+                });
+                doc.querySelectorAll('[href]').forEach(el => {
+                    const href = el.getAttribute('href');
+                    if (href && !href.startsWith('http') && !href.startsWith('//') && !href.startsWith('#') && !href.startsWith('data:')) {
+                        el.setAttribute('href', baseUrl + href);
+                    }
+                });
+
                 container.innerHTML = '';
 
                 // Inject <link> tags (fonts, external CSS)
