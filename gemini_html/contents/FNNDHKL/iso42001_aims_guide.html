@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISO/IEC 42001 AI 경영시스템(AIMS) 완전 가이드</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #161b27;
+    --bg3: #1e2536;
+    --surface: #1a2033;
+    --surface2: #212840;
+    --border: rgba(99,120,180,0.18);
+    --border2: rgba(99,120,180,0.30);
+    --accent: #4f8ef7;
+    --accent2: #7c5cfc;
+    --accent3: #22d3ee;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --orange: #f97316;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --radius: 12px;
+    --radius2: 8px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+
+  /* NAV */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(15,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; gap: 8px;
+    height: 56px;
+  }
+  .nav-logo {
+    font-size: 13px; font-weight: 700;
+    color: var(--accent); letter-spacing: 0.5px;
+    white-space: nowrap; margin-right: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-logo-icon { font-size: 20px; }
+  .nav-links {
+    display: flex; gap: 4px; overflow-x: auto;
+    scrollbar-width: none; flex: 1;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-link {
+    padding: 5px 12px; border-radius: 6px;
+    font-size: 12px; color: var(--text2);
+    cursor: pointer; white-space: nowrap;
+    transition: all 0.2s;
+    border: none; background: none;
+  }
+  .nav-link:hover, .nav-link.active { background: var(--surface2); color: var(--text); }
+
+  /* HERO */
+  .hero {
+    padding: 120px 24px 60px;
+    max-width: 960px; margin: 0 auto;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(79,142,247,0.12);
+    border: 1px solid rgba(79,142,247,0.30);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px; color: var(--accent);
+    margin-bottom: 24px; letter-spacing: 0.3px;
+  }
+  .hero h1 {
+    font-size: clamp(26px, 5vw, 42px);
+    font-weight: 800; line-height: 1.25;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero h1 span {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-desc {
+    font-size: 16px; color: var(--text2);
+    max-width: 680px; margin: 0 auto 36px;
+  }
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    justify-content: center; margin-bottom: 40px;
+  }
+  .hero-chip {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 8px 16px;
+    font-size: 12px; color: var(--text2);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .hero-chip strong { color: var(--text); }
+
+  /* STATS */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px; max-width: 960px; margin: 0 auto 60px; padding: 0 24px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--border2); }
+  .stat-num {
+    font-size: 28px; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stat-label { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* SECTION WRAPPER */
+  .section { max-width: 960px; margin: 0 auto; padding: 60px 24px; }
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: clamp(20px, 3vw, 28px); font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .section-desc { color: var(--text2); margin-bottom: 32px; max-width: 600px; }
+  .divider {
+    border: none; border-top: 1px solid var(--border);
+    max-width: 960px; margin: 0 auto;
+  }
+
+  /* OVERVIEW GRID */
+  .overview-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .ov-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .ov-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .ov-icon { font-size: 26px; margin-bottom: 12px; }
+  .ov-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .ov-body { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+  /* CLAUSE TABLE */
+  .clause-list { display: flex; flex-direction: column; gap: 12px; }
+  .clause-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    cursor: pointer;
+  }
+  .clause-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px;
+    transition: background 0.2s;
+  }
+  .clause-header:hover { background: var(--surface2); }
+  .clause-num {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: linear-gradient(135deg, rgba(79,142,247,0.2), rgba(124,92,252,0.2));
+    border: 1px solid rgba(79,142,247,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: var(--accent);
+    flex-shrink: 0;
+  }
+  .clause-info { flex: 1; }
+  .clause-name { font-size: 14px; font-weight: 700; }
+  .clause-subtitle { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .clause-arrow {
+    color: var(--text3); font-size: 18px;
+    transition: transform 0.2s;
+  }
+  .clause-item.open .clause-arrow { transform: rotate(90deg); }
+  .clause-body {
+    display: none; padding: 0 20px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .clause-item.open .clause-body { display: block; }
+  .clause-body ul { padding-left: 18px; }
+  .clause-body li {
+    font-size: 13px; color: var(--text2);
+    margin-bottom: 6px; line-height: 1.6;
+  }
+  .clause-body li strong { color: var(--text); }
+  .clause-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; margin-right: 4px;
+    background: rgba(79,142,247,0.12); color: var(--accent);
+  }
+
+  /* ANNEX A */
+  .annex-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .annex-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px;
+    transition: border-color 0.2s;
+  }
+  .annex-card:hover { border-color: var(--border2); }
+  .annex-head {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .annex-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .annex-code { font-size: 11px; font-weight: 700; color: var(--text3); }
+  .annex-title { font-size: 13px; font-weight: 700; }
+  .annex-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+  /* COMPARISON */
+  .compare-table-wrap { overflow-x: auto; border-radius: var(--radius); }
+  .compare-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .compare-table th {
+    background: var(--surface2);
+    padding: 12px 16px; text-align: left;
+    font-size: 13px; font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .compare-table td {
+    padding: 12px 16px; font-size: 13px; color: var(--text2);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: var(--surface2); }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-blue { background: rgba(79,142,247,0.15); color: var(--accent); }
+  .badge-purple { background: rgba(124,92,252,0.15); color: #a78bfa; }
+  .badge-green { background: rgba(16,185,129,0.15); color: var(--green); }
+
+  /* WARNINGS / CAUTIONS */
+  .warn-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .warn-card {
+    border-radius: var(--radius); padding: 20px;
+    border-left: 4px solid;
+  }
+  .warn-card.red { background: rgba(239,68,68,0.07); border-color: var(--red); }
+  .warn-card.yellow { background: rgba(245,158,11,0.07); border-color: var(--yellow); }
+  .warn-card.orange { background: rgba(249,115,22,0.07); border-color: var(--orange); }
+  .warn-card.blue { background: rgba(79,142,247,0.07); border-color: var(--accent); }
+  .warn-card.green { background: rgba(16,185,129,0.07); border-color: var(--green); }
+  .warn-icon { font-size: 22px; margin-bottom: 8px; }
+  .warn-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .warn-body { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .warn-body ul { padding-left: 16px; margin-top: 6px; }
+  .warn-body li { margin-bottom: 4px; }
+
+  /* DEV CHECKLIST */
+  .checklist {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .checklist-phase {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface2);
+  }
+  .checklist-phase:last-of-type { border-bottom: none; }
+  .phase-badge {
+    background: rgba(79,142,247,0.15); color: var(--accent);
+    border-radius: 6px; padding: 3px 10px;
+    font-size: 11px; font-weight: 700;
+  }
+  .phase-name { font-size: 13px; font-weight: 600; }
+  .checklist-items {
+    padding: 0 20px 16px;
+    background: var(--surface);
+  }
+  .checklist-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid rgba(99,120,180,0.08);
+    font-size: 13px; color: var(--text2);
+  }
+  .checklist-item:last-child { border-bottom: none; }
+  .ci-icon { color: var(--green); flex-shrink: 0; margin-top: 1px; }
+
+  /* ROADMAP */
+  .roadmap { position: relative; padding-left: 32px; }
+  .roadmap::before {
+    content: '';
+    position: absolute; left: 11px; top: 8px;
+    width: 2px; bottom: 8px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent2));
+  }
+  .rm-step { position: relative; margin-bottom: 28px; }
+  .rm-dot {
+    position: absolute; left: -32px; top: 4px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent2);
+    border: 2px solid var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: #fff;
+  }
+  .rm-phase {
+    font-size: 11px; font-weight: 700; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .rm-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .rm-body { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .rm-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .rm-tag {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px 8px;
+    font-size: 11px; color: var(--text3);
+  }
+
+  /* REGULATION CARDS */
+  .reg-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .reg-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .reg-card:hover { border-color: var(--border2); }
+  .reg-flag { font-size: 28px; margin-bottom: 10px; }
+  .reg-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .reg-sub { font-size: 12px; color: var(--accent); margin-bottom: 10px; }
+  .reg-body { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+  /* CASE STUDIES */
+  .case-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .case-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .case-card:hover { border-color: var(--border2); }
+  .case-company { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .case-meta { font-size: 11px; color: var(--text3); margin-bottom: 10px; }
+  .case-body { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .case-highlight {
+    margin-top: 10px; padding: 8px 12px;
+    background: rgba(16,185,129,0.08); border-left: 3px solid var(--green);
+    border-radius: 4px; font-size: 12px; color: var(--green);
+  }
+
+  /* KPI */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .kpi-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+    text-align: center;
+  }
+  .kpi-icon { font-size: 22px; margin-bottom: 8px; }
+  .kpi-name { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .kpi-value { font-size: 13px; font-weight: 700; color: var(--accent3); }
+
+  /* INSIGHT BOX */
+  .insight-box {
+    background: linear-gradient(135deg, rgba(79,142,247,0.08), rgba(124,92,252,0.08));
+    border: 1px solid rgba(79,142,247,0.25);
+    border-radius: var(--radius); padding: 24px;
+    margin: 24px 0;
+  }
+  .insight-box p { font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 8px; }
+  .insight-box p:last-child { margin-bottom: 0; }
+  .insight-box strong { color: var(--text); }
+
+  /* FOOTER */
+  .footer {
+    text-align: center; padding: 48px 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text3); font-size: 12px;
+    margin-top: 60px;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+
+  /* SCROLL TO TOP */
+  .scroll-top {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    border: none; cursor: pointer;
+    font-size: 18px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(79,142,247,0.4);
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .scroll-top.visible { opacity: 1; pointer-events: all; }
+
+  @media (max-width: 600px) {
+    .nav-link { display: none; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo"><span class="nav-logo-icon">🛡️</span>ISO/IEC 42001 AIMS</div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="scrollToSection('overview')">개요</button>
+    <button class="nav-link" onclick="scrollToSection('clauses')">주요 조항</button>
+    <button class="nav-link" onclick="scrollToSection('annex')">부속서 A</button>
+    <button class="nav-link" onclick="scrollToSection('compare')">표준 비교</button>
+    <button class="nav-link" onclick="scrollToSection('company-warn')">기업 주의사항</button>
+    <button class="nav-link" onclick="scrollToSection('dev-guide')">개발 가이드</button>
+    <button class="nav-link" onclick="scrollToSection('roadmap')">도입 로드맵</button>
+    <button class="nav-link" onclick="scrollToSection('regulation')">글로벌 규제</button>
+    <button class="nav-link" onclick="scrollToSection('cases')">인증 사례</button>
+    <button class="nav-link" onclick="scrollToSection('kpi')">KPI 예시</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🆕 2023년 12월 국제 표준 제정 · 최초 인증 가능 AI 경영시스템 표준</div>
+  <h1>ISO/IEC 42001<br><span>AI 경영시스템(AIMS) 완전 가이드</span></h1>
+  <p class="hero-desc">
+    인공지능 기술의 전 생애주기를 체계적으로 관리하고, 신뢰성·공정성·투명성을 확보하기 위한
+    세계 최초의 인증 가능한 인공지능 경영시스템 국제 표준입니다.
+  </p>
+  <div class="hero-meta">
+    <div class="hero-chip">📄 <strong>ISO/IEC 42001:2023</strong></div>
+    <div class="hero-chip">📅 <strong>2023.12.18 제정</strong></div>
+    <div class="hero-chip">🏢 <strong>ISO / IEC JTC1/SC 42</strong></div>
+    <div class="hero-chip">📑 <strong>총 51페이지 + Annex A</strong></div>
+    <div class="hero-chip">✅ <strong>제3자 인증 가능</strong></div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-card">
+    <div class="stat-num">7</div>
+    <div class="stat-label">핵심 요구 조항 (Clause 4~10)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">10</div>
+    <div class="stat-label">Annex A 통제 범주</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">4</div>
+    <div class="stat-label">PDCA 사이클 단계</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">100%</div>
+    <div class="stat-label">조직 규모 무관 적용 가능</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">30~40%</div>
+    <div class="stat-label">ISO 27001 보유 시 도입 시간 단축</div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- OVERVIEW -->
+<section class="section" id="overview">
+  <div class="section-label">개요 · Overview</div>
+  <div class="section-title">ISO/IEC 42001이란?</div>
+  <p class="section-desc">AI 경영시스템의 태동 배경과 표준의 핵심 가치를 이해합니다.</p>
+
+  <div class="overview-grid">
+    <div class="ov-card">
+      <div class="ov-icon">🎯</div>
+      <div class="ov-title">등장 배경</div>
+      <div class="ov-body">
+        AI의 <strong>비결정성(Non-determinism)</strong>·<strong>가변성</strong>·<strong>복잡성</strong>은 기존 소프트웨어 품질관리 체계로 통제 불가능한 새로운 리스크를 만들었습니다.
+        알고리즘 편향, 환각(Hallucination), 개인정보 침해, 불투명한 의사결정이 법적·윤리적 문제로 확산되면서 국제 표준의 필요성이 대두되었습니다.
+      </div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-icon">🏗️</div>
+      <div class="ov-title">표준의 목적</div>
+      <div class="ov-body">
+        AI 기반 제품·서비스의 <strong>기획→개발→운영→유지</strong> 전 과정에서 윤리성·투명성·안정성·책임성을 확보하도록 체계적인 관리 체계(AIMS)를 구축·유지·개선하도록 지원합니다.
+        조직의 AI 위험과 기회를 동시에 체계적으로 관리합니다.
+      </div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-icon">🔗</div>
+      <div class="ov-title">고수준 구조(HLS) 채택</div>
+      <div class="ov-body">
+        ISO 9001(품질), ISO/IEC 27001(정보보안)과 동일한 <strong>HLS(High-Level Structure)</strong>를 사용합니다.
+        기존 경영시스템과 통합 운영이 용이하고, 중복 문서화를 방지하며, 전사 거버넌스 효율성을 극대화합니다.
+      </div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-icon">🔄</div>
+      <div class="ov-title">PDCA 사이클 기반</div>
+      <div class="ov-body">
+        <strong>계획(Plan) → 실행(Do) → 점검(Check) → 조치(Act)</strong> 사이클로 지속적 개선을 추구합니다.
+        사후 대응에서 <strong>사전 예방적 관리</strong>로의 패러다임 전환을 이끄는 AI 거버넌스의 핵심 프레임워크입니다.
+      </div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-icon">🏢</div>
+      <div class="ov-title">적용 대상</div>
+      <div class="ov-body">
+        AI 관련 제품·서비스를 <strong>제공하거나 활용하는 모든 조직</strong>에 적용 가능합니다.
+        조직 규모(대·중·소)나 산업 분야(금융·의료·제조·공공 등)에 관계없이 적용되며, AI를 공급·개발·운영·사용하는 모든 역할을 포괄합니다.
+      </div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-icon">⚡</div>
+      <div class="ov-title">글로벌 규제 대응 도구</div>
+      <div class="ov-body">
+        EU AI Act 등 강화되는 전 세계 AI 규제에 대응하는 <strong>실무 이행 도구</strong>로 평가받습니다.
+        조화 표준(Harmonised Standard) 채택 시, 인증 보유 기업은 EU 시장에서 <strong>적합성 추정(Presumption of Conformity)</strong> 혜택을 받을 수 있습니다.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- CLAUSES -->
+<section class="section" id="clauses">
+  <div class="section-label">주요 요구사항 · Core Requirements</div>
+  <div class="section-title">Clause 4~10 심층 분석</div>
+  <p class="section-desc">클릭하면 각 조항의 상세 요구사항과 운영 전략을 확인할 수 있습니다.</p>
+
+  <div class="clause-list">
+    <div class="clause-item" onclick="toggleClause(this)">
+      <div class="clause-header">
+        <div class="clause-num">4</div>
+        <div class="clause-info">
+          <div class="clause-name">조직의 맥락 (Context of the Organization)</div>
+          <div class="clause-subtitle">내·외부 환경 분석, 이해관계자 요구사항, AIMS 범위 규정</div>
+        </div>
+        <div class="clause-arrow">›</div>
+      </div>
+      <div class="clause-body">
+        <ul>
+          <li><strong>내부·외부 이슈 식별</strong>: 기술적·법적·사회적 환경을 면밀히 분석하여 AI 활용의 맥락적 적정성을 확보합니다.</li>
+          <li><strong>이해관계자 분석</strong>: 데이터 제공자, 사용자, 규제 당국 등 이해관계자가 기대하는 윤리적·법적 수준을 정의합니다.</li>
+          <li><strong>AI 역할 정의</strong>: 조직의 AI 관련 역할(공급자·개발자·사용자 등)을 명확히 합니다.</li>
+          <li><strong>AIMS 적용 범위(Scope) 결정</strong>: 모든 AI 애플리케이션에 동일 수준의 통제를 적용할지, 고위험 시스템에 집중할지 결정합니다. <strong>SaaS형 외부 AI 서비스도 관리 범위에 포함 여부를 명시해야 합니다.</strong></li>
+          <li><span class="clause-tag">주의</span> EU AI법·개인정보보호법 등 관련 법제도 및 윤리규범, 기후변화 영향 여부도 고려 대상입니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="clause-item" onclick="toggleClause(this)">
+      <div class="clause-header">
+        <div class="clause-num">5</div>
+        <div class="clause-info">
+          <div class="clause-name">리더십 (Leadership)</div>
+          <div class="clause-subtitle">AI 방침 수립, 역할·책임·권한 명확화, 경영진의 거버넌스 의지</div>
+        </div>
+        <div class="clause-arrow">›</div>
+      </div>
+      <div class="clause-body">
+        <ul>
+          <li><strong>AI 방침(AI Policy) 수립</strong>: 공정성·투명성·안전성 등 조직이 추구하는 AI 가치를 선언하고 전 구성원과 공유합니다.</li>
+          <li><strong>최고경영진의 거버넌스 의지 실증</strong>: AI 리스크를 기술 부서만의 문제가 아닌 전사적 비즈니스 리스크로 인식합니다.</li>
+          <li><strong>책임 소재 명확화</strong>: AI 시스템 의사결정 권한과 사고 발생 시 책임자를 명확히 지정합니다.</li>
+          <li><strong>AI 거버넌스 위원회</strong>: 법무·보안·HR·기술 부서가 참여하는 범조직적 위원회를 구성합니다.</li>
+          <li><span class="clause-tag">핵심</span> AI 윤리를 구호가 아닌 실질적인 업무 프로세스로 내재화하는 것이 성패를 가릅니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="clause-item" onclick="toggleClause(this)">
+      <div class="clause-header">
+        <div class="clause-num">6</div>
+        <div class="clause-info">
+          <div class="clause-name">기획 (Planning)</div>
+          <div class="clause-subtitle">AI 리스크·기회 평가, 목표 수립, 위험 기반 접근 방식 구체화</div>
+        </div>
+        <div class="clause-arrow">›</div>
+      </div>
+      <div class="clause-body">
+        <ul>
+          <li><strong>AI 특화 리스크 식별</strong>: 학습 데이터 편향, 모델 환각(Hallucination), 적대적 공격(Adversarial Attacks), 개인정보 침해, 법적 리스크 등을 체계적으로 분류합니다.</li>
+          <li><strong>수치화된 목표 설정</strong>: 편향 최소화 비율, AI 오류율, 신뢰성 지표 등 달성 가능한 정량 목표를 수립합니다.</li>
+          <li><strong>기회 포착</strong>: AI 도입으로 얻을 수 있는 운영 효율성, 혁신적 서비스 등의 기회를 함께 평가하여 과도한 규제 공포로 혁신을 저해하지 않도록 균형을 유지합니다.</li>
+          <li><strong>위험 처리 계획</strong>: 식별된 리스크의 수용·회피·이전·경감 방안과 자원 배분, 실행 로드맵을 기획합니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="clause-item" onclick="toggleClause(this)">
+      <div class="clause-header">
+        <div class="clause-num">7</div>
+        <div class="clause-info">
+          <div class="clause-name">지원 (Support)</div>
+          <div class="clause-subtitle">자원·역량·인식·문서화, 데이터 거버넌스, IT 인프라 구축</div>
+        </div>
+        <div class="clause-arrow">›</div>
+      </div>
+      <div class="clause-body">
+        <ul>
+          <li><strong>자원 확보</strong>: 컴퓨팅 자원, 고품질 데이터, AI 전문 인력을 위한 재정적·물리적 지원을 확보합니다.</li>
+          <li><strong>역량 개발</strong>: AI 설계·운영 인력의 전문성을 지속적으로 개발합니다.</li>
+          <li><strong>인식(Awareness) 고양</strong>: 기술 인력뿐 아니라 <strong>일반 직원도</strong> AI 사용 위험과 윤리 가이드라인, 사고 보고 절차를 숙지해야 합니다.</li>
+          <li><strong>문서화(Documented Information)</strong>: AI 정책·절차·운영 기준을 문서화하여 사후 감사와 규제 대응을 위한 증거 자산으로 관리합니다.</li>
+          <li><span class="clause-tag">필수</span> 모니터링 시스템, 데이터 거버넌스 체계, IT 인프라도 지원 범위에 포함됩니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="clause-item" onclick="toggleClause(this)">
+      <div class="clause-header">
+        <div class="clause-num">8</div>
+        <div class="clause-info">
+          <div class="clause-name">운용 (Operation)</div>
+          <div class="clause-subtitle">운영 통제, AI 영향 평가(AISIA), 변경 관리, 리스크 처리 실행</div>
+        </div>
+        <div class="clause-arrow">›</div>
+      </div>
+      <div class="clause-body">
+        <ul>
+          <li><strong>AI 시스템 영향 평가(AISIA)</strong>: 특정 AI 시스템이 개인의 인권·안전·사회 전반에 미칠 잠재적 영향을 심층 분석합니다. EU AI Act 고위험 AI 적합성 평가 요건과 직접 연계됩니다.</li>
+          <li><strong>전 생애주기 통제</strong>: 설계→개발→배포→운영 단계별 게이트(Gate) 심사를 적용합니다.</li>
+          <li><strong>변경 관리(Change Management)</strong>: 모델 재학습, 데이터 분포 변화(Drift)로 인한 의도치 않은 성능 저하·편향을 실시간으로 감시합니다.</li>
+          <li><strong>데이터 관리</strong>: 학습 데이터 검증, 편향성·프라이버시 테스트를 수행합니다.</li>
+          <li><span class="clause-tag">핵심</span> 기술적으로 가능해도 윤리적으로 피해야 할 영역을 사전 식별하는 것이 AISIA의 핵심 기능입니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="clause-item" onclick="toggleClause(this)">
+      <div class="clause-header">
+        <div class="clause-num">9</div>
+        <div class="clause-info">
+          <div class="clause-name">성과 평가 (Performance Evaluation)</div>
+          <div class="clause-subtitle">모니터링·측정, 내부 감사, 경영 검토, 시스템 유효성 검증</div>
+        </div>
+        <div class="clause-arrow">›</div>
+      </div>
+      <div class="clause-body">
+        <ul>
+          <li><strong>다각적 성과 지표</strong>: AI 모델 정확도 등 기술 지표 외에 리스크 대응 신속성, 규제 준수 여부, 이해관계자 만족도 등을 포함합니다.</li>
+          <li><strong>내부 감사</strong>: 경영시스템이 표준 요구사항에 부합하는지 독립적 시각에서 검토합니다.</li>
+          <li><strong>경영 검토</strong>: 최고경영진이 평가 결과를 바탕으로 전략적 적절성을 최종 확인하고 개선 조치를 지시합니다.</li>
+          <li><strong>규제 변화 모니터링</strong>: EU AI법 등 법제도 변화 반영 여부를 정기적으로 확인합니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="clause-item" onclick="toggleClause(this)">
+      <div class="clause-header">
+        <div class="clause-num">10</div>
+        <div class="clause-info">
+          <div class="clause-name">개선 (Improvement)</div>
+          <div class="clause-subtitle">부적합 시정, 지속적 개선(CAPA), 기술 변화 대응 및 시스템 고도화</div>
+        </div>
+        <div class="clause-arrow">›</div>
+      </div>
+      <div class="clause-body">
+        <ul>
+          <li><strong>즉각적 시정 조치</strong>: 발견된 부적합 사항에 대해 원인 분석 후 시정 조치를 이행하고 결과를 기록·분석합니다.</li>
+          <li><strong>기술 동향 환류</strong>: 최신 AI 기술 동향과 글로벌 규제 변화를 AIMS에 지속적으로 반영합니다.</li>
+          <li><strong>리스크 모델 정교화</strong>: 축적된 운영 데이터와 사고 사례를 바탕으로 위험 관리 모델을 개선합니다.</li>
+          <li><span class="clause-tag">명심</span> <strong>인증 취득은 끝이 아닌 신뢰 경영의 시작</strong>입니다. 지속적 개선 루프를 통해서만 변화하는 환경에서 신뢰 가능한 AI 역량을 유지할 수 있습니다.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ANNEX A -->
+<section class="section" id="annex">
+  <div class="section-label">통제 항목 · Controls</div>
+  <div class="section-title">부속서 A (Annex A) — 10개 통제 범주</div>
+  <p class="section-desc">조직이 직면한 구체적 위험 완화를 위해 선택적으로 적용하는 기술적·운영적 조치 집합체입니다.</p>
+
+  <div class="annex-grid">
+    <div class="annex-card">
+      <div class="annex-head">
+        <div class="annex-dot" style="background:#4f8ef7"></div>
+        <div class="annex-code">A.2</div>
+      </div>
+      <div class="annex-title">AI 관련 방침</div>
+      <div class="annex-desc">비즈니스 목적과 연계된 AI 사용 및 개발 가이드라인 수립. AI 윤리원칙, 데이터 처리 정책, 알고리즘 검토 프로세스를 포함합니다.</div>
+    </div>
+    <div class="annex-card">
+      <div class="annex-head">
+        <div class="annex-dot" style="background:#7c5cfc"></div>
+        <div class="annex-code">A.3</div>
+      </div>
+      <div class="annex-title">내부 조직</div>
+      <div class="annex-desc">AI 거버넌스 위원회 구성 및 부서 간 협업 프로세스 정의. 법무·보안·HR·기술 부서의 유기적 연계를 구축합니다.</div>
+    </div>
+    <div class="annex-card">
+      <div class="annex-head">
+        <div class="annex-dot" style="background:#22d3ee"></div>
+        <div class="annex-code">A.4</div>
+      </div>
+      <div class="annex-title">AI 자원 관리</div>
+      <div class="annex-desc">학습 데이터, GPU 자원, 오픈소스 라이브러리, 인적 역량 관리. 모든 AI 운영 자원의 가시성과 통제를 확보합니다.</div>
+    </div>
+    <div class="annex-card">
+      <div class="annex-head">
+        <div class="annex-dot" style="background:#10b981"></div>
+        <div class="annex-code">A.5</div>
+      </div>
+      <div class="annex-title">AI 영향 평가</div>
+      <div class="annex-desc">개별 AI 시스템별 정기적·수시적 사회적 영향 분석 보고서 작성. 인권·안전·사회 전반의 잠재적 영향을 사전에 평가합니다.</div>
+    </div>
+    <div class="annex-card">
+      <div class="annex-head">
+        <div class="annex-dot" style="background:#f59e0b"></div>
+        <div class="annex-code">A.6</div>
+      </div>
+      <div class="annex-title">AI 생애 주기</div>
+      <div class="annex-desc">요구사항 정의부터 폐기까지 단계별 게이트(Gate) 심사 강화. 각 단계 전환 시 승인 절차와 검증 기준을 명확히 합니다.</div>
+    </div>
+    <div class="annex-card">
+      <div class="annex-head">
+        <div class="annex-dot" style="background:#ef4444"></div>
+        <div class="annex-code">A.7</div>
+      </div>
+      <div class="annex-title">데이터 관리 ⭐</div>
+      <div class="annex-desc">데이터 출처 추적(Lineage), 품질 검증, 편향성 테스트 정례화. 잘못된 데이터로 학습된 AI가 거대한 리스크가 된다는 핵심 관점을 반영합니다.</div>
+    </div>
+    <div class="annex-card">
+      <div class="annex-head">
+        <div class="annex-dot" style="background:#f97316"></div>
+        <div class="annex-code">A.8</div>
+      </div>
+      <div class="annex-title">정보 제공 (투명성) ⭐</div>
+      <div class="annex-desc">투명성 보고서 발행, 사용자 매뉴얼 내 AI 한계점 명시. 설명 가능성(Explainability) 확보로 사회적 수용성을 높이는 결정적 역할을 합니다.</div>
+    </div>
+    <div class="annex-card">
+      <div class="annex-head">
+        <div class="annex-dot" style="background:#a78bfa"></div>
+        <div class="annex-code">A.9</div>
+      </div>
+      <div class="annex-title">책임 있는 사용</div>
+      <div class="annex-desc">AI 오남용 모니터링 및 인간의 개입(Human-in-the-loop) 보장. 자동화된 의사결정에 대한 인간 검토 체계를 유지합니다.</div>
+    </div>
+    <div class="annex-card">
+      <div class="annex-head">
+        <div class="annex-dot" style="background:#64748b"></div>
+        <div class="annex-code">A.10</div>
+      </div>
+      <div class="annex-title">외부 파트너 관리</div>
+      <div class="annex-desc">AI 솔루션 공급업체 보안·윤리 평가, SLA 관리. 공급망 전반의 AI 책임성을 확보하여 제3자 리스크를 통제합니다.</div>
+    </div>
+  </div>
+
+  <div class="insight-box" style="margin-top:24px;">
+    <p>⭐ <strong>A.7 데이터 관리</strong>와 <strong>A.8 정보 제공</strong>은 ISO/IEC 42001의 핵심 차별점입니다.</p>
+    <p>기존 정보보안이 데이터 유출 방지에 집중했다면, ISO/IEC 42001은 데이터의 <strong>'적합성'과 '무결성'</strong>을 강조합니다.
+    또한 투명성 통제는 AI 결정의 근거를 설명 가능하게 함으로써(Explainability) 시스템에 대한 사회적 수용성을 높이는 결정적 역할을 합니다.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- COMPARE -->
+<section class="section" id="compare">
+  <div class="section-label">표준 비교 · Standards Comparison</div>
+  <div class="section-title">ISO/IEC 42001 vs 관련 표준</div>
+  <p class="section-desc">기존 경영시스템 표준과의 차별점과 통합 전략을 파악합니다.</p>
+
+  <div class="compare-table-wrap">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>비교 항목</th>
+          <th><span class="badge badge-blue">ISO/IEC 27001</span><br>정보보안경영</th>
+          <th><span class="badge badge-purple">ISO/IEC 42001</span><br>AI 경영시스템</th>
+          <th><span class="badge badge-green">NIST AI RMF</span><br>AI 위험관리 프레임워크</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>중심 목표</strong></td>
+          <td>기밀성·무결성·가용성(CIA) 확보</td>
+          <td>신뢰성·공정성·투명성·안전성 확보</td>
+          <td>AI 위험 식별·측정·관리</td>
+        </tr>
+        <tr>
+          <td><strong>핵심 대상</strong></td>
+          <td>정보 자산 및 IT 인프라 보호</td>
+          <td>AI 모델링·알고리즘·결정 프로세스 관리</td>
+          <td>AI 시스템의 위험 프로파일링</td>
+        </tr>
+        <tr>
+          <td><strong>위험 관점</strong></td>
+          <td>외부 공격 및 데이터 유출 차단</td>
+          <td>알고리즘 오류·데이터 편향·사회적 피해 예방</td>
+          <td>AI 위험의 맥락화 및 우선순위화</td>
+        </tr>
+        <tr>
+          <td><strong>접근 방식</strong></td>
+          <td>기술적 보안 및 접근 통제 중심</td>
+          <td>기술적 관리와 윤리적 거버넌스의 결합</td>
+          <td>자율 가이드라인 (강제성 없음)</td>
+        </tr>
+        <tr>
+          <td><strong>제3자 인증</strong></td>
+          <td>✅ 가능</td>
+          <td>✅ 가능</td>
+          <td>❌ 자가 평가(self-attestation)</td>
+        </tr>
+        <tr>
+          <td><strong>법적 구속력</strong></td>
+          <td>없음 (자발적)</td>
+          <td>없음 (자발적, 규제 연계 가능)</td>
+          <td>없음 (자발적)</td>
+        </tr>
+        <tr>
+          <td><strong>통합 전략</strong></td>
+          <td>데이터라는 '원료'를 안전하게 보관하는 금고</td>
+          <td>데이터를 가공하여 의사결정하는 '공장' 운영 규칙</td>
+          <td>ISO 42001의 각 Clause와 기능별 매핑 가능</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight-box">
+    <p>💡 <strong>통합 운영 전략</strong>: ISO/IEC 27001 인증을 이미 보유한 조직은 경영시스템 기본 골격을 갖추고 있으므로
+    ISO/IEC 42001 도입 시 소요 시간을 <strong>약 30~40% 절감</strong>할 수 있습니다.
+    두 표준을 통합 운영하면 데이터의 보안과 활용 책임성을 동시에 달성할 수 있습니다.</p>
+    <p>NIST AI RMF와는 기능별 매핑이 가능합니다. NIST "Measure" ↔ ISO 9조(성과평가), NIST "Manage" ↔ ISO 10조(개선).</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- COMPANY WARNINGS -->
+<section class="section" id="company-warn">
+  <div class="section-label">기업 주의사항 · Enterprise Cautions</div>
+  <div class="section-title">기업에서 반드시 주의해야 할 사항</div>
+  <p class="section-desc">ISO/IEC 42001 도입 시 조직적·운영적으로 간과하기 쉬운 핵심 주의사항입니다.</p>
+
+  <div class="warn-grid">
+    <div class="warn-card red">
+      <div class="warn-icon">🚫</div>
+      <div class="warn-title">AI 리스크를 IT 부서만의 문제로 치부</div>
+      <div class="warn-body">
+        AI 리스크는 전사적 비즈니스 리스크입니다. 법무·컴플라이언스·HR·재무 등 전 부서가 참여하는 거버넌스 위원회 없이는 표준의 실질적 이행이 불가능합니다.
+        <ul>
+          <li>경영진의 AI 방침 직접 승인 필수</li>
+          <li>부서 간 역할·책임·권한 명문화</li>
+          <li>AI 사고 보고 체계 전사 공유</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn-card yellow">
+      <div class="warn-icon">⚠️</div>
+      <div class="warn-title">외부 AI 서비스(SaaS) 관리 범위 누락</div>
+      <div class="warn-body">
+        ChatGPT, Copilot 등 외부 AI 서비스를 업무에 활용하는 경우, 이도 AIMS 관리 범위에 포함해야 합니다.
+        <ul>
+          <li>외부 AI 공급업체 보안·윤리 평가 필수</li>
+          <li>SLA에 AI 투명성·감사 조항 포함</li>
+          <li>제3자 AI의 데이터 처리 방식 확인</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn-card orange">
+      <div class="warn-icon">🔄</div>
+      <div class="warn-title">인증 취득 후 시스템 방치</div>
+      <div class="warn-body">
+        ISO/IEC 42001은 인증 취득으로 끝나는 표준이 아닙니다. AI 기술 변화 속도를 감안하면 지속적 개선 루프 없이는 빠르게 형해화됩니다.
+        <ul>
+          <li>정기 내부 감사 및 경영 검토 의무화</li>
+          <li>AI 기술 트렌드·규제 변화 모니터링</li>
+          <li>PDCA 사이클의 실질적 운영 증거 확보</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn-card blue">
+      <div class="warn-icon">📄</div>
+      <div class="warn-title">문서화 형식화 — 증거 없는 운영</div>
+      <div class="warn-body">
+        모든 AI 관련 활동은 감사 추적이 가능하도록 문서화되어야 합니다. '보여주기식' 문서는 실제 감사에서 부적합 판정을 받습니다.
+        <ul>
+          <li>학습 데이터 출처 및 버전 이력 관리</li>
+          <li>AI 영향 평가(AISIA) 보고서 정기 작성</li>
+          <li>모델 변경 이력 및 승인 기록 보존</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn-card green">
+      <div class="warn-icon">🎓</div>
+      <div class="warn-title">기술 인력에만 집중된 교육</div>
+      <div class="warn-body">
+        AI 윤리와 가이드라인 교육은 개발자뿐 아니라 AI 결과물을 활용하는 모든 임직원 대상이어야 합니다.
+        <ul>
+          <li>현업 부서: AI 결과 비판적 수용 방법 교육</li>
+          <li>의사결정자: AI 한계와 편향 인식 교육</li>
+          <li>심리적 안전감 — AI 부작용 의견 자유롭게 제시</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn-card red">
+      <div class="warn-icon">🔍</div>
+      <div class="warn-title">AISIA 없는 AI 시스템 배포</div>
+      <div class="warn-body">
+        AI 시스템 영향 평가(AISIA) 없이 배포된 AI는 규제 위반, 사회적 피해, 법적 책임으로 직결될 수 있습니다.
+        <ul>
+          <li>고위험 AI 식별 및 집중 평가 체계 수립</li>
+          <li>EU AI Act 고위험 분류 기준 사전 검토</li>
+          <li>배포 전 독립적 검토 게이트 운영</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- DEV GUIDE -->
+<section class="section" id="dev-guide">
+  <div class="section-label">개발 가이드 · Development Guide</div>
+  <div class="section-title">AI 개발 시 주의해야 할 사항</div>
+  <p class="section-desc">ISO/IEC 42001 관점에서 AI 시스템 개발·배포 단계별 필수 체크리스트입니다.</p>
+
+  <div class="checklist">
+    <div class="checklist-phase">
+      <span class="phase-badge">Phase 1</span>
+      <span class="phase-name">📐 기획 · 요구사항 정의</span>
+    </div>
+    <div class="checklist-items">
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>AI 시스템의 목적·적용 범위·대상 사용자를 명확히 문서화</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>고위험(High-Risk) AI 여부 사전 판별 — EU AI Act·국내 규제 기준 적용</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>AI 시스템 영향 평가(AISIA) 계획 수립 — 인권·안전·사회적 영향 분석</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>이해관계자(사용자·감독자·규제기관) 요구사항 수집 및 반영</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>윤리적 한계선(Red Line) 정의 — 기술적 가능성과 윤리적 허용 범위 구분</span></div>
+    </div>
+
+    <div class="checklist-phase">
+      <span class="phase-badge">Phase 2</span>
+      <span class="phase-name">📊 데이터 수집 · 전처리</span>
+    </div>
+    <div class="checklist-items">
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>데이터 출처 추적(Data Lineage) 기록 — 수집 경로·버전·라이선스 포함</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>데이터 품질 검증 — 정확성·완전성·최신성·일관성 확인</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>편향성(Bias) 탐지 및 제거 — 성별·나이·인종 등 보호 속성별 분포 분석</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>개인정보 포함 여부 확인 및 익명화·가명화 처리</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>학습 데이터 분할(Train/Validation/Test) 기준 및 비율 문서화</span></div>
+    </div>
+
+    <div class="checklist-phase">
+      <span class="phase-badge">Phase 3</span>
+      <span class="phase-name">🤖 모델 개발 · 훈련</span>
+    </div>
+    <div class="checklist-items">
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>모델 아키텍처·하이퍼파라미터 설정 및 선택 근거 문서화</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>공정성(Fairness) 지표 정의 및 측정 — Demographic Parity, Equalized Odds 등</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>설명 가능성(Explainability) 기법 적용 — SHAP, LIME, Attention Map 등</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>적대적 공격(Adversarial Attack) 취약점 점검</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>모델 카드(Model Card) 작성 — 성능·한계·적용 범위·리스크 명시</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>오픈소스 라이브러리 라이선스 및 보안 취약점 확인</span></div>
+    </div>
+
+    <div class="checklist-phase">
+      <span class="phase-badge">Phase 4</span>
+      <span class="phase-name">🚀 검증 · 배포</span>
+    </div>
+    <div class="checklist-items">
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>독립적 검토 게이트(Gate Review) 통과 — 배포 전 AI 영향 평가 최종 확인</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>보안 취약점 점검 — 데이터 추출 공격, 모델 역공학 위험 평가</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>사용자 대상 AI 한계점 고지 — 투명성 통제(A.8) 이행</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>Human-in-the-loop 설계 — 고위험 결정에 대한 인간 검토 체계 확보</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>롤백(Rollback) 계획 및 비상 절차 수립</span></div>
+    </div>
+
+    <div class="checklist-phase">
+      <span class="phase-badge">Phase 5</span>
+      <span class="phase-name">📡 운영 · 모니터링</span>
+    </div>
+    <div class="checklist-items">
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>데이터 분포 변화(Data Drift) 및 모델 성능 저하(Model Decay) 실시간 모니터링</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>AI 오작동·사고 보고 체계 운영 및 원인 분석 프로세스</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>변경 관리(Change Management) — 모델 재학습 시 승인 절차 준수</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>정기 편향성 재평가 — 운영 데이터 기반 공정성 지표 재측정</span></div>
+      <div class="checklist-item"><span class="ci-icon">✓</span><span>AI 시스템 폐기(Decommission) 절차 — 데이터 삭제·모델 아카이빙 기준</span></div>
+    </div>
+  </div>
+
+  <div class="insight-box" style="margin-top:24px;">
+    <p>🔑 <strong>개발자가 가장 놓치기 쉬운 포인트</strong>: AI 시스템은 배포 후에도 계속 변합니다.
+    데이터 분포 변화(Drift), 사용자 행동 변화, 환경 변화가 모델 성능과 공정성에 지속적으로 영향을 미칩니다.
+    <strong>지속적인 모니터링과 재평가 체계</strong>가 없는 AI 개발은 ISO/IEC 42001의 핵심 요구사항을 충족하지 못합니다.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ROADMAP -->
+<section class="section" id="roadmap">
+  <div class="section-label">도입 로드맵 · Implementation Roadmap</div>
+  <div class="section-title">ISO/IEC 42001 인증 단계별 전략</div>
+  <p class="section-desc">조직이 인증을 성공적으로 취득하고 실질적 경영 성과로 연결하기 위한 6단계 접근법입니다.</p>
+
+  <div class="roadmap">
+    <div class="rm-step">
+      <div class="rm-dot">1</div>
+      <div class="rm-phase">Plan — 준비</div>
+      <div class="rm-title">경영진 인식 전환 및 거버넌스 체계 설계</div>
+      <div class="rm-body">AI 리스크를 전사적 비즈니스 리스크로 인식하도록 경영진 교육을 실시합니다. AI 방침을 명확히 선언하고, 법무·보안·HR·기술 부서가 참여하는 범조직적 AI 거버넌스 위원회를 구성합니다.</div>
+      <div class="rm-tags">
+        <span class="rm-tag">경영진 교육</span>
+        <span class="rm-tag">AI 방침 수립</span>
+        <span class="rm-tag">거버넌스 위원회</span>
+        <span class="rm-tag">Clause 5</span>
+      </div>
+    </div>
+    <div class="rm-step">
+      <div class="rm-dot">2</div>
+      <div class="rm-phase">Plan — 분석</div>
+      <div class="rm-title">현황 분석 및 갭 분석(Gap Analysis)</div>
+      <div class="rm-body">현재 운영 중인 AI 시스템 목록을 파악하고, ISO/IEC 42001 요구사항 대비 현재 관리 수준의 격차를 분석합니다. 기존 ISO 27001·ISO 9001과의 통합 가능성을 검토하여 중복 투자를 최소화합니다.</div>
+      <div class="rm-tags">
+        <span class="rm-tag">AI 시스템 인벤토리</span>
+        <span class="rm-tag">Gap Analysis</span>
+        <span class="rm-tag">기존 표준 통합</span>
+        <span class="rm-tag">Clause 4</span>
+      </div>
+    </div>
+    <div class="rm-step">
+      <div class="rm-dot">3</div>
+      <div class="rm-phase">Plan — 설계</div>
+      <div class="rm-title">리스크 평가 및 AISIA 모델 구축</div>
+      <div class="rm-body">조직 특성에 맞는 AI 리스크 평가 방법론을 수립합니다. 실제 데이터 편향 테스트, 보안 취약점 점검, 사회적 영향 분석이 실무적으로 이루어질 수 있는 도구와 프로세스를 도입합니다.</div>
+      <div class="rm-tags">
+        <span class="rm-tag">AI 리스크 분류 체계</span>
+        <span class="rm-tag">AISIA 템플릿</span>
+        <span class="rm-tag">편향 테스트 도구</span>
+        <span class="rm-tag">Clause 6 · A.5</span>
+      </div>
+    </div>
+    <div class="rm-step">
+      <div class="rm-dot">4</div>
+      <div class="rm-phase">Do — 구축</div>
+      <div class="rm-title">통제 항목 적용 및 문서화</div>
+      <div class="rm-body">Annex A를 기반으로 데이터 관리, 생애주기 관리, 투명성 확보 등의 조치를 실행합니다. AI 모델의 학습 데이터 출처, 하이퍼파라미터 설정, 테스트 결과 등을 정교하게 문서화하여 감사 추적을 준비합니다.</div>
+      <div class="rm-tags">
+        <span class="rm-tag">Annex A 이행</span>
+        <span class="rm-tag">문서화 체계</span>
+        <span class="rm-tag">감사 추적</span>
+        <span class="rm-tag">Clause 7 · 8</span>
+      </div>
+    </div>
+    <div class="rm-step">
+      <div class="rm-dot">5</div>
+      <div class="rm-phase">Do — 교육</div>
+      <div class="rm-title">내부 교육 및 문화 확산</div>
+      <div class="rm-body">기술진에게는 안전한 AI 개발 방법론을, 현업 부서에게는 AI 결과물의 비판적 수용 방법과 윤리적 가이드라인을 교육합니다. AI 부작용에 대해 자유롭게 의견을 제시할 수 있는 심리적 안전감을 조성합니다.</div>
+      <div class="rm-tags">
+        <span class="rm-tag">역할별 맞춤 교육</span>
+        <span class="rm-tag">AI 윤리 가이드라인</span>
+        <span class="rm-tag">심리적 안전감</span>
+        <span class="rm-tag">Clause 7</span>
+      </div>
+    </div>
+    <div class="rm-step">
+      <div class="rm-dot">6</div>
+      <div class="rm-phase">Check / Act — 고도화</div>
+      <div class="rm-title">성과 측정 및 지속적 개선 루프</div>
+      <div class="rm-body">정기 내부 감사와 성과 평가를 통해 발견된 문제점을 즉각 시정하고, 기술 발전에 맞춰 경영시스템을 지속적으로 업데이트합니다. 제3자 인증 심사를 통해 대외적 신뢰를 공식화합니다.</div>
+      <div class="rm-tags">
+        <span class="rm-tag">내부 감사</span>
+        <span class="rm-tag">경영 검토</span>
+        <span class="rm-tag">제3자 인증</span>
+        <span class="rm-tag">Clause 9 · 10</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- REGULATION -->
+<section class="section" id="regulation">
+  <div class="section-label">글로벌 규제 · Global Regulation</div>
+  <div class="section-title">주요 국가별 AI 규제와 연계성</div>
+  <p class="section-desc">ISO/IEC 42001은 전 세계 AI 규제 대응의 핵심 이행 도구로 자리매김하고 있습니다.</p>
+
+  <div class="reg-grid">
+    <div class="reg-card">
+      <div class="reg-flag">🇪🇺</div>
+      <div class="reg-title">EU AI Act (유럽연합)</div>
+      <div class="reg-sub">조화 표준 채택 검토 중 — 적합성 추정(Presumption of Conformity) 가능</div>
+      <div class="reg-body">
+        AI 시스템을 위험도에 따라 분류(수용 불가·고위험·제한적·최소 위험)하고 고위험 AI에 엄격한 관리 의무를 부과합니다.
+        CEN-CENELEC이 ISO/IEC 42001을 핵심 기반으로 검토 중이며, 조화 표준 확정 시 <strong>인증 보유 기업은 별도 절차 없이 EU 법 준수로 간주</strong>될 수 있습니다.
+        글로벌 수출 기업에게는 가장 중요한 규제 연계입니다.
+      </div>
+    </div>
+    <div class="reg-card">
+      <div class="reg-flag">🇺🇸</div>
+      <div class="reg-title">NIST AI RMF (미국)</div>
+      <div class="reg-sub">자율 가이드라인 — ISO 42001과 기능별 매핑 가능</div>
+      <div class="reg-body">
+        미국 국립표준기술연구소(NIST)의 AI 위험관리 프레임워크로, 강제성은 없지만 미국 정부 계약 및 주요 산업에서 광범위하게 참조됩니다.
+        Govern·Map·Measure·Manage 4개 함수 구조로, ISO 42001의 각 Clause와 매핑하여 통합 운영할 수 있습니다.
+      </div>
+    </div>
+    <div class="reg-card">
+      <div class="reg-flag">🇰🇷</div>
+      <div class="reg-title">대한민국 AI 규제 정책</div>
+      <div class="reg-sub">KS X ISO/IEC 42001 제정 완료 (2025) — 국내 인증 체계 구축 중</div>
+      <div class="reg-body">
+        국가기술표준원(KATS)이 ISO/IEC 42001을 부합화한 국가표준(KS) 제정을 완료했습니다.
+        과기정통부 'AI 신뢰 가이드라인', KISA '생성형 AI 보안 가이드라인', NIA 'AI 신뢰성 확보 지원' 등이 표준과 연계됩니다.
+        <strong>KISA 가이드라인은 Clause 8·Annex A 구현 시 실용적 참조 자료</strong>로 활용 가능합니다.
+      </div>
+    </div>
+    <div class="reg-card">
+      <div class="reg-flag">🌐</div>
+      <div class="reg-title">글로벌 시장 진출 전략</div>
+      <div class="reg-sub">ISO 42001 = 국제 신뢰의 증거</div>
+      <div class="reg-body">
+        의료·금융·공공 분야에서 AI 시스템 도입 시 파트너사·고객이 요구하는 AI 거버넌스 수준이 높아지고 있습니다.
+        ISO/IEC 42001 인증은 ISO 9001·ISO 27001처럼 <strong>글로벌 비즈니스의 기본 신뢰 증명서</strong>로 자리잡을 것으로 전망됩니다.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- CASES -->
+<section class="section" id="cases">
+  <div class="section-label">인증 사례 · Certification Cases</div>
+  <div class="section-title">국내외 주요 인증 사례</div>
+  <p class="section-desc">선도 기업·기관들의 ISO/IEC 42001 인증 취득 현황과 시사점입니다.</p>
+
+  <div class="case-grid">
+    <div class="case-card">
+      <div class="case-company">🇰🇷 SK C&C</div>
+      <div class="case-meta">국내 최초 인증 취득 · AI 채용 에이전트</div>
+      <div class="case-body">국내 최초로 ISO/IEC 42001 인증을 획득하며 AI 경영의 표준을 제시했습니다. AI 채용 에이전트 등 기업 경영 전반의 AI 의사결정 프로세스에 대한 신뢰성을 입증했습니다.</div>
+      <div class="case-highlight">✓ 국내 선도 사례 — 인사·구매·재무 등 전사 AI 거버넌스 구축</div>
+    </div>
+    <div class="case-card">
+      <div class="case-company">🇰🇷 국립암센터</div>
+      <div class="case-meta">의료 분야 국내 최초 인증</div>
+      <div class="case-body">민감한 환자 데이터를 활용한 진단 보조 AI의 안전성을 검증하고, 의료 사고 발생 시 책임 소재를 명확히 함으로써 환자와 의료진의 신뢰를 확보했습니다.</div>
+      <div class="case-highlight">✓ 의료 AI의 윤리성·안전성 국제 기준 달성</div>
+    </div>
+    <div class="case-card">
+      <div class="case-company">🇰🇷 한화비전</div>
+      <div class="case-meta">영상 보안 AI · EU 규제 대응</div>
+      <div class="case-body">영상 보안 시스템 AI에 인간 중심적 철학과 책임성을 적용. EU AI Act 등 글로벌 법제화에 능동적으로 대응하며 유럽·북미 시장 수출 경쟁력을 강화했습니다.</div>
+      <div class="case-highlight">✓ 글로벌 규제 대응을 통한 수출 경쟁력 강화</div>
+    </div>
+    <div class="case-card">
+      <div class="case-company">🇰🇷 한국산업인력공단</div>
+      <div class="case-meta">고용노동부 산하기관 최초 인증 (2026.3)</div>
+      <div class="case-body">챗봇 시스템 등 AI 행정서비스에 대해 AI 관리체계를 구축·적용하여 책임 있는 AI 운영 체계를 국제 기준에 맞춰 마련했습니다.</div>
+      <div class="case-highlight">✓ 공공기관 AI 거버넌스의 국제 기준 선도</div>
+    </div>
+    <div class="case-card">
+      <div class="case-company">🌐 Amazon Web Services</div>
+      <div class="case-meta">클라우드 AI 서비스 인증</div>
+      <div class="case-body">AWS AI 서비스에 대해 ISO/IEC 42001 인증을 취득하여 고객이 AWS의 AI 운영 체계가 독립 평가를 거쳤음을 확인할 수 있도록 했습니다. 고객사 인증 부담도 경감됩니다.</div>
+      <div class="case-highlight">✓ 클라우드 AI 공급망 신뢰성 확보</div>
+    </div>
+    <div class="case-card">
+      <div class="case-company">🌐 Microsoft</div>
+      <div class="case-meta">Microsoft 365 Copilot 등 인증 추진</div>
+      <div class="case-body">Microsoft 365 Copilot 등 주요 AI 서비스에 대한 ISO 42001 인증을 추진하며, 책임 있는 AI 거버넌스 이행을 대외적으로 증명하고 있습니다.</div>
+      <div class="case-highlight">✓ 엔터프라이즈 AI 신뢰의 글로벌 기준 선도</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- KPI -->
+<section class="section" id="kpi">
+  <div class="section-label">성과 지표 · KPI Examples</div>
+  <div class="section-title">AI 경영시스템 KPI 예시</div>
+  <p class="section-desc">ISO/IEC 42001 자체에는 특정 KPI가 명시되어 있지 않으므로, 조직은 자체 위험평가와 목표에 기반하여 적합한 지표를 개발해야 합니다.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon">🎯</div>
+      <div class="kpi-name">AI 시스템 오류 발생률</div>
+      <div class="kpi-value">월별 오작동 건수 측정</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">⚖️</div>
+      <div class="kpi-name">편향성 평가 점수</div>
+      <div class="kpi-value">분기별 공정성 지표 측정</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🔒</div>
+      <div class="kpi-name">보안 사고 건수</div>
+      <div class="kpi-value">AI 관련 보안 인시던트</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📋</div>
+      <div class="kpi-name">내부 감사 지적사항</div>
+      <div class="kpi-value">감소율 전기 대비 추적</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📜</div>
+      <div class="kpi-name">규제 미준수 건수</div>
+      <div class="kpi-value">법적 요구사항 위반 0건 목표</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-name">이해관계자 신뢰도</div>
+      <div class="kpi-value">사용자 AI 신뢰 설문 점수</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📚</div>
+      <div class="kpi-name">교육 이수율</div>
+      <div class="kpi-value">AI 윤리 교육 완료 비율</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">⏱️</div>
+      <div class="kpi-name">사고 대응 시간</div>
+      <div class="kpi-value">AI 사고 발생~조치 완료 시간</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-name">AISIA 완료율</div>
+      <div class="kpi-value">배포 전 영향 평가 이행률</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🔄</div>
+      <div class="kpi-name">문서화 완성도</div>
+      <div class="kpi-value">데이터 Lineage 추적 가능 비율</div>
+    </div>
+  </div>
+
+  <div class="insight-box" style="margin-top: 24px;">
+    <p>💡 <strong>KPI 설계 원칙</strong>: ISO/IEC 23894(위험관리), ISO 8000(데이터 품질) 등 관련 표준과 연계하여 설계하면 더 높은 신뢰성을 확보할 수 있습니다.</p>
+    <p>KPI는 <strong>기술 지표(정확도·편향 지표)</strong>와 <strong>조직 지표(교육률·감사 지적사항)</strong>, <strong>사회 지표(이해관계자 신뢰도)</strong>를 균형 있게 포함해야 합니다.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>📌 ISO/IEC 42001:2023 — Information technology · Artificial intelligence · Management system</p>
+  <p style="margin-top: 6px;">제정: 2023년 12월 18일 · 발간기관: ISO/IEC JTC1/SC 42 · 관련 국내 표준: KS X ISO/IEC 42001</p>
+  <p style="margin-top: 12px; color: #334155;">
+    참고: ISO/IEC 42001 공식 문서, 국가기술표준원 보도자료(2024.11), 헤럴드경제(2026.3.9), AWS ISO 42001 FAQ, 한화비전 뉴스센터
+  </p>
+</footer>
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  // Clause accordion
+  function toggleClause(el) {
+    el.classList.toggle('open');
+  }
+
+  // Scroll to section
+  function scrollToSection(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Active nav link
+  const sections = document.querySelectorAll('.section[id], .stats-bar');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const id = entry.target.id;
+        const link = document.querySelector(`.nav-link[onclick*="${id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  document.querySelectorAll('.section[id]').forEach(s => observer.observe(s));
+
+  // Scroll to top button
+  const scrollTopBtn = document.getElementById('scrollTop');
+  window.addEventListener('scroll', () => {
+    scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+  });
+</script>
+</body>
+</html>
