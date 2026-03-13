@@ -52,71 +52,9 @@ function newJsBlock(folderHash, secretHash) {
             document.getElementById('fileContentView').style.display = view === 'content' ? 'block' : 'none';
         }
 
-        async function loadContent(file) {
-            const container = document.getElementById('contentFrame');
-            container.innerHTML = '<div style="text-align:center; padding:100px; color:#059669; opacity:0.5;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
-
-            try {
-                const resp = await fetch(\`../contents/\${file.hash}/\${file.filename}?v=\${Date.now()}\`);
-                if (!resp.ok) throw new Error('Failed to load content');
-                const html = await resp.text();
-
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-
-                container.innerHTML = '';
-
-                // Inject <link> tags (fonts, external CSS)
-                doc.querySelectorAll('head link[rel="stylesheet"], head link[rel="preconnect"]').forEach(l => {
-                    if (!document.querySelector(\`link[href="\${l.href}"]\`)) {
-                        const newLink = l.cloneNode();
-                        document.head.appendChild(newLink);
-                    }
-                });
-
-                // Inject <style> blocks
-                doc.querySelectorAll('style').forEach(s => {
-                    const newStyle = document.createElement('style');
-                    newStyle.textContent = s.textContent;
-                    container.appendChild(newStyle);
-                });
-
-                // Inject body content
-                const bodyDiv = document.createElement('div');
-                bodyDiv.innerHTML = doc.body.innerHTML;
-                container.appendChild(bodyDiv);
-
-                // Collect scripts: external first, then inline
-                const extSrcs = [];
-                const inlineCodes = [];
-                doc.querySelectorAll('script').forEach(s => {
-                    if (s.src) extSrcs.push(s.src);
-                    else if (s.textContent.trim()) inlineCodes.push(s.textContent);
-                });
-
-                // Load external scripts sequentially
-                for (const src of extSrcs) {
-                    if (!document.querySelector(\`script[src="\${src}"]\`)) {
-                        await new Promise(resolve => {
-                            const ns = document.createElement('script');
-                            ns.src = src;
-                            ns.onload = resolve;
-                            ns.onerror = resolve;
-                            document.body.appendChild(ns);
-                        });
-                    }
-                }
-
-                // Execute inline scripts
-                inlineCodes.forEach(code => {
-                    const ns = document.createElement('script');
-                    ns.textContent = code;
-                    document.body.appendChild(ns);
-                });
-
-            } catch (e) {
-                container.innerHTML = \`<div style="padding:100px; text-align:center; color:#ef4444;"><h1>Error Loading Content</h1><p>\${e.message}</p></div>\`;
-            }
+        function loadContent(file) {
+            const iframe = document.getElementById('contentFrame');
+            iframe.src = \`../contents/\${file.hash}/\${file.filename}?v=\${Date.now()}\`;
         }
 
         function showStealth404() { document.body.innerHTML = \`<div style="display:flex; align-items:center; justify-content:center; height:100vh; color:#94a3b8; background:#f8fafc;"><h1>404 Not Found</h1></div>\`; }
