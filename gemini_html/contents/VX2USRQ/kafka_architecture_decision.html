@@ -98,6 +98,13 @@
             background: #fff1f2; border-left: 3px solid var(--kafka);
             border-radius: 4px; font-size: 14px; color: #9f1239;
         }
+        .reason-list {
+            list-style: none; padding: 0; margin: 10px 0 0;
+        }
+        .reason-list li {
+            font-size: 15px; color: var(--text-muted);
+            padding: 5px 0; line-height: 1.55;
+        }
 
         /* ARCHITECTURE DIAGRAM */
         .arch-diagram {
@@ -235,8 +242,8 @@
         <a href="#reason">도입 근거</a>
         <a href="#arch">아키텍처</a>
         <a href="#compare">비교</a>
+        <a href="#arch">시나리오</a>
         <a href="#region">지역별 구성</a>
-        <a href="#comment">댓글</a>
         <a href="#action">향후 과제</a>
     </div>
 </nav>
@@ -250,7 +257,7 @@
     <div class="hero-meta">2026년 3월 13일 · 플랫폼인프라팀</div>
     <div class="decision-banner">
         <strong>핵심 결정:</strong> 군산·포항 등 VM이 있는 지역에는 <strong>지역 Kafka를 직접 배치</strong>하고,
-        VM이 없는 순천·창원은 상암 Kafka를 경유하여 GCP로 전송한다.
+        VM이 없는 순천·창원은 상암 IDC를 경유하여 GCP로 전송한다.
         이미 구성이 완료된 상태이며, 대체할 명확한 사유가 없어 현행 유지.
     </div>
 </section>
@@ -258,44 +265,48 @@
 <!-- REASON -->
 <section id="reason">
     <div class="wrapper">
-        <div class="section-title">🎯 지역 Kafka 배치의 <span>명분과 근거</span></div>
-        <div class="section-desc">단순히 이미 설치됐기 때문이 아닙니다. 지역 Kafka는 여러 운영 문제를 구조적으로 해결합니다.</div>
+        <div class="section-title">🎯 지역 Kafka 배치의 <span>이유/필요성</span></div>
+        <div class="section-desc">단순히 이미 설치됐기 때문이 아닙니다. 지역 Kafka는 운영 현실의 네 가지 문제를 구조적으로 해결합니다.</div>
         <div class="reason-grid">
             <div class="reason-card">
+                <div class="icon">✅</div>
+                <h3>이미 구성 완료</h3>
+                <ul class="reason-list">
+                    <li>🖥️ 지역별 Kafka 서버가 이미 설치·운영 중</li>
+                    <li>🌐 각 지역 Kafka마다 개별 도메인 URL 생성 완료</li>
+                    <li>🔒 대체해야 할 명확한 사유가 현재로서는 없음</li>
+                </ul>
+                <div class="highlight">이미 구성이 완료된 상태 → 유지가 기본값</div>
+            </div>
+            <div class="reason-card">
                 <div class="icon">🔔</div>
-                <h3>회선 장애 시 알림 폭주 방지</h3>
-                <p>지역 Kafka 없이 GCP에서 직접 모니터링할 경우, 회선 장애 시 해당 지역의 <strong>수십~수백 개 서버에서 각각 알람이 발생</strong>합니다.</p>
-                <div class="highlight">지역 Kafka가 있으면 → Kafka 1개 알람만 발생. 장애 포인트 즉시 식별 가능.</div>
+                <h3>회선 장애 알림 집약</h3>
+                <ul class="reason-list">
+                    <li>❌ 지역 Kafka 없을 때: 서버 수십~수백 개에서 알림 동시 발생</li>
+                    <li>✅ 지역 Kafka 있을 때: Kafka 1개 알림으로 집약</li>
+                    <li>🎯 장애 포인트(회선 vs 서버)를 즉시 식별 가능</li>
+                </ul>
+                <div class="highlight">알림 100개 → 1개로 줄어 원인 파악이 빨라짐</div>
             </div>
             <div class="reason-card">
                 <div class="icon">🔀</div>
-                <h3>GCP 경로 변경 시 단일 포인트 수정</h3>
-                <p>수신처(GCP 엔드포인트 등)가 바뀔 때, <strong>지역 Kafka 한 곳의 설정만 변경</strong>하면 하위 서버 전체에 반영됩니다.</p>
-                <div class="highlight">말단 서버들의 개별 Config 수정 불필요 → 운영 공수 최소화.</div>
+                <h3>GCP 경로 변경 시 단일 수정</h3>
+                <ul class="reason-list">
+                    <li>📡 GCP 업로드 경로가 바뀌어도 지역 Kafka 1곳만 수정</li>
+                    <li>🚫 하위 서버 수십~수백 대 Config 수정 불필요</li>
+                    <li>⚡ 변경 반영 시간·공수 대폭 절감</li>
+                </ul>
+                <div class="highlight">말단 서버를 건드리지 않고 단일 포인트에서 경로 제어</div>
             </div>
             <div class="reason-card">
                 <div class="icon">🌐</div>
                 <h3>도메인 기반 유연한 전환</h3>
-                <p>각 지역 Kafka에 <strong>개별 도메인 URL이 할당</strong>되어 있습니다. 나중에 지역 Kafka를 없애야 할 경우, 해당 도메인을 GCP Kafka로 바라보도록 수정하면 됩니다.</p>
-                <div class="highlight">하위 서버를 전혀 건드리지 않고도 전환 가능.</div>
-            </div>
-            <div class="reason-card">
-                <div class="icon">💾</div>
-                <h3>회선 단절 시 데이터 버퍼</h3>
-                <p>Kafka가 <strong>메시지 큐 역할</strong>을 수행하여, 회선이 일시적으로 끊기더라도 데이터가 손실되지 않고 버퍼에 보관됩니다.</p>
-                <div class="highlight">GCP 직접 전송 방식은 회선 단절 시 데이터 유실 위험.</div>
-            </div>
-            <div class="reason-card">
-                <div class="icon">🔌</div>
-                <h3>L2 계층 프록시 역할</h3>
-                <p>로컬 Kafka 서버를 <strong>L2 계층의 프록시</strong>로 활용하여, ping/Port 체크 메트릭을 포함한 다양한 데이터를 한 곳에서 수집·전달합니다.</p>
-                <div class="highlight">지역 내 모든 모니터링 데이터의 단일 집약점 역할.</div>
-            </div>
-            <div class="reason-card">
-                <div class="icon">⚙️</div>
-                <h3>초기 구성 완료, 대체 이유 없음</h3>
-                <p>이미 지역별 Kafka 세팅과 도메인 설정이 완료된 상태입니다. Alloy Aggregator 등 대안이 있으나, <strong>현재 Kafka 효용성이 충분히 높아</strong> 굳이 전환 검토가 불필요합니다.</p>
-                <div class="highlight">차선책을 찾는 실익이 없으며, 도입하지 않을 명확한 사유도 없음.</div>
+                <ul class="reason-list">
+                    <li>🔗 각 지역 Kafka는 개별 도메인으로 식별됨</li>
+                    <li>🔄 지역 Kafka 철수 시 해당 도메인만 GCP Kafka로 변경</li>
+                    <li>🛡️ 하위 서버는 아무것도 수정할 필요 없음</li>
+                </ul>
+                <div class="highlight">Kafka 유무와 관계없이 하위 구성은 그대로 유지</div>
             </div>
         </div>
     </div>
@@ -306,136 +317,38 @@
 <!-- ARCHITECTURE -->
 <section id="arch" class="alt-bg">
     <div class="wrapper">
-        <div class="section-title">🗺️ 전체 <span>아키텍처</span> 다이어그램</div>
-        <div class="section-desc">지역별 VM 유무에 따라 Kafka 경유 경로가 달라집니다.</div>
+        <div class="section-title">💥 <span>회선 장애</span> 시나리오 비교</div>
+        <div class="section-desc">지역 Kafka 유무에 따라 회선 장애 시 알림 구조와 수신처 변경 방식이 달라집니다.</div>
+        <div class="arch-svg-wrap">
+            <svg viewBox="0 0 1000 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:1000px;">
+                <!-- WITHOUT Kafka -->
+                <rect x="10" y="10" width="300" height="95" rx="10" fill="rgba(239,68,68,0.08)" stroke="#ef4444" stroke-width="1.5"/>
+                <text x="160" y="34" text-anchor="middle" fill="#f87171" font-size="13" font-weight="700">❌ 지역 Kafka 없을 때</text>
+                <text x="22" y="56" fill="#94a3b8" font-size="12">• 서버 100개 → 알람 100개 동시 발생</text>
+                <text x="22" y="74" fill="#94a3b8" font-size="12">• 장애 원인 파악 어려움 (서버 vs 회선)</text>
+                <text x="22" y="92" fill="#94a3b8" font-size="12">• 대응 속도 저하</text>
 
-        <div class="arch-diagram">
-            <div class="arch-svg-wrap">
-                <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:900px;">
-                    <defs>
-                        <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                            <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
-                        </marker>
-                        <marker id="arrow-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                            <path d="M0,0 L0,6 L8,3 z" fill="#10b981"/>
-                        </marker>
-                        <marker id="arrow-yellow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                            <path d="M0,0 L0,6 L8,3 z" fill="#f59e0b"/>
-                        </marker>
-                    </defs>
+                <!-- WITH Kafka -->
+                <rect x="345" y="10" width="300" height="95" rx="10" fill="rgba(16,185,129,0.08)" stroke="#10b981" stroke-width="1.5"/>
+                <text x="495" y="34" text-anchor="middle" fill="#6ee7b7" font-size="13" font-weight="700">✅ 지역 Kafka 있을 때</text>
+                <text x="357" y="56" fill="#94a3b8" font-size="12">• 서버 100개 → 알람 1개 (Kafka 1대)</text>
+                <text x="357" y="74" fill="#94a3b8" font-size="12">• 장애 포인트 즉시 식별</text>
+                <text x="357" y="92" fill="#94a3b8" font-size="12">• 신속 대응 가능</text>
 
-                    <!-- Background regions -->
-                    <!-- Left: Local Sites -->
-                    <rect x="10" y="10" width="280" height="490" rx="12" fill="rgba(99,102,241,0.08)" stroke="#6366f1" stroke-width="1" stroke-dasharray="5,3"/>
-                    <text x="150" y="35" text-anchor="middle" fill="#818cf8" font-size="13" font-weight="600">지역 센터</text>
+                <!-- Config Change -->
+                <rect x="680" y="10" width="310" height="95" rx="10" fill="rgba(99,102,241,0.08)" stroke="#6366f1" stroke-width="1.5"/>
+                <text x="835" y="34" text-anchor="middle" fill="#a5b4fc" font-size="13" font-weight="700">🔀 수신처 변경 시</text>
+                <text x="692" y="56" fill="#94a3b8" font-size="12">• Kafka 1대 config만 수정으로 완료</text>
+                <text x="692" y="74" fill="#94a3b8" font-size="12">• 하위 서버 수십~수백 대 무변경</text>
+                <text x="692" y="92" fill="#94a3b8" font-size="12">• 향후 Kafka 철수 시에도 동일 적용</text>
 
-                    <!-- Middle: IDC/상암 -->
-                    <rect x="320" y="10" width="220" height="490" rx="12" fill="rgba(249,115,22,0.08)" stroke="#f97316" stroke-width="1" stroke-dasharray="5,3"/>
-                    <text x="430" y="35" text-anchor="middle" fill="#fb923c" font-size="13" font-weight="600">상암 IDC</text>
-
-                    <!-- Right: GCP -->
-                    <rect x="570" y="10" width="320" height="490" rx="12" fill="rgba(66,133,244,0.08)" stroke="#4285f4" stroke-width="1" stroke-dasharray="5,3"/>
-                    <text x="730" y="35" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="600">GCP</text>
-
-                    <!-- ====== CASE 1: VM 있는 지역 (군산, 포항) ====== -->
-                    <text x="150" y="70" text-anchor="middle" fill="#a5b4fc" font-size="11">VM 있음 (군산·포항)</text>
-
-                    <!-- Servers -->
-                    <rect x="20" y="80" width="80" height="36" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1"/>
-                    <text x="60" y="103" text-anchor="middle" fill="#94a3b8" font-size="11">서버 N개</text>
-
-                    <!-- Local Kafka -->
-                    <rect x="155" y="74" width="110" height="48" rx="8" fill="rgba(225,29,72,0.15)" stroke="#e11d48" stroke-width="1.5"/>
-                    <text x="210" y="96" text-anchor="middle" fill="#fb7185" font-size="12" font-weight="700">🔴 지역 Kafka</text>
-                    <text x="210" y="112" text-anchor="middle" fill="#fb7185" font-size="10">(군산 / 포항)</text>
-
-                    <!-- Arrows: servers → local kafka -->
-                    <line x1="100" y1="98" x2="153" y2="98" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrow-green)"/>
-
-                    <!-- Sangam Kafka -->
-                    <rect x="335" y="74" width="110" height="48" rx="8" fill="rgba(249,115,22,0.15)" stroke="#f97316" stroke-width="1.5"/>
-                    <text x="390" y="96" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="700">🟠 상암 Kafka</text>
-                    <text x="390" y="112" text-anchor="middle" fill="#fb923c" font-size="10">(IDC)</text>
-
-                    <!-- Arrow: local kafka → sangam kafka -->
-                    <line x1="265" y1="98" x2="333" y2="98" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrow-green)"/>
-
-                    <!-- GCP Kafka -->
-                    <rect x="590" y="74" width="110" height="48" rx="8" fill="rgba(66,133,244,0.15)" stroke="#4285f4" stroke-width="1.5"/>
-                    <text x="645" y="96" text-anchor="middle" fill="#60a5fa" font-size="12" font-weight="700">🔵 GCP Kafka</text>
-                    <text x="645" y="112" text-anchor="middle" fill="#60a5fa" font-size="10">(수신·처리)</text>
-
-                    <!-- Arrow: sangam → gcp kafka -->
-                    <line x1="445" y1="98" x2="588" y2="98" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrow-green)"/>
-
-                    <!-- GCP Services -->
-                    <rect x="720" y="74" width="150" height="48" rx="8" fill="rgba(16,185,129,0.1)" stroke="#10b981" stroke-width="1"/>
-                    <text x="795" y="96" text-anchor="middle" fill="#6ee7b7" font-size="11">Loki / Mimir</text>
-                    <text x="795" y="110" text-anchor="middle" fill="#6ee7b7" font-size="10">Grafana 시각화</text>
-                    <line x1="700" y1="98" x2="718" y2="98" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrow-green)"/>
-
-                    <!-- Path label Case 1 -->
-                    <text x="430" y="140" text-anchor="middle" fill="#10b981" font-size="10">서버 → 지역Kafka → 상암Kafka → GCP</text>
-
-                    <!-- Separator -->
-                    <line x1="20" y1="158" x2="870" y2="158" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/>
-
-                    <!-- ====== CASE 2: VM 없는 지역 (순천, 창원) ====== -->
-                    <text x="150" y="180" text-anchor="middle" fill="#fcd34d" font-size="11">VM 없음 (순천·창원)</text>
-
-                    <!-- Servers without VM -->
-                    <rect x="20" y="190" width="80" height="36" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1"/>
-                    <text x="60" y="213" text-anchor="middle" fill="#94a3b8" font-size="11">서버 N개</text>
-
-                    <!-- Direct to Sangam (no local kafka) -->
-                    <text x="160" y="210" text-anchor="middle" fill="#475569" font-size="10">(지역Kafka 없음)</text>
-
-                    <!-- Arrow: servers → sangam kafka (skip local) -->
-                    <line x1="100" y1="208" x2="183" y2="208" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,3"/>
-                    <line x1="183" y1="208" x2="183" y2="98" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-yellow)"/>
-                    <text x="145" y="200" fill="#fcd34d" font-size="10">직접 전송</text>
-
-                    <!-- Path label Case 2 -->
-                    <text x="430" y="250" text-anchor="middle" fill="#f59e0b" font-size="10">서버 → 상암Kafka → GCP (지역Kafka 경유 없음)</text>
-
-                    <!-- Separator -->
-                    <line x1="20" y1="268" x2="870" y2="268" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/>
-
-                    <!-- ====== FAULT SCENARIO ====== -->
-                    <text x="430" y="295" text-anchor="middle" fill="#f87171" font-size="12" font-weight="600">💥 회선 장애 시나리오 비교</text>
-
-                    <!-- WITHOUT Kafka scenario -->
-                    <rect x="20" y="310" width="240" height="80" rx="8" fill="rgba(239,68,68,0.08)" stroke="#ef4444" stroke-width="1"/>
-                    <text x="140" y="330" text-anchor="middle" fill="#f87171" font-size="11" font-weight="600">❌ 지역Kafka 없을 때</text>
-                    <text x="30" y="350" fill="#94a3b8" font-size="11">• 서버 100개 → 알람 100개 발생</text>
-                    <text x="30" y="368" fill="#94a3b8" font-size="11">• 장애 원인 파악 어려움</text>
-                    <text x="30" y="382" fill="#94a3b8" font-size="11">• 대응 속도 저하</text>
-
-                    <!-- WITH Kafka scenario -->
-                    <rect x="280" y="310" width="240" height="80" rx="8" fill="rgba(16,185,129,0.08)" stroke="#10b981" stroke-width="1"/>
-                    <text x="400" y="330" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600">✅ 지역Kafka 있을 때</text>
-                    <text x="290" y="350" fill="#94a3b8" font-size="11">• 서버 100개 → 알람 1개 (Kafka)</text>
-                    <text x="290" y="368" fill="#94a3b8" font-size="11">• 장애 포인트 즉시 식별</text>
-                    <text x="290" y="382" fill="#94a3b8" font-size="11">• 신속 대응 가능</text>
-
-                    <!-- Config Change scenario -->
-                    <rect x="540" y="310" width="340" height="80" rx="8" fill="rgba(99,102,241,0.08)" stroke="#6366f1" stroke-width="1"/>
-                    <text x="710" y="330" text-anchor="middle" fill="#a5b4fc" font-size="11" font-weight="600">🔀 수신처 변경 시</text>
-                    <text x="550" y="350" fill="#94a3b8" font-size="11">• 지역Kafka 도메인 → GCP Kafka 엔드포인트만 수정</text>
-                    <text x="550" y="368" fill="#94a3b8" font-size="11">• 하위 서버 수십~수백 대 무변경</text>
-                    <text x="550" y="382" fill="#94a3b8" font-size="11">• 향후 지역Kafka 철수 시에도 동일하게 적용</text>
-
-                    <!-- Separator -->
-                    <line x1="20" y1="408" x2="870" y2="408" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/>
-
-                    <!-- Topic Policy -->
-                    <text x="430" y="428" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="600">📌 토픽 구조 (안)</text>
-                    <rect x="200" y="438" width="460" height="36" rx="6" fill="rgba(99,102,241,0.1)" stroke="#6366f1" stroke-width="1"/>
-                    <text x="430" y="451" text-anchor="middle" fill="#a5b4fc" font-size="12" font-family="monospace">telemetry.{signal}.{internal|external}</text>
-                    <text x="430" y="466" text-anchor="middle" fill="#64748b" font-size="10">호스트명·회사명·환경명(Prod/Dev) 라벨 기반 필터링 권장</text>
-                    <text x="430" y="498" text-anchor="middle" fill="#475569" font-size="10">Legend:  🔴 지역Kafka  🟠 상암Kafka  🔵 GCP Kafka  — 데이터흐름  - - 우회경로</text>
-                </svg>
-            </div>
+                <!-- Topic Structure -->
+                <line x1="10" y1="122" x2="990" y2="122" stroke="#334155" stroke-width="1" stroke-dasharray="5,3"/>
+                <text x="500" y="145" text-anchor="middle" fill="#c4b5fd" font-size="12" font-weight="700">📌 토픽 구조 (안)</text>
+                <rect x="200" y="155" width="600" height="40" rx="8" fill="rgba(99,102,241,0.1)" stroke="#6366f1" stroke-width="1.5"/>
+                <text x="500" y="171" text-anchor="middle" fill="#a5b4fc" font-size="13" font-family="monospace" font-weight="600">telemetry.{signal}.{internal|external}</text>
+                <text x="500" y="188" text-anchor="middle" fill="#64748b" font-size="11">호스트명·회사명·환경명(Prod/Dev) 라벨 기반 필터링 권장</text>
+            </svg>
         </div>
     </div>
 </section>
@@ -496,82 +409,37 @@
                 <tr>
                     <td><strong>제강 군산</strong></td>
                     <td>✅ VM 있음</td>
-                    <td>서버 → <span class="badge-kafka">지역 Kafka</span> → <span class="badge-sangam">상암 Kafka</span> → <span class="badge-gcp">GCP</span></td>
+                    <td>서버 → <span class="badge-kafka">지역 Kafka</span> → <span class="badge-sangam">상암 IDC</span> → <span class="badge-gcp">GCP</span></td>
                     <td>지역 Kafka 직접 운영</td>
                 </tr>
                 <tr>
                     <td><strong>제강 포항</strong></td>
                     <td>✅ VM 있음</td>
-                    <td>서버 → <span class="badge-kafka">지역 Kafka</span> → <span class="badge-sangam">상암 Kafka</span> → <span class="badge-gcp">GCP</span></td>
+                    <td>서버 → <span class="badge-kafka">지역 Kafka</span> → <span class="badge-sangam">상암 IDC</span> → <span class="badge-gcp">GCP</span></td>
                     <td>지역 Kafka 직접 운영</td>
                 </tr>
                 <tr>
                     <td><strong>제강 순천</strong></td>
                     <td>❌ VM 없음</td>
-                    <td>서버 → <span class="badge-sangam">상암 Kafka</span> → <span class="badge-gcp">GCP</span></td>
-                    <td>상암 Kafka 경유</td>
+                    <td>서버 → <span class="badge-sangam">상암 IDC</span> → <span class="badge-gcp">GCP</span></td>
+                    <td>상암 IDC 경유</td>
                 </tr>
                 <tr>
                     <td><strong>제강 창원</strong></td>
                     <td>❌ VM 없음</td>
-                    <td>서버 → <span class="badge-sangam">상암 Kafka</span> → <span class="badge-gcp">GCP</span></td>
-                    <td>상암 Kafka 경유</td>
+                    <td>서버 → <span class="badge-sangam">상암 IDC</span> → <span class="badge-gcp">GCP</span></td>
+                    <td>상암 IDC 경유</td>
                 </tr>
                 <tr>
                     <td><strong>상암 IDC</strong></td>
-                    <td>✅ 상암 Kafka</td>
-                    <td><span class="badge-sangam">상암 Kafka</span> → <span class="badge-gcp">GCP</span></td>
+                    <td>✅ 상암 IDC</td>
+                    <td><span class="badge-sangam">상암 IDC</span> → <span class="badge-gcp">GCP</span></td>
                     <td>중앙 집약 포인트</td>
                 </tr>
             </tbody>
         </table>
         <div style="margin-top:16px;font-size:14px;color:var(--text-muted);">
             ※ 가용성 확보를 위해 홀수(3~5개) 구성이 권장되나, 현재는 지역별 1대로 운영 중. 향후 증설 검토.
-        </div>
-    </div>
-</section>
-
-<hr class="divider">
-
-<!-- COMMENTS -->
-<section id="comment">
-    <div class="wrapper">
-        <div class="section-title">💬 <span>주요 댓글</span> 인사이트</div>
-        <div class="section-desc">회의록에 달린 댓글에서 핵심 의사결정 맥락을 정리했습니다.</div>
-        <div class="comment-grid">
-            <div class="comment-card">
-                <div class="author">
-                    <div class="avatar">원</div>
-                    <div>
-                        <div class="name">원석님</div>
-                        <div class="role">지역 Kafka 존치 근거 정리</div>
-                    </div>
-                </div>
-                <p>이미 지역별 Kafka 서버가 구성되어 있고 개별 도메인도 만들어져 있음. 회선 장애 시 수십~수백 개 알림 대신 Kafka 1개 알림으로 집약. GCP 업로드 경로가 바뀌면 지역 Kafka 한 군데 경로만 수정하면 됨. 지역 Kafka를 없애야 할 경우에도 해당 도메인만 GCP Kafka를 바라보도록 수정하면 됨.</p>
-                <div class="key-point">현재로서는 지역 Kafka를 사용했을 때의 장점이 많은 상황. Alloy Aggregator 대안도 있지만 굳이 검토할 필요가 있나?</div>
-            </div>
-            <div class="comment-card">
-                <div class="author">
-                    <div class="avatar" style="background:#10b981;">태</div>
-                    <div>
-                        <div class="name">태준</div>
-                        <div class="role">추가 정리 — Kafka의 핵심 역할</div>
-                    </div>
-                </div>
-                <p>Kafka 큐 역할의 핵심은 <strong>회선이 끊겼을 때 버퍼</strong>로 작동한다는 것. 알람 측면에서는 반드시 Kafka일 필요는 없으나, 이미 구성된 Kafka가 이 역할을 함께 수행하므로 별도 대안 검토 실익이 없음.</p>
-                <div class="key-point">버퍼 + 프록시 + 알람 집약 = Kafka 하나로 세 가지 역할 해결.</div>
-            </div>
-            <div class="comment-card">
-                <div class="author">
-                    <div class="avatar" style="background:#f97316;">팀</div>
-                    <div>
-                        <div class="name">팀 관리</div>
-                        <div class="role">문서 이동 요청</div>
-                    </div>
-                </div>
-                <p>월요일에 해당 회의록을 <strong>"2026년 인프라팀 관측가능성 구축"</strong> 하위 페이지로 이동 요청.</p>
-                <div class="key-point" style="background:#fff7ed;border-color:#f97316;color:#9a3412;">관측가능성(Observability) 구축 프로젝트의 일환으로 분류 예정.</div>
-            </div>
         </div>
     </div>
 </section>
@@ -601,8 +469,8 @@
             <div class="action-item">
                 <div class="num">3</div>
                 <div>
-                    <h4>기술적 근거 보완 (→ 다윈님)</h4>
-                    <p>Kafka 도입 및 설치에 대한 상세 기술적 근거(Rationale)를 추가 작성하여 의사결정 문서를 보강합니다.</p>
+                    <h4>회의 내용 보고</h4>
+                    <p>회의 내용 보고 (to 다윈), Kafka 도입에 대해 Chris 보고.</p>
                 </div>
             </div>
             <div class="action-item">
@@ -612,21 +480,14 @@
                     <p>Stealthwatch 등을 활용하여 지역 Kafka 트래픽량과 포트별 트래픽을 파악하고, 서비스 회선 간섭 방지 대책을 수립합니다.</p>
                 </div>
             </div>
-            <div class="action-item">
-                <div class="num">5</div>
-                <div>
-                    <h4>서버 분리 운영 검토</h4>
-                    <p>운영 안정성을 위해 Alloy와 Kafka 용도로 서버 2대를 분리하여 운영하는 방안을 검토합니다.</p>
-                </div>
-            </div>
         </div>
 
         <div class="insight-box">
             <h3>🎯 결론 요약</h3>
             <ul>
                 <li>지역 Kafka는 <strong>알람 집약·데이터 버퍼·경로 유연성</strong>의 세 가지 역할을 동시에 수행한다.</li>
-                <li>이미 구성이 완료됐고, 대체할 명확한 사유가 없으므로 <strong>현행 유지가 합리적</strong>이다.</li>
-                <li>VM 없는 지역(순천·창원)은 상암 Kafka를 경유하는 방식으로 동일한 효과를 얻는다.</li>
+                <li>이미 구성이 완료됐고, 대체할 명확한 대체 솔루션에 대한 검토가 없었으므로 <strong>현행 유지가 합리적</strong>이다.</li>
+                <li>VM 없는 지역(순천·창원)은 상암 IDC를 경유하는 방식으로 동일한 효과를 얻는다.</li>
                 <li>Alloy Aggregator는 대안으로 존재하나, 현재 Kafka 효용성이 충분히 높아 병행 검토만 유지한다.</li>
                 <li>향후 수신처 변경이나 Kafka 철수 시에도 <strong>도메인 단위 전환</strong>으로 유연하게 대응 가능하다.</li>
             </ul>
