@@ -31,7 +31,7 @@ function newJsBlock(folderHash, secretHash) {
         function renderGrid() {
             const container = document.getElementById('filesContainer');
             container.innerHTML = filesData.map(file => \`
-                <div class="file-card" onclick="window.location.hash='\${file.hash}'">
+                <div class="file-card" onclick="location.href='../contents/\${file.hash}/\${file.filename}'">
                     <div class="file-icon"><i class="fas fa-leaf"></i></div>
                     <div class="file-name">\${file.displayName}</div>
                 </div>\`).join('');
