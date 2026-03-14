@@ -382,5 +382,31 @@ const AI_ARTICLES = [
         { date: "2026-03-17", event: "NVIDIA GTC 2026 — Microsoft·NVIDIA Physical AI 공동 시연" }
       ]
     }
+  },
+  {
+    id: "usecase-005",
+    category: "usecase",
+    title: "NVIDIA NeMo Retriever 에이전틱 검색 파이프라인 — ViDoRe v3 1위 달성",
+    date: "2026-03-13",
+    summary: "ReACT 기반 에이전틱 루프로 ViDoRe v3 NDCG@10 69.22(1위)·BRIGHT 2위 동시 달성, 밀집 검색 대비 범용성 입증",
+    originalUrl: "https://huggingface.co/blog/nvidia/nemo-retriever-agentic-retrieval",
+    detail: {
+      overview: "NVIDIA NeMo Retriever 팀이 ReACT 기반 에이전틱 검색 파이프라인을 개발해 ViDoRe v3 리더보드 1위(NDCG@10 69.22)와 추론 집약적 BRIGHT 리더보드 2위를 동시에 달성했다. 기존 밀집 검색의 한계를 극복하기 위해 LLM이 think·retrieve·final_results 도구를 활용해 검색·평가·개선을 반복하는 에이전틱 루프를 구현했으며, MCP 서버 대신 스레드 안전 싱글톤 리트리버를 채택해 배포 안정성과 GPU 활용률을 크게 개선했다. Claude Opus 4.5와 nemotron-colembed-vl-8b-v2 임베딩 조합이 최고 성능을 기록했고, 향후 소형 오픈 가중치 모델로의 증류를 통해 비용 절감을 목표로 한다.",
+      keyPoints: [
+        { label: "핵심 아키텍처", value: "ReACT 루프 — think/retrieve(query, top_k)/final_results 도구로 반복 검색·추론, 실패 시 RRF 폴백" },
+        { label: "벤치마크 성능", value: "ViDoRe v3 NDCG@10 69.22(1위), BRIGHT NDCG@10 50.90(2위); 밀집 검색 대비 각각 +4.86p, +12.62p 향상" },
+        { label: "엔지니어링 개선", value: "MCP 서버 → 스레드 안전 싱글톤 리트리버 전환으로 네트워크 오버헤드 제거·GPU 활용률 향상" },
+        { label: "비용·속도", value: "쿼리당 평균 136초, 입력 토큰 약 760k — 고부가가치 복잡 쿼리에 적합, 단순 검색 대비 고비용" },
+        { label: "최적 모델 조합", value: "Claude Opus 4.5 + nemotron-colembed-vl-8b-v2(최고 성능) / gpt-oss-120b 대비 ViDoRe +2.84p 우위" },
+        { label: "향후 계획", value: "에이전틱 추론 패턴을 소형 오픈 가중치 모델에 파인튜닝·증류하여 Opus 수준 정확도를 저비용으로 달성 목표" }
+      ],
+      comparison: [
+        { 파이프라인: "NeMo Agentic (Opus 4.5 + colembed-vl-8b)", "ViDoRe v3 NDCG@10": "69.22 (1위)", "BRIGHT NDCG@10": "50.90 (2위)" },
+        { 파이프라인: "NeMo Agentic (gpt-oss-120b + colembed-vl-8b)", "ViDoRe v3 NDCG@10": "66.38", "BRIGHT NDCG@10": "41.27" },
+        { 파이프라인: "INF-X-Retriever (특화 파이프라인)", "ViDoRe v3 NDCG@10": "62.31", "BRIGHT NDCG@10": "63.40 (1위)" },
+        { 파이프라인: "밀집 검색 (colembed-vl-8b, 베이스라인)", "ViDoRe v3 NDCG@10": "64.36", "BRIGHT NDCG@10": "38.28" }
+      ],
+      timeline: []
+    }
   }
 ];
