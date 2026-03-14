@@ -408,5 +408,29 @@ const AI_ARTICLES = [
       ],
       timeline: []
     }
+  },
+  {
+    id: "claude-004",
+    category: "claude",
+    title: "펜타곤 CTO 'Claude는 방산 공급망 오염' — 미 국방부 AI 표적 결정 논란",
+    date: "2026-03-13",
+    summary: "펜타곤 CTO가 Claude를 방산 공급망 오염 우려로 배제, ChatGPT·Grok는 군사 표적 우선순위 결정에 도입 추진",
+    originalUrl: "https://www.technologyreview.com/2026/03/13/1134278/the-download-defense-official-ai-chatbots-targeting-pentagon-claude-pollute-military-supply-chain/",
+    detail: {
+      overview: "미 국방부가 기밀 환경에 배치된 생성 AI 시스템을 활용해 표적 목록을 분석하고 타격 우선순위를 추천하는 방안을 검토 중이다. 펜타곤 CTO는 Claude가 '정책 선호(policy preference)가 내재된 모델'이라며 방산 공급망 오염 우려를 이유로 도입을 거부했고, 반면 OpenAI의 ChatGPT와 xAI의 Grok는 군사 의사결정 시스템에 채택이 추진되고 있다. Anthropic는 OpenAI의 국방부 협력 타결에 강하게 반발하고 있으며, AI의 군사적 활용을 둘러싼 윤리 논쟁이 본격화되고 있다.",
+      keyPoints: [
+        { label: "군사 AI 활용", value: "펜타곤 기밀 생성 AI로 표적 목록 분석·우선순위 추천, 최종 판단은 인간이 책임" },
+        { label: "Claude 배제 이유", value: "펜타곤 CTO, '정책 선호 내재 모델로 방산 공급망 오염' 주장 — 안보·정책 관점 비판" },
+        { label: "경쟁 구도", value: "ChatGPT(OpenAI)·Grok(xAI) 군사 도입 추진 vs Claude(Anthropic) 배제" },
+        { label: "Anthropic 반응", value: "OpenAI의 국방부 협력 '타협'에 반발, 윤리 기반 AI 정책 강조" },
+        { label: "추가 동향", value: "Meta 최신 AI 출시 연기(Google·OpenAI·Anthropic 대비 성능 미달), 우크라이나 전장 데이터 AI 학습 제공 추진" }
+      ],
+      comparison: [
+        { "AI 모델": "ChatGPT (OpenAI)", "군사 도입": "도입 추진", "비고": "국방부 협력 타결" },
+        { "AI 모델": "Grok (xAI)", "군사 도입": "도입 추진", "비고": "고위험 의사결정 시스템 검토 중" },
+        { "AI 모델": "Claude (Anthropic)", "군사 도입": "배제", "비고": "정책 선호 내재 우려, 방산 공급망 오염 주장" }
+      ],
+      timeline: []
+    }
   }
 ];
