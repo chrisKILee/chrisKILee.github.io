@@ -1,4 +1,6 @@
-# 시스템 아키텍처 및 보안 스펙 (v1.5)
+# 시스템 아키텍처 및 보안 스펙 (v2.0)
+
+> 최종 업데이트: 2026-03-14
 
 ## 1. 보안 및 접근 제어 (Security & Stealth)
 
@@ -8,18 +10,92 @@
 
 ## 2. 데이터 관리 (Zero-Sync Architecture)
 
-### files.json 기반 단일화 및 `.js` 설정 폐기
-- **배경**: 과거 `.js` 설정(window.FOLDER_CONFIG)을 사용했던 이유는 로컬에서 서버 없이 파일을 열 때 발생하는 CORS 보안 문제를 피하기 위함이었습니다.
-- **변경 사유**: 현재 사용자님이 로컬 서버(`python3 -m http.server`)를 사용하고 계시므로, 중복 관리가 필요한 `.js` 파일은 더 이상 불필요합니다.
-- **런타임 동적 로딩**: 포털(`GDEDSE`)과 각 SPA가 실행될 때, 해당 폴더의 **`files.json`을 직접 fetch**하여 로드합니다.
-- **자동 적용**: 사용자님이 `files.json`만 수정하신 후 브라우저를 새로고침하면, 별도의 싱크 작업 없이 즉시 포털과 SPA 목록에 반영됩니다. (중복 데이터 관리 포인트 제로화)
+### site.json 기반 단일 진실 원천
+- **위치**: `gemini_html/site.json`
+- **구조**: `folders` (카테고리 메타) + `files` (파일 메타) 두 섹션
+- **런타임 동적 로딩**: 포털(`GDEDSE`)과 각 카테고리 SPA가 실행될 때 `../site.json`을 fetch하여 필요한 데이터만 필터링
+- **자동 적용**: `site.json` 수정 후 새로고침만으로 포털·SPA 목록에 즉시 반영 (중복 관리 제로)
 
-## 3. 디자인 및 사용자 경험 (UI/UX)
+### 파일 등록 구조
+```json
+"FILE_HASH": {
+  "filename": "파일명.html",
+  "displayName": "표시 이름",
+  "categoryHash": "카테고리해시",
+  "visible": true,
+  "order": 1
+}
+```
 
-### iframe 디자인 미러링
-- **스타일 상속**: iframe 내의 리포트 조각들이 부모의 테마(컬러, 폰트, Glassmorphism)를 자연스럽게 상속받도록 CSS 변수를 공유합니다.
-- **고립성**: 상위 메뉴('Home', 'Back')가 전혀 노출되지 않는 고립된 뷰를 제공하여 보안 원칙을 준수합니다.
+## 3. URL 구조 및 라우팅
 
-## 4. 로컬 테스트 및 배포
-- **서버 서빙**: `python3 -m http.server`가 실행 중일 때 모든 기능을 100% 테스트 가능합니다.
-- **.js 파일 삭제**: 각 폴더에 잔존하는 `files_config.js`는 점진적으로 제거하여 데이터 정합성 문제를 원천 차단합니다.
+### 카테고리 SPA URL 패턴
+```
+https://page.chrisnolja.dev/gemini_html/{CATEGORY_HASH}/#secretHash
+```
+- `#secretHash` 가 일치해야 목록이 표시됨 (일치하지 않으면 stealth 404)
+
+### 콘텐츠 직접 URL 패턴
+```
+https://page.chrisnolja.dev/gemini_html/contents/{FILE_HASH}/{filename}.html
+```
+
+### 카드 클릭 내비게이션 (v2.0 변경)
+- **이전 (v1.x)**: `window.location.hash = file.hash` → SPA 내부 hash 라우팅 + DOM injection 또는 iframe
+- **현재 (v2.0)**: `location.href = '../contents/${file.hash}/${file.filename}'` → 콘텐츠 URL로 직접 이동
+
+카테고리 SPA 목록(#secretHash)에서 카드를 클릭하면 `contents/{HASH}/{filename}.html`로 직접 이동합니다.
+브라우저 뒤로가기로 카테고리 목록으로 돌아올 수 있습니다.
+
+## 4. 카테고리 SPA 구조
+
+### index.html 기본 구조
+```
+{CATEGORY_HASH}/index.html
+├── fileListView  — 목록 뷰 (secretHash 일치 시 표시)
+└── fileContentView — 미사용 (v2.0에서 직접 이동 방식으로 전환)
+```
+
+### 핵심 JS 로직
+```javascript
+async function init() {
+    // site.json fetch → filesData 필터링 → renderGrid() + checkHash()
+}
+function renderGrid() {
+    // 카드 onclick: location.href='../contents/${file.hash}/${file.filename}'
+}
+function checkHash() {
+    // hash === SECRET_LIST_HASH → 목록 표시
+    // 그 외 → stealth 404
+}
+```
+
+### 스크립트 일괄 재생성
+`patch-spa-shells.js` 실행 시 모든 카테고리 SPA의 JS 블록을 위 패턴으로 재생성합니다.
+
+## 5. 콘텐츠 파일 구조
+
+```
+gemini_html/contents/
+└── {FILE_HASH}/
+    ├── {filename}.html    ← 메인 콘텐츠
+    └── images/
+        └── {sitesName}/   ← program-guide 이미지
+```
+
+- 콘텐츠 HTML은 독립 완전한 SPA (nav, style, script 포함)
+- 상위 카테고리 SPA와 CSS/JS 격리됨
+
+## 6. 주요 스크립트
+
+| 스크립트 | 역할 |
+|---------|------|
+| `patch-spa-shells.js` | 모든 카테고리 index.html JS 블록 일괄 재생성 |
+| `add-file.sh` | 새 콘텐츠 디렉토리 및 파일 생성, site.json 자동 등록 |
+
+## 7. 배포
+
+- **호스팅**: GitHub Pages (master 브랜치 자동 배포)
+- **도메인**: `page.chrisnolja.dev` (CNAME → chrisKILee.github.io)
+- **빌드**: Jekyll (정적 파일 pass-through, gemini_html/ 폴더 그대로 서빙)
+- **CDN 캐시**: Varnish + max-age=600 (10분). 배포 후 최대 10분 지연 가능
