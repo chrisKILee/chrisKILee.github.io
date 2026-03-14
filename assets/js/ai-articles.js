@@ -354,5 +354,33 @@ const AI_ARTICLES = [
         { date: "2025-04-01", event: "GA 및 GitHub 무료 플랜 포함" }
       ]
     }
+  },
+  {
+    id: "usecase-004",
+    category: "usecase",
+    title: "Physical AI — Microsoft·NVIDIA가 제조업의 산업 프론티어를 여는 법",
+    date: "2026-03-13",
+    summary: "Microsoft·NVIDIA 협력으로 제조 현장에 Physical AI 도입, 시뮬레이션 기반 개발부터 실세계 실행까지 전 주기 지원",
+    originalUrl: "https://www.technologyreview.com/2026/03/13/1134184/why-physical-ai-is-becoming-manufacturings-next-advantage/",
+    detail: {
+      overview: "Physical AI란 실세계에서 인식·추론·행동할 수 있는 지능 시스템으로, 단순 자동화를 넘어 인간 역량을 확장하는 새로운 패러다임이다. Microsoft와 NVIDIA는 가속 컴퓨팅, 시뮬레이션 라이브러리, 로보틱스 프레임워크, 엔터프라이즈 클라우드를 결합해 제조업체가 Physical AI를 파일럿 수준에서 프로덕션 수준으로 확장할 수 있도록 지원한다. 인간이 의도를 설정하고 AI가 실행·학습·개선하는 '인간 주도·AI 운영' 구조가 핵심이며, 신뢰(거버넌스·보안·가시성)가 확산의 전제 조건으로 강조된다.",
+      keyPoints: [
+        { label: "핵심 개념", value: "Physical AI — 로봇·자율 시스템이 동적 환경에서 인식·추론·행동하는 지능 계층" },
+        { label: "협력 구조", value: "NVIDIA(가속 컴퓨팅·오픈 모델·로보틱스 프레임워크) + Microsoft(엔터프라이즈 클라우드·거버넌스)" },
+        { label: "주요 활용", value: "생산 라인 실시간 최적화, 유지보수·품질 의사결정 조율, 공급망 변동 대응, 엔지니어링 가속화" },
+        { label: "신뢰 요건", value: "보안·관찰 가능성·정책 준수를 플랫폼 설계 단계부터 내장 필수" },
+        { label: "공개 행사", value: "NVIDIA GTC 2026에서 Microsoft·NVIDIA 공동 Physical AI 시연 예정" },
+        { label: "주의사항", value: "Microsoft·NVIDIA 후원 콘텐츠로, MIT Technology Review 편집국 독립 기사 아님" }
+      ],
+      comparison: [
+        { 구분: "기존 자동화", 특징: "반복 작업 최적화", 한계: "적응성 부족, 확장 어려움" },
+        { 구분: "초기 AI 도입", 특징: "협소한 최적화·비용 절감", 한계: "기술 격차·거버넌스 우려" },
+        { 구분: "Physical AI (산업 프론티어)", 특징: "인간 주도·AI 운영, 시뮬레이션 기반 검증 후 실행", 한계: "신뢰 체계 구축 필요" }
+      ],
+      timeline: [
+        { date: "2026-03-13", event: "MIT Technology Review, Physical AI 제조 혁신 특집 기고 게재" },
+        { date: "2026-03-17", event: "NVIDIA GTC 2026 — Microsoft·NVIDIA Physical AI 공동 시연" }
+      ]
+    }
   }
 ];
