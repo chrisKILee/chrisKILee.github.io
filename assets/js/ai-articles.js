@@ -393,18 +393,19 @@ const AI_ARTICLES = [
     detail: {
       overview: "NVIDIA NeMo Retriever 팀이 ReACT 기반 에이전틱 검색 파이프라인을 개발해 ViDoRe v3 리더보드 1위(NDCG@10 69.22)와 추론 집약적 BRIGHT 리더보드 2위를 동시에 달성했다. 기존 밀집 검색의 한계를 극복하기 위해 LLM이 think·retrieve·final_results 도구를 활용해 검색·평가·개선을 반복하는 에이전틱 루프를 구현했으며, MCP 서버 대신 스레드 안전 싱글톤 리트리버를 채택해 배포 안정성과 GPU 활용률을 크게 개선했다. Claude Opus 4.5와 nemotron-colembed-vl-8b-v2 임베딩 조합이 최고 성능을 기록했고, 향후 소형 오픈 가중치 모델로의 증류를 통해 비용 절감을 목표로 한다.",
       keyPoints: [
-        { label: "핵심 아키텍처", value: "ReACT 루프 — think/retrieve(query, top_k)/final_results 도구로 반복 검색·추론, 실패 시 RRF 폴백" },
-        { label: "벤치마크 성능", value: "ViDoRe v3 NDCG@10 69.22(1위), BRIGHT NDCG@10 50.90(2위); 밀집 검색 대비 각각 +4.86p, +12.62p 향상" },
-        { label: "엔지니어링 개선", value: "MCP 서버 → 스레드 안전 싱글톤 리트리버 전환으로 네트워크 오버헤드 제거·GPU 활용률 향상" },
-        { label: "비용·속도", value: "쿼리당 평균 136초, 입력 토큰 약 760k — 고부가가치 복잡 쿼리에 적합, 단순 검색 대비 고비용" },
-        { label: "최적 모델 조합", value: "Claude Opus 4.5 + nemotron-colembed-vl-8b-v2(최고 성능) / gpt-oss-120b 대비 ViDoRe +2.84p 우위" },
-        { label: "향후 계획", value: "에이전틱 추론 패턴을 소형 오픈 가중치 모델에 파인튜닝·증류하여 Opus 수준 정확도를 저비용으로 달성 목표" }
+        { label: "에이전틱 루프 3단계", value: "① think — 검색 전략 수립 → ② retrieve(query, top_k) — 반복 검색·재표현·복합 쿼리 분해 → ③ final_results — 최종 문서 순위 출력. 실패 시 RRF(Reciprocal Rank Fusion) 자동 폴백" },
+        { label: "왜 에이전틱이 필요한가", value: "LLM은 추론 가능하지만 수백만 문서를 한번에 처리 불가. 반대로 리트리버는 대규모 검색에 강하지만 추론 능력 부재. 에이전틱 루프가 이 간극을 연결" },
+        { label: "싱글톤 리트리버 전환", value: "MCP 서버 방식(별도 프로세스·네트워크 왕복)을 스레드 안전 싱글톤으로 교체 — 모델·코퍼스 임베딩을 1회만 로드, reentrant lock으로 동시 접근 보호, 네트워크 오버헤드 제거" },
+        { label: "모델 조합별 성능 (ViDoRe v3)", value: "Opus 4.5 + colembed-vl-8b → 69.22, 136초/쿼리, 평균 9.2회 검색 호출 | gpt-oss-120b + colembed-vl-8b → 66.38, 78초/쿼리, 2.4회 호출 | 밀집 검색 베이스라인 → 64.36, 0.67초" },
+        { label: "범용성 vs 특화 비교", value: "INF-X-Retriever는 BRIGHT 1위(63.40)지만 ViDoRe v3 적용 시 62.31로 밀집 검색(64.36)에도 미달. NeMo Agentic은 두 벤치마크 모두 상위권 — 데이터셋별 튜닝 없이 전략을 자체 적응" },
+        { label: "비용·적합 시나리오", value: "Opus 4.5 조합: 쿼리당 136초, 입력 토큰 ~760k → 고부가가치 복잡 검색에 적합. gpt-oss-120b 조합: 78초, 저비용 → 범용 RAG 파이프라인. 단순 키워드 검색엔 밀집 검색이 경제적" },
+        { label: "향후 로드맵", value: "Opus 수준 에이전틱 추론 패턴을 소형 오픈 가중치 모델에 파인튜닝·증류 → 고정확도를 저비용으로 제공하는 프로덕션 RAG 목표" }
       ],
       comparison: [
-        { 파이프라인: "NeMo Agentic (Opus 4.5 + colembed-vl-8b)", "ViDoRe v3 NDCG@10": "69.22 (1위)", "BRIGHT NDCG@10": "50.90 (2위)" },
-        { 파이프라인: "NeMo Agentic (gpt-oss-120b + colembed-vl-8b)", "ViDoRe v3 NDCG@10": "66.38", "BRIGHT NDCG@10": "41.27" },
-        { 파이프라인: "INF-X-Retriever (특화 파이프라인)", "ViDoRe v3 NDCG@10": "62.31", "BRIGHT NDCG@10": "63.40 (1위)" },
-        { 파이프라인: "밀집 검색 (colembed-vl-8b, 베이스라인)", "ViDoRe v3 NDCG@10": "64.36", "BRIGHT NDCG@10": "38.28" }
+        { 파이프라인: "NeMo Agentic (Opus 4.5 + colembed-vl-8b)", "ViDoRe v3": "69.22 (1위)", "BRIGHT": "50.90 (2위)", "초/쿼리": "136초", "검색호출": "9.2회" },
+        { 파이프라인: "NeMo Agentic (gpt-oss-120b + colembed-vl-8b)", "ViDoRe v3": "66.38", "BRIGHT": "41.27", "초/쿼리": "78초", "검색호출": "2.4회" },
+        { 파이프라인: "INF-X-Retriever (특화)", "ViDoRe v3": "62.31", "BRIGHT": "63.40 (1위)", "초/쿼리": "미공개", "검색호출": "미공개" },
+        { 파이프라인: "밀집 검색 베이스라인 (colembed-vl-8b)", "ViDoRe v3": "64.36", "BRIGHT": "38.28", "초/쿼리": "0.67초", "검색호출": "1회" }
       ],
       timeline: []
     }
@@ -471,17 +472,18 @@ const AI_ARTICLES = [
     detail: {
       overview: "옵시디언은 강력하지만 처음 켜면 텅 빈 화면과 마크다운 문법이 장벽이 된다. Make.md(일명 잔디 플러그인)는 슬래시 명령·Spaces·Contexts 세 가지 핵심 기능으로 옵시디언을 노션 스타일의 워크스페이스로 바꿔주는 올인원 플러그인이다. 마크다운을 외우지 않아도 콘텐츠 작성에만 집중할 수 있어 초보자의 입덕 필수템으로 꼽힌다.",
       keyPoints: [
-        { label: "슬래시(/) 명령", value: "마크다운 기호(*, #, >) 없이 / 입력만으로 제목·체크리스트·콜아웃 등 서식 팝업 선택 — 노션 사용자에게 즉시 익숙한 UX" },
-        { label: "Spaces (프로젝트 공간)", value: "파일을 단순 폴더가 아닌 주제·프로젝트별 공간으로 묶어 관리 — 윈도우 탐색기식 사이드바를 현대적인 프로젝트 타워로 대체" },
-        { label: "Contexts (데이터베이스)", value: "흩어진 노트를 노션 DB처럼 표 형식으로 집계·필터링 — 태그·상태(진행중/완료)별 뷰로 파편화된 정보를 지식 DB로 전환" },
-        { label: "설치 방법", value: "옵시디언 커뮤니티 플러그인 검색창에서 'Make.md' 검색 후 설치 → 활성화만 하면 즉시 적용" },
-        { label: "대상 사용자", value: "노션 → 옵시디언 이전 희망자, 마크다운 입문자, 로컬 저장 기반 PKM(개인 지식 관리) 구축을 원하는 누구나" },
-        { label: "주의사항", value: "옵시디언 자체 기능과 일부 겹치는 영역 있음, 플러그인 간 충돌 가능성 — 설치 후 기존 플러그인과 호환성 확인 권장" }
+        { label: "설치 방법", value: "옵시디언 → Settings → Community Plugins → Browse에서 'Make.md' 검색 → Install → Enable. 재시작 불필요, 즉시 적용" },
+        { label: "슬래시(/) 명령 사용법", value: "노트 편집 중 / 입력 → 팝업 메뉴에서 Heading1·2·3 / Callout / Checklist / Table / Image 등 선택. 마크다운 기호(#, *, >, |) 암기 불필요" },
+        { label: "Navigator & Spaces 사용법", value: "왼쪽 사이드바 Navigator에서 드래그&드롭으로 Space 생성 → 폴더·태그 기반으로 그룹화. Blink 검색(단축키)으로 노트 즉시 이동. 3패널 Overview로 폴더·파일·미리보기 동시 확인" },
+        { label: "Contexts (DB) 사용법", value: "폴더나 태그에 Context 정의 → 속성(날짜·상태·태그 등) 설정 → Table·Calendar·Kanban·Gallery 뷰로 전환. 필터·정렬·그룹화 지원. 태그 Context 연결로 서로 다른 Space 데이터 관계 연결 가능" },
+        { label: "개인화 (Spaces 에디터)", value: "Space 홈 페이지를 블록 에디터로 커스터마이징 — 리스트·버튼·이미지·임베드 블록 드래그&드롭 배치. 스티커·컬러·커버 이미지로 노트별 개성 부여. 템플릿으로 반복 구조 자동화" },
+        { label: "핵심 차별점", value: "로컬 저장(옵시디언 기반) + 노션 UX = 프라이버시 보장하면서 노션 수준 DB 활용 가능. 수식(Formula)·관계(Relation)·객체(Object) 속성으로 고급 데이터 구조 구현" },
+        { label: "주의사항", value: "커뮤니티 플러그인이므로 옵시디언 업데이트 후 일시적 호환성 문제 가능. Dataview·Templater 등 기존 플러그인과 기능 중복 시 정리 권장" }
       ],
       comparison: [
-        { 구분: "기본 옵시디언", 서식입력: "마크다운 직접 입력", 파일관리: "폴더 트리", 데이터뷰: "Dataview 플러그인 별도 설치" },
-        { 구분: "Make.md 적용 후", 서식입력: "슬래시(/) 팝업 선택", 파일관리: "Spaces 프로젝트 타워", 데이터뷰: "Contexts DB 내장" },
-        { 구분: "노션", 서식입력: "슬래시(/) 팝업 선택", 파일관리: "페이지·데이터베이스", 데이터뷰: "DB 뷰 내장 (클라우드 저장)" }
+        { 구분: "기본 옵시디언", 서식입력: "마크다운 직접 입력", 파일관리: "폴더 트리 (윈도우 탐색기식)", 데이터뷰: "Dataview 플러그인 별도 설치", 저장: "로컬" },
+        { 구분: "Make.md 적용", 서식입력: "/ 슬래시 팝업 선택", 파일관리: "Spaces + Navigator (드래그&드롭)", 데이터뷰: "Contexts DB 내장 (Table·Calendar·Kanban)", 저장: "로컬" },
+        { 구분: "노션", 서식입력: "/ 슬래시 팝업 선택", 파일관리: "페이지 계층 + DB", 데이터뷰: "DB 뷰 내장", 저장: "클라우드 (유료 플랜 필요)" }
       ],
       timeline: []
     }
