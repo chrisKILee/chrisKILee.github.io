@@ -442,23 +442,25 @@ const AI_ARTICLES = [
     summary: "Max·Team·Enterprise 플랜에서 Opus 4.6 100만 토큰 컨텍스트 기본 제공, /color·/rename 세션 관리 강화, 메모리 파일 타임스탬프 추가",
     originalUrl: "https://error-storage.tistory.com/95",
     detail: {
-      overview: "2026년 3월 14일 배포된 Claude Code 2.1.75의 가장 큰 변화는 Max·Team·Enterprise 플랜에서 Opus 4.6의 1M 컨텍스트 윈도우를 추가 사용량 없이 기본 제공하는 것이다. 이전에는 200K 토큰을 초과하면 별도 사용량이 소모되거나 컴팩션이 발생했으나, 이제 대용량 코드베이스나 긴 문서를 통째로 분석할 수 있다. 세션별 프롬프트 바 색상 지정(/color)과 이름 표시(/rename), 메모리 파일 타임스탬프 추가로 작업 경험도 세밀하게 개선되었으며, 다수의 안정성 버그도 함께 수정되었다.",
+      overview: "2026년 3월 14일 배포된 Claude Code 2.1.75의 핵심은 Max·Team·Enterprise 플랜에서 Opus 4.6 1M 컨텍스트 윈도우가 추가 사용량 없이 기본 제공된다는 것이다. 이전에는 200K 토큰 초과 시 별도 사용량이 소모되거나 컴팩션이 강제 실행됐지만, 이제 수십만 줄의 코드베이스·긴 문서를 한 번에 올려 분석할 수 있다. /color·/rename으로 멀티 세션을 직관적으로 구분하고, 메모리 파일에 타임스탬프가 추가돼 Claude가 최신 기억을 우선 활용한다. Bash 파이프+! 명령 오류, 토큰 과산정으로 인한 조기 컴팩션 등 체감 버그도 다수 수정됐다.",
       keyPoints: [
-        { label: "1M 컨텍스트 기본 제공", value: "Max·Team·Enterprise 플랜에서 Opus 4.6 100만 토큰 컨텍스트 추가 비용 없이 기본 제공 — 컴팩션 빈도 15% 감소 효과" },
-        { label: "세션 관리 강화", value: "/color 명령으로 세션별 프롬프트 바 색상 지정, /rename으로 붙인 이름이 프롬프트 바에 표시 — 멀티 세션 구분 용이" },
-        { label: "메모리 타임스탬프", value: "메모리 파일에 마지막 수정 시각 기록 → Claude가 최신 기억과 오래된 기억을 구분해 최신 정보 우선 활용" },
-        { label: "훅 보안 강화", value: "훅 권한 요청 시 설정·플러그인·스킬 중 출처 표시 — 어떤 훅이 권한을 요청하는지 명확히 파악 가능" },
-        { label: "주요 버그 수정", value: "Bash 파이프+! 조합 명령 오류, 토큰 과산정으로 인한 조기 컴팩션, /voice 초기 활성화 실패, 모델 변경 후 헤더 미갱신 등 수정" },
-        { label: "Breaking Change", value: "Windows 조직 관리 설정 파일 경로 변경 — C:\\ProgramData\\ClaudeCode → C:\\Program Files\\ClaudeCode\\managed-settings.json" }
+        { label: "1M 컨텍스트 사용법", value: "업그레이드 없이 자동 적용 (Max·Team·Enterprise). 대규모 코드베이스 전체 붙여넣기, 수백 페이지 PDF 한 번에 분석 가능. /context 명령으로 현재 토큰 사용량 확인. 컴팩션 빈도 15% 감소 실측" },
+        { label: "/color — 세션 색상 지정", value: "터미널에서 /color 입력 → 색상명 또는 hex 코드 입력 (예: /color blue, /color #ff6b6b). 여러 탭에서 Claude Code를 동시에 열 때 세션별로 색상을 다르게 지정해 혼동 방지" },
+        { label: "/rename — 세션 이름 표시", value: "/rename '작업명' 입력 → 프롬프트 바에 이름이 항상 표시됨. /resume로 이전 세션을 재개·포크할 때 이름이 유지되지 않던 버그도 함께 수정" },
+        { label: "메모리 타임스탬프 활용", value: "~/.claude/memory/ 하위 .md 파일에 마지막 수정 시각이 자동 기록 → Claude가 '오래된 기억'과 '최신 기억'을 구분해 최신 정보를 우선 참고. autoMemoryDirectory 설정으로 저장 위치 변경 가능 (2.1.74 추가)" },
+        { label: "훅 출처 표시", value: "훅이 권한을 요청할 때 '설정(settings) / 플러그인(plugin) / 스킬(skill)' 중 어디서 왔는지 표시 → 의도치 않은 훅 실행 여부를 즉시 판단 가능. --verbose 또는 transcript 모드에서 훅 완료 메시지 상세 확인" },
+        { label: "주요 버그 수정 & Breaking Change", value: "수정: Bash jq 'select(.x != .y)' 등 파이프+! 조합 오류 / thinking·tool_use 블록 토큰 과산정으로 인한 조기 컴팩션 / /voice 첫 활성화 실패 / /status Config 탭 후 Esc 미작동. Breaking: Windows 관리 설정 경로 C:\\ProgramData\\ClaudeCode → C:\\Program Files\\ClaudeCode\\managed-settings.json" }
       ],
       comparison: [
-        { 구분: "2.1.74 이전", "1M 컨텍스트": "추가 사용량 소모 필요", 세션관리: "색상·이름 표시 없음", 메모리: "타임스탬프 없음" },
-        { 구분: "2.1.75", "1M 컨텍스트": "Max·Team·Enterprise 기본 제공 (무료)", 세션관리: "/color 색상 + /rename 이름 표시", 메모리: "마지막 수정 시각 자동 기록" }
+        { 기능: "1M 컨텍스트", "2.1.74 이전": "200K 초과 시 추가 사용량 소모, 강제 컴팩션", "2.1.75": "Max·Team·Enterprise 기본 제공, 별도 비용 없음" },
+        { 기능: "세션 구분", "2.1.74 이전": "탭·창으로만 구분, 시각적 단서 없음", "2.1.75": "/color 색상 + /rename 이름이 프롬프트 바에 상시 표시" },
+        { 기능: "메모리 관리", "2.1.74 이전": "타임스탬프 없어 최신·구버전 기억 구분 불가", "2.1.75": "수정 시각 자동 기록, Claude가 최신 기억 우선 참조" },
+        { 기능: "Bash ! 명령", "2.1.74 이전": "파이프와 함께 ! 사용 시 명령 깨짐 (jq 등)", "2.1.75": "정상 동작 (파이프+! 조합 수정)" }
       ],
       timeline: [
-        { date: "2026-03-13", event: "Anthropic, Opus 4.6·Sonnet 4.6 1M 컨텍스트 GA 발표 — 표준 가격 적용, 미디어 한도 600개로 6배 확대" },
-        { date: "2026-03-14", event: "Claude Code 2.1.75 배포 — 1M 컨텍스트 Claude Code 기본 통합" },
-        { date: "2026-03-14", event: "Claude Code 2.1.76 연속 배포 — MCP Elicitation 지원, /effort 명령, PostCompact 훅 추가" }
+        { date: "2026-03-13", event: "Anthropic 1M 컨텍스트 GA 발표 — Opus 4.6·Sonnet 4.6 표준 가격 적용, 미디어 한도 100→600개 확대, MRCR v2 78.3% 달성" },
+        { date: "2026-03-14", event: "Claude Code 2.1.75 배포 — 1M 컨텍스트 기본 통합, /color·/rename·메모리 타임스탬프 추가, 다수 버그 수정" },
+        { date: "2026-03-14", event: "Claude Code 2.1.76 연속 배포 — MCP Elicitation, /effort 명령, PostCompact 훅, worktree.sparsePaths 설정 추가" }
       ]
     }
   },
