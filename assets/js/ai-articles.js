@@ -487,5 +487,31 @@ const AI_ARTICLES = [
       ],
       timeline: []
     }
+  },
+  {
+    id: "claude-006",
+    category: "claude",
+    title: "Claude Code 커스터마이징 4계층 완전 정리 — CLAUDE.md·Skills·Agents·Output Styles",
+    date: "2026-03-15",
+    summary: "매 세션 규칙 주입(CLAUDE.md), 응답 방식 교체(Output Style), 호출형 플레이북(Skills), 독립 컨텍스트 전문 AI(Sub-agents) 4계층 구조 정리",
+    originalUrl: "https://code.claude.com/docs/en/memory#choose-where-to-put-claude-md-files",
+    detail: {
+      overview: "Claude Code는 커스터마이징을 위한 4가지 독립 레이어를 제공한다. CLAUDE.md는 매 세션 컨텍스트에 자동 주입되는 규칙·지식 파일이고, Output Styles는 시스템 프롬프트 자체를 교체해 Claude의 응답 방식을 완전히 바꾼다. Skills는 description만 평소에 노출하고 실제 내용은 호출 시에만 로드되는 플레이북이며, Sub-agents는 메인 대화와 완전히 분리된 독립 context window에서 실행되는 전문 AI다. 각 계층의 로드 시점과 실행 위치가 다르므로 용도에 맞게 조합해 사용하는 것이 핵심이다.",
+      keyPoints: [
+        { label: "CLAUDE.md — 항상 살아있는 규칙", value: "매 세션 자동 로드. ~/ (전체), ./ (프로젝트), .claude/rules/ (파일 타입별 조건부). 200줄 초과 시 adherence 저하 — rules/로 분산 권장. Auto memory는 Claude가 스스로 기억 저장" },
+        { label: "Output Styles — 시스템 프롬프트 교체", value: "시스템 프롬프트 레벨에서 작동 (CLAUDE.md보다 깊은 레이어). Default·Explanatory·Learning 내장 + 커스텀 .claude/output-styles/*.md 생성 가능. keep-coding-instructions: true로 코딩 지시 유지" },
+        { label: "Skills — 호출 시 로드 플레이북", value: "/skill-name 직접 호출 또는 description 기반 자동 실행. 평소엔 description만 컨텍스트에 노출, 실제 내용은 호출 시만 로드. disable-model-invocation: true로 사용자 전용 제한 가능" },
+        { label: "Sub-agents — 독립 컨텍스트 AI", value: "완전히 별도의 context window에서 실행 → 메인 컨텍스트 오염 없음. tools/model/memory/isolation 개별 설정. 하위 agent가 또 다른 agent를 스폰하는 무한 중첩은 불가" },
+        { label: "저장 위치 우선순위 공통 규칙", value: "CLI 플래그 > 프로젝트(.claude/) > 사용자(~/.claude/) > 플러그인. 동일 이름이면 우선순위 높은 쪽이 override. Skills는 enterprise > personal > project 순" },
+        { label: "계층별 적합 용도", value: "코딩 컨벤션·프로젝트 구조 → CLAUDE.md | Claude 역할 자체 전환 → Output Style | /commit·/deploy 반복 워크플로우 → Skills | 탐색·리뷰 등 독립 실행 → Sub-agents" }
+      ],
+      comparison: [
+        { 구분: "CLAUDE.md", 로드시점: "매 세션 항상", 실행위치: "메인 컨텍스트", 용도: "규칙·지식 주입", 컨텍스트영향: "항상 소비" },
+        { 구분: "Output Style", 로드시점: "매 세션 항상", 실행위치: "시스템 프롬프트", 용도: "응답 방식 전환", 컨텍스트영향: "시스템 프롬프트 교체" },
+        { 구분: "Skills", 로드시점: "호출 시만", 실행위치: "메인 컨텍스트", 용도: "재사용 플레이북", 컨텍스트영향: "호출 시만 소비" },
+        { 구분: "Sub-agents", 로드시점: "위임 시만", 실행위치: "독립 컨텍스트", 용도: "전문 위임 작업", 컨텍스트영향: "메인에 영향 없음" }
+      ],
+      timeline: []
+    }
   }
 ];
