@@ -432,5 +432,33 @@ const AI_ARTICLES = [
       ],
       timeline: []
     }
+  },
+  {
+    id: "claude-005",
+    category: "claude",
+    title: "Claude Code 2.1.75 — Opus 4.6 1M 컨텍스트 무료 제공·세션 색상·메모리 타임스탬프",
+    date: "2026-03-14",
+    summary: "Max·Team·Enterprise 플랜에서 Opus 4.6 100만 토큰 컨텍스트 기본 제공, /color·/rename 세션 관리 강화, 메모리 파일 타임스탬프 추가",
+    originalUrl: "https://error-storage.tistory.com/95",
+    detail: {
+      overview: "2026년 3월 14일 배포된 Claude Code 2.1.75의 가장 큰 변화는 Max·Team·Enterprise 플랜에서 Opus 4.6의 1M 컨텍스트 윈도우를 추가 사용량 없이 기본 제공하는 것이다. 이전에는 200K 토큰을 초과하면 별도 사용량이 소모되거나 컴팩션이 발생했으나, 이제 대용량 코드베이스나 긴 문서를 통째로 분석할 수 있다. 세션별 프롬프트 바 색상 지정(/color)과 이름 표시(/rename), 메모리 파일 타임스탬프 추가로 작업 경험도 세밀하게 개선되었으며, 다수의 안정성 버그도 함께 수정되었다.",
+      keyPoints: [
+        { label: "1M 컨텍스트 기본 제공", value: "Max·Team·Enterprise 플랜에서 Opus 4.6 100만 토큰 컨텍스트 추가 비용 없이 기본 제공 — 컴팩션 빈도 15% 감소 효과" },
+        { label: "세션 관리 강화", value: "/color 명령으로 세션별 프롬프트 바 색상 지정, /rename으로 붙인 이름이 프롬프트 바에 표시 — 멀티 세션 구분 용이" },
+        { label: "메모리 타임스탬프", value: "메모리 파일에 마지막 수정 시각 기록 → Claude가 최신 기억과 오래된 기억을 구분해 최신 정보 우선 활용" },
+        { label: "훅 보안 강화", value: "훅 권한 요청 시 설정·플러그인·스킬 중 출처 표시 — 어떤 훅이 권한을 요청하는지 명확히 파악 가능" },
+        { label: "주요 버그 수정", value: "Bash 파이프+! 조합 명령 오류, 토큰 과산정으로 인한 조기 컴팩션, /voice 초기 활성화 실패, 모델 변경 후 헤더 미갱신 등 수정" },
+        { label: "Breaking Change", value: "Windows 조직 관리 설정 파일 경로 변경 — C:\\ProgramData\\ClaudeCode → C:\\Program Files\\ClaudeCode\\managed-settings.json" }
+      ],
+      comparison: [
+        { 구분: "2.1.74 이전", "1M 컨텍스트": "추가 사용량 소모 필요", 세션관리: "색상·이름 표시 없음", 메모리: "타임스탬프 없음" },
+        { 구분: "2.1.75", "1M 컨텍스트": "Max·Team·Enterprise 기본 제공 (무료)", 세션관리: "/color 색상 + /rename 이름 표시", 메모리: "마지막 수정 시각 자동 기록" }
+      ],
+      timeline: [
+        { date: "2026-03-13", event: "Anthropic, Opus 4.6·Sonnet 4.6 1M 컨텍스트 GA 발표 — 표준 가격 적용, 미디어 한도 600개로 6배 확대" },
+        { date: "2026-03-14", event: "Claude Code 2.1.75 배포 — 1M 컨텍스트 Claude Code 기본 통합" },
+        { date: "2026-03-14", event: "Claude Code 2.1.76 연속 배포 — MCP Elicitation 지원, /effort 명령, PostCompact 훅 추가" }
+      ]
+    }
   }
 ];
