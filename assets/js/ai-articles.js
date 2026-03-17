@@ -539,5 +539,34 @@ const AI_ARTICLES = [
         { date: "2026-03-28", event: "프로모션 종료 (PT 11:59 PM) — 표준 사용량으로 복귀" }
       ]
     }
+  },
+  {
+    id: "codex-004",
+    category: "codex",
+    title: "Codex Security가 SAST를 포함하지 않는 이유 — AI 추론 기반 보안 스캐너의 등장",
+    date: "2026-03-07",
+    summary: "120만 커밋 스캔, 고위험 취약점 10,561개 발견 — 패턴 매칭 대신 LLM 추론으로 SAST의 구조적 한계를 극복",
+    originalUrl: "https://openai.com/index/why-codex-security-doesnt-include-sast/",
+    detail: {
+      overview: "OpenAI는 Codex Security를 연구 미리보기로 출시하며, 기존 SAST(정적 분석 도구)가 갖는 구조적 한계를 정면으로 비판했다. 규칙 기반 정적 분석은 알려진 취약점 패턴만 탐지하지만, 코드 논리 자체를 추론하지 못한다는 치명적 약점이 있다. Codex Security는 저장소 전체를 분석해 위협 모델을 먼저 생성하고, 그 맥락 위에서 취약점을 탐색·샌드박스 검증·수정안 제안까지 수행한다. 120만 개 커밋을 대상으로 한 실험에서 심각(critical) 792개, 높음(high-severity) 10,561개의 취약점을 발견했으며, 오탐률을 50% 이상 줄였다.",
+      keyPoints: [
+        { label: "핵심 접근 방식", value: "패턴 매칭(SAST) 대신 LLM 추론으로 코드 로직·인증 흐름·미들웨어 마운트 여부 등을 맥락 기반으로 분석" },
+        { label: "실험 수치", value: "120만 개 커밋 스캔 → critical 792개 + high-severity 10,561개 취약점 발견, 오탐률 50% 이상 감소" },
+        { label: "3단계 작동 방식", value: "① 보안 컨텍스트 분석 및 위협 모델 생성 → ② 샌드박스 환경에서 취약점 검증 → ③ 실행 가능한 수정안 + PoC 제안" },
+        { label: "SAST와의 차이", value: "SAST는 알려진 시그니처만 탐지, Codex Security는 코드가 '실제로 해야 할 일'에 비해 잘못된 동작을 하는지 추론 가능" },
+        { label: "가용성 및 가격", value: "ChatGPT Pro·Enterprise·Business·Edu 대상 연구 미리보기, 출시 후 1개월 무료 제공" },
+        { label: "분석 대상 프로젝트", value: "GnuPG, GnuTLS, GOGS, Thorium, libssh, PHP, Chromium 등 주요 오픈소스 프로젝트에서 취약점 발견" }
+      ],
+      comparison: [
+        { 구분: "기존 SAST", 탐지방식: "규칙/시그니처 패턴 매칭", 맥락이해: "없음", 오탐률: "높음", 신규취약점: "탐지 불가" },
+        { 구분: "Codex Security", 탐지방식: "LLM 추론 + 위협 모델 기반", 맥락이해: "저장소 전체 구조 파악", 오탐률: "50% 이상 감소", 신규취약점: "논리 오류도 탐지 가능" },
+        { 구분: "Claude Code Security", 탐지방식: "LLM 추론 (Anthropic)", 맥락이해: "알고리즘 수준 추론 가능", 오탐률: "낮음", 신규취약점: "예: LZW 알고리즘 힙 오버플로우 발견" }
+      ],
+      timeline: [
+        { date: "2026-03-07", event: "Codex Security 연구 미리보기 공식 출시 발표" },
+        { date: "2026-03-11", event: "Anthropic·OpenAI의 AI 보안 스캐너가 SAST 구조적 맹점을 드러냈다는 업계 분석 보도" },
+        { date: "2026-03-13", event: "AI 코딩 에이전트 보안 반복 실수 문제 관련 추가 보도" }
+      ]
+    }
   }
 ];
