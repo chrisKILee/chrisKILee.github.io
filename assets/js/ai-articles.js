@@ -515,5 +515,29 @@ const AI_ARTICLES = [
       ],
       timeline: []
     }
+  },
+  {
+    id: "claude-007",
+    category: "claude",
+    title: "Claude 3월 사용량 2배 프로모션 — 오프피크 시간대 Free·Pro·Max·Team 자동 적용",
+    date: "2026-03-13",
+    summary: "3월 13~28일 한시 운영. 평일 피크 시간(오전 8시~오후 2시 ET) 외 시간대 사용량 한도 2배, 주간 한도 미포함, 별도 설정 불필요",
+    originalUrl: "https://support.claude.com/en/articles/14063676-claude-march-2026-usage-promotion",
+    detail: {
+      overview: "Anthropic이 2026년 3월 13일부터 28일까지 한시적 사용량 2배 프로모션을 진행한다. 평일 오전 8시~오후 2시(ET) 피크 시간 외 오프피크 시간대에 사용량 한도가 자동으로 2배로 늘어나며, 보너스 사용량은 주간 한도에 포함되지 않는다. Free·Pro·Max·Team 플랜에 계정 설정 변경 없이 자동 적용되고, Enterprise는 제외된다. 프로모션 종료 이후에는 표준 사용량으로 조용히 복귀되며 요금제 변경은 없다.",
+      keyPoints: [
+        { label: "프로모션 기간", value: "2026년 3월 13일 ~ 3월 28일 (PT 기준 11:59 PM 종료)" },
+        { label: "혜택", value: "오프피크 시간대 사용량 한도 2배 — 보너스분은 주간 한도에 미포함" },
+        { label: "피크 시간 (혜택 제외)", value: "평일 오전 8~오후 2시 ET / 오전 5~11시 PT / 오후 12~6시 GMT" },
+        { label: "적용 요금제", value: "Free · Pro · Max · Team (Enterprise 제외) — 계정 설정 변경 없이 자동 적용" },
+        { label: "지원 플랫폼", value: "Claude 웹·데스크탑·모바일, Cowork, Claude Code, Claude for Excel, Claude for PowerPoint" },
+        { label: "주의사항", value: "타 혜택과 중복 불가, 양도 불가. 종료 후 요금제 변화 없이 표준 사용량 자동 복귀" }
+      ],
+      comparison: [],
+      timeline: [
+        { date: "2026-03-13", event: "프로모션 시작 — 오프피크 시간대 사용량 2배 자동 적용" },
+        { date: "2026-03-28", event: "프로모션 종료 (PT 11:59 PM) — 표준 사용량으로 복귀" }
+      ]
+    }
   }
 ];
