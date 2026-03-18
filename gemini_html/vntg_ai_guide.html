@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNTG AI Engineering: The Complete Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --zen-bg: #fdfdfd;
+            --zen-text: #2d3436;
+            --zen-muted: #636e72;
+            --zen-border: #dfe6e9;
+            --zen-accent: #6c5ce7;
+            --zen-secondary: #00b894;
+            --zen-warn: #fab1a0;
+            --section-gap: 6rem;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--zen-bg);
+            color: var(--zen-text);
+            line-height: 1.7;
+            scroll-behavior: smooth;
+        }
+
+        .zen-card {
+            background: #ffffff;
+            border: 1px solid var(--zen-border);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .zen-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .highlight-indigo {
+            color: var(--zen-accent);
+            font-weight: 700;
+        }
+
+        .highlight-sage {
+            color: var(--zen-secondary);
+            font-weight: 700;
+        }
+
+        .token-unit {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+            margin: 3px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-link {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--zen-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--zen-accent);
+        }
+
+        .tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+            background: rgba(108, 92, 231, 0.1);
+            color: var(--zen-accent);
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 350px;
+        }
+
+        .vector-preview-box {
+            background: #2d3436;
+            color: #55efc4;
+            font-family: 'Fira Code', monospace;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            overflow-x: auto;
+        }
+
+        .step-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: rgba(0, 0, 0, 0.03);
+            position: absolute;
+            top: -1rem;
+            left: 1rem;
+            z-index: 0;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #dfe6e9;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
+                    <span class="text-white text-xs font-black">V</span>
+                </div>
+                <span class="text-sm font-bold tracking-tight">AI ENGINEERING</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#hero" class="nav-link">Hero</a>
+                <a href="#concepts" class="nav-link">Concepts</a>
+                <a href="#vectors" class="nav-link">Vector</a>
+                <a href="#template" class="nav-link">Template</a>
+                <a href="#rag" class="nav-link">Simulator</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="hero" class="pt-40 pb-32 px-6 text-center max-w-4xl mx-auto animate-fade">
+        <h1 class="text-5xl font-extrabold tracking-tight mb-8 leading-tight">
+            가장 정교한 <span class="highlight-indigo">AI 아키텍처</span>를<br>
+            가장 단순한 시각으로 만납니다.
+        </h1>
+        <p class="text-lg text-slate-500 leading-relaxed font-light">
+            토큰에서 템플릿까지, 엔터프라이즈 AI 시스템을 구성하는 모든 요소를 <br class="hidden md:block">
+            한 장의 페이지에 모두 담았습니다. <strong>누락 없는 통합 가이드.</strong>
+        </p>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 space-y-[var(--section-gap)]">
+
+        <!-- 1. Glossary Grid (From Guide 3) -->
+        <section id="glossary" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 scroll-mt-24">
+            <div class="zen-card relative overflow-hidden group">
+                <div class="step-number">01</div>
+                <div class="tag">UNIT</div>
+                <h3 class="font-bold text-lg mb-2">토큰 (Token)</h3>
+                <p class="text-sm text-slate-500">AI가 문장을 읽는 '글자 조각' 단위입니다. 모델마다 처리 가능한 최대 토큰량이 정해져 있습니다.</p>
+            </div>
+            <div class="zen-card relative overflow-hidden">
+                <div class="step-number">02</div>
+                <div class="tag">CONTAINER</div>
+                <h3 class="font-bold text-lg mb-2">청크 (Chunk)</h3>
+                <p class="text-sm text-slate-500">AI 모델의 성능과 효율을 위해 문서를 적절한 크기로 자른 텍스트 덩어리입니다.</p>
+            </div>
+            <div class="zen-card relative overflow-hidden">
+                <div class="step-number">03</div>
+                <div class="tag">STORAGE</div>
+                <h3 class="font-bold text-lg mb-2">벡터 DB (Vector DB)</h3>
+                <p class="text-sm text-slate-500">텍스트를 숫자 배열(Vector)로 변환하여 저장하고 의미 기반으로 검색하는 창고입니다.</p>
+            </div>
+            <div class="zen-card relative overflow-hidden">
+                <div class="step-number">04</div>
+                <div class="tag">CONTROL</div>
+                <h3 class="font-bold text-lg mb-2">템플릿 (Template)</h3>
+                <p class="text-sm text-slate-500">검색된 정보와 질문을 합쳐 AI에게 전달하는 '작업 지시서'입니다. 결과 형식을 고정합니다.</p>
+            </div>
+        </section>
+
+        <!-- 2. Deep Dive: Token & Chunk (From Guide 1 & 2) -->
+        <section id="concepts" class="space-y-12 scroll-mt-24">
+            <div class="max-w-3xl border-l-4 border-indigo-500 pl-8 space-y-4">
+                <h2 class="text-3xl font-extrabold uppercase">1. 토큰과 청크: 데이터의 조각화</h2>
+                <p class="text-slate-500">
+                    AI 모델이 정보를 처리하기 위해서는 우리가 읽는 문장을 적절한 크기로 쪼개는 과정이 필요합니다.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- Concept Card: Token -->
+                <div class="zen-card bg-slate-50/50 border-none space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4"># 1. 토큰(Token): 글자가 아닌 '의미 조각'</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            많은 분들이 1글자 = 1토큰으로 오해하지만 실제로는 다릅니다. AI 모델의 <strong
+                                class="highlight-indigo">토크나이저(Tokenizer)</strong>는 자주 쓰이는 단어 조합은 하나로 묶고, 복잡한 단어는 여러 개로
+                            쪼개어 효율을 높입니다.
+                            <br><br>
+                            예를 들어 한글의 경우 '안녕하세요'가 1개 토큰일 수도 있고, '안녕'+'하'+'세요' 3개일 수도 있습니다. 이는 모델 설계 시 결정된 알고리즘에 따릅니다.
+                        </p>
+                    </div>
+                    <div class="p-4 bg-white border border-slate-200 rounded-xl">
+                        <div class="flex gap-1 mb-2">
+                            <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                            <span class="w-2 h-2 rounded-full bg-indigo-200"></span>
+                            <span class="w-2 h-2 rounded-full bg-indigo-100"></span>
+                        </div>
+                        <p class="text-xs font-mono text-slate-400">TOKENIZER HIERARCHY: CHARACTER < TOKEN < CHUNK</p>
+                    </div>
+                </div>
+
+                <!-- Concept Card: Chunk -->
+                <div class="zen-card bg-slate-50/50 border-none space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4"># 2. 청크(Chunk): 토큰을 담는 컨테이너</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            청크는 검색 성능을 위해 <strong>AI 모델이 감당할 수 있는 크기(Context Window)</strong>로 토큰들을 묶은 단위입니다.
+                            너무 크면 정보가 희석되고, 너무 작으면 문맥이 끊어집니다.
+                            <br><br>
+                            벡터 DB에 저장되는 실제 단위이며, <strong class="highlight-indigo">바구니(청크) 안에 사과(토큰)들이 담겨 있는
+                                꼴</strong>입니다.
+                        </p>
+                    </div>
+                    <div
+                        class="flex items-center justify-center p-6 bg-white border border-slate-200 rounded-xl relative">
+                        <div class="border-2 border-dashed border-indigo-200 p-4 rounded-lg flex gap-1">
+                            <span
+                                class="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-[10px] rounded text-indigo-500 font-bold">Token_1</span>
+                            <span
+                                class="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-[10px] rounded text-indigo-500 font-bold">Token_2</span>
+                            <span
+                                class="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-[10px] rounded text-indigo-500 font-bold">...</span>
+                        </div>
+                        <span class="absolute -top-3 left-4 bg-white px-2 text-[10px] font-bold text-slate-400">CHUNK
+                            CONTAINER</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulator Integration -->
+            <div class="zen-card p-10 space-y-8 bg-indigo-500/5 border-indigo-100 shadow-none">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h4 class="font-bold text-indigo-900">토큰-청크 생성 샌드박스</h4>
+                    <div class="flex items-center space-x-4">
+                        <label class="text-xs font-bold text-slate-400">CHUNK LIMIT:</label>
+                        <input type="range" id="chunk-slider" min="5" max="50" value="25"
+                            class="w-32 accent-indigo-500">
+                        <span id="slider-val" class="text-xs font-bold text-indigo-600">25</span>
+                    </div>
+                </div>
+                <textarea id="token-input" rows="3"
+                    class="w-full bg-white border border-indigo-100 rounded-xl p-4 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-inner"
+                    placeholder="텍스트를 입력하면 실시간으로 분석됩니다.">인공지능 서비스 구축 시 가장 중요한 것은 데이터의 품질입니다. 사내 문서를 잘게 쪼개어 청크로 만들고 이를 벡터화하는 과정이 핵심입니다.</textarea>
+                <div id="sim-output" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamic Chunks -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Vector DB Detail (From Guide 3) -->
+        <section id="vectors" class="space-y-12 scroll-mt-24">
+            <div class="max-w-3xl border-l-4 border-sage-500 pl-8 space-y-4">
+                <h2 class="text-3xl font-extrabold uppercase">2. Vector DB: 의미를 숫자로</h2>
+                <p class="text-slate-500">
+                    텍스트는 Embedding 모델을 통해 수천 개의 실수 배열로 변환되어 고차원 공간에 배치됩니다.
+                </p>
+            </div>
+
+            <div class="zen-card space-y-8 bg-slate-900 border-none text-white overflow-hidden relative">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[100px] pointer-events-none"></div>
+
+                <p class="text-slate-400 text-sm leading-relaxed max-w-4xl">
+                    AI는 텍스트를 직접 비교하지 않습니다. 모든 청크는 AI 모델(Embedding)을 거쳐 수천 개의 <strong class="highlight-sage">실수
+                        배열(Array)</strong>로 바뀝니다. 벡터 DB는 이 숫자들이 고차원 공간의 어디에 위치하는지 저장합니다. 벡터 DB는 이 숫자들 사이의 '거리'를 계산하여
+                    유사도를 판별합니다.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 h-[400px]">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Similarity
+                                Space</span>
+                            <button onclick="refreshVectors()"
+                                class="text-xs text-sage-400 font-bold hover:underline">REGENERATE</button>
+                        </div>
+                        <canvas id="vectorChart"></canvas>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="vector-preview-box">
+                            <div class="text-[10px] text-slate-500 mb-2 uppercase tracking-widest">Raw Embedding Data
+                                (1536 Dimensions)</div>
+                            <div id="vector-json" class="leading-relaxed">
+                                [ 0.14283, -0.03810, 0.88122, -0.45519, 0.31102, 0.98231, ... ]
+                            </div>
+                        </div>
+                        <div class="p-4 bg-emerald-500/10 border-l-4 border-emerald-500">
+                            <h5 class="text-xs font-bold text-emerald-400 mb-2 uppercase tracking-widest leading-none">
+                                Insight Point</h5>
+                            <p class="text-xs text-slate-400 leading-relaxed italic">
+                                "벡터 DB는 텍스트를 저장하는 것이 아니라, 텍스트의 <strong class="text-emerald-300">'의미적 좌표'인 숫자들의
+                                    모음</strong>을 저장합니다. 따라서 '휴가'라고 물어도 '연차'에 대한 정보를 찾을 수 있는 것입니다."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Template (From Guide 2) -->
+        <section id="template" class="space-y-12 scroll-mt-24">
+            <div class="max-w-3xl border-l-4 border-orange-400 pl-8 space-y-4">
+                <h2 class="text-3xl font-extrabold uppercase">3. Template: 응답의 제어</h2>
+                <p class="text-slate-500">
+                    검색된 정보를 질문자의 의도에 맞게 재가공하는 정교한 작업 지시서입니다.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="zen-card bg-orange-50/30 border-none space-y-6">
+                    <h3 class="text-xl font-bold"># Template: 톤앤매너의 제어</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        검색된 청크들을 그대로 보여주는 것이 아니라, <strong class="highlight-indigo">템플릿</strong>이라는 양식에 넣어 AI가 질문자의 의도에
+                        맞게 정해진 포맷으로 재가공하게 만듭니다. 이를 통해 답변의 길이, 말투, 형식을 제어할 수 있습니다.
+                    </p>
+                    <div class="bg-white p-6 rounded-xl border border-orange-100 shadow-sm relative pt-10">
+                        <span class="absolute top-3 left-4 text-[10px] font-bold text-slate-300 uppercase">Input Prompt
+                            Structure</span>
+                        <pre class="text-[11px] text-slate-600 leading-relaxed">
+당신은 사내 지식 전문가입니다.
+사용자 질문: <strong>{User_Query}</strong>
+참고 정보: <strong>{Retrieved_Chunks}</strong>
+
+제약 조건:
+1. 답변은 반드시 3줄 이내의 존댓말.
+2. 정보가 없으면 모른다고 답변할 것.</pre>
+                    </div>
+                </div>
+
+                <!-- Interactive Template Magic (Guide 2 Style) -->
+                <div class="zen-card border-none bg-slate-50 space-y-6 flex flex-col justify-center text-center">
+                    <h3 class="text-lg font-bold text-indigo-900">템플릿(Template)의 마법</h3>
+                    <p class="text-xs text-slate-400">버튼을 눌러 템플릿이 어떻게 데이터를 정제하는지 확인하세요.</p>
+                    <div class="space-y-4">
+                        <button onclick="simulateTemplateEffect()"
+                            class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold transition-all shadow-lg active:scale-95">시뮬레이션
+                            가동</button>
+                        <div id="template-result"
+                            class="min-h-[150px] p-6 bg-white rounded-xl border border-slate-200 text-left text-sm text-slate-600 leading-relaxed animate-pulse">
+                            결과 대기 중...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. RAG Simulator (VNTG AI Guide Style) -->
+        <section id="rag" class="space-y-12 pb-24 scroll-mt-24">
+            <div class="max-w-3xl border-l-4 border-indigo-500 pl-8 space-y-4">
+                <h2 class="text-3xl font-extrabold uppercase">RAG Pipeline Simulator</h2>
+                <p class="text-slate-500">
+                    전체 프로세스를 한눈에 확인하는 지능형 워크플로우 실습
+                </p>
+            </div>
+
+            <div class="zen-card p-1 shadow-none overflow-hidden bg-slate-900">
+                <div class="grid grid-cols-1 lg:grid-cols-3">
+                    <!-- Left Config -->
+                    <div class="p-8 space-y-8 bg-slate-800/50">
+                        <div class="space-y-3">
+                            <label class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">System
+                                Model</label>
+                            <div class="flex gap-2">
+                                <span
+                                    class="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-md text-[10px] font-bold border border-indigo-500/30">EMBEDDING-V3</span>
+                                <span
+                                    class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-md text-[10px] font-bold border border-emerald-500/30">GPT-4O-MINI</span>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <label class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Query
+                                Input</label>
+                            <input type="text" id="rag-query" value="우리 회사의 휴가 규정에 대해서 알려줘."
+                                class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 outline-none focus:ring-1 focus:ring-indigo-500">
+                        </div>
+                        <button onclick="runRAG()"
+                            class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-xl active:scale-95 shadow-indigo-500/20">PROCESS
+                            START</button>
+                    </div>
+
+                    <!-- Right Logger -->
+                    <div class="lg:col-span-2 p-8 flex flex-col min-h-[500px]">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Engine Process
+                                Pipeline</span>
+                            <div id="processing-status" class="hidden flex items-center space-x-2">
+                                <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping"></span>
+                                <span class="text-[10px] text-emerald-400 font-bold">WORKING</span>
+                            </div>
+                        </div>
+                        <div id="rag-logs"
+                            class="flex-1 font-mono text-sm space-y-3 text-slate-400 overflow-y-auto pr-4">
+                            <div class="italic opacity-30">Waiting for activation...</div>
+                        </div>
+                        <div id="final-answer"
+                            class="mt-8 p-6 bg-slate-950 border border-slate-800 rounded-xl text-indigo-400 text-sm leading-relaxed hidden">
+                            <!-- Typing happens here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="pt-24 pb-12 bg-slate-50 border-t border-slate-200 text-center">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.4em]">VNTG AI • STUDY • ENGINEERING</p>
+    </footer>
+
+    <script>
+        // --- Shared Constants & Colors ---
+        const chunkColors = ['#f5f6fa', '#ebf2ff', '#e6fff9', '#fff3e6', '#fff1f1'];
+        const textColors = ['#2f3640', '#487eb0', '#009432', '#d35400', '#c23616'];
+
+        // --- Step 1: Token/Chunk Simulator ---
+        const tokenInput = document.getElementById('token-input');
+        const slider = document.getElementById('chunk-slider');
+        const sliderVal = document.getElementById('slider-val');
+        const simOutput = document.getElementById('sim-output');
+
+        function updateSim() {
+            const text = tokenInput.value;
+            const limit = parseInt(slider.value);
+            sliderVal.innerText = limit;
+            simOutput.innerHTML = '';
+
+            const tokens = Array.from(text);
+            for (let i = 0; i < tokens.length; i += limit) {
+                const chunk = tokens.slice(i, i + limit);
+                const colorIdx = (i / limit) % chunkColors.length;
+
+                const card = document.createElement('div');
+                card.className = 'p-4 rounded-xl border border-slate-100 bg-white space-y-3 shadow-sm';
+                card.innerHTML = `
+                    <div class="flex justify-between items-center text-[9px] font-bold text-slate-300">
+                        <span>CHUNK #${Math.floor(i / limit) + 1}</span>
+                        <span>${chunk.length} TOKENS</span>
+                    </div>
+                    <div class="flex flex-wrap gap-0.5">
+                        ${chunk.map(t => `<span class="px-1 py-0.5 rounded text-[10px] font-bold" style="background:${chunkColors[colorIdx]}; color:${textColors[colorIdx]}">${t === ' ' ? '␣' : t}</span>`).join('')}
+                    </div>
+                `;
+                simOutput.appendChild(card);
+            }
+        }
+
+        tokenInput.oninput = updateSim;
+        slider.oninput = updateSim;
+
+        // --- Step 2: Vector DB ---
+        let vChart;
+        function initChart() {
+            const ctx = document.getElementById('vectorChart').getContext('2d');
+            vChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Database',
+                        data: Array.from({ length: 12 }, () => ({ x: Math.random() * 100, y: Math.random() * 100 })),
+                        backgroundColor: '#00b894',
+                        pointRadius: 6
+                    }, {
+                        label: 'Query',
+                        data: [],
+                        backgroundColor: '#6c5ce7',
+                        pointRadius: 10,
+                        pointStyle: 'star'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { display: false, min: -5, max: 105 },
+                        y: { display: false, min: -5, max: 105 }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function refreshVectors() {
+            vChart.data.datasets[1].data = [{ x: Math.random() * 100, y: Math.random() * 100 }];
+            const json = document.getElementById('vector-json');
+            const arr = Array.from({ length: 6 }, () => (Math.random() * 2 - 1).toFixed(4));
+            json.innerHTML = `[ ${arr.join(', ')}, ... ]`;
+            vChart.update();
+        }
+
+        // --- Step 3: Template Magic ---
+        function simulateTemplateEffect() {
+            const res = document.getElementById('template-result');
+            res.classList.remove('animate-pulse');
+            res.innerHTML = "<strong>PROCESSING...</strong>";
+
+            setTimeout(() => {
+                const text = "<strong>[AI 정제 결과]</strong>: 안녕하세요. 사내 연차 규정에 대해 알려드립니다. 검색된 정보에 따르면, 신입 사원은 입사 1년 미만 시 매월 1일의 유급 휴가를 부여받으며, 1년 경과 시 매년 15일의 연차가 발생합니다.";
+                let i = 0;
+                res.innerHTML = "";
+                const timer = setInterval(() => {
+                    if (i < text.length) {
+                        res.innerHTML += text[i] === '<' ? text.substring(i, text.indexOf('>', i) + 1) : text[i];
+                        if (text[i] === '<') i = text.indexOf('>', i);
+                        i++;
+                    } else clearInterval(timer);
+                }, 20);
+            }, 800);
+        }
+
+        // --- Step 4: RAG Flow ---
+        function runRAG() {
+            const query = document.getElementById('rag-query').value;
+            const logArea = document.getElementById('rag-logs');
+            const status = document.getElementById('processing-status');
+            const final = document.getElementById('final-answer');
+
+            logArea.innerHTML = '';
+            status.classList.remove('hidden');
+            final.classList.add('hidden');
+
+            const logs = [
+                { t: `>>> EMBEDDING QUERY...`, c: 'text-indigo-400' },
+                { t: `>>> SUCCESS: Vector converted [0.12, -0.45, ...]`, c: 'text-slate-500' },
+                { t: `>>> SEARCHING VECTOR DB (Top-k: 2)...`, c: 'text-indigo-400' },
+                { t: `>>> FOUND: Chunk_vntg_102 (Score: 0.991)`, c: 'text-emerald-400' },
+                { t: `>>> FOUND: Chunk_vntg_045 (Score: 0.812)`, c: 'text-slate-500' },
+                { t: `>>> APPLYING PROMPT TEMPLATE...`, c: 'text-indigo-400' },
+                { t: `>>> SENT TO LLM (GPT-4O-MINI)...`, c: 'text-indigo-400' }
+            ];
+
+            logs.forEach((l, idx) => {
+                setTimeout(() => {
+                    const d = document.createElement('div');
+                    d.className = l.c;
+                    d.innerText = l.t;
+                    logArea.appendChild(d);
+                    logArea.scrollTop = logArea.scrollHeight;
+                }, idx * 600);
+            });
+
+            setTimeout(() => {
+                status.classList.add('hidden');
+                final.classList.remove('hidden');
+                const ans = "사내 규정 제12조에 의거하여, 입사 1년 미만 신입 사원은 매월 1일의 연차가 발생하며 이는 차년도 이월이 불가능함을 알려드립니다.";
+                let i = 0;
+                final.innerText = "";
+                const timer = setInterval(() => {
+                    if (i < ans.length) {
+                        final.innerText += ans[i++];
+                    } else clearInterval(timer);
+                }, 30);
+            }, logs.length * 600 + 400);
+        }
+
+        // --- Initialization ---
+        function _init() { updateSim(); initChart(); refreshVectors(); }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', _init);
+        } else { _init(); }
+    </script>
+</body>
+
+</html>

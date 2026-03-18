@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor 팀 플랜 가이드: 도입 및 운영 전략 (Animated)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Palette Selection: "Energetic & Playful" -->
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F3F4F6;
+            color: #1F2937;
+            overflow-x: hidden; /* Prevent horizontal scroll from animations */
+        }
+
+        /* --- CHART CONTAINER --- */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            /* Initial state for chart containers handled by JS observer */
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+
+        /* --- SCROLL REVEAL ANIMATIONS --- */
+        /* Base class for elements to be revealed */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        /* Class added by JS when element is in view */
+        .reveal-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Staggered delays for children elements (like list items or steps) */
+        .stagger-1 { transition-delay: 100ms; }
+        .stagger-2 { transition-delay: 300ms; }
+        .stagger-3 { transition-delay: 500ms; }
+        .stagger-4 { transition-delay: 700ms; }
+
+        /* --- CUSTOM DECORATIONS --- */
+        .step-connector {
+            border-left: 4px solid #E5E7EB;
+            position: absolute;
+            left: 24px;
+            top: 40px;
+            bottom: -20px;
+            z-index: 0;
+            transition: all 0.5s ease;
+        }
+
+        /* Connectors glow when active */
+        .group:hover .step-connector {
+            border-left-color: #93C5FD; /* light blue */
+        }
+
+        /* Floating Animation for Header Icons */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        /* Pulse Animation for important badges */
+        @keyframes subtle-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        .animate-pulse-slow {
+            animation: subtle-pulse 3s infinite;
+        }
+
+        /* No SVG/Mermaid Confirmation: Pure HTML/CSS/Canvas implementation */
+    </style>
+</head>
+<body class="antialiased selection:bg-cyan-200 selection:text-blue-900">
+
+    <!-- Header Section -->
+    <header class="bg-gradient-to-r from-blue-700 to-cyan-500 text-white p-10 shadow-lg relative overflow-hidden">
+        <!-- Decorative background circles -->
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-0 left-0 -ml-10 -mb-10 w-40 h-40 bg-cyan-300 opacity-20 rounded-full blur-2xl"></div>
+
+        <div class="max-w-6xl mx-auto relative z-10">
+            <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-tight reveal-on-scroll is-visible">Cursor 팀 플랜 도입 가이드</h1>
+            <p class="text-xl md:text-2xl font-light opacity-90 reveal-on-scroll is-visible stagger-1">개발팀 생산성 향상과 엔터프라이즈급 보안 관리의 시작</p>
+            <div class="mt-8 flex flex-wrap gap-4 reveal-on-scroll is-visible stagger-2">
+                <span class="bg-white/20 backdrop-blur px-4 py-2 rounded-full font-bold text-sm border border-white/30 hover:bg-white/30 transition-colors cursor-default animate-float" style="animation-delay: 0s;">✨ 중앙 관리</span>
+                <span class="bg-white/20 backdrop-blur px-4 py-2 rounded-full font-bold text-sm border border-white/30 hover:bg-white/30 transition-colors cursor-default animate-float" style="animation-delay: 1s;">🔒 보안 모드</span>
+                <span class="bg-white/20 backdrop-blur px-4 py-2 rounded-full font-bold text-sm border border-white/30 hover:bg-white/30 transition-colors cursor-default animate-float" style="animation-delay: 2s;">💳 통합 결제</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-6 grid grid-cols-1 gap-12 my-8">
+
+        <!-- SECTION 1: Why Team Plan? (Comparison) -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center reveal-on-scroll">
+            <div class="space-y-4">
+                <h2 class="text-3xl font-bold text-blue-800 border-l-4 border-cyan-400 pl-4">왜 '팀 플랜'인가요?</h2>
+                <p class="text-gray-600 leading-relaxed">
+                    개인용 Pro 플랜은 강력하지만, 조직 차원에서는 <strong>보안 규정 준수</strong>와 <strong>라이선스 관리</strong>의 한계가 존재합니다. 팀 플랜은 단순한 기능 확장이 아닌, '관리'와 '보안'이라는 조직의 핵심 요구사항을 충족시키기 위해 설계되었습니다.
+                </p>
+                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-600 hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                    <h3 class="font-bold text-lg mb-2">🚀 핵심 차별점</h3>
+                    <ul class="list-none space-y-2">
+                        <li class="flex items-center"><span class="text-green-500 mr-2 font-bold">&#10003;</span> <span><strong>Privacy Mode:</strong> 코드가 서버에 저장되거나 학습되지 않음</span></li>
+                        <li class="flex items-center"><span class="text-green-500 mr-2 font-bold">&#10003;</span> <span><strong>Admin Dashboard:</strong> 팀원 초대 및 권한 원클릭 관리</span></li>
+                        <li class="flex items-center"><span class="text-green-500 mr-2 font-bold">&#10003;</span> <span><strong>Centralized Billing:</strong> 법인 카드로 통합 결제 관리</span></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Visualization: Radar Chart (Lazy Loaded) -->
+            <div class="flex flex-col w-full">
+                <div class="chart-container" id="radarChartContainer">
+                    <canvas id="planComparisonChart"></canvas>
+                </div>
+                <p class="text-sm text-center text-gray-500 mt-2">Team vs. Pro 플랜 가치 비교 (5점 만점)</p>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Security & Privacy (The Process) -->
+        <section class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 reveal-on-scroll">
+            <h2 class="text-3xl font-bold text-blue-800 mb-6 border-b pb-2">보안 아키텍처: 데이터는 안전한가?</h2>
+            <p class="text-gray-600 mb-8">
+                기업 도입 시 가장 큰 허들은 '코드 유출'입니다. Cursor Team 플랜은 <strong>Privacy Mode</strong>를 강제하여, 코드가 학습 데이터로 사용되지 않도록 SOC2 인증 프로세스를 따릅니다.
+            </p>
+
+            <!-- Custom HTML Diagram with Staggered Animation -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-stretch text-center">
+                <!-- Step 1 -->
+                <div class="reveal-on-scroll stagger-1 bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center relative hover:bg-gray-100 transition-colors">
+                    <div class="text-4xl mb-2 transform transition-transform hover:scale-110 duration-200">&#128187;</div>
+                    <h3 class="font-bold text-gray-800">Local Machine</h3>
+                    <p class="text-xs text-gray-500 mt-1">개발자의 PC</p>
+                    <div class="hidden md:block absolute -right-6 top-1/2 transform -translate-y-1/2 text-blue-500 text-2xl font-bold animate-pulse">&#8594;</div>
+                    <div class="md:hidden text-blue-500 text-2xl font-bold my-2 animate-pulse">&#8595;</div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="reveal-on-scroll stagger-2 bg-blue-50 p-4 rounded-xl border-2 border-blue-200 flex flex-col items-center justify-center relative shadow-sm hover:bg-blue-100 transition-colors">
+                    <div class="text-4xl mb-2 transform transition-transform hover:scale-110 duration-200">&#128274;</div>
+                    <h3 class="font-bold text-blue-900">TLS Encryption</h3>
+                    <p class="text-xs text-blue-600 mt-1">전송 구간 암호화</p>
+                    <div class="hidden md:block absolute -right-6 top-1/2 transform -translate-y-1/2 text-blue-500 text-2xl font-bold animate-pulse">&#8594;</div>
+                    <div class="md:hidden text-blue-500 text-2xl font-bold my-2 animate-pulse">&#8595;</div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="reveal-on-scroll stagger-3 bg-blue-600 text-white p-4 rounded-xl shadow-lg flex flex-col items-center justify-center relative transform hover:scale-105 transition-transform duration-300">
+                    <div class="text-4xl mb-2">&#128737;</div>
+                    <h3 class="font-bold">Privacy Gateway</h3>
+                    <p class="text-xs text-blue-100 mt-1">SOC2 Compliant</p>
+                    <div class="mt-2 bg-white/20 px-2 py-1 rounded text-xs font-mono text-yellow-300">No Storage<br>No Training</div>
+                    <div class="hidden md:block absolute -right-6 top-1/2 transform -translate-y-1/2 text-blue-500 text-2xl font-bold animate-pulse">&#8594;</div>
+                    <div class="md:hidden text-blue-500 text-2xl font-bold my-2 animate-pulse">&#8595;</div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="reveal-on-scroll stagger-4 bg-cyan-50 p-4 rounded-xl border-2 border-cyan-200 flex flex-col items-center justify-center relative hover:bg-cyan-100 transition-colors">
+                    <div class="text-4xl mb-2 transform transition-transform hover:scale-110 duration-200">&#129302;</div>
+                    <h3 class="font-bold text-cyan-900">LLM Inference</h3>
+                    <p class="text-xs text-cyan-600 mt-1">일시적 처리 후 즉시 파기</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Cost Structure & Management -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-12 reveal-on-scroll">
+            <!-- Content -->
+            <div class="order-2 md:order-1">
+                 <h2 class="text-3xl font-bold text-blue-800 border-l-4 border-cyan-400 pl-4 mb-4">비용 구조 및 관리</h2>
+                 <p class="text-gray-600 mb-6">
+                    팀 플랜은 <strong>좌석(Seat) 기반 요금제</strong>입니다. 기본적으로 1인당 월 $40(연간 할인)이며, Admin 페이지에서 예산을 엄격하게 통제할 수 있습니다.
+                 </p>
+                 
+                 <!-- Operations List with Hover Effects -->
+                 <div class="bg-gray-50 rounded-lg p-5 border border-gray-200 hover:border-blue-300 transition-colors duration-300">
+                    <h4 class="font-bold text-gray-800 mb-3 border-b pb-2">💡 관리자 운영 팁</h4>
+                    <ul class="text-sm space-y-3">
+                        <li class="flex items-start group">
+                            <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0 group-hover:scale-110 transition-transform">1</span>
+                            <span><strong>Usage Limit 설정:</strong> 'Hard Limit'을 $0으로 설정하여 추가 과금을 원천 차단할 수 있습니다.</span>
+                        </li>
+                        <li class="flex items-start group">
+                            <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0 group-hover:scale-110 transition-transform">2</span>
+                            <span><strong>Seat 재할당:</strong> 프로젝트 단위로 입/퇴사자가 발생할 때 즉시 라이선스를 회수하고 재배포하세요.</span>
+                        </li>
+                    </ul>
+                 </div>
+            </div>
+
+            <!-- Visualization: Cost Chart (Lazy Loaded) -->
+            <div class="order-1 md:order-2 w-full flex flex-col">
+                <div class="chart-container" id="barChartContainer">
+                    <canvas id="costStructureChart"></canvas>
+                </div>
+                <p class="text-sm text-center text-gray-500 mt-2">인당 비용 시뮬레이션 (기본료 vs 추가 사용량)</p>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Implementation Timeline -->
+        <section class="mb-12 reveal-on-scroll">
+            <h2 class="text-3xl font-bold text-center text-blue-800 mb-10">팀 도입 및 운영 로드맵</h2>
+            
+            <div class="relative max-w-4xl mx-auto">
+                
+                <!-- Step 1 -->
+                <div class="relative pl-12 pb-12 group last-connector">
+                    <div class="absolute left-0 top-0 bg-blue-600 text-white font-bold rounded-full w-12 h-12 flex items-center justify-center z-10 text-xl shadow-lg border-4 border-white transition-transform group-hover:scale-110 duration-300">1</div>
+                    <div class="step-connector"></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-8 border-blue-600 hover:shadow-lg transition-all duration-300 hover:translate-x-2">
+                        <h3 class="text-xl font-bold text-gray-800">계정 생성 및 Organization 설정</h3>
+                        <p class="text-gray-600 mt-2">
+                            Admin 계정으로 가입 후 법인 카드를 등록합니다. 청구서 수신 이메일(Billing Email)을 재무팀으로 설정하세요.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="relative pl-12 pb-12 group last-connector">
+                    <div class="absolute left-0 top-0 bg-cyan-500 text-white font-bold rounded-full w-12 h-12 flex items-center justify-center z-10 text-xl shadow-lg border-4 border-white transition-transform group-hover:scale-110 duration-300">2</div>
+                    <div class="step-connector"></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-8 border-cyan-500 hover:shadow-lg transition-all duration-300 hover:translate-x-2">
+                        <h3 class="text-xl font-bold text-gray-800">보안 정책(Policy) 구성</h3>
+                        <p class="text-gray-600 mt-2">
+                            General Settings에서 <strong>'Privacy Mode'</strong>를 'Enforced'로 설정합니다. 내부 규정에 따라 팀원들이 이를 해제할 수 없도록 강제합니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="relative pl-12 pb-12 group last-connector">
+                    <div class="absolute left-0 top-0 bg-amber-500 text-white font-bold rounded-full w-12 h-12 flex items-center justify-center z-10 text-xl shadow-lg border-4 border-white transition-transform group-hover:scale-110 duration-300">3</div>
+                    <div class="step-connector"></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-8 border-amber-500 hover:shadow-lg transition-all duration-300 hover:translate-x-2">
+                        <h3 class="text-xl font-bold text-gray-800">팀원 초대 및 환불 처리</h3>
+                        <p class="text-gray-600 mt-2">
+                            기존 Pro 사용자 초대 시, 남은 기간에 대한 금액은 자동으로 일할 계산되어 해당 팀원의 'Credit'으로 적립되거나 결제 시 차감됩니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="relative pl-12 pb-4 group">
+                    <div class="absolute left-0 top-0 bg-gray-700 text-white font-bold rounded-full w-12 h-12 flex items-center justify-center z-10 text-xl shadow-lg border-4 border-white transition-transform group-hover:scale-110 duration-300">4</div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-8 border-gray-700 hover:shadow-lg transition-all duration-300 hover:translate-x-2">
+                        <h3 class="text-xl font-bold text-gray-800">모니터링 및 최적화</h3>
+                        <p class="text-gray-600 mt-2">
+                            Usage 탭에서 누가 'Fast Requests'를 많이 사용하는지 확인하세요. 필요 시 해당 인원에게만 별도의 유료 애드온을 붙여줄 수 있습니다.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 5: Usage Analysis (Plotly) -->
+        <section class="reveal-on-scroll">
+             <h2 class="text-3xl font-bold text-blue-800 border-l-4 border-cyan-400 pl-4 mb-4">예상 활용도 분석</h2>
+             <p class="text-gray-600 mb-6">
+                 팀 플랜 도입 시 예상되는 기능별 활용 비중입니다. Chat과 Composer(코드 작성) 기능이 주를 이루며, 이는 개발 시간 단축에 직접적인 영향을 미칩니다.
+             </p>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Plotly Chart Container -->
+                <div class="chart-container" id="plotlyUsageDiv">
+                    <!-- Plotly will render here when scrolled into view -->
+                </div>
+                
+                <!-- Qualitative Benefits Card -->
+                <div class="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-8 shadow-xl flex flex-col justify-center hover:shadow-2xl transition-shadow duration-300 transform hover:scale-[1.02]">
+                    <h3 class="text-2xl font-bold mb-4">🏆 도입 기대 효과</h3>
+                    <div class="space-y-6">
+                        <div class="group">
+                            <h4 class="font-bold text-cyan-300 text-lg group-hover:text-white transition-colors">속도 (Velocity)</h4>
+                            <p class="text-blue-100 text-sm mb-1">보일러플레이트 코드 작성 시간 70% 감소</p>
+                            <div class="w-full bg-blue-900/50 h-2 rounded-full overflow-hidden">
+                                <div class="bg-cyan-400 h-full w-0 transition-all duration-1000 ease-out delay-500" style="width: 85%" id="bar-velocity"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="group">
+                            <h4 class="font-bold text-amber-300 text-lg group-hover:text-white transition-colors">품질 (Quality)</h4>
+                            <p class="text-blue-100 text-sm mb-1">AI 기반 버그 사전 탐지</p>
+                            <div class="w-full bg-blue-900/50 h-2 rounded-full overflow-hidden">
+                                <div class="bg-amber-400 h-full w-0 transition-all duration-1000 ease-out delay-700" style="width: 65%" id="bar-quality"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm border-t pt-8 pb-4">
+            <p>&copy; 2024 Infographic generated for Team Efficiency Studies.</p>
+        </footer>
+
+    </main>
+
+    <!-- SCRIPTS -->
+    <script>
+        // ---------------------------------------------------------
+        // UTILITY: Text Wrapping
+        // ---------------------------------------------------------
+        function wrapLabel(label) {
+            if (label.length <= 16) return label;
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+            for (let i = 1; i < words.length; i++) {
+                if ((currentLine + " " + words[i]).length <= 16) {
+                    currentLine += " " + words[i];
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
+        const commonTooltip = {
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) return label.join(' ');
+                    return label;
+                }
+            }
+        };
+
+        // ---------------------------------------------------------
+        // ANIMATION & OBSERVER LOGIC
+        // ---------------------------------------------------------
+        
+        // Track chart initialization to prevent re-creation
+        const charts = {
+            radar: null,
+            bar: null,
+            plotly: null
+        };
+
+        // Chart Creation Functions
+        function createRadarChart() {
+            if (charts.radar) return;
+            const ctxRadar = document.getElementById('planComparisonChart').getContext('2d');
+            const processedLabelsRadar = ['데이터 보안 (Security)', '중앙 관리 (Admin)', '비용 효율성 (ROI)', '기능 지원 (Support)', '사용 편의성 (UX)'].map(wrapLabel);
+            
+            charts.radar = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: processedLabelsRadar,
+                    datasets: [{
+                        label: 'Team Plan (Business)',
+                        data: [5, 5, 4, 5, 5],
+                        fill: true,
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        borderColor: 'rgb(37, 99, 235)',
+                        pointBackgroundColor: 'rgb(37, 99, 235)',
+                        pointHoverBorderColor: 'rgb(37, 99, 235)'
+                    }, {
+                        label: 'Individual Pro',
+                        data: [2, 1, 5, 2, 5],
+                        fill: true,
+                        backgroundColor: 'rgba(156, 163, 175, 0.2)',
+                        borderColor: 'rgb(156, 163, 175)',
+                        pointBackgroundColor: 'rgb(156, 163, 175)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { color: '#E5E7EB' },
+                            grid: { color: '#E5E7EB' },
+                            suggestedMin: 0, suggestedMax: 5,
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: { legend: { position: 'top' }, tooltip: commonTooltip }
+                }
+            });
+        }
+
+        function createBarChart() {
+            if (charts.bar) return;
+            const ctxBar = document.getElementById('costStructureChart').getContext('2d');
+            const processedLabelsBar = ['기본 개발자 A', '시니어 개발자 B', '신규 입사자 C', 'PM/기획자 D'].map(wrapLabel);
+
+            charts.bar = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: processedLabelsBar,
+                    datasets: [
+                        {
+                            label: '기본 구독료 ($40)',
+                            data: [40, 40, 40, 40],
+                            backgroundColor: '#2563EB',
+                        },
+                        {
+                            label: '추가 고속 쿼리 (Optional)',
+                            data: [0, 20, 0, 0],
+                            backgroundColor: '#F59E0B',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeOutBounce', // Bouncy effect for bars
+                        delay: (context) => context.dataIndex * 200 // Staggered bars
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true }
+                    },
+                    plugins: { tooltip: commonTooltip, legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function createPlotlyChart() {
+            if (charts.plotly) return;
+            // Simply marking as true so we don't try again, 
+            // Plotly doesn't return a simple instance object in the same way, but it's idempotent enough if guarded.
+            charts.plotly = true; 
+            
+            const usageData = [{
+                values: [45, 30, 15, 10],
+                labels: ['Chat (질문/디버깅)', 'Composer (멀티파일)', 'Cmd-K (인라인)', 'Search'],
+                type: 'pie',
+                hole: .4,
+                marker: { colors: ['#2563EB', '#06B6D4', '#F59E0B', '#9CA3AF'] },
+                textinfo: 'label+percent',
+                textposition: 'inside',
+                hoverinfo: 'label+value',
+                automargin: true,
+                rotation: 90 // Start from a nice angle
+            }];
+
+            const usageLayout = {
+                showlegend: false,
+                margin: { t: 20, b: 20, l: 20, r: 20 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { family: 'Noto Sans KR, sans-serif' },
+                height: 350
+            };
+
+            const config = { responsive: true, displayModeBar: false, renderer: 'canvas' };
+            
+            Plotly.newPlot('plotlyUsageDiv', usageData, usageLayout, config).then(function() {
+                // Custom animation simulation via relayout if needed, 
+                // but Plotly's default entry animation is usually sufficient.
+            });
+        }
+
+        // Intersection Observer for Scroll Reveal & Lazy Loading Charts
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // 1. Observer for Generic Fade-ins
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        
+                        // Special handling for the progress bars in the last section
+                        const bars = entry.target.querySelectorAll('[id^="bar-"]');
+                        bars.forEach(bar => {
+                            // Reset width to trigger CSS transition
+                            const targetWidth = bar.style.width;
+                            bar.style.width = '0'; 
+                            setTimeout(() => {
+                                bar.style.width = targetWidth;
+                            }, 100);
+                        });
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal-on-scroll').forEach(el => revealObserver.observe(el));
+
+            // 2. Observer for Charts (Trigger animation only when in view)
+            const chartObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.id;
+                        if (id === 'radarChartContainer') createRadarChart();
+                        if (id === 'barChartContainer') createBarChart();
+                        if (id === 'plotlyUsageDiv') createPlotlyChart();
+                        
+                        chartObserver.unobserve(entry.target); // Run once
+                    }
+                });
+            }, { threshold: 0.3 }); // Wait until 30% visible
+
+            // Observe chart containers
+            document.getElementById('radarChartContainer') && chartObserver.observe(document.getElementById('radarChartContainer'));
+            document.getElementById('barChartContainer') && chartObserver.observe(document.getElementById('barChartContainer'));
+            document.getElementById('plotlyUsageDiv') && chartObserver.observe(document.getElementById('plotlyUsageDiv'));
+        });
+
+    </script>
+</body>
+</html>

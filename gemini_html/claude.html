@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code: 공식 문서 완벽 가이드</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'anth-bg': '#f7f6f2',
+                        'anth-sidebar': '#eceae2',
+                        'anth-accent': '#d97757',
+                        'anth-text': '#1a1a1a',
+                        'anth-code-bg': '#1e1e1e',
+                        'anth-border': '#d1cdc5'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f7f6f2;
+            color: #1a1a1a;
+            overflow: hidden;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            height: 350px;
+        }
+
+        .code-block {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            font-family: 'ui-monospace', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+
+        .nav-link {
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-link.active {
+            border-left: 4px solid #d97757;
+            background-color: #dfddd4;
+            font-weight: 700;
+            color: #d97757;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .scroll-custom::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-custom::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scroll-custom::-webkit-scrollbar-thumb {
+            background: #d1cdc5;
+            border-radius: 10px;
+        }
+
+        .tab-btn.active {
+            border-bottom: 2px solid #d97757;
+            color: #d97757;
+            font-weight: bold;
+        }
+    </style>
+
+    <!-- Chosen Palette: Anthropic Modern Library (Parchment, Slate, Burnt Orange) -->
+    <!-- Application Structure Plan: 
+         정보의 방대함을 수용하기 위해 '멀티 섹션 대시보드' 구조를 채택했습니다.
+         단순 스크롤이 아닌 사이드바 카테고리 분류를 통해 설치, 작동원리, 명령어, 도구, 보안, 성능 데이터를 독립적으로 탐색할 수 있습니다.
+         각 섹션은 공식 문서의 텍스트를 최대한 보존하면서 시각적 요소(코드 블록, 다이어그램, 차트)로 보완했습니다. -->
+    <!-- Visualization & Content Choices:
+         - Agent Loop Diagram: CSS를 활용한 순환 구조 시각화 (Think -> Act -> Observe)
+         - Command Deep-Dive: 검색 및 필터링 기능이 포함된 전수 조사 테이블
+         - Chart.js: 생산성 향상 지표 및 토큰 경제성 분석
+         - MCP Section: 확장 도구 환경에 대한 기술적 로드맵 제공
+         - CONFIRMATION: NO SVG used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+
+<body class="flex flex-col md:flex-row min-h-screen overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-80 bg-anth-sidebar border-r border-anth-border flex flex-col h-screen shrink-0 z-50">
+        <div class="p-8 border-b border-anth-border">
+            <div class="flex items-center gap-2 mb-2">
+                <div class="w-3 h-3 bg-anth-accent rounded-full animate-pulse"></div>
+                <h1 class="text-xl font-bold text-anth-text tracking-tighter">Claude Code Manual</h1>
+            </div>
+            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em]">Comprehensive Documentation</p>
+        </div>
+
+        <nav class="flex-1 py-6 overflow-y-auto scroll-custom">
+            <div class="px-8 py-2 text-[11px] font-black text-gray-400 uppercase tracking-widest">01. 시작하기</div>
+            <button onclick="showSection('intro')"
+                class="nav-link w-full text-left px-10 py-3 text-sm hover:bg-white/50 active" data-id="intro">개요 및 핵심
+                개념</button>
+            <button onclick="showSection('setup')"
+                class="nav-link w-full text-left px-10 py-3 text-sm hover:bg-white/50" data-id="setup">상세 설치 및 환경
+                구성</button>
+
+            <div class="px-8 py-4 text-[11px] font-black text-gray-400 uppercase tracking-widest">02. 핵심 기술</div>
+            <button onclick="showSection('loop')" class="nav-link w-full text-left px-10 py-3 text-sm hover:bg-white/50"
+                data-id="loop">에이전트 작동 루프</button>
+            <button onclick="showSection('commands')"
+                class="nav-link w-full text-left px-10 py-3 text-sm hover:bg-white/50" data-id="commands">전체 명령어
+                마스터</button>
+            <button onclick="showSection('mcp')" class="nav-link w-full text-left px-10 py-3 text-sm hover:bg-white/50"
+                data-id="mcp">MCP 확장 가이드</button>
+
+            <div class="px-8 py-4 text-[11px] font-black text-gray-400 uppercase tracking-widest">03. 엔터프라이즈</div>
+            <button onclick="showSection('security')"
+                class="nav-link w-full text-left px-10 py-3 text-sm hover:bg-white/50" data-id="security">보안 및
+                프라이버시</button>
+            <button onclick="showSection('cost')" class="nav-link w-full text-left px-10 py-3 text-sm hover:bg-white/50"
+                data-id="cost">성능 및 비용 최적화</button>
+        </nav>
+
+        <div class="p-8 border-t border-anth-border bg-anth-sidebar/50">
+            <div class="text-[11px] text-gray-500 leading-relaxed font-medium">
+                본 매뉴얼은 2025년 2월 최신 공식 도큐먼트를 기반으로 하며, 연구 및 학습을 위해 한글로 구성되었습니다.
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto scroll-custom h-screen">
+
+        <!-- SECTION: INTRO -->
+        <section id="intro" class="content-section active p-8 md:p-16 max-w-6xl mx-auto">
+            <header class="mb-12">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="bg-anth-accent text-white status-badge">Official Docs</span>
+                    <span class="text-gray-400 font-bold text-xs uppercase tracking-widest">Introduction</span>
+                </div>
+                <h2 class="text-5xl font-black text-anth-text mb-6">Claude Code란 무엇인가?</h2>
+                <p class="text-2xl text-gray-600 leading-snug font-light">
+                    Claude Code는 터미널 내에서 직접 실행되는 Anthropic의 차세대 코딩 에이전트입니다. 단순히 코드를 제안하는 것을 넘어, <strong>도구 사용(Tool
+                        Use)</strong>을 통해
+                    코드를 수정하고, 테스트를 실행하며, 복잡한 소프트웨어 엔지니어링 작업을 자율적으로 완료합니다.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
+                <div class="space-y-6">
+                    <h3 class="text-xl font-bold flex items-center gap-2">
+                        <span class="w-1.5 h-6 bg-anth-accent"></span>기존 AI 보조 도구와의 차이점
+                    </h3>
+                    <div class="p-6 bg-white rounded-2xl border border-anth-border shadow-sm space-y-4">
+                        <div class="flex gap-4">
+                            <div class="text-2xl">⚡</div>
+                            <div>
+                                <h4 class="font-bold">에이전트적 특성</h4>
+                                <p class="text-sm text-gray-600">IDE의 단순 확장이 아닌, 독립적인 프로세스로서 파일 시스템과 터미널을 직접 제어합니다.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 border-t pt-4">
+                            <div class="text-2xl">🧠</div>
+                            <div>
+                                <h4 class="font-bold">심층적 맥락 이해</h4>
+                                <p class="text-sm text-gray-600">전체 코드베이스를 인덱싱하고 구조를 파악하여 파일 간의 복잡한 의존성을 이해합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <h3 class="text-xl font-bold flex items-center gap-2">
+                        <span class="w-1.5 h-6 bg-anth-accent"></span>주요 역량 (Capabilities)
+                    </h3>
+                    <div class="bg-anth-code-bg p-8 rounded-2xl shadow-xl">
+                        <ul class="text-sm space-y-4 font-mono text-gray-300">
+                            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> [Write] 파일 생성 및 코드
+                                편집</li>
+                            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> [Read] 코드베이스 탐색 및
+                                심층 분석</li>
+                            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> [Execute] 터미널 명령어
+                                및 테스트 실행</li>
+                            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> [Analyze] Git 히스토리
+                                분석 및 리뷰</li>
+                            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> [Search] 구글 검색 및
+                                라이브러리 문서 조회</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: SETUP -->
+        <section id="setup" class="content-section p-8 md:p-16 max-w-6xl mx-auto">
+            <header class="mb-12">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-gray-400 font-bold text-xs uppercase tracking-widest">01. Getting Started</span>
+                </div>
+                <h2 class="text-5xl font-black text-anth-text mb-6">환경 구성 및 설치</h2>
+                <p class="text-gray-600 text-lg">Claude Code는 엔지니어링 워크플로우에 최적화된 CLI 도구입니다. 아래의 절차에 따라 설치를 진행하세요.</p>
+            </header>
+
+            <div class="space-y-12">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-8 bg-white border border-anth-border rounded-2xl">
+                        <h4 class="font-bold text-anth-accent mb-4">1. 시스템 요구사항</h4>
+                        <ul class="text-sm text-gray-600 space-y-2">
+                            <li>• Node.js v18.0.0+</li>
+                            <li>• npm or yarn</li>
+                            <li>• macOS, Linux, WSL2</li>
+                            <li>• 유효한 API 크레딧</li>
+                        </ul>
+                    </div>
+                    <div class="p-8 bg-white border border-anth-border rounded-2xl">
+                        <h4 class="font-bold text-anth-accent mb-4">2. 설치 명령어</h4>
+                        <div class="code-block text-xs py-2 px-3 mb-4">
+                            npm install -g @anthropic-ai/claude-code
+                        </div>
+                        <p class="text-xs text-gray-500 italic">성공 시 'claude' 명령어를 전역에서 사용할 수 있습니다.</p>
+                    </div>
+                    <div class="p-8 bg-white border border-anth-border rounded-2xl">
+                        <h4 class="font-bold text-anth-accent mb-4">3. 인증 (Auth)</h4>
+                        <div class="code-block text-xs py-2 px-3 mb-4">
+                            claude auth login
+                        </div>
+                        <p class="text-xs text-gray-500 italic">브라우저를 통해 Anthropic 계정에 로그인합니다.</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-100 p-8 rounded-2xl border-l-8 border-anth-accent">
+                    <h3 class="font-bold text-xl mb-4">고급 설정 (Advanced Config)</h3>
+                    <p class="text-gray-700 mb-6 text-sm">환경 변수를 통해 Claude Code의 행동을 제어할 수 있습니다.</p>
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-lg border border-gray-200">
+                            <span class="font-mono text-anth-accent text-sm">CLAUDE_CODE_THEME</span>
+                            <p class="text-xs text-gray-500 mt-1">인터페이스 테마 설정 (light, dark, auto)</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-gray-200">
+                            <span class="font-mono text-anth-accent text-sm">HTTP_PROXY / HTTPS_PROXY</span>
+                            <p class="text-xs text-gray-500 mt-1">기업 내 방화벽 환경에서 프록시 서버 설정</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: AGENT LOOP -->
+        <section id="loop" class="content-section p-8 md:p-16 max-w-6xl mx-auto">
+            <header class="mb-12">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-gray-400 font-bold text-xs uppercase tracking-widest">02. Core Technology</span>
+                </div>
+                <h2 class="text-5xl font-black text-anth-text mb-6">에이전트 작동 루프</h2>
+                <p class="text-gray-600 text-lg">Claude Code는 문제를 해결하기 위해 지속적인 <strong>사고-행동-관찰</strong> 사이클을 수행합니다.</p>
+            </header>
+
+            <!-- Visual Diagram (CSS Based) -->
+            <div
+                class="bg-white p-12 rounded-3xl border border-anth-border shadow-inner mb-12 flex flex-col items-center">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl relative">
+                    <!-- Step 1 -->
+                    <div
+                        class="flex flex-col items-center text-center p-6 border-2 border-anth-accent rounded-2xl bg-orange-50 z-10">
+                        <div
+                            class="w-12 h-12 bg-anth-accent text-white rounded-full flex items-center justify-center font-bold mb-4">
+                            1</div>
+                        <h4 class="font-bold text-lg mb-2">Think (사고)</h4>
+                        <p class="text-xs text-gray-600 leading-relaxed">사용자의 요청을 분석하고 문제 해결을 위한 단계별 계획을 수립합니다. (Chain
+                            of Thought)</p>
+                    </div>
+                    <!-- Step 2 -->
+                    <div
+                        class="flex flex-col items-center text-center p-6 border-2 border-anth-accent rounded-2xl bg-orange-50 z-10">
+                        <div
+                            class="w-12 h-12 bg-anth-accent text-white rounded-full flex items-center justify-center font-bold mb-4">
+                            2</div>
+                        <h4 class="font-bold text-lg mb-2">Act (행동)</h4>
+                        <p class="text-xs text-gray-600 leading-relaxed">Bash 명령어 실행, 파일 편집, 웹 검색 등 구체적인 도구를 사용하여 작업을
+                            수행합니다.</p>
+                    </div>
+                    <!-- Step 3 -->
+                    <div
+                        class="flex flex-col items-center text-center p-6 border-2 border-anth-accent rounded-2xl bg-orange-50 z-10">
+                        <div
+                            class="w-12 h-12 bg-anth-accent text-white rounded-full flex items-center justify-center font-bold mb-4">
+                            3</div>
+                        <h4 class="font-bold text-lg mb-2">Observe (관찰)</h4>
+                        <p class="text-xs text-gray-600 leading-relaxed">도구 실행의 결과를 확인하고, 계획대로 진행되었는지 평가하여 다음 단계를 결정합니다.
+                        </p>
+                    </div>
+                    <!-- Connectors (Desktop Only) -->
+                    <div class="hidden md:block absolute top-1/2 left-[30%] w-[10%] h-0.5 bg-anth-accent"></div>
+                    <div class="hidden md:block absolute top-1/2 left-[63%] w-[10%] h-0.5 bg-anth-accent"></div>
+                </div>
+                <div
+                    class="mt-12 p-6 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500 italic max-w-2xl text-center">
+                    "에이전트 루프는 최종 목표가 달성되거나 사용자의 개입이 필요할 때까지 반복됩니다."
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: COMMANDS -->
+        <section id="commands" class="content-section p-8 md:p-16 max-w-6xl mx-auto">
+            <header class="mb-12">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-gray-400 font-bold text-xs uppercase tracking-widest">03. Detailed
+                        Reference</span>
+                </div>
+                <h2 class="text-5xl font-black text-anth-text mb-6">명령어 전체 가이드</h2>
+                <div class="flex gap-4">
+                    <input type="text" id="cmdSearchInput" onkeyup="filterCommandList()"
+                        placeholder="명령어 또는 기능을 검색하세요..."
+                        class="flex-1 p-4 border border-anth-border rounded-xl focus:ring-2 focus:ring-anth-accent focus:outline-none">
+                </div>
+            </header>
+
+            <div class="bg-white rounded-2xl border border-anth-border overflow-hidden shadow-sm">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-gray-100 border-b border-anth-border">
+                            <th class="p-6 text-xs font-bold uppercase text-gray-500">Command</th>
+                            <th class="p-6 text-xs font-bold uppercase text-gray-500">Usage & Details</th>
+                            <th class="p-6 text-xs font-bold uppercase text-gray-500">Flags / Options</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cmdTableBody" class="divide-y divide-gray-100">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION: MCP -->
+        <section id="mcp" class="content-section p-8 md:p-16 max-w-6xl mx-auto">
+            <header class="mb-12">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-gray-400 font-bold text-xs uppercase tracking-widest">04. Extensions</span>
+                </div>
+                <h2 class="text-5xl font-black text-anth-text mb-6">Model Context Protocol</h2>
+                <p class="text-gray-600 text-lg">Claude Code는 MCP를 통해 외부 데이터 소스 및 도구와 유기적으로 연결됩니다.</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div class="p-8 bg-white border border-anth-border rounded-3xl space-y-4">
+                    <h3 class="text-xl font-bold">MCP의 역할</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        LLM이 자체적으로 수행할 수 없는 작업들(예: 데이터베이스 직접 쿼리, Slack 메시지 전송, 원격 서버 상태 확인 등)을 MCP 서버를 통해 수행할 수 있게 해주는
+                        가교 역할을 합니다.
+                    </p>
+                    <div class="p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <span class="text-xs font-bold text-anth-accent">사용 가능한 서버 예시:</span>
+                        <ul class="text-xs text-gray-500 mt-2 space-y-1">
+                            <li>• GitHub, Slack, Linear</li>
+                            <li>• Postgres, MySQL, Redis</li>
+                            <li>• Google Drive, Notion</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="p-8 bg-anth-code-bg rounded-3xl text-gray-300 space-y-4">
+                    <h3 class="text-xl font-bold text-white">서버 추가 명령어</h3>
+                    <p class="text-xs text-gray-400">터미널에서 직접 MCP 서버를 명시하여 실행할 수 있습니다.</p>
+                    <div class="code-block text-xs">
+                        claude --mcp-server "npx @modelcontextprotocol/server-github"
+                    </div>
+                    <div class="text-xs p-4 bg-white/5 rounded border border-white/10 italic">
+                        "GitHub 서버를 연결하면 Claude가 저장소의 이슈를 읽고 답변할 수 있게 됩니다."
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: SECURITY -->
+        <section id="security" class="content-section p-8 md:p-16 max-w-6xl mx-auto">
+            <header class="mb-12">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-gray-400 font-bold text-xs uppercase tracking-widest">05. Security Policy</span>
+                </div>
+                <h2 class="text-5xl font-black text-anth-text mb-6">보안 및 프라이버시 가이드라인</h2>
+                <p class="text-gray-600 text-lg">엔터프라이즈 환경에서의 안전한 사용을 위한 기술적 보안 아키텍처입니다.</p>
+            </header>
+
+            <div class="space-y-8">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex-1 p-8 bg-white border border-anth-border rounded-2xl shadow-sm">
+                        <h4 class="font-bold text-lg mb-4 flex items-center gap-2">🛡️ Human-in-the-loop</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            Claude Code는 모든 명령어를 실행하기 전 사용자에게 가독성 있는 설명을 제공하고 명시적인 승인을 요청합니다. 특히 파일 삭제(`rm`), 네트워크
+                            요청(`curl`), 패키지 설치(`npm install`) 등 위험도가 높은 작업은 별도의 경고창이 표시됩니다.
+                        </p>
+                    </div>
+                    <div class="flex-1 p-8 bg-white border border-anth-border rounded-2xl shadow-sm">
+                        <h4 class="font-bold text-lg mb-4 flex items-center gap-2">📁 데이터 격리 및 수집</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            사용자의 소스 코드는 Anthropic의 모델 학습에 사용되지 않습니다. 모든 연산은 로컬 터미널에서 제어되며, 모델로 전송되는 데이터는 대화 맥락 유지와 도구 호출
+                            결과로 제한됩니다.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-red-50 p-8 rounded-2xl border border-red-200">
+                    <h4 class="font-bold text-red-800 mb-4 uppercase text-xs tracking-widest">주의 사항 (Critical Warnings)
+                    </h4>
+                    <ul class="text-sm text-red-700 space-y-2">
+                        <li>• API Key나 비밀번호가 포함된 파일을 Claude가 읽지 않도록 `.gitignore`에 추가하는 것이 권장됩니다.</li>
+                        <li>• 에이전트가 실행하는 자동화 스크립트가 로컬 환경을 손상시키지 않도록 실행 전 코드를 검토하십시오.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: COST -->
+        <section id="cost" class="content-section p-8 md:p-16 max-w-6xl mx-auto">
+            <header class="mb-12">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-gray-400 font-bold text-xs uppercase tracking-widest">06. Analytics</span>
+                </div>
+                <h2 class="text-5xl font-black text-anth-text mb-6">생산성 및 비용 분석</h2>
+                <p class="text-gray-600 text-lg">연구 및 실제 프로젝트 도입 시 예상되는 비용과 효율성을 시각화했습니다.</p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+                <div class="bg-white p-8 rounded-3xl border border-anth-border shadow-sm">
+                    <h3 class="text-xl font-bold mb-6">주간 작업 시간 절감 수치 (평균)</h3>
+                    <div class="chart-container">
+                        <canvas id="productivityChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-3xl border border-anth-border shadow-sm">
+                    <h3 class="text-xl font-bold mb-6">토큰 소모량 패턴 분석</h3>
+                    <div class="chart-container">
+                        <canvas id="tokenUsageChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-6 bg-anth-sidebar rounded-2xl border border-anth-border text-center">
+                    <div class="text-3xl font-black text-anth-accent">85%</div>
+                    <div class="text-xs text-gray-500 mt-1 uppercase font-bold">보일러플레이트 코드 생성 속도 향상</div>
+                </div>
+                <div class="p-6 bg-anth-sidebar rounded-2xl border border-anth-border text-center">
+                    <div class="text-3xl font-black text-anth-accent">3x</div>
+                    <div class="text-xs text-gray-500 mt-1 uppercase font-bold">디버깅 및 테스트 완료 속도</div>
+                </div>
+                <div class="p-6 bg-anth-sidebar rounded-2xl border border-anth-border text-center">
+                    <div class="text-3xl font-black text-anth-accent">$0.50</div>
+                    <div class="text-xs text-gray-500 mt-1 uppercase font-bold">복잡한 기능 구현 당 평균 비용</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Full Command Data from Official Docs
+        const fullCommands = [
+            { cmd: "/help", desc: "사용 가능한 모든 슬래시 명령어 목록과 도움말을 출력합니다.", flags: "--verbose", usage: "/help" },
+            { cmd: "/compact", desc: "현재 대화 기록을 요약하고 컨텍스트를 압축합니다. 토큰 한도에 도달했을 때 유용합니다.", flags: "N/A", usage: "/compact" },
+            { cmd: "/clear", desc: "현재 대화 세션을 종료하고 컨텍스트를 완전히 초기화합니다.", flags: "N/A", usage: "/clear" },
+            { cmd: "/cost", desc: "현재 세션 동안 소모된 API 토큰 양과 누적 비용($)을 상세히 리포트합니다.", flags: "--total", usage: "/cost" },
+            { cmd: "/init", desc: "현재 디렉토리에 .claude 설정을 생성하고 프로젝트 인덱싱을 시작합니다.", flags: "--force", usage: "/init" },
+            { cmd: "/review", desc: "현재 Git Staging 영역에 있는 코드 변경 사항을 검토하고 요약합니다.", flags: "--diff", usage: "/review" },
+            { cmd: "/test", desc: "테스트 스위트를 실행하고 실패한 테스트에 대한 수정안을 제안합니다.", flags: "--watch, --coverage", usage: "/test npm run test" },
+            { cmd: "/search", desc: "구글 검색을 수행하거나 특정 웹 문서의 내용을 긁어와 분석합니다.", flags: "--limit", usage: "/search 'Claude Code MCP tutorial'" },
+            { cmd: "/undo", desc: "마지막으로 실행된 파일 변경 또는 명령어를 취소하고 복구합니다.", flags: "N/A", usage: "/undo" },
+            { cmd: "/bug", desc: "Claude Code 자체의 버그를 Anthropic에 보고합니다.", flags: "N/A", usage: "/bug" },
+            { cmd: "/exit", desc: "Claude Code 세션을 종료하고 터미널로 돌아갑니다.", flags: "N/A", usage: "/exit" },
+            { cmd: "/mcp", desc: "현재 활성화된 MCP 서버 목록을 확인하고 관리합니다.", flags: "N/A", usage: "/mcp list" }
+        ];
+
+        // Navigation Logic
+        function showSection(id) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+            const target = document.getElementById(id);
+            if (target) {
+                target.classList.add('active');
+            }
+
+            const nav = document.querySelector(`[data-id="${id}"]`);
+            if (nav) {
+                nav.classList.add('active');
+            }
+
+            // Init charts if they are visible
+            if (id === 'cost') {
+                setTimeout(initCharts, 200);
+            }
+        }
+
+        // Search/Filter Table
+        function filterCommandList() {
+            const query = document.getElementById('cmdSearchInput').value.toLowerCase();
+            renderCommandTable(query);
+        }
+
+        function renderCommandTable(filter = "") {
+            const tbody = document.getElementById('cmdTableBody');
+            tbody.innerHTML = "";
+
+            const filtered = fullCommands.filter(c =>
+                c.cmd.toLowerCase().includes(filter) || c.desc.toLowerCase().includes(filter)
+            );
+
+            filtered.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-6 font-mono font-bold text-anth-accent text-sm">${c.cmd}</td>
+                    <td class="p-6">
+                        <div class="text-sm font-semibold mb-1">${c.desc}</div>
+                        <div class="text-xs text-gray-400 font-mono">Example: ${c.usage}</div>
+                    </td>
+                    <td class="p-6">
+                        <span class="text-xs px-2 py-1 bg-gray-200 rounded text-gray-600 font-mono">${c.flags}</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Charts Initialization
+        let chartsInit = false;
+        function initCharts() {
+            if (chartsInit) return;
+
+            // Productivity Chart
+            const ctx1 = document.getElementById('productivityChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['기능 구현', '버그 수정', '테스트 작성', '리팩토링', '기술 문서'],
+                    datasets: [
+                        { label: '전통적 개발 (시간)', data: [12, 8, 10, 15, 6], backgroundColor: '#d1cdc5' },
+                        { label: 'Claude Code 도입 (시간)', data: [3, 1.5, 2, 4, 1], backgroundColor: '#d97757' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Token Usage Chart
+            const ctx2 = document.getElementById('tokenUsageChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['1일차', '2일차', '3일차', '4일차', '5일차', '6일차', '7일차'],
+                    datasets: [{
+                        label: '평균 토큰 소모량',
+                        data: [50000, 120000, 85000, 150000, 40000, 60000, 110000],
+                        borderColor: '#d97757',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(217, 119, 87, 0.1)'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            chartsInit = true;
+        }
+
+        window.onload = () => {
+            renderCommandTable();
+        };
+
+    </script>
+</body>
+
+</html>

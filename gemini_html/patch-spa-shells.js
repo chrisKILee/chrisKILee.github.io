@@ -31,7 +31,7 @@ function newJsBlock(folderHash, secretHash) {
         function renderGrid() {
             const container = document.getElementById('filesContainer');
             container.innerHTML = filesData.map(file => \`
-                <div class="file-card" onclick="location.href='../contents/\${file.hash}/\${file.filename}'">
+                <div class="file-card" onclick="location.href='../\${file.filename}'">
                     <div class="file-icon"><i class="fas fa-leaf"></i></div>
                     <div class="file-name">\${file.displayName}</div>
                 </div>\`).join('');
@@ -54,13 +54,13 @@ function newJsBlock(folderHash, secretHash) {
 
         function loadContent(file) {
             const iframe = document.getElementById('contentFrame');
-            iframe.src = \`../contents/\${file.hash}/\${file.filename}?v=\${Date.now()}\`;
+            iframe.src = \`../\${file.filename}?v=\${Date.now()}\`;
         }
 
         function showStealth404() { document.body.innerHTML = \`<div style="display:flex; align-items:center; justify-content:center; height:100vh; color:#94a3b8; background:#f8fafc;"><h1>404 Not Found</h1></div>\`; }
         window.addEventListener('hashchange', checkHash); window.addEventListener('DOMContentLoaded', init);
     </script>
-    <!-- Version: 2026-03-03 contents/ architecture -->`;
+    <!-- Version: 2026-03-18 flat architecture v4.0 -->`;
 }
 
 // 구 JS 블록 패턴 - 버전 주석 있는 경우 / 없는 경우 모두 처리

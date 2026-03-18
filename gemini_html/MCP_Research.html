@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Ecosystem Intelligence Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../js/gemini_config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'monospace'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        cyber: {
+                            black: '#0b0c15',
+                            dark: '#131521',
+                            panel: 'rgba(19, 21, 33, 0.8)',
+                            primary: '#00f0ff',  /* Neon Cyan */
+                            secondary: '#7000ff', /* Neon Purple */
+                            accent: '#ff003c',   /* Neon Red */
+                            success: '#00ff9f',  /* Neon Green */
+                            text: '#e0e6ed',
+                            dim: '#94a3b8'
+                        }
+                    },
+                    backgroundImage: {
+                        'grid-pattern': "linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px)"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ROBUST CSS RESET (Force Visibility) */
+        body {
+            background-color: #0b0c15 !important;
+            color: #e0e6ed !important;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .mono-font {
+            font-family: 'JetBrains Mono', monospace !important;
+            color: #ffffff !important;
+        }
+
+        /* Cyberpunk Grid Background */
+        .cyber-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .cyber-grid::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, transparent 0%, #0b0c15 90%);
+        }
+
+        /* Holographic Panels */
+        .holo-panel {
+            background: rgba(19, 21, 33, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.05), inset 0 0 20px rgba(0, 240, 255, 0.02);
+            border-radius: 4px;
+            /* Angular look */
+            position: relative;
+            color: #e0e6ed !important;
+        }
+
+        .holo-panel::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid #00f0ff;
+            border-left: 2px solid #00f0ff;
+        }
+
+        .holo-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 10px;
+            height: 10px;
+            border-bottom: 2px solid #00f0ff;
+            border-right: 2px solid #00f0ff;
+        }
+
+        .holo-panel:hover {
+            border-color: rgba(0, 240, 255, 0.5);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+        }
+
+        /* Glitch Effect Text (Optional) */
+        .glitch-text {
+            position: relative;
+            animation: glitch-color 2s infinite;
+        }
+
+        /* Inputs */
+        .cyber-input {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: #00f0ff !important;
+            font-family: 'JetBrains Mono', monospace;
+            border-radius: 0;
+        }
+
+        .cyber-input:focus {
+            outline: none;
+            border-color: #00f0ff;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+            background: rgba(0, 240, 255, 0.05);
+        }
+
+        .cyber-input::placeholder {
+            color: rgba(0, 240, 255, 0.4);
+        }
+
+        /* Buttons */
+        .cyber-btn {
+            background: linear-gradient(90deg, transparent 0%, rgba(0, 240, 255, 0.1) 50%, transparent 100%);
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .cyber-btn:hover {
+            background: #00f0ff;
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+        }
+
+        .cyber-btn-accent {
+            border-color: #ff003c;
+            color: #ff003c;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 0, 60, 0.1) 50%, transparent 100%);
+        }
+
+        .cyber-btn-accent:hover {
+            background: #ff003c;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(255, 0, 60, 0.6);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Loader */
+        .cyber-loader {
+            border: 2px solid transparent;
+            border-top: 2px solid #00f0ff;
+            border-right: 2px solid #00f0ff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <div class="cyber-grid"></div>
+
+    <!-- Header -->
+    <header class="border-b border-cyber-primary/20 bg-cyber-dark/90 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-cyber-primary/10 p-2 border border-cyber-primary rounded-none">
+                    <i data-lucide="cpu" class="w-6 h-6 text-cyber-primary"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-widest text-white">MCP_INTELLIGENCE</h1>
+                    <p class="text-[10px] text-cyber-primary tracking-[0.3em] uppercase">System Status: Online</p>
+                </div>
+            </div>
+            <div class="hidden md:flex gap-6 text-sm mono-font">
+                <div class="flex items-center gap-2 text-cyber-dim">
+                    <span class="w-2 h-2 bg-cyber-success rounded-full animate-pulse"></span>
+                    <span>SERVER: ACTIVE</span>
+                </div>
+                <div class="flex items-center gap-2 text-cyber-dim">
+                    <i data-lucide="shield" class="w-3 h-3"></i>
+                    <span>PROTOCOL: V.1.0</span>
+                </div>
+                <button onclick="setApiKey()"
+                    class="text-xs border border-cyber-primary text-cyber-primary px-3 py-1 hover:bg-cyber-primary hover:text-black transition-all duration-300">
+                    CONFIG_AUTH
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10 space-y-12">
+
+        <!-- Intro Section -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <div class="inline-block border border-cyber-accent text-cyber-accent text-xs px-2 py-1 mb-4 mono-font">
+                    WARNING: HIGH TECH CONTENT
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6 leading-tight glitch-text">
+                    MODEL CONTEXT<br>
+                    <span class="text-cyber-primary">PROTOCOL</span> ANALYSIS
+                </h2>
+                <p
+                    class="text-cyber-dim text-lg leading-relaxed mb-8 border-l-2 border-cyber-primary/30 pl-4 font-light">
+                    MCP는 단순한 API가 아닙니다. <br>
+                    AI와 엔터프라이즈 데이터 시스템을 연결하는 <span class="text-cyber-primary font-medium">새로운 신경망</span>입니다.
+                    개발자, 데이터 엔지니어, 디자이너를 위한 심층 분석 리포트.
+                </p>
+
+                <div class="flex flex-wrap gap-4">
+                    <div class="holo-panel px-6 py-4 flex-1 min-w-[150px] text-center">
+                        <div class="text-2xl font-bold text-cyber-primary mono-font">650%</div>
+                        <div class="text-xs text-cyber-dim mt-1 uppercase tracking-wider">Growth Rate</div>
+                    </div>
+                    <div class="holo-panel px-6 py-4 flex-1 min-w-[150px] text-center">
+                        <div class="text-2xl font-bold text-cyber-secondary mono-font">12+</div>
+                        <div class="text-xs text-cyber-dim mt-1 uppercase tracking-wider">Major IDEs</div>
+                    </div>
+                    <div class="holo-panel px-6 py-4 flex-1 min-w-[150px] text-center">
+                        <div class="text-2xl font-bold text-cyber-success mono-font">Open</div>
+                        <div class="text-xs text-cyber-dim mt-1 uppercase tracking-wider">Source</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Radar Chart (Capability) -->
+            <div class="holo-panel p-6">
+                <div class="flex justify-between items-center mb-4 border-b border-cyber-primary/20 pb-2">
+                    <h3 class="text-sm text-cyber-primary mono-font">CAPABILITY_MATRIX</h3>
+                    <i data-lucide="radar" class="w-4 h-4 text-cyber-primary"></i>
+                </div>
+                <div class="chart-container">
+                    <canvas id="capabilityRadar"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Dashboard Grid -->
+        <section>
+            <div class="flex items-end justify-between mb-6 border-b border-white/10 pb-2">
+                <h3 class="text-2xl font-bold flex items-center gap-2">
+                    <span class="text-cyber-secondary">#</span> MARKET_DATA_ANALYSIS
+                </h3>
+                <span class="text-xs mono-font text-cyber-dim">UPDATED: 2024.12.13</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Adoption Trend -->
+                <div class="holo-panel p-6 lg:col-span-2">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h4 class="text-lg font-bold text-white mono-font">ECOSYSTEM_GROWTH</h4>
+                            <p class="text-xs text-cyber-dim">Monthly Repository & Interaction Growth</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="w-3 h-3 bg-cyber-primary rounded-sm"></span>
+                            <span class="w-3 h-3 bg-cyber-secondary rounded-sm"></span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Server Distribution -->
+                <div class="holo-panel p-6">
+                    <h4 class="text-lg font-bold text-white mb-6 mono-font">SERVER_TYPES</h4>
+                    <div class="chart-container relative">
+                        <canvas id="serverDoughnut"></canvas>
+                        <!-- Center Text Overlay -->
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-white mono-font">100+</div>
+                                <div class="text-[10px] text-cyber-dim uppercase">Servers</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 space-y-2 text-xs mono-font">
+                        <div class="flex justify-between text-cyber-dim">
+                            <span>> Database</span>
+                            <span class="text-cyber-primary">45%</span>
+                        </div>
+                        <div class="flex justify-between text-cyber-dim">
+                            <span>> Tools/Dev</span>
+                            <span class="text-cyber-secondary">30%</span>
+                        </div>
+                        <div class="flex justify-between text-cyber-dim">
+                            <span>> Knowledge</span>
+                            <span class="text-cyber-success">25%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Configuration Terminal -->
+        <section class="holo-panel p-1 border-t-4 border-t-cyber-accent">
+            <div class="bg-black/40 p-6 md:p-8">
+                <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2 mono-font">
+                    <i data-lucide="terminal" class="text-cyber-accent"></i>
+                    RESEARCH_TERMINAL_V2
+                </h3>
+                <p class="text-cyber-dim text-sm mb-6">Gemini Pro 엔진을 사용하여 맞춤형 연구 리포트를 생성합니다.</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Input Console -->
+                    <div class="space-y-6">
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-cyber-primary mb-2 mono-font">TARGET_DOMAIN</label>
+                            <select id="domainSelect" class="cyber-input w-full p-3">
+                                <option value="Developers">Developer Experience (DX)</option>
+                                <option value="Data Engineers">Data Pipeline & ETL</option>
+                                <option value="Product Managers">Product Strategy</option>
+                                <option value="Security">Security & Compliance</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-cyber-primary mb-2 mono-font">FOCAL_POINT</label>
+                            <input type="text" id="focusPoint" class="cyber-input w-full p-3"
+                                placeholder="예: 실시간 데이터 처리, 보안 인증...">
+                        </div>
+
+                        <button onclick="generateResearch()" class="cyber-btn w-full py-4 text-center group">
+                            <span class="relative z-10 flex items-center justify-center gap-2">
+                                INITIALIZE_SCAN <i data-lucide="scan-line"
+                                    class="w-4 h-4 group-hover:animate-pulse"></i>
+                            </span>
+                            <!-- Hidden Loader -->
+                            <div id="scan-loader"
+                                class="absolute inset-0 flex items-center justify-center bg-black/80 hidden">
+                                <div class="cyber-loader"></div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Output Screen -->
+                    <div class="lg:col-span-2 relative">
+                        <div
+                            class="absolute -top-3 left-4 bg-cyber-dark px-2 text-xs text-cyber-accent mono-font border border-cyber-accent/50">
+                            OUTPUT_log</div>
+                        <div id="research-output"
+                            class="w-full h-full min-h-[300px] bg-black/50 border border-cyber-dim/20 p-6 font-mono text-sm text-cyber-dim overflow-y-auto">
+                            <div class="flex flex-col items-center justify-center h-full opacity-50 space-y-4">
+                                <i data-lucide="activity" class="w-12 h-12 text-cyber-primary animate-pulse"></i>
+                                <p>WAITING FOR INPUT STREAM...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tech Stack Horizontal Scroll -->
+        <div class="overflow-hidden py-6 border-y border-cyber-primary/10 bg-cyber-dark/50">
+            <div
+                class="flex gap-12 animate-[marquee_20s_linear_infinite] whitespace-nowrap mono-font text-cyber-dim opacity-70">
+                <span class="flex items-center gap-2"><i data-lucide="box" class="w-4 h-4"></i> Docker</span>
+                <span class="flex items-center gap-2"><i data-lucide="database" class="w-4 h-4"></i> PostgreSQL</span>
+                <span class="flex items-center gap-2"><i data-lucide="server" class="w-4 h-4"></i> Node.js</span>
+                <span class="flex items-center gap-2"><i data-lucide="globe" class="w-4 h-4"></i> Python</span>
+                <span class="flex items-center gap-2"><i data-lucide="key" class="w-4 h-4"></i> OAuth 2.0</span>
+                <span class="flex items-center gap-2"><i data-lucide="file-json" class="w-4 h-4"></i> JSON-RPC</span>
+                <span>// REPEAT START</span>
+                <span class="flex items-center gap-2"><i data-lucide="box" class="w-4 h-4"></i> Docker</span>
+                <span class="flex items-center gap-2"><i data-lucide="database" class="w-4 h-4"></i> PostgreSQL</span>
+                <span class="flex items-center gap-2"><i data-lucide="server" class="w-4 h-4"></i> Node.js</span>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="border-t border-cyber-dim/20 bg-cyber-dark py-8 text-center text-xs text-cyber-dim mono-font">
+        <p>SYSTEM_ID: G.E.M.I.N.I_NODE_01 // ACCESS_LEVEL: AUTHORIZED</p>
+        <p class="mt-2 text-[10px] opacity-50">Content protected by heavy encryption</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Icons
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+
+            const apiKey = typeof GEMINI_CONFIG !== 'undefined' ? GEMINI_CONFIG.API_KEY : ""; // Runtime Environment
+
+            // ------------------------------------------------------------------
+            // CHART CONFIG (Cyberpunk Theme)
+            // ------------------------------------------------------------------
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.borderColor = 'rgba(0, 240, 255, 0.1)';
+            Chart.defaults.font.family = 'JetBrains Mono';
+
+            // 1. Capability Radar
+            const ctxCapability = document.getElementById('capabilityRadar');
+            if (ctxCapability) {
+                new Chart(ctxCapability.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: ['Context', 'Speed', 'Security', 'Flexibility', 'Integration'],
+                        datasets: [{
+                            label: 'MCP Standard',
+                            data: [90, 85, 95, 80, 88],
+                            backgroundColor: 'rgba(0, 240, 255, 0.2)',
+                            borderColor: '#00f0ff',
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#00f0ff'
+                        }, {
+                            label: 'Legacy API',
+                            data: [40, 60, 70, 45, 50],
+                            backgroundColor: 'rgba(148, 163, 184, 0.2)',
+                            borderColor: '#94a3b8',
+                            borderDash: [5, 5]
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                grid: { color: 'rgba(0, 240, 255, 0.1)' },
+                                angleLines: { color: 'rgba(0, 240, 255, 0.1)' },
+                                pointLabels: { color: '#e0e6ed', font: { size: 10 } }
+                            }
+                        },
+                        plugins: { legend: { labels: { color: '#e0e6ed' } } }
+                    }
+                });
+            }
+
+            // 2. Growth Chart (Line)
+            const ctxGrowth = document.getElementById('growthChart');
+            if (ctxGrowth) {
+                new Chart(ctxGrowth.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Active Users',
+                            data: [120, 190, 300, 500, 800, 1200],
+                            borderColor: '#00f0ff',
+                            backgroundColor: 'rgba(0, 240, 255, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Integrations',
+                            data: [10, 25, 45, 80, 150, 300],
+                            borderColor: '#7000ff',
+                            backgroundColor: 'rgba(112, 0, 255, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: {
+                            x: { grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                            y: { grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+                        }
+                    }
+                });
+            }
+
+            // 3. Server Types (Doughnut)
+            const ctxServer = document.getElementById('serverDoughnut');
+            if (ctxServer) {
+                new Chart(ctxServer.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Database', 'Tools', 'Knowledge', 'Other'],
+                        datasets: [{
+                            data: [45, 30, 20, 5],
+                            backgroundColor: ['#00f0ff', '#7000ff', '#00ff9f', '#ff003c'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        cutout: '75%',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        });
+    </script>
+    <script>
+        // Separate script for global functions to ensure they are accessible
+
+        // ------------------------------------------------------------------
+        // SECURE API KEY MANAGEMENT
+        // ------------------------------------------------------------------
+        window.setApiKey = function () {
+            const currentKey = localStorage.getItem('gemini_api_key') || "";
+            const newKey = prompt("ENTER_ACCESS_TOKEN (SECURE_STORAGE):", currentKey);
+            if (newKey !== null) {
+                localStorage.setItem('gemini_api_key', newKey);
+                alert("IDENTITY_VERIFIED. TOKEN_STORED.");
+                location.reload();
+            }
+        };
+
+        window.generateResearch = async function () {
+            const apiKey = typeof GEMINI_CONFIG !== 'undefined' ? GEMINI_CONFIG.API_KEY : "";
+
+            if (!apiKey) {
+                alert("Global API Key configuration missing.");
+                return;
+            }
+
+            const domain = document.getElementById('domainSelect').value;
+            const focus = document.getElementById('focusPoint').value || "General Overview";
+            const output = document.getElementById('research-output');
+            const loader = document.getElementById('scan-loader');
+
+            loader.classList.remove('hidden');
+            output.innerHTML = `
+            <div class="text-cyber-primary font-mono text-sm leading-6">
+                > INITIALIZING NEURAL LINK...<br>
+                > SCANNING REPOSITORIES...<br>
+                > ANALYZING ${domain.toUpperCase()} CONTEXT...<br>
+                > GENERATING INSIGHTS...
+                <span class="inline-block w-2 h-4 bg-cyber-primary animate-pulse ml-1"></span>
+            </div>
+            `;
+
+            const prompt = `
+            Role: Cyberpunk Tech Analyst.
+            Task: Analyze the 'Model Context Protocol (MCP)' for the ${domain} domain.
+            Focus: ${focus}.
+            Format: Markdown. Use bullet points. Keep it technical and concise.
+            Style: professional yet futuristic.
+            Contents:
+            1. 🛑 Pain Points (Current Systems)
+            2. ⚡ MCP Solution (The Fix)
+            3. 🔮 Strategic Impact (Future)
+            `;
+
+            try {
+                // Using flash-preview as per original code
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                if (!response.ok) throw new Error(`HTTP_ERROR: ${response.status}`);
+
+                const data = await response.json();
+                const rawText = data.candidates[0].content.parts[0].text;
+
+                // Markdown Parse
+                output.innerHTML = marked.parse(rawText);
+
+                // Add Cyberpunk Styling to Markup
+                output.querySelectorAll('h3').forEach(el => el.className = 'text-cyber-primary font-bold text-lg mt-4 mb-2 mono-font border-b border-cyber-primary/30 pb-1 inline-block');
+                output.querySelectorAll('ul').forEach(el => el.className = 'list-disc pl-5 space-y-1 text-cyber-text');
+                output.querySelectorAll('strong').forEach(el => el.className = 'text-cyber-secondary font-bold');
+
+            } catch (error) {
+                console.error(error);
+                output.innerHTML = `<span class="text-cyber-accent">ERROR: CONNECTION LOST >> ${error.message}</span>`;
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+    </script>
+
+    <style>
+        /* Marquee Animation */
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+</body>
+
+</html>

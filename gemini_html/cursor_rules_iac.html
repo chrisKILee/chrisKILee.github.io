@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor Rules로 IaC 표준화하기 — AI-WORKER</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #6366f1;
+            --accent2: #06b6d4;
+            --accent3: #10b981;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --warn: #f59e0b;
+            --danger: #ef4444;
+            --code-bg: #1e293b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        /* NAV */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--primary);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            gap: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+        .nav-logo {
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-right: auto;
+            text-decoration: none;
+        }
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color .2s;
+        }
+        .nav-links a:hover { color: #fff; }
+        .nav-links { display: flex; gap: 1.2rem; }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            color: #fff;
+            padding: 64px 24px 56px;
+            text-align: center;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(99,102,241,0.25);
+            border: 1px solid rgba(99,102,241,0.5);
+            color: #a5b4fc;
+            font-size: 13px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            letter-spacing: .5px;
+        }
+        .hero h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+        .hero h1 span { color: #818cf8; }
+        .hero p {
+            font-size: 15px;
+            color: #94a3b8;
+            max-width: 680px;
+            margin: 0 auto 36px;
+            line-height: 1.7;
+        }
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .hero-stat {
+            text-align: center;
+        }
+        .hero-stat .val {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #818cf8;
+            display: block;
+        }
+        .hero-stat .lbl {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        /* SECTION */
+        section {
+            padding: 60px 24px;
+        }
+        .wrapper {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .section-title span { color: var(--accent); }
+        .section-desc {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-bottom: 36px;
+            line-height: 1.7;
+        }
+        .section-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+        }
+
+        /* PROBLEM CARDS */
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .problem-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--danger);
+            border-radius: 10px;
+            padding: 24px;
+        }
+        .problem-card .icon { font-size: 1.5rem; margin-bottom: 10px; }
+        .problem-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+        .problem-card p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+
+        /* GOAL CARDS */
+        .goal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .goal-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 10px;
+            padding: 24px;
+        }
+        .goal-card .tag {
+            font-size: 12px;
+            background: rgba(99,102,241,0.1);
+            color: var(--accent);
+            padding: 2px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+        .goal-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+        .goal-card p { font-size: 15px; color: var(--text-muted); line-height: 1.7; }
+        .goal-card .result {
+            margin-top: 14px;
+            padding: 10px 14px;
+            background: #f0fdf4;
+            border-left: 3px solid var(--accent3);
+            border-radius: 4px;
+            font-size: 14px;
+            color: #166534;
+        }
+
+        /* RULES STRUCTURE */
+        .rules-bg {
+            background: #f1f5f9;
+        }
+        .rules-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+        @media (max-width: 860px) { .rules-layout { grid-template-columns: 1fr; } }
+        .code-block {
+            background: var(--code-bg);
+            border-radius: 10px;
+            padding: 24px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            color: #e2e8f0;
+            line-height: 1.8;
+            overflow-x: auto;
+            white-space: pre;
+            margin: 0;
+        }
+        .code-block .c-gray { color: #64748b; }
+        .code-block .c-cyan { color: #67e8f9; }
+        .code-block .c-green { color: #86efac; }
+        .code-block .c-yellow { color: #fde68a; }
+        .code-block .c-purple { color: #c4b5fd; }
+
+        .folder-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .folder-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 18px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .folder-card .folder-icon {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .folder-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .folder-card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+        .folder-card .badge {
+            font-size: 11px;
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+            font-weight: 600;
+        }
+        .badge-always { background: #fef3c7; color: #92400e; }
+        .badge-glob { background: #ede9fe; color: #5b21b6; }
+
+        /* AI PROOF */
+        .proof-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+        }
+        .proof-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .proof-card-header {
+            background: linear-gradient(90deg, #1e1b4b, #312e81);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .proof-card-header .num {
+            background: var(--accent);
+            color: #fff;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .proof-card-header h3 { color: #e2e8f0; font-size: 15px; font-weight: 600; }
+        .proof-card-body { padding: 20px; }
+        .proof-card-body p { font-size: 14px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.65; }
+        .prompt-box {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 6px;
+            padding: 12px 14px;
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+        .prompt-box strong { color: var(--accent); }
+        .proof-result {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 13px;
+            color: #166534;
+            background: #f0fdf4;
+            border-radius: 6px;
+            padding: 10px 12px;
+        }
+        .proof-result .arrow { color: var(--accent3); font-weight: 700; flex-shrink: 0; }
+        .pr-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--accent);
+            text-decoration: none;
+            margin-top: 10px;
+        }
+        .pr-link:hover { text-decoration: underline; }
+
+        /* SCREENSHOT */
+        .screenshot-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 24px;
+        }
+        .screenshot-card .sc-header {
+            background: #1e293b;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .sc-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .sc-header span { color: #94a3b8; font-size: 12px; margin-left: 6px; }
+        .screenshot-placeholder {
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            border-radius: 0 0 10px 10px;
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .screenshot-placeholder .icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+        /* BEFORE/AFTER */
+        .ba-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        .ba-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .ba-card .ba-header {
+            padding: 14px 20px;
+            font-weight: 700;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ba-header.before { background: #fef2f2; color: #991b1b; }
+        .ba-header.after { background: #f0fdf4; color: #166534; }
+        .ba-body { padding: 20px; }
+        .ba-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 15px;
+        }
+        .ba-item:last-child { border-bottom: none; }
+        .ba-item .label { color: var(--text-muted); font-size: 13px; width: 100px; flex-shrink: 0; }
+        .ba-item .value { font-weight: 600; }
+        .ba-item .value.red { color: var(--danger); }
+        .ba-item .value.green { color: var(--accent3); }
+
+        /* COMPARISON TABLE */
+        .cmp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+            margin-top: 8px;
+        }
+        .cmp-table th {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .cmp-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        .cmp-table tr:nth-child(even) td { background: #f8fafc; }
+        .badge-before { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-size: 13px; font-weight: 600; }
+        .badge-after { background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-size: 13px; font-weight: 600; }
+
+        /* SPREAD */
+        .spread-bg { background: #f1f5f9; }
+        .spread-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .spread-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 22px;
+        }
+        .spread-card .icon { font-size: 1.6rem; margin-bottom: 12px; }
+        .spread-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+        .spread-card p { font-size: 15px; color: var(--text-muted); line-height: 1.7; }
+
+        /* INSIGHT BOX */
+        .insight-box {
+            background: linear-gradient(135deg, #1e1b4b, #312e81);
+            border-radius: 12px;
+            padding: 28px 32px;
+            color: #fff;
+            margin-top: 32px;
+        }
+        .insight-box h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #c4b5fd; }
+        .insight-box p { font-size: 15px; color: #c7d2fe; line-height: 1.7; }
+        .insight-box ul { margin-top: 12px; padding-left: 18px; }
+        .insight-box ul li { font-size: 15px; color: #c7d2fe; margin-bottom: 6px; line-height: 1.7; }
+
+        /* FOOTER */
+        footer {
+            background: var(--primary);
+            color: #64748b;
+            text-align: center;
+            padding: 28px 24px;
+            font-size: 13px;
+        }
+        footer a { color: #818cf8; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* SCROLL TOP */
+        .scroll-top {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 44px;
+            height: 44px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+        .scroll-top.show { display: flex; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="nav-logo" href="#">⚡ Cursor Rules × IaC</a>
+    <div class="nav-links">
+        <a href="#problem">배경</a>
+        <a href="#structure">Rules 구조</a>
+        <a href="#proof">AI 증빙</a>
+        <a href="#compare">전후 비교</a>
+        <a href="#spread">확산</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-badge">AI-WORKER · R&D실 인프라팀</div>
+    <h1>Cursor <span>"Rules"</span>로<br>IaC를 표준화하다</h1>
+    <p>반복되는 Terraform 작업, 팀마다 다른 코딩 방식, 신규 입사자의 긴 온보딩.<br>
+    Cursor Rules + Gemini Gems으로 이 세 가지를 한꺼번에 해결했습니다.</p>
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <span class="val">67%</span>
+            <span class="lbl">PR 작업시간 단축<br>(3일 → 1일)</span>
+        </div>
+        <div class="hero-stat">
+            <span class="val">6개</span>
+            <span class="lbl">기술스택별 Rules<br>폴더 분리</span>
+        </div>
+        <div class="hero-stat">
+            <span class="val">2종</span>
+            <span class="lbl">Gemini Gems<br>AI 전문가 역할</span>
+        </div>
+        <div class="hero-stat">
+            <span class="val">1일</span>
+            <span class="lbl">신규 입사자<br>온보딩 가능</span>
+        </div>
+    </div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem">
+    <div class="wrapper">
+        <div class="section-title">🔍 배경 — <span>무엇이 문제였나요</span></div>
+        <div class="section-desc">GCP + Terraform 기반 IaC를 운영하면서 겪던 반복적인 불편함들입니다.</div>
+        <div class="problem-grid">
+            <div class="problem-card">
+                <div class="icon">💬</div>
+                <h3>AI가 채팅 수준에 머물렀다</h3>
+                <p>Terraform 코드가 필요할 때 AI 채팅창을 열어 질문하고, 답을 복사해 IDE에 붙여넣는 방식. 맥락은 매번 다시 설명해야 했고, 일관성이 없었습니다.</p>
+            </div>
+            <div class="problem-card">
+                <div class="icon">📋</div>
+                <h3>코드 스타일이 사람마다 달랐다</h3>
+                <p>리소스 이름 규칙, 변수 구조, 모듈 패턴이 팀원마다 달라 PR 리뷰마다 기준을 맞추는 대화가 반복됐습니다.</p>
+            </div>
+            <div class="problem-card">
+                <div class="icon">🆕</div>
+                <h3>신규 입사자 온보딩이 느렸다</h3>
+                <p>GCP 네트워크 구조, Terraform 패턴, ArgoCD GitOps 흐름을 구두로 설명해야 했고, 매번 같은 내용을 반복해야 했습니다.</p>
+            </div>
+            <div class="problem-card">
+                <div class="icon">🔧</div>
+                <h3>K8s 트러블슈팅이 수동이었다</h3>
+                <p>로컬에서 나오는 로그를 복사해 AI에 붙여넣는 방식. 클러스터 맥락 없이 단발 질문만 가능했습니다.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- GOALS -->
+<section id="goals">
+    <div class="wrapper">
+        <div class="section-title">🎯 개선 목표 &amp; <span>결과</span></div>
+        <div class="section-desc">두 가지 주제를 설정하고, 각각 실행 결과를 도출했습니다.</div>
+        <div class="goal-grid">
+            <div class="goal-card">
+                <span class="tag">✅ 완료</span>
+                <h3>Cursor "Rules"를 활용한 IaC 표준화</h3>
+                <p>Terraform 규칙을 Cursor Rules에 내재화하여 IDE 안에서 파일 맥락과 함께 일관된 코드 작성이 가능하게 합니다.</p>
+                <div class="result">결과물: AGENTS.md + .cursor/rules/ 기술스택별 분리 완료</div>
+            </div>
+            <div class="goal-card">
+                <span class="tag" style="background:rgba(245,158,11,0.1);color:#b45309;">🔜 보류</span>
+                <h3>MCP를 활용한 K8s 트러블슈팅</h3>
+                <p>kubectl, terraform, gcloud를 MCP로 연결해 AI가 클러스터를 직접 조회하며 트러블슈팅하는 방식을 검토했습니다.</p>
+                <div class="result" style="background:#fffbeb;border-color:#f59e0b;color:#92400e;">현재 rules + 터미널 + @문서로 충분 → MCP 없이 Run in terminal로 대응 중</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- STRUCTURE -->
+<section id="structure" class="rules-bg">
+    <div class="wrapper">
+        <div class="section-title">📁 Cursor Rules <span>구조</span></div>
+        <div class="section-desc">단일 .cursorrules 파일에서 시작해, 기술스택별 폴더 구조로 진화했습니다.<br>
+        필요한 폴더만 복사하면 다른 레포/팀에도 1일 내 이식이 가능합니다.</div>
+        <div class="rules-layout">
+            <div>
+                <pre class="code-block"><span class="c-gray"># .cursor/rules/ 디렉토리 구조</span>
+
+<span class="c-cyan">RND-INFRA/</span>
+├── <span class="c-green">AGENTS.md</span>              <span class="c-gray"># AI 에이전트 전역 가이드</span>
+└── <span class="c-cyan">.cursor/rules/</span>
+    ├── <span class="c-green">README.md</span>          <span class="c-gray"># 전체 사용 가이드</span>
+    ├── <span class="c-yellow">meta/</span>              <span class="c-gray"># 전역 · 항상 적용 (alwaysApply)</span>
+    │   └── global.mdc
+    ├── <span class="c-yellow">iac/</span>               <span class="c-gray"># Terraform / IaC</span>
+    │   └── terraform.mdc
+    ├── <span class="c-yellow">gcp/</span>               <span class="c-gray"># GCP 리전 · CIDR · 비용</span>
+    │   └── gcp.mdc
+    ├── <span class="c-yellow">argocd/</span>            <span class="c-gray"># ArgoCD App · GitOps 브랜치</span>
+    │   └── argocd.mdc
+    ├── <span class="c-yellow">k8s/</span>               <span class="c-gray"># K8s 구조 · values · 운영</span>
+    │   └── k8s.mdc
+    └── <span class="c-yellow">docs/</span>              <span class="c-gray"># ADR · 아키텍처 인덱스</span>
+        └── docs.mdc
+
+<span class="c-gray"># 진화 과정</span>
+<span class="c-purple">① .cursorrules</span>  (단일 파일)
+        ↓
+<span class="c-purple">② AGENTS.md + .cursor/rules/</span>  (.mdc 배치)
+        ↓
+<span class="c-purple">③ 기술스택별 하위 디렉토리 분리</span>
+        ↓
+<span class="c-purple">④ globs + alwaysApply 설정 최적화</span></pre>
+            </div>
+            <div class="folder-cards">
+                <div class="folder-card">
+                    <div class="folder-icon">🌐</div>
+                    <div>
+                        <h4>meta/ <span class="badge badge-always">alwaysApply</span></h4>
+                        <p>모든 작업에 항상 적용되는 전역 규칙. 프로젝트 컨텍스트, 커밋 컨벤션, 공통 패턴을 담습니다.</p>
+                    </div>
+                </div>
+                <div class="folder-card">
+                    <div class="folder-icon">🏗️</div>
+                    <div>
+                        <h4>iac/ <span class="badge badge-glob">globs: iac/**</span></h4>
+                        <p>Terraform 코딩 규칙. 리소스 네이밍, variables.tf 구조, 모듈 패턴, 상태 관리 가이드.</p>
+                    </div>
+                </div>
+                <div class="folder-card">
+                    <div class="folder-icon">☁️</div>
+                    <div>
+                        <h4>gcp/ <span class="badge badge-glob">globs: infra/gcp/**</span></h4>
+                        <p>GCP 리전·CIDR·비용 기준. 아키텍처 문서(@문서 연동)를 참고해 네트워크 코드를 생성합니다.</p>
+                    </div>
+                </div>
+                <div class="folder-card">
+                    <div class="folder-icon">🚀</div>
+                    <div>
+                        <h4>argocd/ <span class="badge badge-glob">globs: k8s/argocd/**</span></h4>
+                        <p>ArgoCD Application 구조, GitOps 브랜치 전략, reloader 패턴 등 배포 규칙.</p>
+                    </div>
+                </div>
+                <div class="folder-card">
+                    <div class="folder-icon">⚙️</div>
+                    <div>
+                        <h4>k8s/ <span class="badge badge-glob">globs: k8s/**</span></h4>
+                        <p>K8s 디렉토리 구조, 클러스터/values 작성 기준. Observability·Kafka 가이드 포함.</p>
+                    </div>
+                </div>
+                <div class="folder-card">
+                    <div class="folder-icon">📝</div>
+                    <div>
+                        <h4>docs/ <span class="badge badge-glob">globs: docs/**</span></h4>
+                        <p>ADR 작성 형식, 아키텍처 문서 인덱스. @문서 멘션 시 AI가 자동으로 참고합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="insight-box">
+            <h3>💡 Cursor Rules vs Gemini Gems — 역할 분담</h3>
+            <p>두 도구는 경쟁 관계가 아니라 <strong>상호 보완</strong>입니다.</p>
+            <ul>
+                <li><strong>Gemini Gems (2종)</strong> — 브라우저/채팅 단발 조언. 설계 아이디어, 코드 리뷰 질문, 빠른 확인에 활용.</li>
+                <li><strong>Cursor Rules</strong> — IDE 안에서 파일 맥락과 함께 일관 적용. 실제 코드 작성 시 규칙이 자동 주입됩니다.</li>
+                <li>Cursor 없이 Gems만 써도 되고, Cursor를 쓰면 Rules까지 함께 적용되어 더 빠르게 작업할 수 있습니다.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- AI PROOF -->
+<section id="proof">
+    <div class="wrapper">
+        <div class="section-title">🤖 AI 활용 <span>증빙</span></div>
+        <div class="section-desc">실제 업무에서 Cursor Agent가 어떻게 동작했는지 두 가지 사례입니다.</div>
+        <div class="proof-grid">
+            <div class="proof-card">
+                <div class="proof-card-header">
+                    <div class="num">1</div>
+                    <h3>Terraform 모듈 추가 — @파일 멘션으로 코드 자동 생성</h3>
+                </div>
+                <div class="proof-card-body">
+                    <p>신규 GCP 리소스를 추가할 때 아키텍처 문서와 IaC 규칙을 직접 @로 붙이자, Agent가 변수·리소스 블록을 한 번에 제안했습니다.</p>
+                    <div class="prompt-box">
+                        <strong>@</strong>docs/architecture/gcp-network-cidr.md
+                        <strong>@</strong>iac/terraform.mdc<br><br>
+                        → Agent가 variables.tf / main.tf 블록 자동 제안<br>
+                        → 검토 후 PR에 반영
+                    </div>
+                    <div class="proof-result">
+                        <span class="arrow">✓</span>
+                        <span>맥락 재설명 없이 규칙에 맞는 코드가 바로 생성됨. 네이밍·구조 수정 최소화.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="proof-card">
+                <div class="proof-card-header">
+                    <div class="num">2</div>
+                    <h3>dev 환경 VPN 구성 — 디렉토리 멘션으로 완전 자동 생성</h3>
+                </div>
+                <div class="proof-card-body">
+                    <p>VPN 신규 구성 시 현재 네트워크 디렉토리를 멘션하자, Agent가 CIDR 문서와 Terraform Rules를 스스로 참고하여 코드와 문서를 모두 생성했습니다.</p>
+                    <div class="prompt-box">
+                        <strong>@</strong>infra/gcp/envs/dev/host_project/dev-network<br><br>
+                        → Agent가 자동으로 참고:<br>
+                        &nbsp;&nbsp;docs/architecture/gcp-network-cidr.md<br>
+                        &nbsp;&nbsp;iac/terraform.mdc<br><br>
+                        → vpn.tf + README-VPN.md 생성
+                    </div>
+                    <div class="proof-result">
+                        <span class="arrow">✓</span>
+                        <span>코드 + 문서 동시 생성. 기존 3일 작업이 1일로 단축.</span>
+                    </div>
+                    <a class="pr-link" href="https://github.com/VntgCorp/RND-INFRA/pull/30" target="_blank">
+                        🔗 관련 GitHub PR #30 보기
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="screenshot-card">
+            <div class="sc-header">
+                <div class="sc-dot" style="background:#ef4444;"></div>
+                <div class="sc-dot" style="background:#f59e0b;"></div>
+                <div class="sc-dot" style="background:#10b981;"></div>
+                <span>Cursor 코드 작성 하는 과정</span>
+            </div>
+            <img src="code_1.png" alt="Cursor 코드 작성 하는 과정" style="width:100%;display:block;border-radius:0 0 10px 10px;">
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- COMPARE -->
+<section id="compare">
+    <div class="wrapper">
+        <div class="section-title">📊 전후 <span>비교</span></div>
+        <div class="section-desc">Cursor Rules 도입 전후로 실제 달라진 점을 수치로 정리했습니다.</div>
+
+        <table class="cmp-table">
+            <thead>
+                <tr>
+                    <th style="width:20%">항목</th>
+                    <th style="width:35%"><span class="badge-before">Before</span> &nbsp;도입 전</th>
+                    <th style="width:35%"><span class="badge-after">After</span> &nbsp;도입 후</th>
+                    <th style="width:10%">개선</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>VPN PR 초안</strong></td>
+                    <td>코드 작성·배포·디버깅·문서 작성 합산 <strong>3일</strong> 예상</td>
+                    <td>@멘션 → vpn.tf + README-VPN.md 동시 생성, <strong>1일</strong> 완료</td>
+                    <td><strong style="color:#10b981;">↓ 67%</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>AI 활용 방식</strong></td>
+                    <td>채팅창 열기 → 맥락 설명 → 코드 복사 붙여넣기 (매번 반복)</td>
+                    <td>IDE 안에서 @파일 멘션 → 프로젝트 맥락 자동 주입 → 바로 적용</td>
+                    <td><strong style="color:#10b981;">↑ 일관성</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>코드 스타일</strong></td>
+                    <td>팀원마다 상이, PR 리뷰마다 기준 논의 발생</td>
+                    <td>Terraform Rules가 자동 적용되어 네이밍·구조 일관성 유지</td>
+                    <td><strong style="color:#10b981;">↑ 표준화</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>신규 입사자 온보딩</strong></td>
+                    <td>GCP 구조, Terraform 패턴, ArgoCD 흐름을 담당자가 구두로 반복 설명</td>
+                    <td>AGENTS.md + rules 파일만 공유하면 스스로 첫 Terraform PR까지 3~5단계로 진행 가능</td>
+                    <td><strong style="color:#10b981;">↓ 의존성</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>전체 작업속도</strong></td>
+                    <td>—</td>
+                    <td>코드·문서 작성 체감 20~30% 단축</td>
+                    <td><strong style="color:#10b981;">↓ 20~30%</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- SPREAD -->
+<section id="spread" class="spread-bg">
+    <div class="wrapper">
+        <div class="section-title">🚀 확산 <span>가능성</span></div>
+        <div class="section-desc">.cursor/rules/를 스택별 폴더로 나눈 이유는 재사용 때문입니다.<br>
+        다른 레포·팀도 필요한 폴더만 복사해 1일 내 적용이 가능합니다.</div>
+        <div class="spread-grid">
+            <div class="spread-card">
+                <div class="icon">📦</div>
+                <h3>폴더 단위 이식</h3>
+                <p>동일 GitOps/IaC 레포 구조를 쓰는 팀은 .cursor/rules/ 전체 또는 iac/ + gcp/ 만 복사해 바로 적용 가능합니다.</p>
+            </div>
+            <div class="spread-card">
+                <div class="icon">👋</div>
+                <h3>온보딩 표준화</h3>
+                <p>신규 입사자에게 AGENTS.md + .cursor/rules/README.md만 공유하면 첫 Terraform PR까지 스스로 진행할 수 있습니다.</p>
+            </div>
+            <div class="spread-card">
+                <div class="icon">🤝</div>
+                <h3>Gems와 역할 분담</h3>
+                <p>Cursor 없이 Gems만 쓰는 팀원도 ok, Cursor를 쓰면 Rules까지 자동 적용. 도구 선택의 자유를 유지하면서 표준을 공유합니다.</p>
+            </div>
+            <div class="spread-card">
+                <div class="icon">📈</div>
+                <h3>지속 보강 중</h3>
+                <p>Rules는 한 번 만들고 끝이 아닙니다. 새로운 패턴이 생기거나 놓친 규칙이 발견될 때마다 .mdc 파일을 개선하고 있습니다.</p>
+            </div>
+        </div>
+
+        <div class="insight-box">
+            <h3>🔗 참고 링크</h3>
+            <ul>
+                <li>
+                    <a href="https://github.com/VntgCorp/RND-INFRA/blob/tj-ai/AGENTS.md" target="_blank" style="color:#a5b4fc;">
+                        AGENTS.md — 전체 AI 에이전트 운영 가이드
+                    </a>
+                </li>
+                <li>
+                    <a href="https://github.com/VntgCorp/RND-INFRA/blob/tj-ai/.cursor/rules/README.md" target="_blank" style="color:#a5b4fc;">
+                        .cursor/rules/README.md — Rules 구조 및 사용법
+                    </a>
+                </li>
+                <li>
+                    <a href="https://github.com/VntgCorp/RND-INFRA/pull/30" target="_blank" style="color:#a5b4fc;">
+                        GitHub PR #30 — dev VPN 구성 (AI 활용 사례)
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p>AI-WORKER · R&D실 인프라팀 · Cursor Rules × IaC 표준화</p>
+    <p style="margin-top:6px;">TDD + AI 페어 프로그래밍 (Cursor + Gemini Gems)</p>
+</footer>
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+    window.addEventListener('scroll', () => {
+        const btn = document.getElementById('scrollTop');
+        btn.classList.toggle('show', window.scrollY > 400);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkAdmin - 사외접속시스템 관리 페이지</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #10b981;
+            --accent2: #6366f1;
+            --danger: #ef4444;
+            --warn: #f59e0b;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background: var(--bg); color: var(--text);
+            font-size: 16px; line-height: 1.7;
+        }
+
+        nav {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--primary); height: 60px;
+            display: flex; align-items: center;
+            padding: 0 2rem; gap: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+        .nav-logo { color: #fff; font-size: 1rem; font-weight: 700; margin-right: auto; text-decoration: none; }
+        .nav-links { display: flex; gap: 1.2rem; }
+        .nav-links a { color: #94a3b8; text-decoration: none; font-size: 13px; transition: color .2s; }
+        .nav-links a:hover { color: #fff; }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, #0f172a 0%, #0a2a1a 50%, #0f172a 100%);
+            color: #fff; padding: 64px 24px 56px; text-align: center;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.4);
+            color: #6ee7b7; font-size: 13px; padding: 4px 14px;
+            border-radius: 20px; margin-bottom: 20px;
+        }
+        .hero h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 16px; line-height: 1.3; }
+        .hero h1 span { color: #10b981; }
+        .hero p { font-size: 15px; color: #94a3b8; max-width: 700px; margin: 0 auto 28px; line-height: 1.7; }
+        .hero-meta { font-size: 13px; color: #475569; }
+        .hero-stats {
+            display: flex; justify-content: center; gap: 48px;
+            margin-top: 36px; flex-wrap: wrap;
+        }
+        .stat-item { text-align: center; }
+        .stat-num { font-size: 2.2rem; font-weight: 800; color: #10b981; line-height: 1; }
+        .stat-label { font-size: 13px; color: #64748b; margin-top: 4px; }
+
+        section { padding: 60px 24px; }
+        .wrapper { max-width: 1600px; margin: 0 auto; }
+        .section-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .section-title span { color: var(--accent); }
+        .section-desc { font-size: 15px; color: var(--text-muted); margin-bottom: 36px; line-height: 1.7; }
+        hr.divider { border: none; border-top: 1px solid var(--border); }
+        .alt-bg { background: #f1f5f9; }
+
+        /* TIMELINE */
+        .timeline { display: flex; flex-direction: column; gap: 0; }
+        .tl-item {
+            display: flex; gap: 20px; padding: 16px 0 16px 28px;
+            border-left: 2px solid var(--border); position: relative;
+        }
+        .tl-item::before {
+            content: ''; width: 10px; height: 10px; border-radius: 50%;
+            background: var(--border); position: absolute; left: -6px; top: 22px;
+        }
+        .tl-item.done::before { background: var(--accent); }
+        .tl-item.danger::before { background: var(--danger); }
+        .tl-date { font-size: 13px; font-weight: 700; color: var(--text-muted); min-width: 80px; margin-top: 2px; }
+        .tl-content h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .tl-content p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+        /* FEATURE CARDS */
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .feature-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-top: 4px solid var(--accent); border-radius: 10px; padding: 24px;
+        }
+        .feature-card .icon { font-size: 1.8rem; margin-bottom: 12px; }
+        .feature-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+        .feature-card ul { list-style: none; padding: 0; }
+        .feature-card li { font-size: 15px; color: var(--text-muted); padding: 5px 0; line-height: 1.6; }
+        .feature-card li::before { content: '✓ '; color: var(--accent); font-weight: 700; }
+
+        /* SECURITY COMPARE */
+        .sec-table-wrap { overflow-x: auto; margin-top: 8px; }
+        .sec-table {
+            width: 100%; border-collapse: collapse; font-size: 15px;
+        }
+        .sec-table th {
+            background: var(--primary); color: #94a3b8;
+            padding: 12px 16px; text-align: left; font-size: 13px; font-weight: 600;
+        }
+        .sec-table td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .sec-table tr:hover td { background: #f8fafc; }
+        .badge-critical { background: #fef2f2; color: #991b1b; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+        .badge-high     { background: #fff7ed; color: #9a3412; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+        .badge-medium   { background: #fefce8; color: #854d0e; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+        .badge-low      { background: #f0fdf4; color: #166534; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+        .badge-solved   { background: #f0fdf4; color: #166534; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+        .before-val { color: var(--danger); font-size: 13px; }
+        .after-val  { color: var(--accent);  font-size: 13px; }
+
+        /* RISK SUMMARY */
+        .risk-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        @media (max-width: 640px) { .risk-grid { grid-template-columns: repeat(2, 1fr); } }
+        .risk-card {
+            border-radius: 10px; padding: 20px; text-align: center;
+        }
+        .risk-card .risk-label { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+        .risk-card .risk-before { font-size: 2rem; font-weight: 800; line-height: 1; }
+        .risk-card .risk-arrow { font-size: 13px; color: var(--text-muted); margin: 4px 0; }
+        .risk-card .risk-after  { font-size: 2rem; font-weight: 800; line-height: 1; color: var(--accent); }
+        .critical-card { background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.2); }
+        .critical-card .risk-label { color: #ef4444; }
+        .critical-card .risk-before { color: #ef4444; }
+        .high-card { background: rgba(249,115,22,0.07); border: 1px solid rgba(249,115,22,0.2); }
+        .high-card .risk-label { color: #f97316; }
+        .high-card .risk-before { color: #f97316; }
+        .medium-card { background: rgba(234,179,8,0.07); border: 1px solid rgba(234,179,8,0.2); }
+        .medium-card .risk-label { color: #d97706; }
+        .medium-card .risk-before { color: #d97706; }
+        .low-card { background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.2); }
+        .low-card .risk-label { color: #059669; }
+        .low-card .risk-before { color: #059669; }
+
+        /* TECH */
+        .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .tech-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: 18px 20px;
+            display: flex; align-items: flex-start; gap: 12px;
+        }
+        .tech-icon {
+            width: 38px; height: 38px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; flex-shrink: 0;
+        }
+        .tech-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+        .tech-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+        /* ACCESS */
+        .access-box {
+            background: linear-gradient(135deg, rgba(16,185,129,0.07), rgba(99,102,241,0.07));
+            border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 32px 36px;
+        }
+        .access-box h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .access-url {
+            display: inline-block; margin-top: 14px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 12px 20px;
+            font-family: monospace; font-size: 15px; color: var(--accent2); font-weight: 600;
+        }
+        .access-warn {
+            margin-top: 12px; font-size: 14px; color: var(--danger);
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        /* INSIGHT */
+        .insight-box {
+            background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(99,102,241,0.06));
+            border: 1px solid rgba(16,185,129,0.15);
+            border-radius: 12px; padding: 28px 32px; margin-top: 36px;
+        }
+        .insight-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+        .insight-box ul { list-style: none; padding: 0; }
+        .insight-box li { font-size: 15px; color: var(--text-muted); padding: 5px 0; line-height: 1.65; }
+        .insight-box li::before { content: '✦ '; color: var(--accent); }
+
+        footer {
+            background: var(--primary); color: #475569;
+            text-align: center; padding: 28px 24px; font-size: 13px;
+        }
+        .scroll-top {
+            position: fixed; bottom: 28px; right: 28px;
+            background: var(--accent); color: #fff; border: none;
+            border-radius: 50%; width: 44px; height: 44px;
+            font-size: 18px; cursor: pointer; opacity: 0; transition: opacity .3s;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.4);
+        }
+        .scroll-top.show { opacity: 1; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="nav-logo" href="#">🔐 LinkAdmin</a>
+    <div class="nav-links">
+        <a href="#background">배경</a>
+        <a href="#features">주요 기능</a>
+        <a href="#security">보안 개선</a>
+        <a href="#tech">기술 스택</a>
+        <a href="#access">접속 안내</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-badge">AI-WORKER · 플랫폼인프라팀</div>
+    <h1>LinkAdmin<br><span>사외접속시스템 관리 페이지</span></h1>
+    <p>웹 취약점 진단에서 발견된 Critical 보안 이슈를 계기로,<br>
+    JSP/Java 기반 관리 페이지를 Next.js + AI 보안 가이드 기반으로 전면 재구축했습니다.</p>
+    <div class="hero-meta">플랫폼인프라팀 · 2026</div>
+    <div class="hero-stats">
+        <div class="stat-item">
+            <div class="stat-num">11건</div>
+            <div class="stat-label">Before 보안 취약점</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">1건</div>
+            <div class="stat-label">After (Low만 잔존)</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">Critical</div>
+            <div class="stat-label">2건 → 0건 완전 해결</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">AI</div>
+            <div class="stat-label">Security 가이드 기반 재구현</div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- BACKGROUND -->
+<section id="background">
+    <div class="wrapper">
+        <div class="section-title">📜 <span>추진 배경</span></div>
+        <div class="section-desc">사외접속시스템 관리 페이지는 수년에 걸쳐 보안 이슈가 누적되었고, 결국 전면 재구축으로 이어졌습니다.</div>
+        <div class="timeline">
+            <div class="tl-item done">
+                <div class="tl-date">2023 이전</div>
+                <div class="tl-content">
+                    <h4>SQL 직접 사용 시대</h4>
+                    <p>세아웍스 중계DB에서 SQL을 직접 실행하여 사용자 관리. 개발 환경 없이 운영.</p>
+                </div>
+            </div>
+            <div class="tl-item done">
+                <div class="tl-date">2023 3분기</div>
+                <div class="tl-content">
+                    <h4>1세대 관리 페이지 제작 (JSP/Java)</h4>
+                    <p>사외접속시스템 운영을 위한 기능들을 "사외접속 관리페이지"로 제작. 내부 사용 전용.</p>
+                </div>
+            </div>
+            <div class="tl-item done">
+                <div class="tl-date">2024 1분기</div>
+                <div class="tl-content">
+                    <h4>패스워드 초기화 페이지 추가</h4>
+                    <p>그룹웨어팀 지원으로 동일 서버 내 "패스워드 초기화" 웹페이지 제작 (외부 접근 오픈).</p>
+                </div>
+            </div>
+            <div class="tl-item danger">
+                <div class="tl-date">2024 4분기</div>
+                <div class="tl-content">
+                    <h4>🚨 웹 취약점 진단 — 관리자 계정 우회 취약점 발견</h4>
+                    <p>정기 웹 취약점 진단에서 "관리자 계정 우회 취약점" Critical 이슈 보고.</p>
+                </div>
+            </div>
+            <div class="tl-item done">
+                <div class="tl-date">2025 1분기</div>
+                <div class="tl-content">
+                    <h4>임시 방어 조치 적용</h4>
+                    <p>비 개발 부서의 Secure Coding 직접 개선 불가 판단 → 방화벽 정책, 도메인·Tomcat 사이트 분리로 비담당자 접근 차단.</p>
+                </div>
+            </div>
+            <div class="tl-item done">
+                <div class="tl-date">2026</div>
+                <div class="tl-content">
+                    <h4>✅ AI-Worker 과제 — Next.js 전면 재구축</h4>
+                    <p>AI에게 Security 가이드라인을 제시하고 새로운 관리 페이지를 현대적 기술 스택으로 재구성. Critical·High 취약점 전량 해결.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- FEATURES -->
+<section id="features" class="alt-bg">
+    <div class="wrapper">
+        <div class="section-title">⚙️ <span>주요 기능</span></div>
+        <div class="section-desc">기존 기능을 보안 강화 환경으로 그대로 재구현했습니다.</div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">👥</div>
+                <h3>그룹웨어 사용자 관리</h3>
+                <ul>
+                    <li>사용자 권한 조회</li>
+                    <li>Excel 파일 추출 기능</li>
+                    <li>JWT 기반 인증·접근 제어</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🏢</div>
+                <h3>협력업체 사용자 관리</h3>
+                <ul>
+                    <li>사용자 추가 / 삭제 기능</li>
+                    <li>Excel 파일 추출 기능</li>
+                    <li>중복 ID·번호 서버 측 검증</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📋</div>
+                <h3>관리자 감사 로그</h3>
+                <ul>
+                    <li>관리자 로그인 이력 자동 기록</li>
+                    <li>사용자 조작(추가·삭제) 이력 보존</li>
+                    <li>일자별 로그 파일 자동 생성</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECURITY -->
+<section id="security">
+    <div class="wrapper">
+        <div class="section-title">🛡️ <span>보안 개선</span> 결과</div>
+        <div class="section-desc">AI 코드 분석 기반 보안 진단 결과 (2026-03-10). OWASP Top 10 · KISA · ISO27001 기준.</div>
+
+        <!-- Risk Summary -->
+        <div class="risk-grid" style="margin-bottom:36px;">
+            <div class="risk-card critical-card">
+                <div class="risk-label">Critical</div>
+                <div class="risk-before">2건</div>
+                <div class="risk-arrow">↓</div>
+                <div class="risk-after">0건</div>
+            </div>
+            <div class="risk-card high-card">
+                <div class="risk-label">High</div>
+                <div class="risk-before">3건</div>
+                <div class="risk-arrow">↓</div>
+                <div class="risk-after">0건</div>
+            </div>
+            <div class="risk-card medium-card">
+                <div class="risk-label">Medium</div>
+                <div class="risk-before">4건</div>
+                <div class="risk-arrow">↓</div>
+                <div class="risk-after">0건</div>
+            </div>
+            <div class="risk-card low-card">
+                <div class="risk-label">Low</div>
+                <div class="risk-before">2건</div>
+                <div class="risk-arrow">↓</div>
+                <div class="risk-after">1건</div>
+            </div>
+        </div>
+
+        <!-- Detail Table -->
+        <div class="sec-table-wrap">
+            <table class="sec-table">
+                <thead>
+                    <tr>
+                        <th>취약점 항목</th>
+                        <th>위험도</th>
+                        <th>Before (JSP/Java)</th>
+                        <th>After (Next.js)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>SQL Injection</strong></td>
+                        <td><span class="badge-critical">Critical</span> → <span class="badge-solved">해결</span></td>
+                        <td class="before-val">❌ 문자열 연결로 SQL 직접 삽입</td>
+                        <td class="after-val">✅ 파라미터 바인딩 적용</td>
+                    </tr>
+                    <tr>
+                        <td><strong>DB 자격증명 소스코드 노출</strong></td>
+                        <td><span class="badge-critical">Critical</span> → <span class="badge-solved">해결</span></td>
+                        <td class="before-val">❌ 서버 IP·계정·비밀번호 하드코딩</td>
+                        <td class="after-val">✅ .env.local + .gitignore 적용</td>
+                    </tr>
+                    <tr>
+                        <td><strong>인증 및 관리자 접근 제어</strong></td>
+                        <td><span class="badge-high">High</span> → <span class="badge-solved">해결</span></td>
+                        <td class="before-val">❌ 세션 유효성 검사 미존재</td>
+                        <td class="after-val">✅ JWT + 미들웨어 강제 인증</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CSRF 방어 미적용</strong></td>
+                        <td><span class="badge-high">High</span> → <span class="badge-solved">해결</span></td>
+                        <td class="before-val">❌ 모든 폼에 CSRF 토큰 없음</td>
+                        <td class="after-val">✅ @edge-csrf/nextjs 적용</td>
+                    </tr>
+                    <tr>
+                        <td><strong>세션/쿠키 보안 미흡</strong></td>
+                        <td><span class="badge-high">High</span> → <span class="badge-solved">해결</span></td>
+                        <td class="before-val">❌ Secure·HttpOnly 속성 미설정</td>
+                        <td class="after-val">✅ JWT + Secure/HttpOnly 설정</td>
+                    </tr>
+                    <tr>
+                        <td><strong>보안 HTTP 헤더 미설정</strong></td>
+                        <td><span class="badge-high">High</span> → <span class="badge-solved">해결</span></td>
+                        <td class="before-val">❌ 보안 헤더 전무</td>
+                        <td class="after-val">✅ next.config.js 6종 헤더 적용</td>
+                    </tr>
+                    <tr>
+                        <td><strong>에러 메시지 정보 노출</strong></td>
+                        <td><span class="badge-medium">Medium</span> → <span class="badge-solved">해결</span></td>
+                        <td class="before-val">❌ 스택 트레이스 그대로 노출</td>
+                        <td class="after-val">✅ 환경별 에러 메시지 분리</td>
+                    </tr>
+                    <tr>
+                        <td><strong>감사 로그 부재</strong></td>
+                        <td><span class="badge-medium">Medium</span> → <span class="badge-solved">해결</span></td>
+                        <td class="before-val">❌ 로그인·조작 이력 없음</td>
+                        <td class="after-val">✅ 일자별 로그 파일 자동 생성</td>
+                    </tr>
+                    <tr>
+                        <td><strong>입력값 검증 부재</strong></td>
+                        <td><span class="badge-medium">Medium</span> → <span class="badge-solved">해결</span></td>
+                        <td class="before-val">❌ 클라이언트·서버 모두 검증 없음</td>
+                        <td class="after-val">✅ 클라이언트 + 서버 이중 검증</td>
+                    </tr>
+                    <tr>
+                        <td><strong>비밀번호 해싱 (잔여)</strong></td>
+                        <td><span class="badge-low">Low</span> (유지)</td>
+                        <td class="before-val">⚠️ SHA-256 (Salt 없음)</td>
+                        <td class="after-val">⚠️ SHA-256 (bcrypt 전환 권고)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="insight-box">
+            <h3>🎯 보안 개선 요약</h3>
+            <ul>
+                <li>Critical 2건 (SQL Injection, DB 자격증명 노출) 완전 해결</li>
+                <li>High 3건 (인증 우회, CSRF, 세션 보안) 완전 해결</li>
+                <li>Medium 4건 (에러 노출, 감사 로그, 입력 검증, 보안 헤더) 완전 해결</li>
+                <li>잔여 권고: 비밀번호 해싱 SHA-256 → bcrypt/argon2 전환, 연 1회 정기 재진단</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- TECH -->
+<section id="tech" class="alt-bg">
+    <div class="wrapper">
+        <div class="section-title">🛠️ <span>기술 스택</span></div>
+        <div class="section-desc">JSP/Java에서 최신 Next.js 풀스택 환경으로 전환했습니다.</div>
+        <div class="tech-grid">
+            <div class="tech-card">
+                <div class="tech-icon" style="background:rgba(0,0,0,0.06);">▲</div>
+                <div>
+                    <h4>Next.js 15</h4>
+                    <p>Server Actions, 미들웨어 기반 접근 제어, 보안 헤더 설정</p>
+                </div>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon" style="background:rgba(99,102,241,0.1);">⚛️</div>
+                <div>
+                    <h4>React + Tailwind CSS</h4>
+                    <p>모던 UI 컴포넌트, 반응형 디자인</p>
+                </div>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon" style="background:rgba(16,185,129,0.1);">🔑</div>
+                <div>
+                    <h4>next-auth</h4>
+                    <p>JWT 기반 인증, Secure/HttpOnly 쿠키, 세션 관리</p>
+                </div>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon" style="background:rgba(249,115,22,0.1);">📊</div>
+                <div>
+                    <h4>better-xlsx</h4>
+                    <p>사용자 목록 Excel 파일 생성 및 다운로드</p>
+                </div>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon" style="background:rgba(239,68,68,0.1);">🛡️</div>
+                <div>
+                    <h4>@edge-csrf/nextjs</h4>
+                    <p>CSRF 토큰 기반 폼 위조 방지</p>
+                </div>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon" style="background:rgba(234,179,8,0.1);">✨</div>
+                <div>
+                    <h4>AI (Antigravity 1.19.6)</h4>
+                    <p>Security 가이드라인 기반 코드 생성, 취약점 패턴 자동 적용</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ACCESS -->
+<section id="access">
+    <div class="wrapper">
+        <div class="section-title">🔑 <span>접속 안내</span></div>
+        <div class="section-desc">내부 관계자만 접근 가능한 관리 시스템입니다.</div>
+        <div class="access-box">
+            <h3>관리 페이지 접속</h3>
+            <p style="font-size:15px;color:var(--text-muted);">사외접속시스템 담당자 계정으로 로그인하여 이용합니다.</p>
+            <div class="access-url">https://linkadmin.seah.co.kr</div>
+            <p class="access-warn">⚠️ 개인정보가 포함되어 있습니다. 관계자 외 접근 금지.</p>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p>LinkAdmin — 사외접속시스템 관리 페이지 · 플랫폼인프라팀</p>
+</footer>
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+    window.addEventListener('scroll', () => {
+        document.getElementById('scrollTop').classList.toggle('show', window.scrollY > 400);
+    });
+</script>
+</body>
+</html>

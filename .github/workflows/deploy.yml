@@ -1,0 +1,60 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: ["master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build with Jekyll
+        run: bundle exec jekyll build
+        env:
+          JEKYLL_ENV: production
+
+      - name: Inject PIN hashes
+        run: |
+          sed -i "s/__ADMIN_PIN_HASH__/${{ secrets.ADMIN_PIN_HASH }}/g" \
+            _site/gemini_html/GDEDSE/index.html
+          sed -i "s/__PRIVATE_PIN_HASH__/${{ secrets.PRIVATE_PIN_HASH }}/g" \
+            _site/gemini_html/private/index.html
+        env:
+          ADMIN_PIN_HASH: ${{ secrets.ADMIN_PIN_HASH }}
+          PRIVATE_PIN_HASH: ${{ secrets.PRIVATE_PIN_HASH }}
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

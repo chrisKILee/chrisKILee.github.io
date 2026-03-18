@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Private</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #111111;
+      --card-bg: #f9fafb;
+      --font: 'Inter', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+    /* PIN SCREEN */
+    .pin-screen { width: 100%; max-width: 360px; padding: 0 24px; text-align: center; }
+    .pin-icon { font-size: 2.5rem; margin-bottom: 16px; }
+    .pin-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
+    .pin-subtitle { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 32px; }
+    .pin-input {
+      width: 100%; padding: 14px 16px; font-size: 1.5rem; letter-spacing: 0.4em;
+      text-align: center; border: 1.5px solid var(--border); border-radius: 10px;
+      font-family: var(--font); outline: none; transition: border-color 0.15s;
+    }
+    .pin-input:focus { border-color: var(--accent); }
+    .pin-error { color: #dc2626; font-size: 0.82rem; min-height: 1.4em; margin-top: 8px; }
+    .pin-btn {
+      margin-top: 16px; width: 100%; padding: 13px; background: var(--accent);
+      color: white; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; font-family: var(--font); transition: opacity 0.15s;
+    }
+    .pin-btn:hover { opacity: 0.85; }
+
+    /* FILE LIST */
+    .list-screen { display: none; width: 100%; max-width: 720px; padding: 40px 24px; }
+    .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .list-title { font-size: 1.15rem; font-weight: 700; }
+    .list-logout { font-size: 0.8rem; color: var(--text-muted); cursor: pointer; background: none; border: none; font-family: var(--font); }
+    .list-logout:hover { color: var(--text); }
+    .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+    .file-card {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; text-decoration: none; display: block;
+    }
+    .file-card:hover { border-color: #9ca3af; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .file-badge { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+    .file-name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    body.list-mode { align-items: flex-start; }
+  </style>
+</head>
+<body>
+
+  <!-- PIN 입력 화면 -->
+  <div class="pin-screen" id="pinScreen">
+    <div class="pin-icon">🔒</div>
+    <div class="pin-title">Private</div>
+    <div class="pin-subtitle">6자리 PIN을 입력하세요</div>
+    <input type="password" inputmode="numeric" maxlength="6" class="pin-input"
+           id="pinInput" placeholder="000000" autocomplete="off"
+           onkeydown="if(event.key==='Enter')submitPin()">
+    <div class="pin-error" id="pinError"></div>
+    <button class="pin-btn" onclick="submitPin()">확인</button>
+  </div>
+
+  <!-- 파일 목록 화면 -->
+  <div class="list-screen" id="listScreen">
+    <div class="list-header">
+      <span class="list-title">🔒 Private</span>
+      <button class="list-logout" onclick="logout()">잠금</button>
+    </div>
+    <div class="file-grid" id="fileGrid"></div>
+  </div>
+
+  <script>
+    const PIN_HASH = '0001ae52a920c36edc7ab364ea58a58ca725f0ad44c02ba74ecefe08bb2b91a3'; // GitHub Actions가 실제 SHA-256으로 치환
+    const SESSION_KEY = 'private_pin_ok';
+
+    // 파일 목록 — 관리자가 직접 관리
+    const FILES = [
+      // { name: '파일 표시명', file: 'filename.html', memo: '메모 (선택)' },
+    ];
+
+    async function sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function submitPin() {
+      const pin = document.getElementById('pinInput').value.trim();
+      if (!/^\d{6}$/.test(pin)) {
+        document.getElementById('pinError').textContent = '6자리 숫자를 입력하세요';
+        return;
+      }
+      const hash = await sha256(pin);
+      if (hash === PIN_HASH) {
+        sessionStorage.setItem(SESSION_KEY, '1');
+        showList();
+      } else {
+        document.getElementById('pinError').textContent = '잘못된 PIN입니다';
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinInput').focus();
+      }
+    }
+
+    function showList() {
+      document.getElementById('pinScreen').style.display = 'none';
+      document.getElementById('listScreen').style.display = 'block';
+      document.body.classList.add('list-mode');
+      renderFiles();
+    }
+
+    function renderFiles() {
+      const grid = document.getElementById('fileGrid');
+      if (!FILES.length) {
+        grid.innerHTML = '<p style="color:#9ca3af;font-size:0.875rem;">등록된 파일이 없습니다.</p>';
+        return;
+      }
+      grid.innerHTML = FILES.map(f => `
+        <a class="file-card" href="${f.file}">
+          <div class="file-badge">${f.memo || 'PRIVATE'}</div>
+          <div class="file-name">${f.name}</div>
+        </a>`).join('');
+    }
+
+    function logout() {
+      sessionStorage.removeItem(SESSION_KEY);
+      document.getElementById('listScreen').style.display = 'none';
+      document.getElementById('pinScreen').style.display = 'block';
+      document.body.classList.remove('list-mode');
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinInput').focus();
+    }
+
+    // 세션 유지 확인
+    if (sessionStorage.getItem(SESSION_KEY) === '1') {
+      showList();
+    } else {
+      setTimeout(() => document.getElementById('pinInput').focus(), 100);
+    }
+  </script>
+</body>
+</html>

@@ -107,6 +107,28 @@
 
     body.admin-mode .nav-btn { display: inline-flex; }
 
+    .nav-btn-admin-toggle {
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-btn-admin-toggle:hover { background: #f3f4f6; color: var(--text); }
+    body.admin-mode .nav-btn-admin-toggle {
+      background: #fee2e2;
+      color: var(--admin-accent);
+      border-color: #fca5a5;
+    }
+
     /* ===== HELP MODAL ===== */
     #helpModal { z-index: 600; }
     .help-modal {
@@ -448,6 +470,9 @@
           <button class="nav-btn nav-btn-primary" onclick="exportConfig()">
             <i class="fas fa-download"></i> Export site.json
           </button>
+          <button class="nav-btn-admin-toggle" id="adminToggleBtn" onclick="toggleAdminMode()">
+            <i class="fas fa-lock"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -709,6 +734,21 @@
     </div>
   </div>
 
+  <!-- PIN MODAL -->
+  <div id="pinModal" class="modal-overlay">
+    <div class="modal">
+      <h3>🔐 관리자 인증</h3>
+      <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:16px;">6자리 PIN을 입력하세요.</p>
+      <input type="password" inputmode="numeric" maxlength="6" class="modal-field" id="pinInput"
+             placeholder="000000" onkeydown="if(event.key==='Enter')submitPin()">
+      <p id="pinError" style="color:#dc2626;font-size:0.8rem;min-height:1.4em;margin-top:4px;"></p>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closePinModal()">취소</button>
+        <button class="btn-primary" onclick="submitPin()">확인</button>
+      </div>
+    </div>
+  </div>
+
   <div id="moveFileModal" class="modal-overlay" onclick="if(event.target===this)closeMoveModal()">
     <div class="modal move-modal">
       <h3>📂 파일 이동</h3>
@@ -724,11 +764,13 @@
     // =============================================
     // STATE
     // =============================================
-    const STORAGE_KEY = 'gdedse_site_config_v3';
+    const STORAGE_KEY = 'gdedse_site_config_v4';
     const SITE_JSON_URL = '../site.json';
+    const ADMIN_PIN_HASH = '0001ae52a920c36edc7ab364ea58a58ca725f0ad44c02ba74ecefe08bb2b91a3'; // GitHub Actions가 실제 SHA-256으로 치환
 
     let siteConfig = null;
     let isAdmin = false;
+    let adminPinVerified = sessionStorage.getItem('gdedse_pin_ok') === '1';
 
     // =============================================
     // CONFIG MANAGEMENT
@@ -778,10 +820,10 @@
         }
       });
 
-      // files: visible, order, categoryHash 오버레이 (서버에 없는 파일은 무시)
+      // files: visible, order, categoryHash, memo 오버레이 (서버에 없는 파일은 무시)
       Object.entries(cached.files || {}).forEach(([hash, cFile]) => {
         if (siteConfig.files[hash]) {
-          ['visible', 'order', 'categoryHash'].forEach(k => {
+          ['visible', 'order', 'categoryHash', 'memo'].forEach(k => {
             if (cFile[k] !== undefined) siteConfig.files[hash][k] = cFile[k];
           });
         }
@@ -820,12 +862,83 @@
     }
 
     // =============================================
+    // PIN AUTH
+    // =============================================
+    async function sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    let _pinCallback = null;
+
+    function requirePin(callback) {
+      if (adminPinVerified) { callback(); return; }
+      _pinCallback = callback;
+      showPinModal();
+    }
+
+    function showPinModal() {
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinError').textContent = '';
+      document.getElementById('pinModal').classList.add('show');
+      setTimeout(() => document.getElementById('pinInput').focus(), 40);
+    }
+
+    function closePinModal() {
+      document.getElementById('pinModal').classList.remove('show');
+      _pinCallback = null;
+    }
+
+    async function submitPin() {
+      const pin = document.getElementById('pinInput').value.trim();
+      if (!/^\d{6}$/.test(pin)) {
+        document.getElementById('pinError').textContent = '6자리 숫자를 입력하세요';
+        return;
+      }
+      const hash = await sha256(pin);
+      if (hash === ADMIN_PIN_HASH) {
+        adminPinVerified = true;
+        sessionStorage.setItem('gdedse_pin_ok', '1');
+        closePinModal();
+        if (_pinCallback) { const cb = _pinCallback; _pinCallback = null; cb(); }
+      } else {
+        document.getElementById('pinError').textContent = '잘못된 PIN입니다';
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinInput').focus();
+      }
+    }
+
+    // =============================================
     // ADMIN MODE
     // =============================================
     function checkAdminMode() {
-      const hash = decodeURIComponent(window.location.hash.slice(1));
-      isAdmin = !!(siteConfig && hash === siteConfig.adminKey);
       document.body.classList.toggle('admin-mode', isAdmin);
+      const btn = document.getElementById('adminToggleBtn');
+      if (btn) btn.innerHTML = isAdmin
+        ? '<i class="fas fa-lock-open"></i>'
+        : '<i class="fas fa-lock"></i>';
+    }
+
+    function toggleAdminMode() {
+      if (isAdmin) {
+        exitAdminMode();
+      } else {
+        requirePin(() => {
+          isAdmin = true;
+          checkAdminMode();
+          render();
+          showToast('🔐 어드민 모드 활성화');
+        });
+      }
+    }
+
+    function exitAdminMode() {
+      isAdmin = false;
+      adminPinVerified = false;
+      sessionStorage.removeItem('gdedse_pin_ok');
+      checkAdminMode();
+      render();
+      showToast('🔓 어드민 모드 종료');
     }
 
     // =============================================
@@ -964,8 +1077,8 @@
       const filename = fileCfg.filename;
       const displayName = fileCfg.displayName || filename.replace(/\.[^/.]+$/, '');
       const isHidden = !fileCfg.visible;
-      const linkUrl = `../contents/${fileHash}/${filename}`;
-      const ext = filename.split('.').pop().toUpperCase();
+      const linkUrl = `../${filename}`;
+      const badge = fileCfg.memo ? esc(fileCfg.memo) : filename.split('.').pop().toUpperCase();
       const searchData = `${displayName.toLowerCase()} ${filename.toLowerCase()}`;
 
       const adminBtns = isAdmin ? `
@@ -978,6 +1091,11 @@
                     onclick="event.stopPropagation(); openMoveModal('${fileHash}')"
                     title="다른 카테고리로 이동">
               <i class="fas fa-exchange-alt"></i>
+            </button>
+            <button class="action-btn"
+                    onclick="event.stopPropagation(); editMemo('${fileHash}')"
+                    title="메모 편집">
+              <i class="fas fa-tag"></i>
             </button>` : '';
 
       return `
@@ -986,7 +1104,7 @@
              data-link="${linkUrl}"
              data-file-hash="${fileHash}"
              data-search="${esc(searchData)}">
-          <div class="file-type-badge">${ext}</div>
+          <div class="file-type-badge">${badge}</div>
           <div class="file-title">${esc(displayName)}</div>
           <div class="card-actions">
             <button class="action-btn primary" onclick="event.stopPropagation(); location.href='${linkUrl}'">
@@ -1049,12 +1167,26 @@
     }
 
     function toggleFileVisibility(fileHash) {
+      if (!adminPinVerified) { requirePin(() => toggleFileVisibility(fileHash)); return; }
       const f = siteConfig.files && siteConfig.files[fileHash];
       if (!f) return;
       f.visible = !f.visible;
       persistConfig();
       render();
       showToast(f.visible ? '✅ 파일 표시됨' : '🙈 파일 숨김');
+    }
+
+    function editMemo(fileHash) {
+      if (!adminPinVerified) { requirePin(() => editMemo(fileHash)); return; }
+      const f = siteConfig.files && siteConfig.files[fileHash];
+      if (!f) return;
+      openModal('메모 편집', f.memo || '', false, (val) => {
+        const trimmed = val ? val.trim() : '';
+        if (trimmed) { f.memo = trimmed; } else { delete f.memo; }
+        persistConfig();
+        render();
+        showToast('✅ 메모 저장됨');
+      });
     }
 
     function esc(str) {
@@ -1086,6 +1218,7 @@
     }
 
     function toggleDirVisibility(dirId) {
+      if (!adminPinVerified) { requirePin(() => toggleDirVisibility(dirId)); return; }
       const dir = siteConfig.directories.find(d => d.id === dirId);
       if (!dir) return;
       dir.visible = !dir.visible;
@@ -1095,6 +1228,7 @@
     }
 
     function toggleFolderVisibility(hash) {
+      if (!adminPinVerified) { requirePin(() => toggleFolderVisibility(hash)); return; }
       const cfg = siteConfig.folders[hash];
       if (!cfg) return;
       cfg.visible = !cfg.visible;
@@ -1104,6 +1238,7 @@
     }
 
     function moveDirOrder(dirId, delta) {
+      if (!adminPinVerified) { requirePin(() => moveDirOrder(dirId, delta)); return; }
       const dirs = [...siteConfig.directories].sort((a, b) => a.order - b.order);
       const idx = dirs.findIndex(d => d.id === dirId);
       const swapIdx = idx + delta;
@@ -1119,6 +1254,7 @@
     }
 
     function moveFolderToDir(hash, dirId) {
+      if (!adminPinVerified) { requirePin(() => moveFolderToDir(hash, dirId)); return; }
       const cfg = siteConfig.folders[hash];
       if (!cfg) return;
       cfg.dirId = dirId || null;
@@ -1128,6 +1264,7 @@
     }
 
     function editDirName(dirId) {
+      if (!adminPinVerified) { requirePin(() => editDirName(dirId)); return; }
       const dir = siteConfig.directories.find(d => d.id === dirId);
       if (!dir) return;
       openModal('섹션 이름 변경', dir.name, false, (val) => {
@@ -1141,6 +1278,7 @@
     }
 
     function deleteDir(dirId) {
+      if (!adminPinVerified) { requirePin(() => deleteDir(dirId)); return; }
       const dir = siteConfig.directories.find(d => d.id === dirId);
       if (!dir) return;
       if (!confirm(`"${dir.name}" 섹션을 삭제할까요?\n(하위 카테고리들은 미분류로 이동됩니다.)`)) return;
@@ -1155,6 +1293,7 @@
     }
 
     function addDirectory() {
+      if (!adminPinVerified) { requirePin(() => addDirectory()); return; }
       openModal('새 섹션 이름', '', false, (name) => {
         if (!name || !name.trim()) return;
         const id = 'dir_' + Date.now().toString(36);
@@ -1182,6 +1321,7 @@
     }
 
     function openCreateCategoryModal(dirId) {
+      if (!adminPinVerified) { requirePin(() => openCreateCategoryModal(dirId)); return; }
       _createCategoryDirId = dirId;
       document.getElementById('ccNameInput').value = '';
       document.getElementById('ccSecretInput').value = '';
@@ -1293,6 +1433,7 @@
 
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
+        if (document.getElementById('pinModal').classList.contains('show')) { closePinModal(); return; }
         if (document.getElementById('helpModal').classList.contains('show')) { closeHelp(); return; }
         if (document.getElementById('createCategoryModal').classList.contains('show')) { closeCreateCategoryModal(); return; }
         if (document.getElementById('moveFileModal').classList.contains('show')) { closeMoveModal(); return; }
@@ -1307,6 +1448,7 @@
     let _moveFileHash = null;
 
     function openMoveModal(fileHash) {
+      if (!adminPinVerified) { requirePin(() => openMoveModal(fileHash)); return; }
       _moveFileHash = fileHash;
       const fileCfg = siteConfig.files[fileHash];
       const currentFolder = fileCfg.categoryHash;
@@ -1481,7 +1623,7 @@
       const fileCfg = siteConfig.files && siteConfig.files[fileHash];
       if (!fileCfg) return;
       const base = location.href.split('/GDEDSE/')[0];
-      doCopy(`${base}/contents/${fileHash}/${fileCfg.filename}`);
+      doCopy(`${base}/${fileCfg.filename}`);
     }
 
     function doCopy(text) {
@@ -1513,7 +1655,6 @@
     async function init() {
       try {
         await loadConfig();
-        checkAdminMode();
         render();
         initDragAndDrop();
       } catch (e) {
@@ -1527,10 +1668,10 @@
       }
     }
 
-    window.addEventListener('hashchange', () => { checkAdminMode(); render(); });
+    window.addEventListener('hashchange', () => { render(); });
     window.addEventListener('DOMContentLoaded', init);
   </script>
-  <!-- Version: 2026-03-02 Virtual Directory System v3.1 – file visibility, drag-and-drop -->
+  <!-- Version: 2026-03-18 v4.0 – flat URL, memo field, PIN auth (GitHub Actions) -->
 </body>
 
 </html>

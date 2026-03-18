@@ -1,6 +1,6 @@
 #!/bin/bash
 # ================================================
-# add-file.sh — contents/ 에 새 파일 추가
+# add-file.sh — gemini_html/ 루트에 새 파일 추가 (v4.0)
 # ================================================
 # 사용법:
 #   ./add-file.sh "파일명.html" [표시명] [카테고리해시]
@@ -15,7 +15,6 @@
 set -e
 GEMINI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SITE_JSON="$GEMINI_DIR/site.json"
-CONTENTS_DIR="$GEMINI_DIR/contents"
 
 # ── 인수 확인 ────────────────────────────────────
 if [ $# -lt 1 ]; then
@@ -51,6 +50,16 @@ if [ -z "$DISPLAY_NAME" ]; then
     DISPLAY_NAME="${FILENAME%.html}"
 fi
 
+# ── 파일명 중복 확인 ─────────────────────────────
+TARGET_FILE="$GEMINI_DIR/$FILENAME"
+if [ -f "$TARGET_FILE" ]; then
+    echo ""
+    echo "❌ 오류: '$FILENAME' 이 이미 루트에 존재합니다."
+    echo "   다른 파일명을 사용하세요."
+    echo ""
+    exit 1
+fi
+
 # ── 파일 해시 자동 생성 ──────────────────────────
 FILE_HASH=$(node -e "
   const fs = require('fs');
@@ -71,7 +80,7 @@ echo ""
 echo "📄 새 파일 추가 중..."
 echo "   파일명:  $FILENAME"
 echo "   표시명:  $DISPLAY_NAME"
-echo "   해시:    $FILE_HASH  (영구 URL)"
+echo "   해시:    $FILE_HASH  (site.json 식별자)"
 if [ -n "$CATEGORY_HASH" ]; then
     echo "   카테고리: $CATEGORY_HASH"
 else
@@ -79,13 +88,7 @@ else
 fi
 echo ""
 
-# ── 1. contents/HASH/ 폴더 생성 ──────────────────
-mkdir -p "$CONTENTS_DIR/$FILE_HASH"
-echo "   ✓ contents/$FILE_HASH/ 생성"
-
-# ── 2. 빈 HTML 파일 생성 (없는 경우만) ────────────
-TARGET_FILE="$CONTENTS_DIR/$FILE_HASH/$FILENAME"
-if [ ! -f "$TARGET_FILE" ]; then
+# ── 1. gemini_html/ 루트에 HTML 파일 생성 ─────────
 cat > "$TARGET_FILE" << HTMLEOF
 <!DOCTYPE html>
 <html lang="ko">
@@ -100,12 +103,9 @@ cat > "$TARGET_FILE" << HTMLEOF
 </body>
 </html>
 HTMLEOF
-    echo "   ✓ $FILENAME 파일 생성 (기본 템플릿)"
-else
-    echo "   ✓ $FILENAME 파일 이미 존재 (그대로 사용)"
-fi
+echo "   ✓ $FILENAME 생성 (기본 템플릿)"
 
-# ── 3. site.json 업데이트 ─────────────────────────
+# ── 2. site.json 업데이트 ─────────────────────────
 node -e "
   const fs = require('fs');
   const site = JSON.parse(fs.readFileSync('$SITE_JSON', 'utf8'));
@@ -133,13 +133,13 @@ echo ""
 echo "✅ 완료!"
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  파일 영구 URL (절대 변경 안됨)"
-echo "  로컬:  http://localhost:8000/contents/$FILE_HASH/$FILENAME"
-echo "  배포:  https://page.chrisnolja.dev/gemini_html/contents/$FILE_HASH/$FILENAME"
+echo "  파일 URL"
+echo "  로컬:  http://localhost:8080/gemini_html/$FILENAME"
+echo "  배포:  https://page.chrisnolja.dev/gemini_html/$FILENAME"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "📌 다음 단계:"
 echo "   1. $TARGET_FILE 편집"
 echo "   2. 어드민 모드에서 카테고리 배정 (또는 site.json 직접 수정)"
-echo "   3. git add contents/$FILE_HASH/ site.json && git commit && git push"
+echo "   3. git add $FILENAME site.json && git commit && git push"
 echo ""
