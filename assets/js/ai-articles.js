@@ -568,5 +568,35 @@ const AI_ARTICLES = [
         { date: "2026-03-13", event: "AI 코딩 에이전트 보안 반복 실수 문제 관련 추가 보도" }
       ]
     }
+  },
+  {
+    id: "codex-005",
+    category: "codex",
+    title: "GPT-5.4 mini·nano 출시 — 서브에이전트 시대 겨냥한 최강 소형 모델",
+    date: "2026-03-17",
+    summary: "400K 컨텍스트, 2배 빠른 속도, SWE-bench Pro 54.4% — OpenAI 역대 최고 성능 소형 모델 출시",
+    originalUrl: "https://openai.com/index/introducing-gpt-5-4-mini-and-nano/",
+    detail: {
+      overview: "OpenAI가 2026년 3월 17일 GPT-5.4 mini와 GPT-5.4 nano를 공개했다. GPT-5.4 mini는 GPT-5 mini 대비 2배 이상 빠르며 코딩·추론·멀티모달·도구 사용 전 영역에서 성능이 대폭 향상됐다. GPT-5.4 nano는 분류·데이터 추출·경량 서브에이전트 작업에 최적화된 가장 빠르고 저렴한 모델이다. 두 모델 모두 400,000 토큰 컨텍스트 윈도우를 지원하며 서브에이전트 시대를 겨냥해 설계됐다.",
+      keyPoints: [
+        { label: "핵심 기능", value: "텍스트·이미지 입력, 도구 호출, 웹 검색, 파일 검색, 컴퓨터 사용, 스킬 지원 (mini). nano는 분류·데이터 추출·랭킹·경량 서브에이전트 특화" },
+        { label: "성능 수치", value: "SWE-bench Pro 54.4% (GPT-5 mini 45.7%), OSWorld 컴퓨터 사용 72.1% (GPT-5 mini 42.0%), 도구 호출 tau2-bench 93.4%" },
+        { label: "컨텍스트 / 속도", value: "400,000 토큰 컨텍스트 윈도우 공통 지원, GPT-5.4 mini는 GPT-5 mini 대비 2배 이상 빠름" },
+        { label: "가격 (API)", value: "mini: 입력 $0.75/1M · 출력 $4.50/1M. nano: 입력 $0.20/1M · 출력 $1.25/1M" },
+        { label: "가용 채널", value: "mini: ChatGPT 무료·Go 플랜, Codex, API. nano: API 전용 (ChatGPT 미지원)" },
+        { label: "제한 / 주의", value: "mini 롱 컨텍스트(MRCR v2 64K-128K) 47.7%로 full GPT-5.4(86.0%) 대비 큰 격차. nano는 멀티스텝 복잡 추론에 부적합" }
+      ],
+      comparison: [
+        { "모델": "GPT-5.4 mini", "SWE-bench Pro": "54.4%", "OSWorld": "72.1%", "입력 가격/1M": "$0.75", "속도": "GPT-5 mini 대비 2배+" },
+        { "모델": "GPT-5.4 nano", "SWE-bench Pro": "—", "OSWorld": "—", "입력 가격/1M": "$0.20", "속도": "최고속 (최저 지연)" },
+        { "모델": "GPT-5 mini (이전)", "SWE-bench Pro": "45.7%", "OSWorld": "42.0%", "입력 가격/1M": "$0.25(참고)", "속도": "기준" },
+        { "모델": "GPT-5.4 (full)", "SWE-bench Pro": "57.7%", "OSWorld": "—", "입력 가격/1M": "더 높음", "속도": "느림" }
+      ],
+      timeline: [
+        { date: "2026-03-17", event: "GPT-5.4 mini 및 GPT-5.4 nano 공식 출시 발표" },
+        { date: "2026-03-17", event: "ChatGPT 무료·Go 플랜에 GPT-5.4 mini 즉시 제공 시작" },
+        { date: "2026-03-17", event: "OpenAI API 및 Azure AI Foundry를 통해 GPT-5.4 mini·nano 제공 개시" }
+      ]
+    }
   }
 ];
