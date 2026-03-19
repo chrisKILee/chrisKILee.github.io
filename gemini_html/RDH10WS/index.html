@@ -207,6 +207,26 @@
                 transform: scale(1);
             }
         }
+
+        .new-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.62rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            animation: pulseBadge 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes pulseBadge {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.75; transform: scale(0.95); }
+        }
     </style>
 </head>
 
@@ -240,7 +260,7 @@
                 filesData = Object.entries(site.files || {})
                     .filter(([, f]) => f.categoryHash === CATEGORY_HASH && f.visible !== false)
                     .sort((a, b) => (a[1].order || 999) - (b[1].order || 999))
-                    .map(([hash, f]) => ({ hash, filename: f.filename, displayName: f.displayName }));
+                    .map(([hash, f]) => ({ hash, filename: f.filename, displayName: f.displayName, createdAt: f.createdAt }));
                 renderGrid(); checkHash();
             } catch (e) { showStealth404(); }
         }
@@ -248,7 +268,8 @@
         function renderGrid() {
             const container = document.getElementById('filesContainer');
             container.innerHTML = filesData.map(file => `
-                <div class="file-card" onclick="location.href='../${file.filename}'">
+                <div class="file-card" onclick="location.href='../${file.filename}'" style="position:relative">
+                    ${(file.createdAt && (Date.now()-new Date(file.createdAt))<604800000)?'<span class="new-badge">NEW</span>':''}
                     <div class="file-icon"><i class="fas fa-leaf"></i></div>
                     <div class="file-name">${file.displayName}</div>
                 </div>`).join('');
