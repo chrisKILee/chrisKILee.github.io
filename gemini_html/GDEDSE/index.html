@@ -325,8 +325,28 @@
       transition: all 0.2s;
       display: flex;
       flex-direction: column;
+      position: relative;
     }
     .file-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: #d1d5db; }
+    .new-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.6rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 10px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      animation: pulseBadge 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes pulseBadge {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.75; transform: scale(0.95); }
+    }
 
     .file-type-badge { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 9px; }
     .file-title { font-size: 0.95rem; font-weight: 600; line-height: 1.45; color: var(--text); flex-grow: 1; margin-bottom: 12px; }
@@ -1098,12 +1118,15 @@
               <i class="fas fa-tag"></i>
             </button>` : '';
 
+      const isNew = fileCfg.createdAt && (Date.now() - new Date(fileCfg.createdAt)) < 604800000;
+
       return `
         <div class="file-card${isHidden ? ' is-hidden' : ''}"
              onclick="location.href='${linkUrl}'"
              data-link="${linkUrl}"
              data-file-hash="${fileHash}"
              data-search="${esc(searchData)}">
+          ${isNew ? '<span class="new-badge">NEW</span>' : ''}
           <div class="file-type-badge">${badge}</div>
           <div class="file-title">${esc(displayName)}</div>
           <div class="card-actions">
