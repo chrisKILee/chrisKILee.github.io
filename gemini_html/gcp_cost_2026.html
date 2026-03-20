@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GCP 비용 현황 2026 — 플랫폼서비스실 & 테루아</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'navy':  '#1e3a8a',
+            'crimson': '#b91c1c',
+            'gold':  '#d97706',
+          },
+          fontFamily: {
+            sans: ["'Noto Sans KR'", 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans KR', sans-serif; background-color: #f1f5f9; word-break: keep-all; }
+    .hero-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 55%, #1d4ed8 100%); }
+    .section-title { color: #1e3a8a; font-weight: 700; border-left: 4px solid #b91c1c; padding-left: 12px; }
+    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.10); }
+    .badge-navy  { background: #dbeafe; color: #1e3a8a; }
+    .badge-red   { background: #fee2e2; color: #b91c1c; }
+    .badge-gold  { background: #fef3c7; color: #92400e; }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-slate { background: #f1f5f9; color: #475569; }
+    .timeline-line { position: relative; }
+    .timeline-line::before { content:''; position:absolute; left:16px; top:0; bottom:0; width:2px; background:#e2e8f0; }
+    .timeline-dot { position:relative; z-index:1; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+    .cost-bar-bg { background: #e2e8f0; border-radius: 99px; height: 10px; overflow: hidden; }
+    .cost-bar    { height: 10px; border-radius: 99px; transition: width 0.6s ease; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { padding: 10px 14px; text-align: left; font-size: 14px; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; font-weight: 700; color: #374151; font-size: 13px; text-transform: uppercase; letter-spacing: 0.03em; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+    .total-row td { font-weight: 700; background: #eff6ff; color: #1e3a8a; border-top: 2px solid #bfdbfe; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- 히어로 헤더 -->
+  <header class="hero-gradient text-white py-14 px-6">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex items-center gap-2 text-blue-200 text-sm mb-4">
+        <span>플랫폼서비스실</span>
+        <span>›</span>
+        <span>클라우드 운영</span>
+        <span>›</span>
+        <span class="text-white font-medium">GCP 비용 현황</span>
+      </div>
+      <h1 class="text-4xl font-black mb-3 leading-tight">GCP 비용 현황 2026</h1>
+      <p class="text-blue-100 text-lg mb-6">플랫폼서비스실 및 테루아 프로젝트 Google Cloud Platform 비용 정리</p>
+      <div class="flex flex-wrap gap-3">
+        <span class="bg-white/20 text-white text-sm px-4 py-1.5 rounded-full font-medium">☁️ Google Cloud Platform</span>
+        <span class="bg-white/20 text-white text-sm px-4 py-1.5 rounded-full font-medium">🏢 플랫폼서비스실</span>
+        <span class="bg-white/20 text-white text-sm px-4 py-1.5 rounded-full font-medium">🌿 테루아</span>
+        <span class="bg-red-500/80 text-white text-sm px-4 py-1.5 rounded-full font-medium">기준: 2026년</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 요약 스탯 카드 -->
+  <section class="max-w-5xl mx-auto px-6 -mt-6 mb-10">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 text-center card-hover">
+        <div class="text-2xl mb-1">💰</div>
+        <div class="text-xl font-black text-navy">—</div>
+        <div class="text-xs text-slate-500 mt-1">전체 월 평균 비용</div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 text-center card-hover">
+        <div class="text-2xl mb-1">🏢</div>
+        <div class="text-xl font-black text-crimson">—</div>
+        <div class="text-xs text-slate-500 mt-1">플랫폼서비스실</div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 text-center card-hover">
+        <div class="text-2xl mb-1">🌿</div>
+        <div class="text-xl font-black text-gold">—</div>
+        <div class="text-xs text-slate-500 mt-1">테루아</div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 text-center card-hover">
+        <div class="text-2xl mb-1">📅</div>
+        <div class="text-xl font-black text-navy">2026</div>
+        <div class="text-xs text-slate-500 mt-1">기준 연도</div>
+      </div>
+    </div>
+  </section>
+
+  <main class="max-w-5xl mx-auto px-6 pb-16 space-y-12">
+
+    <!-- 섹션 1: 프로젝트 개요 -->
+    <section>
+      <h2 class="section-title text-xl mb-5">프로젝트 개요</h2>
+      <div class="grid md:grid-cols-2 gap-5">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 card-hover">
+          <h3 class="font-bold text-navy mb-3 flex items-center gap-2">🏢 플랫폼서비스실</h3>
+          <p class="text-sm text-slate-600 leading-relaxed mb-4">
+            플랫폼서비스실의 GCP 프로젝트. Cloud Run, GKE, Cloud SQL 등 인프라 서비스 운영 비용을 포함합니다.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="badge-navy text-xs px-2 py-1 rounded-full font-medium">Cloud Run</span>
+            <span class="badge-navy text-xs px-2 py-1 rounded-full font-medium">Cloud SQL</span>
+            <span class="badge-navy text-xs px-2 py-1 rounded-full font-medium">GCS</span>
+            <span class="badge-navy text-xs px-2 py-1 rounded-full font-medium">Networking</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 card-hover">
+          <h3 class="font-bold text-gold mb-3 flex items-center gap-2">🌿 테루아</h3>
+          <p class="text-sm text-slate-600 leading-relaxed mb-4">
+            테루아 프로젝트의 GCP 비용. 서비스 운영에 필요한 컴퓨팅, 스토리지, AI API 비용을 포함합니다.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="badge-gold text-xs px-2 py-1 rounded-full font-medium">Compute Engine</span>
+            <span class="badge-gold text-xs px-2 py-1 rounded-full font-medium">Cloud Storage</span>
+            <span class="badge-gold text-xs px-2 py-1 rounded-full font-medium">AI API</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 섹션 2: 서비스별 비용 상세 -->
+    <section>
+      <h2 class="section-title text-xl mb-5">서비스별 비용 상세</h2>
+
+      <!-- 플랫폼서비스실 테이블 -->
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-5">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+          <span class="text-lg">🏢</span>
+          <h3 class="font-bold text-navy">플랫폼서비스실 — 서비스별 월 비용</h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>서비스</th>
+                <th>용도</th>
+                <th class="text-right">월 비용 (원)</th>
+                <th>비중</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-navy text-xs px-2 py-0.5 rounded-full font-medium">Cloud Run</span></td>
+                <td class="text-slate-600">컨테이너 기반 서비스 실행</td>
+                <td class="text-right font-mono font-bold text-navy">—</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <div class="cost-bar-bg flex-1"><div class="cost-bar bg-navy" style="width:0%"></div></div>
+                    <span class="text-xs text-slate-400 w-8">—%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="badge-navy text-xs px-2 py-0.5 rounded-full font-medium">Cloud SQL</span></td>
+                <td class="text-slate-600">관리형 데이터베이스</td>
+                <td class="text-right font-mono font-bold text-navy">—</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <div class="cost-bar-bg flex-1"><div class="cost-bar bg-blue-400" style="width:0%"></div></div>
+                    <span class="text-xs text-slate-400 w-8">—%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="badge-navy text-xs px-2 py-0.5 rounded-full font-medium">Cloud Storage</span></td>
+                <td class="text-slate-600">파일/오브젝트 저장소</td>
+                <td class="text-right font-mono font-bold text-navy">—</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <div class="cost-bar-bg flex-1"><div class="cost-bar bg-blue-300" style="width:0%"></div></div>
+                    <span class="text-xs text-slate-400 w-8">—%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="badge-slate text-xs px-2 py-0.5 rounded-full font-medium">Networking</span></td>
+                <td class="text-slate-600">트래픽·로드밸런서·CDN</td>
+                <td class="text-right font-mono font-bold text-navy">—</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <div class="cost-bar-bg flex-1"><div class="cost-bar bg-slate-400" style="width:0%"></div></div>
+                    <span class="text-xs text-slate-400 w-8">—%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="badge-slate text-xs px-2 py-0.5 rounded-full font-medium">기타</span></td>
+                <td class="text-slate-600">Logging, Monitoring 등</td>
+                <td class="text-right font-mono font-bold text-navy">—</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <div class="cost-bar-bg flex-1"><div class="cost-bar bg-slate-300" style="width:0%"></div></div>
+                    <span class="text-xs text-slate-400 w-8">—%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="2"><strong>플랫폼서비스실 합계</strong></td>
+                <td class="text-right font-mono">—</td>
+                <td>100%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 테루아 테이블 -->
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+          <span class="text-lg">🌿</span>
+          <h3 class="font-bold text-gold">테루아 — 서비스별 월 비용</h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>서비스</th>
+                <th>용도</th>
+                <th class="text-right">월 비용 (원)</th>
+                <th>비중</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-gold text-xs px-2 py-0.5 rounded-full font-medium">Compute Engine</span></td>
+                <td class="text-slate-600">VM 인스턴스 실행</td>
+                <td class="text-right font-mono font-bold text-gold">—</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <div class="cost-bar-bg flex-1"><div class="cost-bar bg-amber-500" style="width:0%"></div></div>
+                    <span class="text-xs text-slate-400 w-8">—%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="badge-gold text-xs px-2 py-0.5 rounded-full font-medium">Cloud Storage</span></td>
+                <td class="text-slate-600">파일/오브젝트 저장소</td>
+                <td class="text-right font-mono font-bold text-gold">—</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <div class="cost-bar-bg flex-1"><div class="cost-bar bg-amber-400" style="width:0%"></div></div>
+                    <span class="text-xs text-slate-400 w-8">—%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="badge-gold text-xs px-2 py-0.5 rounded-full font-medium">AI / ML API</span></td>
+                <td class="text-slate-600">Vertex AI, Gemini API 등</td>
+                <td class="text-right font-mono font-bold text-gold">—</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <div class="cost-bar-bg flex-1"><div class="cost-bar bg-amber-300" style="width:0%"></div></div>
+                    <span class="text-xs text-slate-400 w-8">—%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="badge-slate text-xs px-2 py-0.5 rounded-full font-medium">기타</span></td>
+                <td class="text-slate-600">Logging, Monitoring 등</td>
+                <td class="text-right font-mono font-bold text-gold">—</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <div class="cost-bar-bg flex-1"><div class="cost-bar bg-slate-300" style="width:0%"></div></div>
+                    <span class="text-xs text-slate-400 w-8">—%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr class="total-row" style="background:#fffbeb; color:#92400e;">
+                <td colspan="2" style="color:#92400e;"><strong>테루아 합계</strong></td>
+                <td class="text-right font-mono" style="color:#92400e;">—</td>
+                <td style="color:#92400e;">100%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 섹션 3: 월별 추이 타임라인 -->
+    <section>
+      <h2 class="section-title text-xl mb-5">월별 비용 추이</h2>
+      <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <div class="timeline-line space-y-6">
+          <div class="flex gap-4 pl-2">
+            <div class="timeline-dot bg-navy text-white">1월</div>
+            <div class="flex-1 pt-1">
+              <div class="font-bold text-navy text-sm">2026년 1월</div>
+              <div class="text-sm text-slate-600 mt-1">플랫폼서비스실: — / 테루아: —</div>
+              <div class="flex flex-wrap gap-2 mt-2">
+                <span class="badge-navy text-xs px-2 py-0.5 rounded-full">합계: —</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-4 pl-2">
+            <div class="timeline-dot bg-blue-600 text-white">2월</div>
+            <div class="flex-1 pt-1">
+              <div class="font-bold text-blue-700 text-sm">2026년 2월</div>
+              <div class="text-sm text-slate-600 mt-1">플랫폼서비스실: — / 테루아: —</div>
+              <div class="flex flex-wrap gap-2 mt-2">
+                <span class="badge-navy text-xs px-2 py-0.5 rounded-full">합계: —</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-4 pl-2">
+            <div class="timeline-dot bg-crimson text-white">3월</div>
+            <div class="flex-1 pt-1">
+              <div class="font-bold text-crimson text-sm">2026년 3월</div>
+              <div class="text-sm text-slate-600 mt-1">플랫폼서비스실: — / 테루아: —</div>
+              <div class="flex flex-wrap gap-2 mt-2">
+                <span class="badge-red text-xs px-2 py-0.5 rounded-full">합계: —</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-4 pl-2">
+            <div class="timeline-dot bg-gold text-white">4월</div>
+            <div class="flex-1 pt-1">
+              <div class="font-bold text-gold text-sm">2026년 4월 (예정)</div>
+              <div class="text-sm text-slate-500 mt-1">예산 계획 기반 추정치</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 섹션 4: 비용 관리 원칙 -->
+    <section>
+      <h2 class="section-title text-xl mb-5">비용 관리 원칙</h2>
+      <div class="grid md:grid-cols-3 gap-5">
+        <div class="bg-blue-50 rounded-2xl border border-blue-200 p-5">
+          <h3 class="font-bold text-navy mb-4">🔑 API 키 & 접근 관리</h3>
+          <ul class="space-y-2 text-sm text-slate-700">
+            <li class="flex items-start gap-2"><span class="text-navy mt-0.5">✓</span>GCP Secret Manager에 API 키 등록</li>
+            <li class="flex items-start gap-2"><span class="text-navy mt-0.5">✓</span>Cloud Run 환경변수로 주입</li>
+            <li class="flex items-start gap-2"><span class="text-navy mt-0.5">✓</span>최소 권한 원칙(Least Privilege) 적용</li>
+            <li class="flex items-start gap-2"><span class="text-navy mt-0.5">✓</span>서비스 계정별 권한 분리</li>
+          </ul>
+        </div>
+        <div class="bg-red-50 rounded-2xl border border-red-200 p-5">
+          <h3 class="font-bold text-crimson mb-4">📊 비용 추적</h3>
+          <ul class="space-y-2 text-sm text-slate-700">
+            <li class="flex items-start gap-2"><span class="text-crimson mt-0.5">✓</span>GCP Billing 대시보드 라벨 기반 분리</li>
+            <li class="flex items-start gap-2"><span class="text-crimson mt-0.5">✓</span>Cloud Logging 자동 수집</li>
+            <li class="flex items-start gap-2"><span class="text-crimson mt-0.5">✓</span>월별 예산 알림 설정</li>
+            <li class="flex items-start gap-2"><span class="text-crimson mt-0.5">✓</span>프로젝트별 청구 계정 분리</li>
+          </ul>
+        </div>
+        <div class="bg-amber-50 rounded-2xl border border-amber-200 p-5">
+          <h3 class="font-bold text-gold mb-4">⚡ 모델 선택 원칙</h3>
+          <ul class="space-y-2 text-sm text-slate-700">
+            <li class="flex items-start gap-2"><span class="text-gold mt-0.5">✓</span>작업 난이도에 맞는 모델 선택</li>
+            <li class="flex items-start gap-2"><span class="text-gold mt-0.5">✓</span>고성능 모델 단순 작업 사용 금지</li>
+            <li class="flex items-start gap-2"><span class="text-gold mt-0.5">✓</span>캐싱으로 중복 API 호출 최소화</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 합계 요약 -->
+    <section>
+      <h2 class="section-title text-xl mb-5">전체 합계 요약</h2>
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>구분</th>
+                <th class="text-right">1월</th>
+                <th class="text-right">2월</th>
+                <th class="text-right">3월</th>
+                <th class="text-right">평균</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>🏢 플랫폼서비스실</td>
+                <td class="text-right font-mono text-navy">—</td>
+                <td class="text-right font-mono text-navy">—</td>
+                <td class="text-right font-mono text-navy">—</td>
+                <td class="text-right font-mono text-navy font-bold">—</td>
+              </tr>
+              <tr>
+                <td>🌿 테루아</td>
+                <td class="text-right font-mono text-gold">—</td>
+                <td class="text-right font-mono text-gold">—</td>
+                <td class="text-right font-mono text-gold">—</td>
+                <td class="text-right font-mono text-gold font-bold">—</td>
+              </tr>
+              <tr class="total-row">
+                <td>합계</td>
+                <td class="text-right font-mono">—</td>
+                <td class="text-right font-mono">—</td>
+                <td class="text-right font-mono">—</td>
+                <td class="text-right font-mono">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 알림 박스 -->
+    <div class="bg-amber-50 border border-amber-300 rounded-2xl p-5 flex gap-3">
+      <span class="text-2xl flex-shrink-0">⚠️</span>
+      <div>
+        <p class="font-bold text-amber-800 mb-1">비용 데이터 업데이트 필요</p>
+        <p class="text-sm text-amber-700">이 문서의 비용 수치(—)는 GCP Billing 콘솔에서 실제 데이터를 확인 후 채워주세요. 실제 청구 금액은 항상 GCP 대시보드를 기준으로 합니다.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-slate-200 py-6 px-6 text-center text-sm text-slate-400">
+    플랫폼서비스실 GCP 비용 현황 · 2026 · 실제 수치는 GCP Billing 콘솔 기준
+  </footer>
+</body>
+</html>
