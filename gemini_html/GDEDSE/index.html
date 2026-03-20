@@ -105,6 +105,9 @@
     .nav-btn-ghost:hover { background: #fee2e2; }
     .nav-btn-help { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
     .nav-btn-help:hover { background: #f3f4f6; color: var(--text); }
+    .nav-btn-github { background: #1a7f37; color: white; border: none; }
+    .nav-btn-github:hover { background: #166d30; }
+    .nav-btn-github.pushing { opacity: 0.7; pointer-events: none; }
 
     body.admin-mode .nav-btn { display: inline-flex; }
 
@@ -544,6 +547,9 @@
           <button class="nav-btn nav-btn-primary" onclick="exportConfig()">
             <i class="fas fa-download"></i> Export site.json
           </button>
+          <button class="nav-btn nav-btn-github" id="githubPushBtn" onclick="openGithubPushModal()">
+            <i class="fab fa-github"></i> GitHub에 저장
+          </button>
           <button class="nav-btn-admin-toggle" id="adminToggleBtn" onclick="toggleAdminMode()">
             <i class="fas fa-lock"></i>
           </button>
@@ -830,6 +836,34 @@
       <div class="modal-actions">
         <button class="btn-secondary" onclick="closePinModal()">취소</button>
         <button class="btn-primary" onclick="submitPin()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GITHUB PUSH MODAL -->
+  <div id="githubModal" class="modal-overlay">
+    <div class="modal">
+      <h3><i class="fab fa-github"></i> GitHub에 저장</h3>
+      <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:16px;">
+        GitHub Personal Access Token을 입력하세요.<br>
+        <span style="font-size:0.78rem;">토큰은 탭을 닫으면 자동 삭제됩니다.</span>
+      </p>
+      <input type="password" class="modal-field" id="githubPatInput"
+             placeholder="ghp_xxxxxxxxxxxx"
+             onkeydown="if(event.key==='Enter')submitGithubPush()">
+      <div style="margin-top:8px;display:flex;align-items:center;gap:6px;">
+        <input type="checkbox" id="rememberPat" style="cursor:pointer;">
+        <label for="rememberPat" style="font-size:0.8rem;color:var(--text-muted);cursor:pointer;">이 세션에서 기억</label>
+      </div>
+      <p id="githubError" style="color:#dc2626;font-size:0.8rem;min-height:1.4em;margin-top:4px;"></p>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:12px;background:#f9fafb;padding:8px 10px;border-radius:8px;border:1px solid var(--border);">
+        커밋 메시지: <code style="font-size:0.77rem;">feat: site.json 업데이트 via GDEDSE</code>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeGithubModal()">취소</button>
+        <button class="btn-primary" id="githubSubmitBtn" onclick="submitGithubPush()">
+          <i class="fab fa-github"></i> 커밋 & 푸시
+        </button>
       </div>
     </div>
   </div>
@@ -1536,6 +1570,88 @@
     function copyCcCmd() {
       navigator.clipboard.writeText(document.getElementById('ccShellCmd').textContent);
       showToast('📋 명령어 복사됨');
+    }
+
+    // =============================================
+    // GITHUB PUSH
+    // =============================================
+    const GH_REPO = 'chrisKILee/chrisKILee.github.io';
+    const GH_FILE_PATH = 'gemini_html/site.json';
+    const GH_PAT_KEY = 'gdedse_gh_pat';
+
+    function openGithubPushModal() {
+      if (!adminPinVerified) { requirePin(() => openGithubPushModal()); return; }
+      const saved = sessionStorage.getItem(GH_PAT_KEY);
+      document.getElementById('githubPatInput').value = saved || '';
+      document.getElementById('rememberPat').checked = !!saved;
+      document.getElementById('githubError').textContent = '';
+      document.getElementById('githubModal').classList.add('show');
+      if (!saved) setTimeout(() => document.getElementById('githubPatInput').focus(), 40);
+    }
+
+    function closeGithubModal() {
+      document.getElementById('githubModal').classList.remove('show');
+    }
+
+    async function submitGithubPush() {
+      const pat = document.getElementById('githubPatInput').value.trim();
+      const remember = document.getElementById('rememberPat').checked;
+      const errEl = document.getElementById('githubError');
+      const btn = document.getElementById('githubSubmitBtn');
+
+      if (!pat) { errEl.textContent = 'PAT을 입력하세요.'; return; }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리 중...';
+      errEl.textContent = '';
+
+      try {
+        // 1. 현재 파일 SHA 가져오기
+        const getResp = await fetch(
+          `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE_PATH}`,
+          { headers: { Authorization: `Bearer ${pat}`, Accept: 'application/vnd.github+json' } }
+        );
+        if (!getResp.ok) {
+          const err = await getResp.json();
+          throw new Error(err.message || `GitHub API 오류 (${getResp.status})`);
+        }
+        const fileData = await getResp.json();
+        const sha = fileData.sha;
+
+        // 2. 새 내용으로 커밋
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(siteConfig, null, 2))));
+        const putResp = await fetch(
+          `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE_PATH}`,
+          {
+            method: 'PUT',
+            headers: {
+              Authorization: `Bearer ${pat}`,
+              Accept: 'application/vnd.github+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: 'feat: site.json 업데이트 via GDEDSE',
+              content,
+              sha
+            })
+          }
+        );
+        if (!putResp.ok) {
+          const err = await putResp.json();
+          throw new Error(err.message || `커밋 실패 (${putResp.status})`);
+        }
+
+        if (remember) sessionStorage.setItem(GH_PAT_KEY, pat);
+        else sessionStorage.removeItem(GH_PAT_KEY);
+
+        closeGithubModal();
+        showToast('✅ GitHub에 커밋 완료! 배포 중...');
+      } catch (e) {
+        errEl.textContent = e.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fab fa-github"></i> 커밋 & 푸시';
+      }
     }
 
     // =============================================
