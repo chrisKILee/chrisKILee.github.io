@@ -470,6 +470,50 @@
       .dir-header { flex-wrap: wrap; }
       .admin-controls { flex-wrap: wrap; }
     }
+
+    /* ===== FAVORITES ===== */
+    .favorites-section {
+      padding: 20px 0 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .favorites-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .favorites-header h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .favorites-count {
+      font-size: 0.75rem;
+      background: #fef9c3;
+      color: #a16207;
+      border-radius: 20px;
+      padding: 1px 7px;
+      font-weight: 700;
+    }
+
+    .star-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      color: #d1d5db;
+      transition: color 0.15s, background 0.15s;
+      line-height: 1;
+      font-family: var(--font);
+    }
+    .star-btn:hover { color: #f59e0b; background: #fef9c3; }
+    .star-btn.is-active { color: #f59e0b; }
+    .star-btn.is-active:hover { color: #b45309; background: #fef9c3; }
   </style>
 </head>
 
@@ -517,6 +561,17 @@
   </header>
 
   <div class="container">
+    <!-- FAVORITES -->
+    <div id="favoritesSection" style="display:none">
+      <div class="favorites-section">
+        <div class="favorites-header">
+          <h3>⭐ 즐겨찾기</h3>
+          <span class="favorites-count" id="favCount">0</span>
+        </div>
+        <div class="file-grid" id="favGrid"></div>
+      </div>
+    </div>
+
     <!-- SEARCH -->
     <div class="search-wrap">
       <i class="fas fa-search search-icon"></i>
@@ -795,12 +850,14 @@
     // STATE
     // =============================================
     const STORAGE_KEY = 'gdedse_site_config_v4';
+    const FAVS_KEY = 'gdedse_favs_v1';
     const SITE_JSON_URL = '../site.json';
     const ADMIN_PIN_HASH = '0001ae52a920c36edc7ab364ea58a58ca725f0ad44c02ba74ecefe08bb2b91a3'; // GitHub Actions가 실제 SHA-256으로 치환
 
     let siteConfig = null;
     let isAdmin = false;
     let adminPinVerified = sessionStorage.getItem('gdedse_pin_ok') === '1';
+    let favorites = new Set();
 
     // =============================================
     // CONFIG MANAGEMENT
@@ -850,10 +907,10 @@
         }
       });
 
-      // files: visible, order, categoryHash, memo 오버레이 (서버에 없는 파일은 무시)
+      // files: visible, order, categoryHash, memo, isFavorite 오버레이 (서버에 없는 파일은 무시)
       Object.entries(cached.files || {}).forEach(([hash, cFile]) => {
         if (siteConfig.files[hash]) {
-          ['visible', 'order', 'categoryHash', 'memo'].forEach(k => {
+          ['visible', 'order', 'categoryHash', 'memo', 'isFavorite'].forEach(k => {
             if (cFile[k] !== undefined) siteConfig.files[hash][k] = cFile[k];
           });
         }
@@ -862,6 +919,72 @@
 
     function persistConfig() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(siteConfig));
+    }
+
+    // =============================================
+    // FAVORITES
+    // =============================================
+    function initFavorites() {
+      const stored = localStorage.getItem(FAVS_KEY);
+      if (stored) {
+        try { favorites = new Set(JSON.parse(stored)); } catch (e) { favorites = new Set(); }
+      } else {
+        // localStorage가 없으면 site.json의 isFavorite: true 항목으로 초기화
+        favorites = new Set(
+          Object.entries(siteConfig.files || {})
+            .filter(([, f]) => f.isFavorite)
+            .map(([hash]) => hash)
+        );
+        saveFavs();
+      }
+    }
+
+    function saveFavs() {
+      localStorage.setItem(FAVS_KEY, JSON.stringify([...favorites]));
+    }
+
+    function toggleFav(fileHash) {
+      if (favorites.has(fileHash)) {
+        favorites.delete(fileHash);
+        showToast('즐겨찾기에서 제거됨');
+      } else {
+        favorites.add(fileHash);
+        showToast('⭐ 즐겨찾기에 추가됨');
+      }
+      saveFavs();
+      // 어드민 모드에서는 siteConfig도 업데이트해 Export에 반영
+      if (isAdmin && siteConfig.files && siteConfig.files[fileHash]) {
+        if (favorites.has(fileHash)) {
+          siteConfig.files[fileHash].isFavorite = true;
+        } else {
+          delete siteConfig.files[fileHash].isFavorite;
+        }
+        persistConfig();
+      }
+      renderFavorites();
+      // 카드의 별 버튼 상태 갱신
+      document.querySelectorAll(`.star-btn[data-hash="${fileHash}"]`).forEach(btn => {
+        btn.classList.toggle('is-active', favorites.has(fileHash));
+        btn.title = favorites.has(fileHash) ? '즐겨찾기 해제' : '즐겨찾기 추가';
+      });
+    }
+
+    function renderFavorites() {
+      const section = document.getElementById('favoritesSection');
+      const grid = document.getElementById('favGrid');
+      const countEl = document.getElementById('favCount');
+
+      const favHashes = [...favorites].filter(h => siteConfig.files && siteConfig.files[h]);
+      if (favHashes.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = '';
+      countEl.textContent = favHashes.length;
+      grid.innerHTML = favHashes
+        .map(hash => renderFileCard(hash, siteConfig.files[hash]))
+        .join('');
     }
 
     function exportConfig() {
@@ -1145,6 +1268,12 @@
             </button>
             <button class="action-btn" onclick="event.stopPropagation(); copyCardLink(this)">
               <i class="fas fa-link"></i> 링크
+            </button>
+            <button class="star-btn${favorites.has(fileHash) ? ' is-active' : ''}"
+                    data-hash="${fileHash}"
+                    onclick="event.stopPropagation(); toggleFav('${fileHash}')"
+                    title="${favorites.has(fileHash) ? '즐겨찾기 해제' : '즐겨찾기 추가'}">
+              <i class="fas fa-star"></i>
             </button>
             ${adminBtns}
           </div>
@@ -1688,7 +1817,9 @@
     async function init() {
       try {
         await loadConfig();
+        initFavorites();
         render();
+        renderFavorites();
         initDragAndDrop();
       } catch (e) {
         document.getElementById('contentArea').innerHTML = `
