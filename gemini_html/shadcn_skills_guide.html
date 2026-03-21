@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>shadcn Skills — AI 어시스턴트 활용법</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --color-primary: #DD614C;
+      --color-secondary: #DAA144;
+      --color-surface: #FFFFFF;
+      --color-text: #111827;
+      --color-success: #16A34A;
+      --color-warning: #D97706;
+      --color-danger: #DC2626;
+      --color-raw: #F5F0EB;
+      --color-dark: #0D0D0D;
+      --font-primary: 'Darker Grotesque', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --border-raw: 3px solid var(--color-text);
+      --border-heavy: 5px solid var(--color-text);
+      --shadow-raw: 5px 5px 0 var(--color-text);
+      --shadow-raw-lg: 8px 8px 0 var(--color-text);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-raw);
+      color: var(--color-text);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .raw-card {
+      background: var(--color-surface);
+      border: var(--border-raw);
+      box-shadow: var(--shadow-raw);
+      transition: box-shadow .12s, transform .12s;
+    }
+    .raw-card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-raw-lg);
+    }
+    .raw-card-dark {
+      background: var(--color-dark);
+      color: var(--color-surface);
+      border: var(--border-raw);
+      box-shadow: var(--shadow-raw);
+    }
+    .raw-card-primary {
+      background: var(--color-primary);
+      color: var(--color-surface);
+      border: var(--border-raw);
+      box-shadow: var(--shadow-raw);
+    }
+    .raw-card-secondary {
+      background: var(--color-secondary);
+      color: var(--color-text);
+      border: var(--border-raw);
+      box-shadow: var(--shadow-raw);
+    }
+    .raw-btn {
+      display: inline-block;
+      font-family: var(--font-primary);
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: 12px 24px;
+      border: var(--border-raw);
+      box-shadow: var(--shadow-raw);
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform .1s, box-shadow .1s;
+    }
+    .raw-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-raw-lg);
+    }
+    .raw-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 2px 2px 0 var(--color-text);
+    }
+    .raw-btn-primary { background: var(--color-primary); color: #fff; }
+    .raw-btn-secondary { background: var(--color-secondary); color: var(--color-text); }
+    .raw-btn-dark { background: var(--color-dark); color: #fff; }
+    .raw-btn-outline { background: transparent; color: var(--color-text); }
+    .raw-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: 4px 12px;
+      border: 2px solid var(--color-text);
+      box-shadow: 2px 2px 0 var(--color-text);
+    }
+    .raw-badge-primary { background: var(--color-primary); color: #fff; }
+    .raw-badge-secondary { background: var(--color-secondary); color: var(--color-text); }
+    .raw-badge-dark { background: var(--color-dark); color: #fff; }
+    .raw-badge-outline { background: transparent; color: var(--color-text); }
+    .raw-badge-success { background: #16A34A; color: #fff; }
+    .section-marker {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--color-primary);
+      border-left: 4px solid var(--color-primary);
+      padding-left: 10px;
+    }
+    .h-brutal {
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+    .raw-divider {
+      border: none;
+      border-top: var(--border-heavy);
+      margin: 0;
+    }
+    .code-raw {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--color-dark);
+      color: #a5f3a0;
+      padding: 16px 20px;
+      border: var(--border-raw);
+      overflow-x: auto;
+      line-height: 1.7;
+      white-space: pre;
+    }
+    .code-raw-inline {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--color-dark);
+      color: var(--color-primary);
+      padding: 2px 8px;
+      border: 1px solid rgba(255,255,255,.15);
+    }
+    .raw-nav {
+      background: var(--color-dark);
+      border-bottom: var(--border-heavy);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .stat-raw {
+      font-weight: 900;
+      line-height: 1;
+      font-size: 48px;
+      letter-spacing: -0.04em;
+    }
+    .raw-table { width: 100%; border-collapse: collapse; }
+    .raw-table th {
+      background: var(--color-dark);
+      color: #fff;
+      padding: 12px 16px;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border: 2px solid var(--color-text);
+    }
+    .raw-table td {
+      padding: 12px 16px;
+      font-size: 15px;
+      border: 2px solid var(--color-text);
+      background: var(--color-surface);
+      vertical-align: top;
+    }
+    .raw-table tr:hover td { background: var(--color-raw); }
+    .step-raw {
+      width: 48px;
+      height: 48px;
+      background: var(--color-primary);
+      border: var(--border-raw);
+      box-shadow: var(--shadow-raw);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 20px;
+      flex-shrink: 0;
+      color: #fff;
+    }
+    .page-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .section-pad { padding: 64px 0; }
+    .raw-hero {
+      background-color: var(--color-dark);
+      position: relative;
+    }
+    .raw-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: .04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .callout {
+      border-left: 5px solid var(--color-primary);
+      background: #fff8f7;
+      border-top: var(--border-raw);
+      border-right: var(--border-raw);
+      border-bottom: var(--border-raw);
+      padding: 16px 20px;
+    }
+    .callout-tip {
+      border-left-color: var(--color-success);
+      background: #f0fdf4;
+    }
+    .callout-warn {
+      border-left-color: var(--color-warning);
+      background: #fffbeb;
+    }
+    @media (max-width: 768px) {
+      .hero-grid { grid-template-columns: 1fr !important; }
+      .stats-grid { grid-template-columns: 1fr 1fr !important; }
+      .features-grid { grid-template-columns: 1fr !important; }
+      .two-col { grid-template-columns: 1fr !important; }
+      .cli-grid { grid-template-columns: 1fr !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── NAV ────────────────────────────────────────── -->
+  <nav class="raw-nav">
+    <div class="page-wrap" style="display:flex; align-items:center; justify-content:space-between; padding-top:14px; padding-bottom:14px;">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <a href="/gemini_html/index.html" style="display:flex; align-items:center; gap:14px; text-decoration:none;">
+          <div style="width:32px; height:32px; background:var(--color-primary); border:3px solid #fff; display:flex; align-items:center; justify-content:center;">
+            <span style="color:#fff; font-weight:900; font-size:14px;">S</span>
+          </div>
+          <span style="font-weight:900; font-size:18px; letter-spacing:-.03em; color:#fff; text-transform:uppercase;">shadcn Skills</span>
+        </a>
+        <span class="raw-badge raw-badge-primary" style="font-size:11px; border-color:rgba(255,255,255,.3); box-shadow:2px 2px 0 rgba(255,255,255,.2);">공식 문서 기반</span>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <a href="https://ui.shadcn.com/docs/skills" target="_blank" class="raw-btn raw-btn-outline" style="color:#fff; border-color:rgba(255,255,255,.5); box-shadow:3px 3px 0 rgba(255,255,255,.3); font-size:12px; padding:7px 16px;">공식 문서 →</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── HERO ────────────────────────────────────────── -->
+  <section class="raw-hero">
+    <div class="page-wrap" style="padding-top:72px; padding-bottom:72px; position:relative; z-index:1;">
+      <div class="hero-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center;">
+
+        <!-- Left -->
+        <div>
+          <span class="raw-badge raw-badge-secondary" style="margin-bottom:20px; border-color:rgba(0,0,0,.3);">AI 어시스턴트 강화</span>
+          <h1 class="h-brutal" style="font-size:clamp(44px,6vw,80px); color:#fff; margin:0 0 8px;">
+            shadcn
+          </h1>
+          <h2 class="h-brutal" style="font-size:clamp(32px,4.5vw,64px); color:var(--color-primary); margin:0 0 24px;">
+            Skills 완전 가이드
+          </h2>
+          <p style="font-size:17px; line-height:1.7; color:rgba(255,255,255,.75); max-width:460px; margin-bottom:32px;">
+            AI 어시스턴트(Claude, Cursor 등)가 내 프로젝트의 shadcn/ui 구성을 <strong style="color:#fff;">자동으로 이해</strong>하고, 컴포넌트를 정확하게 추가·커스터마이즈할 수 있게 해주는 지식 주입 시스템입니다.
+          </p>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+            <span style="font-family:var(--font-mono); font-size:12px; color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:.1em;">2026-03-22</span>
+          </div>
+        </div>
+
+        <!-- Right: concept blocks -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="raw-card-primary" style="padding:24px; grid-column:span 2;">
+            <div style="font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:rgba(255,255,255,.6); margin-bottom:8px;"># 핵심 아이디어</div>
+            <div style="font-size:17px; font-weight:800; line-height:1.45; color:#fff;">
+              Skills = AI에게 주는 "내 프로젝트 설명서". <br>한 번 설치하면 AI가 자동으로 읽고 맥락을 파악한다.
+            </div>
+          </div>
+          <div class="raw-card" style="padding:20px;">
+            <div style="font-family:var(--font-mono); font-size:11px; color:var(--color-primary); margin-bottom:6px; text-transform:uppercase;">설치 명령</div>
+            <div style="font-family:var(--font-mono); font-size:13px; font-weight:700; line-height:1.5;">pnpm dlx<br>skills add<br>shadcn/ui</div>
+          </div>
+          <div class="raw-card-secondary" style="padding:20px;">
+            <div style="font-family:var(--font-mono); font-size:11px; color:var(--color-text); opacity:.7; margin-bottom:6px; text-transform:uppercase;">트리거 파일</div>
+            <div style="font-family:var(--font-mono); font-size:13px; font-weight:700; line-height:1.5;">components<br>.json</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="raw-divider" />
+
+  <!-- ─── STATS ───────────────────────────────────────── -->
+  <section style="background: var(--color-surface); border-bottom: var(--border-heavy);">
+    <div class="page-wrap" style="padding: 0 24px;">
+      <div class="stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); border-left: var(--border-heavy);">
+        <div style="padding:28px; border-right:var(--border-heavy);">
+          <div class="stat-raw" style="color:var(--color-primary);">1줄</div>
+          <div style="font-family:var(--font-mono); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; margin-top:8px; line-height:1.4;">설치 명령어</div>
+        </div>
+        <div style="padding:28px; border-right:var(--border-heavy);">
+          <div class="stat-raw">자동</div>
+          <div style="font-family:var(--font-mono); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; margin-top:8px; line-height:1.4;">프로젝트 감지</div>
+        </div>
+        <div style="padding:28px; border-right:var(--border-heavy);">
+          <div class="stat-raw" style="color:var(--color-secondary);">5개</div>
+          <div style="font-family:var(--font-mono); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; margin-top:8px; line-height:1.4;">포함 기능 영역</div>
+        </div>
+        <div style="padding:28px;">
+          <div class="stat-raw">MCP</div>
+          <div style="font-family:var(--font-mono); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; margin-top:8px; line-height:1.4;">서버 지원</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── WHAT IS SKILLS ───────────────────────────────── -->
+  <section class="section-pad">
+    <div class="page-wrap">
+      <div style="margin-bottom:32px;">
+        <span class="section-marker">// 개념 이해</span>
+        <h2 class="h-brutal" style="font-size:36px; margin:12px 0 0;">Skills가 뭔가요?</h2>
+      </div>
+
+      <!-- Architecture SVG -->
+      <div class="raw-card" style="padding:32px; margin-bottom:32px; overflow-x:auto;">
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--color-primary); margin-bottom:20px; text-transform:uppercase; letter-spacing:.1em;">// 동작 원리 다이어그램</div>
+        <svg viewBox="0 0 760 160" style="width:100%; max-width:760px; display:block; margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#111827"/>
+            </marker>
+          </defs>
+          <!-- Node 1: 프로젝트 -->
+          <rect x="10" y="55" width="130" height="50" rx="0" fill="#fff" stroke="#111827" stroke-width="3"/>
+          <text x="75" y="76" text-anchor="middle" fill="#111827" font-size="13" font-family="Darker Grotesque, sans-serif" font-weight="800">내 프로젝트</text>
+          <text x="75" y="94" text-anchor="middle" fill="#DD614C" font-size="11" font-family="JetBrains Mono, monospace">components.json</text>
+          <!-- Arrow 1 -->
+          <line x1="140" y1="80" x2="185" y2="80" stroke="#111827" stroke-width="2.5" marker-end="url(#arr)"/>
+          <text x="162" y="73" text-anchor="middle" fill="#6b7280" font-size="10" font-family="JetBrains Mono, monospace">감지</text>
+          <!-- Node 2: Skills CLI -->
+          <rect x="187" y="55" width="140" height="50" rx="0" fill="#DD614C" stroke="#111827" stroke-width="3"/>
+          <text x="257" y="76" text-anchor="middle" fill="#fff" font-size="13" font-family="Darker Grotesque, sans-serif" font-weight="800">skills add shadcn/ui</text>
+          <text x="257" y="94" text-anchor="middle" fill="rgba(255,255,255,.8)" font-size="11" font-family="JetBrains Mono, monospace">skills.sh CLI</text>
+          <!-- Arrow 2 -->
+          <line x1="327" y1="80" x2="372" y2="80" stroke="#111827" stroke-width="2.5" marker-end="url(#arr)"/>
+          <text x="349" y="73" text-anchor="middle" fill="#6b7280" font-size="10" font-family="JetBrains Mono, monospace">주입</text>
+          <!-- Node 3: AI 어시스턴트 -->
+          <rect x="374" y="40" width="150" height="80" rx="0" fill="#0D0D0D" stroke="#111827" stroke-width="3"/>
+          <text x="449" y="68" text-anchor="middle" fill="#fff" font-size="13" font-family="Darker Grotesque, sans-serif" font-weight="800">AI 어시스턴트</text>
+          <text x="449" y="86" text-anchor="middle" fill="rgba(255,255,255,.6)" font-size="11" font-family="JetBrains Mono, monospace">shadcn info --json</text>
+          <text x="449" y="103" text-anchor="middle" fill="#DAA144" font-size="11" font-family="JetBrains Mono, monospace">컨텍스트 자동 로드</text>
+          <!-- Arrow 3 -->
+          <line x1="524" y1="80" x2="569" y2="80" stroke="#111827" stroke-width="2.5" marker-end="url(#arr)"/>
+          <text x="546" y="73" text-anchor="middle" fill="#6b7280" font-size="10" font-family="JetBrains Mono, monospace">생성</text>
+          <!-- Node 4: 결과 -->
+          <rect x="571" y="55" width="150" height="50" rx="0" fill="#DAA144" stroke="#111827" stroke-width="3"/>
+          <text x="646" y="76" text-anchor="middle" fill="#111827" font-size="13" font-family="Darker Grotesque, sans-serif" font-weight="800">정확한 컴포넌트</text>
+          <text x="646" y="93" text-anchor="middle" fill="#111827" font-size="11" font-family="JetBrains Mono, monospace">내 프로젝트에 맞는 코드</text>
+        </svg>
+      </div>
+
+      <div class="two-col" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="callout">
+          <div style="font-family:var(--font-mono); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--color-primary); margin-bottom:8px;">⚠ Skills 없을 때</div>
+          <p style="font-size:15px; line-height:1.7; margin:0; color:#374151;">
+            AI가 내 프로젝트에 어떤 컴포넌트가 설치됐는지, Tailwind 버전이 뭔지, 파일 경로가 어디인지 모름. "일반적인 예시 코드"만 생성해서 실제 프로젝트에 바로 못 쓸 수 있음.
+          </p>
+        </div>
+        <div class="callout callout-tip">
+          <div style="font-family:var(--font-mono); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--color-success); margin-bottom:8px;">✅ Skills 있을 때</div>
+          <p style="font-size:15px; line-height:1.7; margin:0; color:#374151;">
+            AI가 내 <code class="code-raw-inline">components.json</code> 을 읽어 프레임워크, Tailwind 버전, 설치된 컴포넌트 목록, 아이콘 라이브러리, 파일 경로까지 정확히 파악. 내 프로젝트에 딱 맞는 코드 생성.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="raw-divider" />
+
+  <!-- ─── INSTALLATION ────────────────────────────────── -->
+  <section class="section-pad" style="background:var(--color-surface);">
+    <div class="page-wrap">
+      <div style="margin-bottom:32px;">
+        <span class="section-marker">// 설치</span>
+        <h2 class="h-brutal" style="font-size:36px; margin:12px 0 0;">설치 방법</h2>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:20px; max-width:820px;">
+
+        <div style="display:flex; gap:20px; align-items:flex-start;">
+          <div class="step-raw">1</div>
+          <div class="raw-card" style="flex:1; padding:24px;">
+            <h3 style="font-size:19px; font-weight:900; margin:0 0 8px;">shadcn/ui 프로젝트가 있어야 함</h3>
+            <p style="font-size:15px; color:#4b5563; margin:0 0 12px;">
+              프로젝트 루트에 <code class="code-raw-inline">components.json</code> 파일이 있어야 합니다. 이 파일이 Skills의 트리거(작동 신호)입니다.
+            </p>
+            <div class="callout callout-tip" style="border-left-width:4px; padding:12px 16px;">
+              <span style="font-size:14px; color:#374151;">아직 없다면: <code class="code-raw-inline">pnpm dlx shadcn@latest init</code> 으로 먼저 초기화하세요.</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:20px; align-items:flex-start;">
+          <div class="step-raw" style="background:var(--color-secondary); color:var(--color-text);">2</div>
+          <div class="raw-card" style="flex:1; padding:24px;">
+            <h3 style="font-size:19px; font-weight:900; margin:0 0 8px;">Skills 설치 명령 실행</h3>
+            <p style="font-size:15px; color:#4b5563; margin:0 0 12px;">
+              프로젝트 디렉토리에서 아래 명령을 실행합니다. <code class="code-raw-inline">pnpm dlx</code> 는 전역 설치 없이 바로 실행하는 방식입니다.
+            </p>
+            <div class="code-raw">pnpm dlx skills add shadcn/ui</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:20px; align-items:flex-start;">
+          <div class="step-raw">3</div>
+          <div class="raw-card" style="flex:1; padding:24px;">
+            <h3 style="font-size:19px; font-weight:900; margin:0 0 8px;">AI 어시스턴트에서 자동 활성화</h3>
+            <p style="font-size:15px; color:#4b5563; margin:0 0 12px;">
+              이제 Claude Code, Cursor 등 AI 어시스턴트에서 shadcn/ui 관련 작업을 시작하면, 스킬이 자동으로 <code class="code-raw-inline">shadcn info --json</code> 을 실행해 프로젝트 컨텍스트(맥락 정보)를 AI에게 주입합니다.
+            </p>
+            <div class="callout" style="border-left-width:4px; padding:12px 16px;">
+              <span style="font-size:14px; color:#374151;">더 자세한 내용은 <a href="https://skills.sh" target="_blank" style="color:var(--color-primary); font-weight:700;">skills.sh</a> 공식 사이트를 참고하세요.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <hr class="raw-divider" />
+
+  <!-- ─── WHAT'S INCLUDED ─────────────────────────────── -->
+  <section class="section-pad">
+    <div class="page-wrap">
+      <div style="margin-bottom:32px;">
+        <span class="section-marker">// 포함 기능</span>
+        <h2 class="h-brutal" style="font-size:36px; margin:12px 0 0;">Skills에 뭐가 들어있나?</h2>
+      </div>
+
+      <div class="features-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+
+        <div class="raw-card" style="padding:28px;">
+          <div style="width:44px; height:44px; background:var(--color-primary); border:var(--border-raw); box-shadow:var(--shadow-raw); display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+            <span style="color:#fff; font-weight:900; font-size:20px;">①</span>
+          </div>
+          <h3 style="font-size:18px; font-weight:900; margin:0 0 8px;">프로젝트 컨텍스트</h3>
+          <p style="font-size:14px; line-height:1.65; color:#4b5563; margin:0;">
+            매번 대화마다 <code class="code-raw-inline">shadcn info --json</code> 을 실행해 현재 프로젝트의 프레임워크, Tailwind 버전, 별칭(alias), 기본 라이브러리(radix/base), 아이콘 라이브러리, 설치된 컴포넌트 목록, 파일 경로를 AI에게 전달합니다.
+          </p>
+        </div>
+
+        <div class="raw-card" style="padding:28px;">
+          <div style="width:44px; height:44px; background:var(--color-secondary); border:var(--border-raw); box-shadow:var(--shadow-raw); display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+            <span style="font-weight:900; font-size:20px;">②</span>
+          </div>
+          <h3 style="font-size:18px; font-weight:900; margin:0 0 8px;">CLI 명령 완전 참조</h3>
+          <p style="font-size:14px; line-height:1.65; color:#4b5563; margin:0;">
+            <code class="code-raw-inline">init</code>, <code class="code-raw-inline">add</code>, <code class="code-raw-inline">search</code>, <code class="code-raw-inline">view</code>, <code class="code-raw-inline">docs</code>, <code class="code-raw-inline">diff</code>, <code class="code-raw-inline">info</code>, <code class="code-raw-inline">build</code> 명령의 플래그, dry-run 모드, 스마트 머지(합치기), 프리셋, 템플릿 사용법 전체를 AI가 알고 있습니다.
+          </p>
+        </div>
+
+        <div class="raw-card" style="padding:28px;">
+          <div style="width:44px; height:44px; background:var(--color-dark); border:var(--border-raw); box-shadow:var(--shadow-raw); display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+            <span style="color:#fff; font-weight:900; font-size:20px;">③</span>
+          </div>
+          <h3 style="font-size:18px; font-weight:900; margin:0 0 8px;">테마 & 커스터마이즈</h3>
+          <p style="font-size:14px; line-height:1.65; color:#4b5563; margin:0;">
+            CSS 변수, OKLCH 색상 체계, 다크 모드, 커스텀 색상 추가, border-radius, 컴포넌트 변형(variant) 방법을 Tailwind v3/v4 양쪽 버전 모두 안내합니다.
+          </p>
+        </div>
+
+        <div class="raw-card-secondary" style="padding:28px;">
+          <div style="width:44px; height:44px; background:var(--color-text); border:var(--border-raw); box-shadow:var(--shadow-raw); display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+            <span style="color:#fff; font-weight:900; font-size:20px;">④</span>
+          </div>
+          <h3 style="font-size:18px; font-weight:900; margin:0 0 8px;">레지스트리 제작</h3>
+          <p style="font-size:14px; line-height:1.65; margin:0;">
+            자체 컴포넌트 레지스트리(컴포넌트 배포소) 만들기: <code class="code-raw-inline">registry.json</code> 형식, 아이템 타입, 파일 객체, 의존성, CSS 변수, 빌드·호스팅 방법을 포함합니다.
+          </p>
+        </div>
+
+        <div class="raw-card-primary" style="padding:28px; grid-column:span 2;">
+          <div style="width:44px; height:44px; background:#fff; border:3px solid rgba(255,255,255,.5); display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+            <span style="color:var(--color-primary); font-weight:900; font-size:20px;">⑤</span>
+          </div>
+          <h3 style="font-size:18px; font-weight:900; margin:0 0 8px; color:#fff;">MCP 서버 통합</h3>
+          <p style="font-size:14px; line-height:1.65; color:rgba(255,255,255,.85); margin:0;">
+            MCP(Model Context Protocol) 서버를 통해 AI 어시스턴트가 여러 레지스트리를 자연어로 검색·설치할 수 있습니다. "로그인 폼 추가해줘"처럼 말하면 AI가 직접 컴포넌트를 찾아 설치합니다.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <hr class="raw-divider" />
+
+  <!-- ─── HOW IT WORKS ────────────────────────────────── -->
+  <section class="section-pad" style="background:var(--color-surface);">
+    <div class="page-wrap">
+      <div style="margin-bottom:32px;">
+        <span class="section-marker">// 동작 방식</span>
+        <h2 class="h-brutal" style="font-size:36px; margin:12px 0 0;">Skills가 작동하는 4단계</h2>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px; max-width:820px;">
+
+        <div style="display:flex; gap:20px; align-items:flex-start;">
+          <div class="step-raw">1</div>
+          <div class="raw-card" style="flex:1; padding:22px;">
+            <h3 style="font-size:18px; font-weight:900; margin:0 0 6px;">프로젝트 감지 (Project Detection)</h3>
+            <p style="font-size:15px; color:#4b5563; margin:0;">
+              AI가 작업을 시작할 때 <code class="code-raw-inline">components.json</code> 파일을 찾으면 자동으로 Skills가 활성화됩니다. 별도 설정 없이 파일 존재만으로 트리거됩니다.
+            </p>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:20px; align-items:flex-start;">
+          <div class="step-raw" style="background:var(--color-secondary); color:var(--color-text);">2</div>
+          <div class="raw-card" style="flex:1; padding:22px;">
+            <h3 style="font-size:18px; font-weight:900; margin:0 0 6px;">컨텍스트 주입 (Context Injection)</h3>
+            <p style="font-size:15px; color:#4b5563; margin:0 0 10px;">
+              <code class="code-raw-inline">shadcn info --json</code> 명령을 실행해 아래 정보를 AI 대화 컨텍스트에 자동으로 넣습니다:
+            </p>
+            <div class="code-raw">{
+  "framework": "next",
+  "tailwind": { "version": "4" },
+  "aliases": { "components": "@/components" },
+  "iconLibrary": "lucide",
+  "installedComponents": ["button", "card", "dialog", ...]
+}</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:20px; align-items:flex-start;">
+          <div class="step-raw">3</div>
+          <div class="raw-card" style="flex:1; padding:22px;">
+            <h3 style="font-size:18px; font-weight:900; margin:0 0 6px;">패턴 강제 적용 (Pattern Enforcement)</h3>
+            <p style="font-size:15px; color:#4b5563; margin:0;">
+              AI가 shadcn/ui 공식 컴포지션(조합) 규칙을 따릅니다. FieldGroup, ToggleGroup 같은 고급 패턴, 시맨틱 색상, 각 라이브러리(radix/base)에 맞는 정확한 API를 사용합니다.
+            </p>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:20px; align-items:flex-start;">
+          <div class="step-raw" style="background:var(--color-dark);">4</div>
+          <div class="raw-card" style="flex:1; padding:22px;">
+            <h3 style="font-size:18px; font-weight:900; margin:0 0 6px;">컴포넌트 탐색 (Component Discovery)</h3>
+            <p style="font-size:15px; color:#4b5563; margin:0;">
+              코드 생성 전에 <code class="code-raw-inline">shadcn docs</code>, <code class="code-raw-inline">shadcn search</code> 또는 MCP 도구를 활용해 실제 컴포넌트 존재 여부를 확인합니다. 없는 컴포넌트를 만들어내지 않습니다.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <hr class="raw-divider" />
+
+  <!-- ─── USE CASES ───────────────────────────────────── -->
+  <section class="section-pad">
+    <div class="page-wrap">
+      <div style="margin-bottom:32px;">
+        <span class="section-marker">// 활용 예제</span>
+        <h2 class="h-brutal" style="font-size:36px; margin:12px 0 0;">이렇게 쓰면 됩니다</h2>
+      </div>
+
+      <div class="two-col" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+
+        <div class="raw-card-dark" style="padding:28px;">
+          <div class="raw-badge raw-badge-primary" style="font-size:11px; margin-bottom:14px;">예제 1</div>
+          <p style="font-family:var(--font-mono); font-size:13px; color:rgba(255,255,255,.9); line-height:1.7; margin:0 0 16px;">
+            "이메일과 비밀번호 필드가 있는 로그인 폼 추가해줘"
+          </p>
+          <div style="border-top:2px solid rgba(255,255,255,.1); padding-top:14px;">
+            <p style="font-size:14px; color:rgba(255,255,255,.6); margin:0; line-height:1.65;">
+              AI가 내 프로젝트에 이미 설치된 <code class="code-raw-inline" style="background:#1a1a1a; color:#a5f3a0;">Form</code>, <code class="code-raw-inline" style="background:#1a1a1a; color:#a5f3a0;">Input</code>, <code class="code-raw-inline" style="background:#1a1a1a; color:#a5f3a0;">Button</code> 컴포넌트를 확인하고, 내 파일 경로 규칙에 맞게 코드를 생성합니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="raw-card-dark" style="padding:28px;">
+          <div class="raw-badge raw-badge-secondary" style="font-size:11px; margin-bottom:14px; border-color:rgba(0,0,0,.3);">예제 2</div>
+          <p style="font-family:var(--font-mono); font-size:13px; color:rgba(255,255,255,.9); line-height:1.7; margin:0 0 16px;">
+            "사이드바, 통계 카드, 데이터 테이블이 있는 대시보드 만들어줘"
+          </p>
+          <div style="border-top:2px solid rgba(255,255,255,.1); padding-top:14px;">
+            <p style="font-size:14px; color:rgba(255,255,255,.6); margin:0; line-height:1.65;">
+              Skills가 없으면 AI가 임의 구조를 만들지만, Skills가 있으면 실제 설치된 shadcn 컴포넌트 + 내 프로젝트 alias 경로로 바로 동작하는 코드를 생성합니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="raw-card" style="padding:28px;">
+          <div class="raw-badge raw-badge-outline" style="font-size:11px; margin-bottom:14px;">예제 3 — 프리셋</div>
+          <p style="font-family:var(--font-mono); font-size:13px; line-height:1.7; margin:0 0 14px; color:var(--color-primary);">
+            "Switch to --preset ocean"
+          </p>
+          <p style="font-size:14px; color:#4b5563; margin:0; line-height:1.65;">
+            프리셋을 변경하면 AI가 자동으로 테마 전환 명령을 실행합니다. 색상 팔레트 전체를 한 번에 교체할 수 있습니다.
+          </p>
+        </div>
+
+        <div class="raw-card" style="padding:28px;">
+          <div class="raw-badge raw-badge-success" style="font-size:11px; margin-bottom:14px;">예제 4 — 외부 레지스트리</div>
+          <p style="font-family:var(--font-mono); font-size:13px; line-height:1.7; margin:0 0 14px; color:var(--color-success);">
+            "Can you add a hero from @tailark?"
+          </p>
+          <p style="font-size:14px; color:#4b5563; margin:0; line-height:1.65;">
+            <code class="code-raw-inline">@tailark</code> 처럼 네임스페이스가 붙은 외부 레지스트리 컴포넌트도 자연어로 설치할 수 있습니다. MCP 서버가 연결된 경우.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <hr class="raw-divider" />
+
+  <!-- ─── MCP SERVER ──────────────────────────────────── -->
+  <section class="section-pad" style="background:var(--color-surface);">
+    <div class="page-wrap">
+      <div style="margin-bottom:32px;">
+        <span class="section-marker">// MCP 서버</span>
+        <h2 class="h-brutal" style="font-size:36px; margin:12px 0 0;">MCP 서버 설정</h2>
+        <p style="font-size:16px; color:#6b7280; margin:12px 0 0; line-height:1.65;">
+          MCP(Model Context Protocol) 서버를 추가하면 AI가 레지스트리를 직접 검색하고 설치할 수 있습니다.
+        </p>
+      </div>
+
+      <div class="two-col" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div>
+          <div style="margin-bottom:16px;">
+            <h3 style="font-size:18px; font-weight:900; margin:0 0 8px;">초기화 명령</h3>
+            <div class="code-raw">pnpm dlx shadcn@latest mcp init --client claude</div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <h3 style="font-size:18px; font-weight:900; margin:0 0 8px;">Claude Code용 .mcp.json 설정</h3>
+            <div class="code-raw">{
+  "mcpServers": {
+    "shadcn": {
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
+    }
+  }
+}</div>
+          </div>
+          <div class="callout callout-warn" style="padding:12px 16px;">
+            <span style="font-size:14px; color:#374151;">Cursor: <code class="code-raw-inline">.cursor/mcp.json</code> / VS Code: <code class="code-raw-inline">.vscode/mcp.json</code> 에 동일하게 설정</span>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="font-size:18px; font-weight:900; margin:0 0 12px;">다중 레지스트리 설정</h3>
+          <div class="code-raw" style="margin-bottom:12px;">{
+  "registries": {
+    "@acme": "https://registry.acme.com/{name}.json",
+    "@internal": {
+      "url": "https://internal.company.com/{name}.json",
+      "headers": {
+        "Authorization": "Bearer ${REGISTRY_TOKEN}"
+      }
+    }
+  }
+}</div>
+          <div class="callout" style="padding:12px 16px;">
+            <span style="font-size:14px; color:#374151;">인증이 필요한 사내 레지스트리는 <code class="code-raw-inline">headers</code> 에 토큰을 환경변수로 설정</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="raw-divider" />
+
+  <!-- ─── CLI COMMANDS TABLE ──────────────────────────── -->
+  <section class="section-pad">
+    <div class="page-wrap">
+      <div style="margin-bottom:32px;">
+        <span class="section-marker">// CLI 레퍼런스</span>
+        <h2 class="h-brutal" style="font-size:36px; margin:12px 0 0;">주요 CLI 명령어</h2>
+      </div>
+
+      <div class="raw-card" style="overflow:hidden; padding:0;">
+        <table class="raw-table">
+          <thead>
+            <tr>
+              <th>명령어</th>
+              <th>역할</th>
+              <th>예시</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--color-primary);">shadcn init</span></td>
+              <td>프로젝트 초기화, components.json 생성</td>
+              <td><span style="font-family:var(--font-mono); font-size:12px;">pnpm dlx shadcn@latest init</span></td>
+            </tr>
+            <tr>
+              <td><span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--color-primary);">shadcn add</span></td>
+              <td>컴포넌트 추가 (소스코드를 프로젝트에 복사)</td>
+              <td><span style="font-family:var(--font-mono); font-size:12px;">shadcn add button dialog</span></td>
+            </tr>
+            <tr>
+              <td><span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--color-primary);">shadcn search</span></td>
+              <td>컴포넌트 검색</td>
+              <td><span style="font-family:var(--font-mono); font-size:12px;">shadcn search "data table"</span></td>
+            </tr>
+            <tr>
+              <td><span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--color-primary);">shadcn view</span></td>
+              <td>컴포넌트 소스 미리보기</td>
+              <td><span style="font-family:var(--font-mono); font-size:12px;">shadcn view button</span></td>
+            </tr>
+            <tr>
+              <td><span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--color-primary);">shadcn docs</span></td>
+              <td>컴포넌트 문서 열기</td>
+              <td><span style="font-family:var(--font-mono); font-size:12px;">shadcn docs card</span></td>
+            </tr>
+            <tr>
+              <td><span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--color-primary);">shadcn diff</span></td>
+              <td>설치된 버전과 최신 버전 비교</td>
+              <td><span style="font-family:var(--font-mono); font-size:12px;">shadcn diff button</span></td>
+            </tr>
+            <tr>
+              <td><span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--color-primary);">shadcn info</span></td>
+              <td>현재 프로젝트 설정 정보 출력 (Skills의 핵심)</td>
+              <td><span style="font-family:var(--font-mono); font-size:12px;">shadcn info --json</span></td>
+            </tr>
+            <tr>
+              <td><span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--color-primary);">shadcn build</span></td>
+              <td>커스텀 레지스트리 빌드</td>
+              <td><span style="font-family:var(--font-mono); font-size:12px;">shadcn build</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <hr class="raw-divider" />
+
+  <!-- ─── TROUBLESHOOTING ─────────────────────────────── -->
+  <section class="section-pad" style="background:var(--color-surface);">
+    <div class="page-wrap">
+      <div style="margin-bottom:32px;">
+        <span class="section-marker">// 문제 해결</span>
+        <h2 class="h-brutal" style="font-size:36px; margin:12px 0 0;">자주 겪는 문제</h2>
+      </div>
+
+      <div class="cli-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+
+        <div class="raw-card" style="padding:24px;">
+          <div style="font-family:var(--font-mono); font-size:12px; color:var(--color-danger); margin-bottom:8px; font-weight:700; text-transform:uppercase;">❌ MCP 응답 없음</div>
+          <p style="font-size:14px; color:#4b5563; margin:0 0 10px; line-height:1.65;">
+            설정 확인 → AI 클라이언트 재시작 → shadcn 설치 확인 → 네트워크 접근 확인
+          </p>
+          <div class="code-raw" style="font-size:12px;">npx shadcn@latest mcp --help</div>
+        </div>
+
+        <div class="raw-card" style="padding:24px;">
+          <div style="font-family:var(--font-mono); font-size:12px; color:var(--color-danger); margin-bottom:8px; font-weight:700; text-transform:uppercase;">❌ 레지스트리 접근 실패</div>
+          <p style="font-size:14px; color:#4b5563; margin:0 0 10px; line-height:1.65;">
+            URL 형식 확인 → 인증 토큰 확인 → 레지스트리 서버 상태 확인 → 네임스페이스 문법 확인
+          </p>
+          <div class="code-raw" style="font-size:12px;"># .env.local에 추가
+REGISTRY_TOKEN=your_token</div>
+        </div>
+
+        <div class="raw-card" style="padding:24px;">
+          <div style="font-family:var(--font-mono); font-size:12px; color:var(--color-danger); margin-bottom:8px; font-weight:700; text-transform:uppercase;">❌ 설치 실패</div>
+          <p style="font-size:14px; color:#4b5563; margin:0 0 10px; line-height:1.65;">
+            <code class="code-raw-inline">components.json</code> 유효성 확인 → 대상 경로 존재 여부 → 쓰기 권한 확인 → 의존성 확인
+          </p>
+          <div class="code-raw" style="font-size:12px;">shadcn info --json  # 설정 확인</div>
+        </div>
+
+        <div class="raw-card" style="padding:24px;">
+          <div style="font-family:var(--font-mono); font-size:12px; color:var(--color-danger); margin-bottom:8px; font-weight:700; text-transform:uppercase;">❌ 도구·프롬프트 없음</div>
+          <p style="font-size:14px; color:#4b5563; margin:0 0 10px; line-height:1.65;">
+            npx 캐시 지우기 → MCP 서버 재활성화 → IDE 출력 패널에서 로그 확인
+          </p>
+          <div class="code-raw" style="font-size:12px;">npx clear-npx-cache
+# 또는
+rm -rf ~/.npm/_npx</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ──────────────────────────────────────── -->
+  <footer style="background:var(--color-dark); border-top:var(--border-heavy);">
+    <div class="page-wrap" style="padding-top:36px; padding-bottom:36px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+          <div style="width:26px; height:26px; background:var(--color-primary); border:2px solid rgba(255,255,255,.3); display:flex; align-items:center; justify-content:center;">
+            <span style="color:#fff; font-weight:900; font-size:12px;">S</span>
+          </div>
+          <span class="h-brutal" style="font-size:16px; color:#fff; text-transform:uppercase;">shadcn Skills 가이드</span>
+        </div>
+        <p style="font-family:var(--font-mono); font-size:12px; color:rgba(255,255,255,.4); margin:0; text-transform:uppercase; letter-spacing:.08em;">
+          공식 문서 기반 · 2026-03-22 · ui.shadcn.com/docs/skills
+        </p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="https://ui.shadcn.com/docs/skills" target="_blank" class="raw-badge raw-badge-primary" style="border-color:rgba(255,255,255,.3); box-shadow:2px 2px 0 rgba(255,255,255,.2); text-decoration:none;">공식 문서</a>
+        <a href="https://skills.sh" target="_blank" class="raw-badge raw-badge-outline" style="color:#fff; border-color:rgba(255,255,255,.3); box-shadow:2px 2px 0 rgba(255,255,255,.2); text-decoration:none;">skills.sh</a>
+        <a href="https://ui.shadcn.com/docs/mcp" target="_blank" class="raw-badge raw-badge-secondary" style="border-color:rgba(255,255,255,.3); box-shadow:2px 2px 0 rgba(255,255,255,.2); text-decoration:none;">MCP 문서</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
