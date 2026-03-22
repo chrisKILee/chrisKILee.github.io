@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIVE 요청 양식 가이드</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600;700&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f9fb;
+      --surface: #ffffff;
+      --border: #e5e7eb;
+      --border-strong: #111111;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --accent: #111111;
+      --accent-bg: #f1f1f1;
+      --sidebar-w: 256px;
+      --font-ui: 'Inter', sans-serif;
+      --font-serif: 'Gelasio', Georgia, serif;
+      --font-mono: 'Ubuntu Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font-ui);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LAYOUT ─────────────────────────────────────── */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 2px solid var(--border-strong);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-kicker {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .sidebar-title {
+      font-family: var(--font-serif);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.35;
+    }
+
+    .nav-section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 20px 24px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 11px 24px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      transition: color 0.15s, background 0.15s;
+      line-height: 1.4;
+    }
+
+    .nav-item:hover { color: var(--text); background: var(--bg); }
+
+    .nav-item.active {
+      color: var(--text);
+      background: var(--accent-bg);
+      font-weight: 600;
+      border-left: 3px solid var(--border-strong);
+      padding-left: 21px;
+    }
+
+    .nav-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      line-height: 1.6;
+    }
+
+    /* ── MAIN ───────────────────────────────────────── */
+    .main { flex: 1; max-width: 820px; padding: 48px 56px 80px; }
+
+    /* ── EDITORIAL: PAGE HEADER ─────────────────────── */
+    .ed-header {
+      padding-bottom: 32px;
+      margin-bottom: 40px;
+      border-bottom: 2px solid var(--border-strong);
+    }
+
+    .ed-kicker {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--surface);
+      background: var(--border-strong);
+      display: inline-block;
+      padding: 3px 10px;
+      margin-bottom: 16px;
+    }
+
+    .ed-title {
+      font-family: var(--font-serif);
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .ed-subtitle {
+      font-family: var(--font-serif);
+      font-size: clamp(20px, 2.5vw, 28px);
+      font-weight: 400;
+      font-style: italic;
+      color: var(--text);
+      opacity: 0.4;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+
+    .ed-desc {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.75;
+      max-width: 560px;
+    }
+
+    .ed-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .ed-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ed-meta-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+
+    .ed-meta-value {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    /* ── EDITORIAL: SECTION LABEL ───────────────────── */
+    .ed-section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .ed-section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── CONTENT BLOCKS ─────────────────────────────── */
+    .block { margin-bottom: 36px; }
+
+    .block-title {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .block-title::before {
+      content: '';
+      width: 3px;
+      height: 18px;
+      background: var(--border-strong);
+      flex-shrink: 0;
+    }
+
+    .prose {
+      font-family: var(--font-serif);
+      font-size: 15px;
+      color: #374151;
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+
+    .prose strong { color: var(--text); font-weight: 600; }
+
+    /* ── 6대 체크 그리드 ─────────────────────────────── */
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border-strong);
+      border: 1px solid var(--border-strong);
+      margin: 20px 0;
+    }
+
+    .check-item {
+      background: var(--surface);
+      padding: 20px 22px;
+    }
+
+    .check-num {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .check-title {
+      font-family: var(--font-serif);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      line-height: 1.35;
+    }
+
+    .check-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--surface);
+      background: var(--text);
+      display: inline-block;
+      padding: 1px 7px;
+      margin-bottom: 8px;
+      letter-spacing: 0.06em;
+    }
+
+    .check-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* ── CALLOUT ────────────────────────────────────── */
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--border-strong);
+      background: var(--accent-bg);
+      margin: 16px 0;
+      font-size: 14px;
+      line-height: 1.65;
+      font-family: var(--font-serif);
+    }
+
+    .callout-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+
+    .callout.warn {
+      border-left-color: #d97706;
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .callout.info {
+      border-left-color: #2563eb;
+      background: #eff6ff;
+      color: #1e40af;
+    }
+
+    .callout.success {
+      border-left-color: #16a34a;
+      background: #f0fdf4;
+      color: #14532d;
+    }
+
+    /* ── APPROVAL FLOW ──────────────────────────────── */
+    .approval-flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1px solid var(--border-strong);
+      margin: 16px 0;
+      overflow: hidden;
+    }
+
+    .approval-step {
+      flex: 1;
+      padding: 14px 18px;
+      border-right: 1px solid var(--border-strong);
+      text-align: center;
+    }
+
+    .approval-step:last-child { border-right: none; }
+
+    .approval-step-num {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .approval-step-role {
+      font-family: var(--font-serif);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .approval-step.final { background: var(--text); }
+    .approval-step.final .approval-step-num { color: rgba(255,255,255,.5); }
+    .approval-step.final .approval-step-role { color: #fff; }
+
+    /* ── FORM TEMPLATE (CODE BLOCK STYLE) ──────────── */
+    .form-template {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--border-strong);
+      padding: 24px 28px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.8;
+      color: #374151;
+      margin: 16px 0;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    .ft-section { color: #9ca3af; font-weight: 700; }
+    .ft-label { color: var(--border-strong); font-weight: 700; }
+    .ft-value { color: #059669; }
+    .ft-required { color: #dc2626; font-size: 11px; }
+    .ft-optional { color: #6b7280; font-size: 11px; }
+
+    /* ── INFO TABLE ─────────────────────────────────── */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      border: 1px solid var(--border-strong);
+      margin: 16px 0;
+    }
+
+    .info-table th {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--text);
+      color: #fff;
+      padding: 10px 16px;
+      text-align: left;
+      border-right: 1px solid rgba(255,255,255,.15);
+    }
+
+    .info-table th:last-child { border-right: none; }
+
+    .info-table td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.6;
+      font-family: var(--font-serif);
+    }
+
+    .info-table td:last-child { border-right: none; }
+    .info-table tr:last-child td { border-bottom: none; }
+    .info-table tr:hover td { background: var(--bg); }
+
+    .info-table td:first-child {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      width: 38%;
+    }
+
+    /* ── BADGE ──────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border: 1px solid currentColor;
+    }
+
+    .badge-dark { color: var(--text); }
+    .badge-warn { color: #d97706; }
+    .badge-success { color: #16a34a; }
+    .badge-info { color: #2563eb; }
+
+    /* ── DIVIDER ────────────────────────────────────── */
+    .ed-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 32px 0;
+    }
+
+    /* ── PULLQUOTE ──────────────────────────────────── */
+    .pullquote {
+      border-left: 4px solid var(--border-strong);
+      padding: 20px 28px;
+      background: var(--accent-bg);
+      margin: 24px 0;
+    }
+
+    .pullquote p {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      font-style: italic;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .pullquote cite {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      font-style: normal;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── STEP LIST ──────────────────────────────────── */
+    .step-list { list-style: none; counter-reset: steps; }
+
+    .step-list li {
+      counter-increment: steps;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .step-list li::before {
+      content: counter(steps);
+      width: 24px;
+      height: 24px;
+      background: var(--text);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    .step-content { flex: 1; }
+
+    .step-title {
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .step-desc {
+      font-family: var(--font-serif);
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────── */
+    @media (max-width: 860px) {
+      .sidebar { display: none; }
+      .main { padding: 28px 20px; max-width: 100%; }
+      .checklist-grid { grid-template-columns: 1fr; }
+      .approval-flow { flex-wrap: wrap; }
+      .approval-step { min-width: 48%; border-bottom: 1px solid var(--border-strong); }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ─── SIDEBAR ───────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-kicker">AIVE · Request Guide</span>
+      <div class="sidebar-title">AI 리소스<br>요청 양식 가이드</div>
+    </div>
+
+    <div class="nav-section-label">개요</div>
+    <button class="nav-item active" onclick="show(this,'s0')">
+      <span class="nav-icon">🏆</span>
+      <span>AIVE 6대 핵심 체크리스트</span>
+    </button>
+
+    <div class="nav-section-label">요청 양식</div>
+    <button class="nav-item" onclick="show(this,'s1')">
+      <span class="nav-icon">🤖</span>
+      <span>Claude Max 구매의뢰</span>
+    </button>
+    <button class="nav-item" onclick="show(this,'s2')">
+      <span class="nav-icon">🔑</span>
+      <span>Gemini API 키 신청</span>
+    </button>
+    <button class="nav-item" onclick="show(this,'s3')">
+      <span class="nav-icon">☁️</span>
+      <span>Cloud Run 서버 신청</span>
+    </button>
+
+    <div class="sidebar-footer">
+      AIVE 내부 운영 정책 기반<br>
+      문의: 이광일 실장<br>
+      최종 승인: CTO
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ──────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- ══ S0: 6대 핵심 체크리스트 ══════════════════════ -->
+    <div id="s0">
+      <div class="ed-header">
+        <span class="ed-kicker">AIVE Contest · Checklist</span>
+        <h1 class="ed-title">6대 핵심 체크리스트</h1>
+        <p class="ed-subtitle">AI 과제 제출 평가 기준</p>
+        <p class="ed-desc">
+          AIVE 과제 제출 시 아래 여섯 가지 평가 기준에 따라 내용을 작성합니다.
+          각 항목은 AI 도입의 전략적 가치와 실효성을 입체적으로 검증하기 위해 설계되었습니다.
+          Google Sheets 양식에 부서 · 이름 · 과제명과 함께 작성하여 제출합니다.
+        </p>
+        <div class="ed-meta">
+          <div class="ed-meta-item">
+            <span class="ed-meta-label">제출 방식</span>
+            <span class="ed-meta-value">Google Sheets (Form)</span>
+          </div>
+          <div class="ed-meta-item">
+            <span class="ed-meta-label">필수 항목</span>
+            <span class="ed-meta-value">부서 · 이름 · 과제명 + 6항목</span>
+          </div>
+          <div class="ed-meta-item">
+            <span class="ed-meta-label">Updated</span>
+            <span class="ed-meta-value">2026-03-22</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ed-section-label">평가 기준 개요</div>
+
+      <!-- SVG 플로우 다이어그램 -->
+      <div style="border:1px solid var(--border); background:var(--surface); padding:24px; margin-bottom:28px; overflow-x:auto;">
+        <svg viewBox="0 0 680 80" style="width:100%; max-width:680px; display:block; margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="a" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+              <path d="M0,0 L0,7 L7,3.5 z" fill="#9ca3af"/>
+            </marker>
+          </defs>
+          <rect x="2" y="20" width="90" height="40" rx="0" fill="#111" stroke="#111" stroke-width="1.5"/>
+          <text x="47" y="37" text-anchor="middle" fill="#fff" font-size="10" font-family="Ubuntu Mono, monospace" font-weight="700">Strategy</text>
+          <text x="47" y="52" text-anchor="middle" fill="rgba(255,255,255,.6)" font-size="9" font-family="Ubuntu Mono, monospace">How &amp; Where</text>
+          <line x1="92" y1="40" x2="105" y2="40" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#a)"/>
+          <rect x="106" y="20" width="90" height="40" rx="0" fill="#f1f1f1" stroke="#111" stroke-width="1.5"/>
+          <text x="151" y="37" text-anchor="middle" fill="#111" font-size="10" font-family="Ubuntu Mono, monospace" font-weight="700">ROI</text>
+          <text x="151" y="52" text-anchor="middle" fill="#6b7280" font-size="9" font-family="Ubuntu Mono, monospace">Automation</text>
+          <line x1="196" y1="40" x2="209" y2="40" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#a)"/>
+          <rect x="210" y="20" width="90" height="40" rx="0" fill="#f1f1f1" stroke="#111" stroke-width="1.5"/>
+          <text x="255" y="37" text-anchor="middle" fill="#111" font-size="10" font-family="Ubuntu Mono, monospace" font-weight="700">Optimize</text>
+          <text x="255" y="52" text-anchor="middle" fill="#6b7280" font-size="9" font-family="Ubuntu Mono, monospace">Accuracy</text>
+          <line x1="300" y1="40" x2="313" y2="40" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#a)"/>
+          <rect x="314" y="20" width="90" height="40" rx="0" fill="#f1f1f1" stroke="#111" stroke-width="1.5"/>
+          <text x="359" y="37" text-anchor="middle" fill="#111" font-size="10" font-family="Ubuntu Mono, monospace" font-weight="700">Proof</text>
+          <text x="359" y="52" text-anchor="middle" fill="#6b7280" font-size="9" font-family="Ubuntu Mono, monospace">Screenshot</text>
+          <line x1="404" y1="40" x2="417" y2="40" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#a)"/>
+          <rect x="418" y="20" width="90" height="40" rx="0" fill="#f1f1f1" stroke="#111" stroke-width="1.5"/>
+          <text x="463" y="37" text-anchor="middle" fill="#111" font-size="10" font-family="Ubuntu Mono, monospace" font-weight="700">Scale</text>
+          <text x="463" y="52" text-anchor="middle" fill="#6b7280" font-size="9" font-family="Ubuntu Mono, monospace">Expandable</text>
+          <line x1="508" y1="40" x2="521" y2="40" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#a)"/>
+          <rect x="522" y="20" width="90" height="40" rx="0" fill="#111" stroke="#111" stroke-width="1.5"/>
+          <text x="567" y="37" text-anchor="middle" fill="#fff" font-size="10" font-family="Ubuntu Mono, monospace" font-weight="700">Impact</text>
+          <text x="567" y="52" text-anchor="middle" fill="rgba(255,255,255,.6)" font-size="9" font-family="Ubuntu Mono, monospace">Business</text>
+          <text x="340" y="12" text-anchor="middle" fill="#9ca3af" font-size="9" font-family="Ubuntu Mono, monospace" letter-spacing="0.1em">AIVE EVALUATION FLOW</text>
+        </svg>
+      </div>
+
+      <div class="checklist-grid">
+        <div class="check-item">
+          <div class="check-num">01 / Strategy</div>
+          <div class="check-tag">How &amp; Where</div>
+          <div class="check-title">AI 도입 전략</div>
+          <div class="check-desc">AI를 적용한 업무 영역과 기술적 접근 방식을 구체적으로 서술합니다. 단순 프롬프트 활용부터 API 연동, MLOps 구축까지 실제 적용 방법을 명시합니다.</div>
+        </div>
+        <div class="check-item">
+          <div class="check-num">02 / ROI</div>
+          <div class="check-tag">Automation</div>
+          <div class="check-title">업무 효율성 및 자동화 성과</div>
+          <div class="check-desc">기존 수작업 대비 자동화 수준을 정량적으로 제시합니다. 절감된 시간, 처리량 변화, 오류율 감소 등 측정 가능한 성과 지표를 포함합니다.</div>
+        </div>
+        <div class="check-item">
+          <div class="check-num">03 / Optimization</div>
+          <div class="check-tag">Accuracy</div>
+          <div class="check-title">AI 성능 및 정확도 고도화</div>
+          <div class="check-desc">환각(Hallucination) 감소 및 정확도 향상을 위해 적용한 기법을 기술합니다. RAG, 프롬프트 체이닝, 파인튜닝 등 구체적 방법론을 상세히 기재합니다.</div>
+        </div>
+        <div class="check-item">
+          <div class="check-num">04 / PoC</div>
+          <div class="check-tag">Proof of Concept</div>
+          <div class="check-title">시각적 증빙 자료</div>
+          <div class="check-desc">작동하는 프로토타입 또는 결과물의 스크린샷을 첨부합니다. "백문이 불여일견"의 원칙에 따라 실제 동작 화면으로 성과를 증명합니다.</div>
+        </div>
+        <div class="check-item">
+          <div class="check-num">05 / Scalability</div>
+          <div class="check-tag">Expandable</div>
+          <div class="check-title">범용성 및 타 부서 확장성</div>
+          <div class="check-desc">개발된 솔루션이 타 부서 또는 유사 업무 프로세스에 적용 가능한지를 검토합니다. 권한 제약이 있는 경우 팀 내 동료로의 확장성도 유효합니다.</div>
+        </div>
+        <div class="check-item">
+          <div class="check-num">06 / Business Impact</div>
+          <div class="check-tag">현업 적용</div>
+          <div class="check-title">현업 적용 가능성</div>
+          <div class="check-desc">결과물이 실제 비즈니스 환경에 즉시 투입되어 실효성을 낼 수 있는지 그 가치를 증명합니다. 단순 실험적 결과물이 아닌 현업 운영 가능성을 서술합니다.</div>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">📋</span>
+        <div>
+          <strong>제출 필수 항목</strong><br>
+          Google Sheets 양식에 <strong>부서명 · 성명 · 과제명</strong>과 위 6개 항목을 모두 작성하여 제출합니다. 상위 레벨 달성을 위해서는 <strong>03 AI 성능 고도화</strong> 항목을 특히 충실하게 기재하는 것을 권장합니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ S1: Claude Max 구매의뢰 ════════════════════════ -->
+    <div id="s1" style="display:none;">
+      <div class="ed-header">
+        <span class="ed-kicker">Request Form · AI Tool</span>
+        <h1 class="ed-title">Claude Max</h1>
+        <p class="ed-subtitle">구매의뢰서 작성 가이드</p>
+        <p class="ed-desc">
+          Cursor 지원 종료 이후 주요 AI 코딩 도구로 Claude Max가 운영됩니다.
+          계정은 최대 7인 공유 풀(Pool) 방식으로 배정되며, 책임감 있는 사용을 위해
+          개인 부담금 정책이 적용됩니다.
+        </p>
+        <div class="ed-meta">
+          <div class="ed-meta-item">
+            <span class="ed-meta-label">결재라인</span>
+            <span class="ed-meta-value">팀장 → 센터장/실장 → CTO</span>
+          </div>
+          <div class="ed-meta-item">
+            <span class="ed-meta-label">개인 부담금</span>
+            <span class="ed-meta-value">₩10,000/월 (급여 공제)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ed-section-label">운영 정책 요약</div>
+
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th>내용</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>지원 종료 도구</td>
+            <td>Cursor — 팀 계정 관리 복잡성 및 비용 중복 문제로 지원 중단</td>
+          </tr>
+          <tr>
+            <td>공유 인원</td>
+            <td>계정당 최대 7인 공동 사용 (특정 과제 전용 계정은 별도 협의)</td>
+          </tr>
+          <tr>
+            <td>개인 부담금</td>
+            <td>월 ₩10,000 급여 공제 — 책임감 있는 활용을 위한 정책</td>
+          </tr>
+          <tr>
+            <td>계정 관리</td>
+            <td>배정 및 회수는 담당자(Chris)가 직접 처리</td>
+          </tr>
+          <tr>
+            <td>사용 원칙</td>
+            <td>필요한 기간에만 신청하고, 사용 종료 시 즉시 반납 요청</td>
+          </tr>
+          <tr>
+            <td>종료 요청</td>
+            <td>이광일 실장에게 이메일로 간단히 통보</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <hr class="ed-divider">
+      <div class="ed-section-label">결재 흐름</div>
+
+      <div class="approval-flow">
+        <div class="approval-step">
+          <span class="approval-step-num">Step 1</span>
+          <span class="approval-step-role">팀장</span>
+        </div>
+        <div class="approval-step">
+          <span class="approval-step-num">Step 2</span>
+          <span class="approval-step-role">센터장 / 실장</span>
+        </div>
+        <div class="approval-step final">
+          <span class="approval-step-num">최종 승인</span>
+          <span class="approval-step-role">CTO</span>
+        </div>
+      </div>
+
+      <hr class="ed-divider">
+      <div class="ed-section-label">구매의뢰서 기재 내용</div>
+
+      <p class="prose">
+        구매의뢰서 <strong>문서 내 7. 기타 사항</strong>에 아래 내용을 작성합니다.
+      </p>
+
+      <div class="form-template"><span class="ft-section">■ 문서번호 7. 기타 사항 기재 내용</span>
+
+<span class="ft-label">▸ 사용 용도</span>
+<span class="ft-value">  예) 코드 리뷰 자동화, 기술 문서 초안 작성, 데이터 분석 지원 등</span>
+
+<span class="ft-label">▸ 사용 시작일</span>
+<span class="ft-value">  예) 2026-04-01</span>
+<span class="ft-optional">  ※ 일반적으로 결재 완료 익일 기준. 사전 신청 시 명시.</span>
+
+<span class="ft-label">▸ 예상 사용 종료일</span>
+<span class="ft-value">  예) 2026-06-30 (말일 기준)</span>
+<span class="ft-optional">  ※ 과제 종료 또는 필요 없어지면 즉시 종료 요청.</span></div>
+
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div>
+          <strong>사용 종료 요청 필수</strong><br>
+          계정 사용이 완료되면 반드시 <strong>이광일 실장에게 이메일</strong>로 종료 요청을 해주세요.
+          미반납 시 불필요한 비용이 지속 발생합니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ S2: Gemini API 신청 ══════════════════════════ -->
+    <div id="s2" style="display:none;">
+      <div class="ed-header">
+        <span class="ed-kicker">Request Form · AI API</span>
+        <h1 class="ed-title">Gemini API 키</h1>
+        <p class="ed-subtitle">신청 및 운영 가이드</p>
+        <p class="ed-desc">
+          프로젝트에서 AI API가 필요한 경우 Gemini AI Studio를 통해 개인별 API 키를 발급받습니다.
+          효율적 비용 운영을 위해 Flash 계열 모델을 우선 사용하는 것을 권장합니다.
+          본 신청은 <strong>개인 또는 부서 프로젝트에 한하며</strong>, 상용 서비스는 Vertex AI 검토가 필요합니다.
+        </p>
+        <div class="ed-meta">
+          <div class="ed-meta-item">
+            <span class="ed-meta-label">결재라인</span>
+            <span class="ed-meta-value">팀장 → 센터장/실장 → CTO</span>
+          </div>
+          <div class="ed-meta-item">
+            <span class="ed-meta-label">적용 범위</span>
+            <span class="ed-meta-value">개인 · 부서 프로젝트 한정</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ed-section-label">API 키 발급 흐름</div>
+
+      <ol class="step-list">
+        <li>
+          <div class="step-content">
+            <div class="step-title">구매의뢰서 제출 및 결재</div>
+            <div class="step-desc">팀장 → 센터장/실장 → CTO 결재 라인을 통해 구매의뢰서를 제출합니다.</div>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <div class="step-title">관리자 프로젝트 명세 확인</div>
+            <div class="step-desc">승인 후 담당 관리자가 사용 용도 및 프로젝트 명세를 검토합니다.</div>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <div class="step-title">개인 API 키 발급 및 사용량 한도 설정</div>
+            <div class="step-desc">Gemini AI Studio에서 개인별 키가 생성되며, 월 사용량 한도(Limit)가 설정됩니다.</div>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <div class="step-title">사용량 모니터링 및 키 관리</div>
+            <div class="step-desc">개인 키 단위로 사용량이 추적됩니다. 현저히 감소하면 미사용으로 간주하여 키가 만료 처리됩니다.</div>
+          </div>
+        </li>
+      </ol>
+
+      <hr class="ed-divider">
+      <div class="ed-section-label">모델 선택 가이드</div>
+
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>모델</th>
+            <th>권장 용도</th>
+            <th>상대적 비용</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Flash Lite</td>
+            <td>단순 분류, 요약, 빠른 응답이 필요한 반복 작업</td>
+            <td><span class="badge badge-success">낮음</span></td>
+          </tr>
+          <tr>
+            <td>Flash</td>
+            <td>일반적인 텍스트 생성, 코드 보조, 문서 작성 — <strong>기본 권장</strong></td>
+            <td><span class="badge badge-success">낮음</span></td>
+          </tr>
+          <tr>
+            <td>Pro</td>
+            <td>복잡한 추론, 멀티스텝 분석, 고난도 코드 생성</td>
+            <td><span class="badge badge-warn">높음</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout success">
+        <span class="callout-icon">💡</span>
+        <div>
+          <strong>Flash 모델 우선 원칙</strong><br>
+          Flash Lite / Flash 모델을 기본으로 사용하고, 복잡한 추론이 명확히 필요한 작업에만 Pro 모델을 사용하여 비용을 효율적으로 관리하세요.
+        </div>
+      </div>
+
+      <hr class="ed-divider">
+      <div class="ed-section-label">결재 흐름</div>
+
+      <div class="approval-flow">
+        <div class="approval-step">
+          <span class="approval-step-num">Step 1</span>
+          <span class="approval-step-role">팀장</span>
+        </div>
+        <div class="approval-step">
+          <span class="approval-step-num">Step 2</span>
+          <span class="approval-step-role">센터장 / 실장</span>
+        </div>
+        <div class="approval-step final">
+          <span class="approval-step-num">최종 승인</span>
+          <span class="approval-step-role">CTO</span>
+        </div>
+      </div>
+
+      <hr class="ed-divider">
+      <div class="ed-section-label">구매의뢰서 기재 내용</div>
+
+      <p class="prose">구매의뢰서 <strong>문서 내 7. 기타 사항</strong>에 아래 내용을 작성합니다.</p>
+
+      <div class="form-template"><span class="ft-section">■ 문서번호 7. 기타 사항 기재 내용</span>
+
+<span class="ft-label">▸ 사용 용도</span>
+<span class="ft-value">  예) 사내 보고서 자동 요약 API, 고객 문의 분류 파이프라인 등</span>
+<span class="ft-optional">  ※ 개인 또는 부서 프로젝트에 한함. 상용 서비스 목적은 Vertex AI 검토.</span>
+
+<span class="ft-label">▸ 사용 시작일</span>
+<span class="ft-value">  예) 2026-04-01</span>
+<span class="ft-optional">  ※ 결재 완료 익일 기준. 사전 신청 시 명시.</span>
+
+<span class="ft-label">▸ 예상 사용 종료일</span>
+<span class="ft-value">  예) 2026-09-30 (말일 기준)</span></div>
+
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div>
+          <strong>미사용 키 자동 만료</strong><br>
+          사용량이 현저히 감소하면 미사용으로 간주하여 확인 후 키가 만료 처리됩니다.
+          장기 미사용 예정 시 사전에 관리자에게 알려주세요.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ S3: Cloud Run 신청 ══════════════════════════ -->
+    <div id="s3" style="display:none;">
+      <div class="ed-header">
+        <span class="ed-kicker">Request Form · Infrastructure</span>
+        <h1 class="ed-title">Cloud Run</h1>
+        <p class="ed-subtitle">서버 자원 신청 가이드</p>
+        <p class="ed-desc">
+          서버 자원이 필요한 경우 Cloud Run을 통해 신청할 수 있습니다.
+          단, 부서장의 사전 승인이 필요하며 발생 비용은 해당 부서에 귀속됩니다.
+          서비스 운영의 지속성을 위해 미사용 종료와 부서 내 기술 이전이 의무화됩니다.
+        </p>
+        <div class="ed-meta">
+          <div class="ed-meta-item">
+            <span class="ed-meta-label">결재라인</span>
+            <span class="ed-meta-value">팀장 → 센터장/실장 (CTO 제외)</span>
+          </div>
+          <div class="ed-meta-item">
+            <span class="ed-meta-label">비용 귀속</span>
+            <span class="ed-meta-value">신청 부서</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ed-section-label">운영 원칙</div>
+
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th>내용</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>비용 귀속</td>
+            <td>Cloud Run 운영으로 발생하는 모든 비용은 신청 부서에 귀속됩니다.</td>
+          </tr>
+          <tr>
+            <td>미사용 종료 의무</td>
+            <td>불필요한 비용 방지를 위해 사용하지 않는 서비스는 해당 부서에서 직접 종료를 요청합니다.</td>
+          </tr>
+          <tr>
+            <td>기술 이전 필수</td>
+            <td>운영자 퇴사 또는 조직 개편 시에도 서비스가 단절되지 않도록 운영 지식을 부서 내에 반드시 공유·이전합니다.</td>
+          </tr>
+          <tr>
+            <td>사양 확인</td>
+            <td>품의 승인 완료 후 플랫폼인프라팀에서 사양 확인 등의 안내 메일을 발송합니다.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <hr class="ed-divider">
+      <div class="ed-section-label">결재 흐름</div>
+
+      <div class="approval-flow">
+        <div class="approval-step">
+          <span class="approval-step-num">Step 1</span>
+          <span class="approval-step-role">팀장</span>
+        </div>
+        <div class="approval-step final">
+          <span class="approval-step-num">최종 승인</span>
+          <span class="approval-step-role">센터장 / 실장</span>
+        </div>
+      </div>
+
+      <div class="callout info" style="margin-top:12px;">
+        <span class="callout-icon">ℹ️</span>
+        <div>Cloud Run 신청은 <strong>CTO 결재가 불필요</strong>합니다. 팀장 → 센터장/실장 라인에서 최종 승인됩니다.</div>
+      </div>
+
+      <hr class="ed-divider">
+      <div class="ed-section-label">구매의뢰서 기재 내용</div>
+
+      <p class="prose">구매의뢰서 <strong>문서 내 7. 기타 사항</strong>에 아래 내용을 작성합니다.</p>
+
+      <div class="form-template"><span class="ft-section">■ 문서번호 7. 기타 사항 기재 내용</span>
+
+<span class="ft-label">▸ 사용 용도</span>
+<span class="ft-value">  예) AI 문서 처리 API 서버, 데이터 파이프라인 스케줄러 등</span>
+
+<span class="ft-label">▸ 사용 시작일</span>
+<span class="ft-value">  예) 2026-04-01</span>
+<span class="ft-optional">  ※ 결재 완료 익일 기준. 사전 신청 시 명시.</span>
+
+<span class="ft-label">▸ 예상 사용 종료일</span>
+<span class="ft-value">  예) 2026-12-31 (말일 기준)</span>
+
+<span class="ft-label">▸ 개발환경 필요 유무</span>
+<span class="ft-value">  예) 필요 / 불필요</span>
+
+<span class="ft-label">▸ 요청 특이사항</span>
+<span class="ft-value">  예) 특정 리전 지정 필요, 고가용성 구성 필요 등 (없으면 '없음')</span>
+
+<span class="ft-label">▸ 비용 귀속 동의</span>
+<span class="ft-required">  [필수] 발생되는 비용은 팀에 귀속되는 점에 동의합니다.</span></div>
+
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div>
+          <strong>기술 이전 의무</strong><br>
+          서비스 운영자의 퇴사 또는 조직 변경 시에도 서비스가 중단 없이 유지될 수 있도록,
+          운영 노하우와 접근 권한을 반드시 부서 내 구성원에게 사전에 이전해야 합니다.
+        </div>
+      </div>
+
+      <div class="pullquote">
+        <p>"승인 완료 후 플랫폼인프라팀에서 사양 확인 및 환경 설정 관련 안내 메일이 발송됩니다."</p>
+        <cite>— 플랫폼인프라팀 운영 정책</cite>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  function show(btn, id) {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.main > div').forEach(d => d.style.display = 'none');
+    btn.classList.add('active');
+    document.getElementById(id).style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
