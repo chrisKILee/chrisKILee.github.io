@@ -705,6 +705,62 @@
     .submit-result.success { border-left-color: #16a34a; background: #f0fdf4; color: #14532d; }
     .submit-result.error   { border-left-color: #dc2626; background: #fef2f2; color: #7f1d1d; }
 
+    /* ── FILE INPUT ──────────────────────────────────── */
+    .file-upload-area {
+      margin-top: 14px;
+      border: 2px dashed var(--border);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .file-upload-area:hover { border-color: var(--border-strong); background: #f9fafb; }
+    .file-upload-area.has-file { border-color: var(--border-strong); border-style: solid; background: #f9fafb; }
+
+    .file-upload-area input[type="file"] { display: none; }
+
+    .file-upload-icon {
+      font-size: 22px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .file-upload-text {
+      font-family: var(--font-form);
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .file-upload-text strong {
+      font-family: var(--font-form);
+      font-weight: 600;
+      color: var(--text);
+      display: block;
+      font-size: 13.5px;
+    }
+    .file-upload-name {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #16a34a;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .file-upload-clear {
+      margin-left: auto;
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      cursor: pointer;
+      display: none;
+    }
+    .file-upload-clear:hover { border-color: var(--border-strong); color: var(--text); }
+
     /* ── RESPONSIVE ─────────────────────────────────── */
     @media (max-width: 860px) {
       .sidebar { display: none; }
@@ -839,8 +895,19 @@
             <span class="form-checklist-title">시각적 증빙 자료</span>
             <span class="check-tag-inline" style="margin-left:auto; font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#fff; background:var(--text); padding:1px 6px;">Proof</span>
           </div>
-          <p class="form-checklist-desc">작동하는 프로토타입 또는 결과물의 스크린샷 URL을 기재합니다. 실제 동작 화면으로 성과를 증명합니다.</p>
-          <textarea id="f-c4" name="04_시각증빙" class="form-textarea" rows="4" placeholder="스크린샷 URL, 데모 링크, 또는 첨부 예정 파일명을 기재해주세요." required></textarea>
+          <p class="form-checklist-desc">작동하는 프로토타입 또는 결과물의 스크린샷 URL, 데모 링크를 기재하고, 스크린샷을 ZIP 파일로 첨부합니다. URL과 첨부 중 하나 이상 필수입니다.</p>
+          <textarea id="f-c4" name="04_시각증빙" class="form-textarea" rows="3" placeholder="스크린샷 URL, 데모 링크 등 (선택)"></textarea>
+
+          <label class="file-upload-area" id="file-drop-area" for="f-poc-file">
+            <input type="file" id="f-poc-file" accept=".zip" onchange="onFileSelected(this)">
+            <span class="file-upload-icon">📎</span>
+            <div class="file-upload-text">
+              <strong>ZIP 파일 첨부</strong>
+              스크린샷을 ZIP으로 묶어 첨부해주세요 (최대 35MB)
+              <span class="file-upload-name" id="file-name-display"></span>
+            </div>
+            <button type="button" class="file-upload-clear" id="file-clear-btn" onclick="clearFile(event)">✕ 제거</button>
+          </label>
         </div>
 
         <div class="form-checklist-item">
@@ -1240,34 +1307,90 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // ── 파일 선택 핸들러 ─────────────────────────────────
+  function onFileSelected(input) {
+    var area = document.getElementById('file-drop-area');
+    var nameEl = document.getElementById('file-name-display');
+    var clearBtn = document.getElementById('file-clear-btn');
+    if (input.files && input.files[0]) {
+      var f = input.files[0];
+      nameEl.textContent = f.name + ' (' + (f.size / 1024 / 1024).toFixed(1) + ' MB)';
+      area.classList.add('has-file');
+      clearBtn.style.display = 'block';
+    }
+  }
+
+  function clearFile(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var input = document.getElementById('f-poc-file');
+    input.value = '';
+    document.getElementById('file-name-display').textContent = '';
+    document.getElementById('file-drop-area').classList.remove('has-file');
+    document.getElementById('file-clear-btn').style.display = 'none';
+  }
+
+  // ── 파일 → base64 변환 ────────────────────────────────
+  function readFileAsBase64(file) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ── 폼 제출 ───────────────────────────────────────────
   function submitChecklist(e) {
     e.preventDefault();
-    var form = document.getElementById('checklist-form');
-    var btn  = document.getElementById('submit-btn');
-    var res  = document.getElementById('submit-result');
+    var form    = document.getElementById('checklist-form');
+    var btn     = document.getElementById('submit-btn');
+    var res     = document.getElementById('submit-result');
+    var fileInput = document.getElementById('f-poc-file');
+    var urlText = document.getElementById('f-c4').value.trim();
 
-    var data = {
-      '부서명':          document.getElementById('f-dept').value.trim(),
-      '성명':            document.getElementById('f-name').value.trim(),
-      '과제명':          document.getElementById('f-project').value.trim(),
-      '01_AI도입전략':   document.getElementById('f-c1').value.trim(),
-      '02_업무효율성':   document.getElementById('f-c2').value.trim(),
-      '03_AI성능고도화': document.getElementById('f-c3').value.trim(),
-      '04_시각증빙':     document.getElementById('f-c4').value.trim(),
-      '05_확장성':       document.getElementById('f-c5').value.trim(),
-      '06_비즈니스임팩트': document.getElementById('f-c6').value.trim()
-    };
+    // URL도 없고 파일도 없으면 막기
+    if (!urlText && (!fileInput.files || !fileInput.files[0])) {
+      res.className = 'submit-result error';
+      res.style.display = 'block';
+      res.textContent = '⚠ 04번 항목: 스크린샷 URL 또는 ZIP 파일 중 하나 이상 필수입니다.';
+      document.getElementById('file-drop-area').style.borderColor = '#dc2626';
+      return;
+    }
+    document.getElementById('file-drop-area').style.borderColor = '';
 
     btn.disabled = true;
-    btn.textContent = '제출 중…';
+    btn.textContent = fileInput.files && fileInput.files[0] ? '파일 인코딩 중…' : '제출 중…';
     res.className = 'submit-result';
     res.style.display = 'none';
 
-    fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+    var data = {
+      '부서명':            document.getElementById('f-dept').value.trim(),
+      '성명':              document.getElementById('f-name').value.trim(),
+      '과제명':            document.getElementById('f-project').value.trim(),
+      '01_AI도입전략':     document.getElementById('f-c1').value.trim(),
+      '02_업무효율성':     document.getElementById('f-c2').value.trim(),
+      '03_AI성능고도화':   document.getElementById('f-c3').value.trim(),
+      '04_시각증빙URL':    urlText,
+      '05_확장성':         document.getElementById('f-c5').value.trim(),
+      '06_비즈니스임팩트': document.getElementById('f-c6').value.trim()
+    };
+
+    var filePromise = (fileInput.files && fileInput.files[0])
+      ? readFileAsBase64(fileInput.files[0]).then(function(b64) {
+          data['04_파일명']   = fileInput.files[0].name;
+          data['04_파일데이터'] = b64;
+        })
+      : Promise.resolve();
+
+    filePromise.then(function() {
+      btn.textContent = '제출 중…';
+      return fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
     })
     .then(function() {
       res.className = 'submit-result success';
@@ -1276,6 +1399,9 @@
       btn.disabled = false;
       btn.textContent = '제출하기 — Google Sheets에 저장';
       form.reset();
+      document.getElementById('file-name-display').textContent = '';
+      document.getElementById('file-drop-area').classList.remove('has-file');
+      document.getElementById('file-clear-btn').style.display = 'none';
     })
     .catch(function(err) {
       res.className = 'submit-result error';
