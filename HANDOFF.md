@@ -1,114 +1,113 @@
 # 작업 인계 문서
-> 생성: 2026-03-19
+> 생성: 2026-03-22 13:15
 > 브랜치: master
-> 마지막 커밋: 3eecefa — fix: 스킬 치트시트 code-block 정렬 수정
+> 마지막 커밋: dc77508 — feat: claude_skills_guide에 누락 커스텀 스킬 4개 추가
 
 ## 새 세션 시작 방법
+
 ```
-HANDOFF.md 읽고 "chrisKILee.github.io gemini_html 사이트 작업" 이어서 해줘.
+HANDOFF.md 읽고 "gemini_html 사이트 페이지 추가" 이어서 작업해줘.
 ```
 
 ---
 
-## 완료된 작업 (이번 세션)
+## 오늘(2026-03-22) 완료된 작업 — 3개 세션 병렬 작업
 
-- [x] `awesome_claude_skills.html` 생성 — Claude Skills 생태계 가이드 (hash: 5SMC5JN, RDH10WS hot-news, protocol 템플릿)
-- [x] `favicon.svg` 투톤 버전으로 교체 — Primary #F97316 / Secondary #FED7AA, rx="2"
-- [x] `index.html` 파비콘 PNG→SVG 교체, nav에 C-로고 SVG 삽입
-- [x] `GDEDSE/index.html` (Archive) 파비콘 추가 + P-로고 삽입
-- [x] `claude_skills_guide.html` 누락 커스텀 스킬 5개 추가 (deploy-macmini, display-new, logo-icon-favicon, web-design-guidelines, vercel-composition-patterns)
-- [x] `agentation.html` 생성 — AI 에이전트 시각적 피드백 도구 (hash: UGP2XL9, QT38XYX AI Study, travel-guide 템플릿)
-- [x] `claude_skills_guide.html` 치트시트 code-block 정렬 수정 — `white-space: pre` + span 내부 개행 정리 (BeautifulSoup prettify 부작용 수정)
+### 세션 A — AI Study 페이지 연속 추가 (08:53~09:02)
+- [x] Browser Use CLI 2.0 가이드 페이지 (커밋: fbc79d2)
+  - 파일: `gemini_html/browser_use_cli.html` — 해시: UMHZ62B, order 26
+  - CDP 기반 브라우저 자동화 도구 정리
+- [x] shadcn Skills AI 어시스턴트 활용법 (커밋: 84013e2)
+  - 파일: `gemini_html/shadcn_skills_guide.html` — order 27
+- [x] Superpowers vs MoAI-ADK 비교 분석 (커밋: 2084a2f)
+  - 파일: `gemini_html/superpowers_vs_moai_adk.html` — 해시: 835ZV8D, order 28
+  - Neobrutalism 템플릿, 7단계 Superpowers vs PLAN/RUN/SYNC MoAI 파이프라인 비교
+- [x] GPT-5.4 프론트엔드 설계 가이드 (커밋: 8e8cd2f)
+  - 파일: `gemini_html/gpt54_frontend_design.html` — 해시: FZWJ9JE, order 29
+
+### 세션 B — AIVE 요청 양식 개발 (10:08~10:46)
+- [x] AIVE 요청 양식 가이드 페이지 생성 (커밋: 64b8eba)
+  - 파일: `gemini_html/aive_request_guide.html`
+- [x] Google Form 연동 — 6대 핵심 체크리스트 (커밋: 43545f0)
+- [x] 폼 필드 Pretendard 폰트 적용 (커밋: cecb59c)
+- [x] 04번 항목 ZIP 파일 첨부 기능 추가 (커밋: e14945c)
+
+### 세션 C — 정책/스킬/가이드 (11:26~13:02)
+- [x] aiworker_policy_v1.2 Action Items 뱃지 수정 (커밋: 06f15b2)
+- [x] 이광일 SECUCENTER AIVE-CONTEST 가이드 페이지 추가 (커밋: 80fff3b)
+- [x] claude_skills_guide 누락 커스텀 스킬 4개 추가 (커밋: dc77508)
+  - 파일: `gemini_html/claude_skills_guide.html` — 101줄 추가
+
+### 이전 세션 완료 작업
+- [x] Gemini CLI × MCP 아키텍처 심층 분석 페이지 (커밋: bebbb12)
+  - 파일: `gemini_html/gemini_cli_mcp_deep_dive.html` — 해시: SZ5XP56, order 25
 
 ---
 
 ## 진행 중인 작업
 
-| 작업 | 진행률 | 다음 단계 |
-|------|--------|-----------|
-| aiworker_policy_v2.html | 95% | Unstaged 상태. git add + commit 필요 |
+없음 — 모든 세션 작업 완료 및 push 완료.
 
 ---
 
 ## 남은 작업 (우선순위 순)
 
-1. **[바로]** `gemini_html/aiworker_policy_v2.html` unstaged 파일 커밋
-2. **[보통]** `/add-skill-to-doc` 실행 후 새로 추가된 커스텀 스킬 반영 (세션에서 추가됐을 수 있음)
-3. **[나중에]** GitHub Dependabot 취약점 36개 경고 — push마다 경고 뜸 (5 critical, 23 high, 6 moderate, 2 low). 정적 사이트라 실제 영향 낮지만 확인 권장
+1. **[나중에]** 추가 페이지 작성 (사용자 요청 시)
+2. **[나중에]** GitHub Dependabot 취약점 36개 검토 (critical 5, high 23, moderate 6, low 2) — 정적 사이트라 직접적 위협은 낮음
 
 ---
 
 ## 현재 작업 중인 파일
 
-- `gemini_html/aiworker_policy_v2.html` — Unstaged(modified). 내용은 이미 완성됨. 커밋만 하면 됨
-- `gemini_html/.claude/` — Untracked 디렉토리. `.gitignore`에 추가하거나 무시해도 됨
+없음 — working tree에 HANDOFF.md만 수정됨.
 
 ---
 
 ## 핵심 기술 결정사항
 
-### 사이트 구조
-- **v4.0 flat 구조**: 모든 페이지는 `gemini_html/*.html` 루트에 위치 (contents/ 서브폴더 없음)
-- **site.json**: 7자리 해시 키로 페이지 메타 등록. 해시는 URL이 아닌 식별자로만 사용
+### gemini_html 사이트 구조
+- `gemini_html/site.json` — 모든 페이지/카테고리 등록부. 새 페이지 추가 시 반드시 업데이트
+- 파일 해시: 7자리 고유 ID (`ABCDEFGHJKLMNPQRSTUVWXYZ23456789` 조합)
+- 카테고리 해시로 `categoryHash` 연결
+- `order` 값: 해당 카테고리 내 최대 order + 1 (현재 QT38XYX 최대: 29)
 
-### 파비콘/로고 스펙
-- **파비콘(P자)**: `gemini_html/favicon.svg` — Row1(좌+중) `#F97316` Primary, Row2(좌+중)+Row3(좌) `#FED7AA` Secondary, rx="2"
-- **사이트 로고(C자)**: `index.html` nav 인라인 SVG — Row1+3 `#4F46E5` dark indigo, Row2-left `#818CF8` light indigo
+### 페이지 추가 워크플로우 (`/add-new-page` 스킬)
+1. 카테고리 선택 (QT38XYX = 🤖 AI Study 등)
+2. 템플릿 선택 (20종, 번호는 갤러리 원본 #1~#20 기준 — 재번호 금지)
+3. 해시 자동 생성 → HTML 생성 → site.json 업데이트
+4. `/commit-push`로 배포
 
-### BeautifulSoup prettify 주의사항
-- `/add-skill-to-doc` 스킬이 BS4 prettify() 사용 → `<span>` 내부 개행+들여쓰기 추가
-- `white-space` 없는 code-block에 영향줌 → `.code-block { white-space: pre }` 이미 적용 완료
-- 향후 `/add-skill-to-doc` 실행 시 code-block 재확인 필요
+### 오늘 사용한 템플릿
+- `neobrutalism` (#15): 황금/인디고 고대비, Inter 900, 오프셋 섀도우
+  - `--color-primary: #FDC800`, `--color-secondary: #432DD7`
+
+### SKILL.md 수정 사항 (이번 세션)
+- `add-new-page` 스킬의 템플릿 추천 시 갤러리 원본 번호(#1~#20)로 표시하도록 수정
+  - 위치: `/home/chris/.claude/skills/add-new-page/SKILL.md`
+  - 이유: 필터링된 추천 목록에서 1,2,3... 재번호로 표시하면 사용자가 잘못된 번호 선택
 
 ---
 
 ## 알려진 문제 / 주의사항
 
-- **site.json 편집 전 반드시 Read**: 파일이 크고 자주 변경되므로 최신본 확인 필수
-- **해시 충돌 방지**: 새 페이지 추가 시 항상 스크립트로 미사용 해시 생성
-  ```bash
-  node -e "
-  const fs = require('fs');
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const site = JSON.parse(fs.readFileSync('gemini_html/site.json', 'utf8'));
-  const used = new Set([...Object.keys(site.folders), ...Object.keys(site.files || {})]);
-  let hash;
-  do { hash = Array.from({length:7}, () => chars[Math.floor(Math.random()*chars.length)]).join(''); } while (used.has(hash));
-  console.log(hash);
-  "
-  ```
-- **`gemini_html/.claude/`** untracked 디렉토리 — `.gitignore`에 `gemini_html/.claude/` 추가 권장
-
----
-
-## 주요 카테고리 해시 (site.json)
-
-| 해시 | 폴더명 |
-|------|--------|
-| `RDH10WS` | 🔥 hot-news |
-| `QT38XYX` | 🤖 AI Study |
-| `7S8LZFY` | ❋ Claude |
-| `KPYMQ8C` | 🌉 MCP |
-| `30BD927` | 🤖 AI-Worker |
-| `AEJUB79` | 🛡️ 플랫폼정보보호 |
-| `RHF2LJN` | 🛜 플랫폼인프라 |
-| `WU8Y4PL` | 🧪 플랫폼개발 |
-| `AED13WE` | 🔬 R&D Projects |
+- **master 브랜치 직접 push**: 이 레포는 GitHub Pages 배포용이므로 master에 직접 커밋/푸시가 정상 패턴
+- **병렬 세션 주의**: 같은 레포를 여러 세션에서 동시 작업 시 site.json order 충돌 가능 → 커밋 전 반드시 최신 max order 재확인
+- **WebFetch 원문 요약 제한**: 외부 URL 크롤링 시 WebFetch가 전체 원문 대신 요약본을 반환함
+- **Dependabot 보안 경고**: push 시마다 경고 메시지 출력되나 무시 가능 (정적 사이트)
 
 ---
 
 ## 환경 / 배포 상태
 
-- **로컬 서버**: `http://localhost:8080/gemini_html/` (별도 실행 필요)
-- **배포 URL**: `https://page.chrisnolja.dev/`
-- **CI/CD**: GitHub Pages 자동 배포 (push → 즉시 반영)
-- **테스트**: 없음 (정적 사이트)
+- **배포**: GitHub Pages 자동 배포 (master push → 자동 반영, ~1~2분 소요)
+- **라이브 URL**: https://page.chrisnolja.dev/gemini_html/
+- **DB 마이그레이션**: 해당 없음 (정적 사이트)
+- **테스트**: 해당 없음
 
 ---
 
-## 관련 스킬
+## 관련 문서
 
-- `/add-new-page` — `~/.claude/skills/add-new-page/` — 새 페이지 추가 전체 플로우
-- `/commit-push` — `~/.claude/skills/commit-push/` — 커밋+푸시 (PR 없이)
-- `/add-skill-to-doc` — 커스텀 스킬 → claude_skills_guide.html 자동 동기화
-- `/page-index-add` — AI Tech Feed 피드 아이템 추가
+- 스킬 가이드: `~/.claude/skills/add-new-page/` — 페이지 추가 전체 워크플로우
+- 템플릿 목록: `~/.claude/skills/add-new-page/templates/` — 20종 HTML 템플릿
+- 사이트 등록부: `gemini_html/site.json`
