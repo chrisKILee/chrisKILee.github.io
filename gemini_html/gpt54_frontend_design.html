@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPT-5.4로 멋진 프론트엔드 만들기 — OpenAI 블로그 한글 정리</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #111111;
+      --color-secondary: #f1f1f1;
+      --color-surface: #FFFFFF;
+      --color-text: #111827;
+      --color-success: #16A34A;
+      --color-warning: #D97706;
+      --color-danger: #DC2626;
+      --color-accent: #2563EB;
+      --font-primary: 'Gelasio', Georgia, serif;
+      --font-mono: 'Ubuntu Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-surface);
+      color: var(--color-text);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .editorial-rule { border: none; border-top: 2px solid var(--color-primary); margin: 0; }
+    .editorial-rule-thin { border: none; border-top: 1px solid #e5e7eb; }
+
+    /* 헤더 */
+    .site-header { border-bottom: 2px solid var(--color-primary); padding: 20px 24px; }
+    .site-header-inner { max-width: 1440px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .site-logo { font-family: var(--font-primary); font-size: 13px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-primary); }
+    .site-nav { display: flex; gap: 32px; }
+    .site-nav a { font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-primary); text-decoration: none; opacity: 0.6; transition: opacity 0.2s; }
+    .site-nav a:hover { opacity: 1; }
+    .site-date { font-family: var(--font-mono); font-size: 12px; color: #6b7280; letter-spacing: 0.05em; }
+
+    /* 히어로 */
+    .hero-section { max-width: 1440px; margin: 0 auto; padding: 80px 24px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: end; }
+    .hero-kicker { display: inline-block; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-surface); background-color: var(--color-primary); padding: 4px 10px; margin-bottom: 28px; }
+    .hero-heading { font-family: var(--font-primary); font-size: clamp(36px, 5vw, 72px); font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; color: var(--color-primary); margin-bottom: 8px; }
+    .hero-heading em { font-style: italic; font-weight: 400; }
+    .hero-heading-em { font-family: var(--font-primary); font-size: clamp(28px, 4vw, 56px); font-weight: 400; font-style: italic; line-height: 1.15; letter-spacing: -0.02em; color: var(--color-primary); opacity: 0.45; margin-bottom: 32px; }
+    .hero-description { font-size: 17px; line-height: 1.75; color: #374151; max-width: 480px; }
+    .hero-meta { border-top: 1px solid #e5e7eb; padding-top: 24px; margin-top: 40px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .hero-meta-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: #9ca3af; }
+    .hero-meta-value { font-family: var(--font-mono); font-size: 12px; color: var(--color-primary); }
+    .hero-pullquote { border-left: 4px solid var(--color-primary); padding: 32px 40px; background: var(--color-secondary); }
+    .hero-pullquote blockquote { font-size: clamp(16px, 2vw, 22px); font-style: italic; font-weight: 500; line-height: 1.55; color: var(--color-primary); margin-bottom: 20px; }
+    .hero-pullquote cite { font-family: var(--font-mono); font-size: 11px; font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7280; }
+
+    /* 콘텐츠 */
+    .content-wrap { max-width: 1440px; margin: 0 auto; padding: 0 24px 80px; }
+    .section-label { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #9ca3af; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+
+    /* 기사 그리드 */
+    .article-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0; border: 1px solid var(--color-primary); margin-bottom: 64px; }
+    .article-card { padding: 32px; border-right: 1px solid var(--color-primary); display: flex; flex-direction: column; }
+    .article-card:last-child { border-right: none; }
+    .article-card-featured { border-right: 2px solid var(--color-primary); }
+    .article-category { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #9ca3af; margin-bottom: 16px; }
+    .article-category.highlighted { color: var(--color-surface); background: var(--color-primary); display: inline-block; padding: 2px 8px; }
+    .article-category.accent { color: var(--color-surface); background: var(--color-accent); display: inline-block; padding: 2px 8px; }
+    .article-title { font-size: 22px; font-weight: 700; line-height: 1.25; color: var(--color-primary); margin-bottom: 12px; letter-spacing: -0.01em; }
+    .article-card:not(.article-card-featured) .article-title { font-size: 17px; }
+    .article-excerpt { font-size: 15px; line-height: 1.65; color: #4b5563; margin-bottom: 16px; flex: 1; }
+    .article-byline { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 16px; margin-top: auto; }
+
+    /* 룰 쇼케이스 (타이포그래피 쇼케이스 교체) */
+    .rule-showcase { border: 1px solid var(--color-primary); margin-bottom: 64px; }
+    .rule-showcase-header { padding: 24px 32px; background: var(--color-primary); color: var(--color-surface); font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; }
+    .rule-row { display: flex; align-items: flex-start; gap: 32px; padding: 18px 32px; border-bottom: 1px solid #e5e7eb; }
+    .rule-row:last-child { border-bottom: none; }
+    .rule-num { font-family: var(--font-mono); font-size: 11px; color: #9ca3af; min-width: 32px; padding-top: 3px; }
+    .rule-name { font-size: 15px; font-weight: 700; color: var(--color-primary); min-width: 200px; }
+    .rule-desc { font-size: 14px; line-height: 1.65; color: #4b5563; flex: 1; }
+    .rule-tag { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border: 1px solid currentColor; margin-left: 12px; vertical-align: middle; }
+    .tag-do { color: var(--color-success); }
+    .tag-dont { color: var(--color-danger); }
+
+    /* 데이터 섹션 */
+    .data-section { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-bottom: 64px; }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #9ca3af; text-align: left; padding: 0 0 12px 0; border-bottom: 2px solid var(--color-primary); }
+    .data-table td { font-size: 14px; padding: 14px 0; border-bottom: 1px solid #e5e7eb; color: var(--color-text); vertical-align: top; }
+    .data-table td:first-child { font-weight: 600; color: var(--color-primary); width: 40%; }
+    .data-table .mono-val { font-family: var(--font-mono); font-size: 13px; }
+    .data-table .good { color: var(--color-success); font-weight: 700; }
+
+    /* 코드 블록 */
+    .code-block { background: #f9fafb; border: 1px solid #e5e7eb; border-left: 4px solid var(--color-primary); padding: 20px 24px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; color: #374151; overflow-x: auto; white-space: pre; }
+    .code-comment { color: #9ca3af; }
+    .code-key { color: var(--color-primary); font-weight: 700; }
+    .code-val { color: #059669; }
+    .code-str { color: #7c3aed; }
+    .code-label { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #9ca3af; margin-bottom: 8px; margin-top: 20px; }
+    .code-label:first-child { margin-top: 0; }
+
+    /* 상태 스트립 */
+    .status-strip { display: flex; gap: 0; border: 1px solid var(--color-primary); margin-bottom: 64px; }
+    .status-item { flex: 1; padding: 20px 24px; border-right: 1px solid var(--color-primary); display: flex; align-items: center; gap: 12px; }
+    .status-item:last-child { border-right: none; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .status-label { font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+    .status-desc { font-size: 13px; color: #6b7280; margin-left: auto; text-align: right; }
+
+    /* 섹션 블록 */
+    .section-block { border: 1px solid #e5e7eb; border-left: 4px solid var(--color-primary); padding: 32px; margin-bottom: 48px; }
+    .section-block h3 { font-size: 20px; font-weight: 700; color: var(--color-primary); margin-bottom: 16px; letter-spacing: -0.01em; }
+    .section-block p { font-size: 15px; line-height: 1.75; color: #4b5563; margin-bottom: 12px; }
+    .section-block p:last-child { margin-bottom: 0; }
+
+    /* 콘텐츠 구조 순서 */
+    .landing-order { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; border: 1px solid var(--color-primary); margin-bottom: 48px; }
+    .landing-step { padding: 24px 20px; border-right: 1px solid var(--color-primary); text-align: center; }
+    .landing-step:last-child { border-right: none; }
+    .landing-step-num { font-family: var(--font-mono); font-size: 28px; font-weight: 700; color: var(--color-primary); line-height: 1; margin-bottom: 12px; }
+    .landing-step-name { font-size: 13px; font-weight: 700; color: var(--color-primary); margin-bottom: 6px; }
+    .landing-step-desc { font-size: 12px; color: #6b7280; line-height: 1.5; }
+
+    /* 풀쿼트 인라인 */
+    .inline-quote { border-left: 4px solid var(--color-primary); padding: 20px 28px; background: var(--color-secondary); margin: 24px 0; font-style: italic; font-size: 16px; line-height: 1.65; color: #374151; }
+
+    /* 푸터 */
+    .site-footer { border-top: 2px solid var(--color-primary); padding: 32px 24px; }
+    .site-footer-inner { max-width: 1440px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .footer-text { font-family: var(--font-mono); font-size: 12px; color: #9ca3af; letter-spacing: 0.05em; }
+    .footer-rule-word { font-family: var(--font-primary); font-size: 13px; font-style: italic; color: #d1d5db; }
+
+    @media (max-width: 900px) {
+      .hero-section { grid-template-columns: 1fr; gap: 40px; }
+      .article-grid { grid-template-columns: 1fr; }
+      .article-card { border-right: none; border-bottom: 1px solid var(--color-primary); }
+      .data-section { grid-template-columns: 1fr; }
+      .landing-order { grid-template-columns: 1fr 1fr; }
+      .landing-step { border-right: none; border-bottom: 1px solid var(--color-primary); }
+      .status-strip { flex-wrap: wrap; }
+      .status-item { border-right: none; border-bottom: 1px solid var(--color-primary); min-width: 50%; }
+      .rule-row { flex-direction: column; gap: 8px; }
+      .rule-name { min-width: unset; }
+      .site-nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <header class="site-header">
+    <div class="site-header-inner">
+      <span class="site-logo">AI Study · OpenAI Research</span>
+      <nav class="site-nav">
+        <a href="#">개요</a>
+        <a href="#">디자인 룰</a>
+        <a href="#">Claude Code 활용</a>
+        <a href="#">원문</a>
+      </nav>
+      <span class="site-date">2026-03-22</span>
+    </div>
+  </header>
+
+  <!-- 히어로 -->
+  <section class="hero-section">
+    <div>
+      <span class="hero-kicker">OpenAI Developers Blog · 한글 정리</span>
+      <h1 class="hero-heading">GPT-5.4로 <em>멋진</em><br>프론트엔드</h1>
+      <p class="hero-heading-em">Designing Delightful Frontends</p>
+      <p class="hero-description">2026년 3월 20일, OpenAI가 발표한 GPT-5.4 프론트엔드 설계 가이드의 핵심을 한글로 정리합니다. 이미지 이해, 원샷 코드 생성, Computer Use 통합, 그리고 Claude Code에서 바로 쓸 수 있는 활용법까지.</p>
+      <div class="hero-meta">
+        <span class="hero-meta-label">원문</span>
+        <span class="hero-meta-value">developers.openai.com/blog</span>
+        <span class="hero-meta-label" style="margin-left:16px;">GPT 출시일</span>
+        <span class="hero-meta-value">2026-03-05</span>
+        <span class="hero-meta-label" style="margin-left:16px;">컨텍스트</span>
+        <span class="hero-meta-value">1.05M 토큰</span>
+      </div>
+    </div>
+    <div class="hero-pullquote">
+      <blockquote>"프롬프트가 불충분하게 지정되면, 모델은 훈련 데이터의 고빈도 패턴으로 후퇴한다. 상세한 제약 조건과 비주얼 레퍼런스가 디자인 품질을 크게 향상시킨다."</blockquote>
+      <cite>— OpenAI 개발자 블로그 인용 · 2026-03-20</cite>
+    </div>
+  </section>
+
+  <hr class="editorial-rule">
+
+  <div class="content-wrap">
+
+    <!-- 3대 핵심 진보 -->
+    <p class="section-label">3대 핵심 진보 — What's New in GPT-5.4</p>
+    <div class="article-grid">
+      <div class="article-card article-card-featured">
+        <p class="article-category highlighted">핵심 변화</p>
+        <h2 class="article-title">이미지를 직접 이해하는 모델</h2>
+        <p class="article-excerpt">GPT-5.4는 시각 정보를 네이티브로 처리합니다. 디자이너가 무드보드나 레퍼런스 이미지를 프롬프트에 바로 첨부할 수 있고, 모델이 렌더된 결과물을 시각적으로 검증하며 레퍼런스 UI와 비교합니다.</p>
+        <p class="article-excerpt">이미지 검색과 이미지 생성 도구를 네이티브로 사용하도록 훈련되어, "이 스크린샷과 비슷하게 만들어줘"가 실제로 동작합니다.</p>
+        <p class="article-byline">Enhanced Image Understanding · 멀티모달 네이티브</p>
+      </div>
+
+      <div class="article-card">
+        <p class="article-category accent">원샷 생성</p>
+        <h2 class="article-title">대시보드 전체를 5분 안에</h2>
+        <p class="article-excerpt">Figma-to-code 테스트에서 대시보드 전체를 원샷(한 번의 프롬프트)으로 구현. 소요 시간 약 5분. 이전 모델보다 시각적으로 더 야심차고 완성도 높은 결과물을 산출합니다.</p>
+        <p class="article-byline">Improved Functionality · 복잡한 UX 원샷 처리</p>
+      </div>
+
+      <div class="article-card">
+        <p class="article-category" style="color:#7c3aed;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-bottom:16px;">Computer Use</p>
+        <h2 class="article-title">Playwright로 직접 테스트하는 AI</h2>
+        <p class="article-excerpt">OpenAI 최초의 범용 모델 + 컴퓨터 직접 사용 기능. Playwright 같은 도구로 인터페이스를 탐색하며 자동으로 반복 테스트·검증합니다. 스크린샷 기반 워크플로우, 마우스·키보드 명령 직접 실행.</p>
+        <p class="article-byline">Computer Use Integration · 자율 UI 테스트</p>
+      </div>
+    </div>
+
+    <!-- GPT-5.4 주요 스펙 + Claude Code 활용 -->
+    <p class="section-label">스펙 & Claude Code 활용</p>
+    <div class="data-section">
+      <div>
+        <table class="data-table">
+          <thead>
+            <tr><th>항목</th><th>수치 / 내용</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>출시일</td><td class="mono-val">2026-03-05</td></tr>
+            <tr><td>컨텍스트 윈도우</td><td class="mono-val">1.05M 토큰</td></tr>
+            <tr><td>최대 출력</td><td class="mono-val">128K 토큰</td></tr>
+            <tr><td>지식 컷오프</td><td class="mono-val">2025-08-31</td></tr>
+            <tr><td>가격 (입력)</td><td class="mono-val">$2.50 / 1M 토큰</td></tr>
+            <tr><td>가격 (출력)</td><td class="mono-val">$15 / 1M 토큰</td></tr>
+            <tr><td>SWE-Bench Pro</td><td class="mono-val good">57.7%</td></tr>
+            <tr><td>OSWorld-Verified</td><td class="mono-val good">75.0% (인간 성능 초과)</td></tr>
+            <tr><td>팩트 오류 감소</td><td class="mono-val good">GPT-5.2 대비 18% ↓</td></tr>
+            <tr><td>Figma-to-code</td><td class="mono-val good">대시보드 원샷 약 5분</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <div class="code-label">Claude Code에서 바로 쓰는 방법 — 프롬프트 패턴</div>
+        <div class="code-block"><span class="code-comment"># 1. 디자인 시스템 먼저 정의하기</span>
+<span class="code-key">색상 토큰을 먼저 잡아줘:</span>
+- background: #0f0f0f
+- surface: #1a1a1a
+- accent: #3b82f6
+- text: #f1f5f9
+
+<span class="code-comment"># 2. 무드보드 첨부 + 레퍼런스 지정</span>
+<span class="code-key">이 스크린샷 스타일로 만들어줘 [이미지 첨부]</span>
+Linear 앱처럼 절제된 느낌으로
+
+<span class="code-comment"># 3. Hard Rule 주입 (아래 룰 섹션 참고)</span>
+<span class="code-key">다음 규칙을 반드시 지켜줘:</span>
+- 뷰포트당 하나의 구성
+- 카드는 인터랙티브 컨테이너에만
+- Inter 대신 표현력 있는 폰트 사용
+- 히어로에 풀블리드 적용
+
+<span class="code-comment"># 4. 콘텐츠 구조 지정</span>
+<span class="code-key">랜딩페이지 순서:</span>
+히어로 → 보조이미지 → 제품설명
+→ 소셜프루프 → CTA</div>
+      </div>
+    </div>
+
+    <!-- 벤치마크 상태 스트립 -->
+    <p class="section-label">성능 지표 — GPT-5.4 Benchmarks</p>
+    <div class="status-strip">
+      <div class="status-item">
+        <span class="status-dot" style="background:#16A34A;"></span>
+        <span class="status-label" style="color:#16A34A;">SWE-Bench Pro</span>
+        <span class="status-desc">57.7% · 코딩 작업</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:#2563EB;"></span>
+        <span class="status-label" style="color:#2563EB;">OSWorld</span>
+        <span class="status-desc">75.0% · 인간 초과</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:#D97706;"></span>
+        <span class="status-label" style="color:#D97706;">팩트 오류</span>
+        <span class="status-desc">−18% · 5.2 대비</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:#7c3aed;"></span>
+        <span class="status-label" style="color:#7c3aed;">Figma to Code</span>
+        <span class="status-desc">원샷 · ~5분</span>
+      </div>
+    </div>
+
+    <!-- 디자인 하드 룰 -->
+    <p class="section-label">프론트엔드 하드 룰 — Design Hard Rules</p>
+    <div class="rule-showcase">
+      <div class="rule-showcase-header">OpenAI 권장 · 반드시 지켜야 할 10가지 규칙</div>
+
+      <div class="rule-row">
+        <span class="rule-num">01</span>
+        <span class="rule-name">단일 구성 <span class="rule-tag tag-do">DO</span></span>
+        <span class="rule-desc">뷰포트당 하나의 일관된 구성만 사용. 여러 레이아웃을 한 화면에 섞으면 시선이 분산됩니다.</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num">02</span>
+        <span class="rule-name">브랜드 정체성 전면 배치 <span class="rule-tag tag-do">DO</span></span>
+        <span class="rule-desc">강한 브랜드·제품 아이덴티티를 페이지 첫 화면에 배치. 사용자가 "어디 사이트인지" 즉시 알아야 합니다.</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num">03</span>
+        <span class="rule-name">표현력 있는 폰트 <span class="rule-tag tag-dont">Don't</span> Inter 기본값</span>
+        <span class="rule-desc">Inter, Roboto 같은 기본값을 피하고 개성 있는 폰트를 사용. 기본 폰트는 모델이 훈련 데이터의 고빈도 패턴으로 후퇴하는 신호입니다.</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num">04</span>
+        <span class="rule-name">동적 배경 <span class="rule-tag tag-do">DO</span></span>
+        <span class="rule-desc">그라디언트, 이미지, 패턴 등 동적 배경 적극 활용. 흰 배경은 에너지가 없습니다.</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num">05</span>
+        <span class="rule-name">풀블리드 히어로 <span class="rule-tag tag-do">DO</span></span>
+        <span class="rule-desc">랜딩페이지에서 히어로 섹션은 화면 가득 채우는 풀블리드(full-bleed) 방식 사용. 인셋 프레임 금지.</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num">06</span>
+        <span class="rule-name">오버레이·플로팅 요소 최소화 <span class="rule-tag tag-dont">Don't</span></span>
+        <span class="rule-desc">히어로 위 오버레이와 플로팅 요소를 최소화. UI 클러터(어수선함)를 만들어 브랜드 이미지를 해칩니다.</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num">07</span>
+        <span class="rule-name">카드는 인터랙티브 컨테이너에만 <span class="rule-tag tag-dont">Don't</span> 남발</span>
+        <span class="rule-desc">카드(Card)는 클릭·드래그 등 인터랙션이 있는 컨테이너 목적에만 사용. 정보 나열에 카드를 남발하면 시각적으로 무거워집니다.</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num">08</span>
+        <span class="rule-name">섹션은 단 하나의 목적만 <span class="rule-tag tag-do">DO</span></span>
+        <span class="rule-desc">각 섹션은 한 가지 메시지만 전달. 기능 소개 + 가격 + 후기를 한 섹션에 넣으면 모두 희석됩니다.</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num">09</span>
+        <span class="rule-name">실제 맥락 이미지 <span class="rule-tag tag-do">DO</span></span>
+        <span class="rule-desc">아이콘·일러스트보다 실제 제품·사용 맥락을 보여주는 사진. 사람들은 추상이 아닌 실제를 신뢰합니다.</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num">10</span>
+        <span class="rule-name">의도적 모션 최소 2~3개 <span class="rule-tag tag-do">DO</span></span>
+        <span class="rule-desc">핵심 애니메이션 2~3개를 의도적으로 설계. Framer Motion 권장. 노이즈 생성 목적의 무분별한 애니메이션 금지.</span>
+      </div>
+    </div>
+
+    <!-- 랜딩 페이지 콘텐츠 구조 -->
+    <p class="section-label">랜딩 페이지 권장 순서 — Content Structure</p>
+    <div class="landing-order">
+      <div class="landing-step">
+        <div class="landing-step-num">01</div>
+        <div class="landing-step-name">히어로 섹션</div>
+        <div class="landing-step-desc">브랜드 아이덴티티 + 핵심 약속. 풀블리드, 헤드라인 최대 2~3줄.</div>
+      </div>
+      <div class="landing-step">
+        <div class="landing-step-num">02</div>
+        <div class="landing-step-name">보조 이미지</div>
+        <div class="landing-step-desc">제품 또는 사용 맥락을 시각적으로 강화하는 이미지.</div>
+      </div>
+      <div class="landing-step">
+        <div class="landing-step-num">03</div>
+        <div class="landing-step-name">제품 상세</div>
+        <div class="landing-step-desc">기능 설명. 각 섹션은 단 하나의 목적.</div>
+      </div>
+      <div class="landing-step">
+        <div class="landing-step-num">04</div>
+        <div class="landing-step-name">소셜 프루프</div>
+        <div class="landing-step-desc">후기, 고객사 로고, 수치로 신뢰 구축.</div>
+      </div>
+      <div class="landing-step">
+        <div class="landing-step-num">05</div>
+        <div class="landing-step-name">최종 CTA</div>
+        <div class="landing-step-desc">전환 버튼. 가장 강한 메시지로 마무리.</div>
+      </div>
+    </div>
+
+    <!-- Claude Code 활용법 심화 -->
+    <p class="section-label">Claude Code 활용법 — 실전 프롬프트 가이드</p>
+
+    <div class="section-block">
+      <h3>1단계 — 디자인 시스템 토큰 먼저 정의하기</h3>
+      <p>모델에게 먼저 색상·폰트·간격 시스템을 선언하면, 이후 모든 컴포넌트에서 일관성이 유지됩니다. "만들어줘"보다 "이 토큰 안에서 만들어줘"가 훨씬 좋은 결과를 냅니다.</p>
+      <div class="code-label">디자인 토큰 선언 예시</div>
+      <div class="code-block"><span class="code-comment"># Claude Code 프롬프트</span>
+다음 디자인 시스템 토큰으로 랜딩 페이지를 만들어줘:
+
+<span class="code-key">색상:</span>
+- background: <span class="code-val">#09090B</span>  <span class="code-comment">(다크 배경)</span>
+- surface:    <span class="code-val">#18181B</span>  <span class="code-comment">(카드 배경)</span>
+- accent:     <span class="code-val">#6366F1</span>  <span class="code-comment">(인디고 강조)</span>
+- text:       <span class="code-val">#F4F4F5</span>  <span class="code-comment">(본문)</span>
+- muted:      <span class="code-val">#71717A</span>  <span class="code-comment">(보조 텍스트)</span>
+
+<span class="code-key">폰트:</span>
+- display: 'Outfit', sans-serif  <span class="code-comment">(Inter 쓰지 마)</span>
+- body: 16px, line-height 1.7
+
+<span class="code-key">규칙:</span>
+- 히어로는 풀블리드로
+- 카드는 인터랙티브 요소에만
+- 각 섹션은 단 하나의 목적</div>
+    </div>
+
+    <div class="section-block">
+      <h3>2단계 — 비주얼 레퍼런스 첨부하기</h3>
+      <p>스크린샷이나 무드보드를 프롬프트에 첨부하면 모델이 시각적으로 검증할 수 있습니다. GPT-5.4의 이미지 이해 능력을 최대한 활용하는 방법입니다.</p>
+      <div class="inline-quote">
+        "비주얼 레퍼런스 없이 '세련되게 만들어줘'라고 하면 모델은 가장 흔한 패턴으로 돌아간다. 무드보드 하나가 수백 단어의 설명을 대체한다."
+      </div>
+      <div class="code-label">Claude Code + 이미지 첨부 방법</div>
+      <div class="code-block"><span class="code-comment"># 터미널에서 이미지 파일 첨부</span>
+claude <span class="code-str">"이 스크린샷과 비슷한 느낌으로
+히어로 섹션을 만들어줘. 단, 색상은
+우리 브랜드 색(#6366F1)으로 바꾸고
+폰트는 Outfit으로 교체해줘"</span> \
+  --attach reference.png</div>
+    </div>
+
+    <div class="section-block">
+      <h3>3단계 — Frontend Skill 활용 (Codex CLI 방식 응용)</h3>
+      <p>OpenAI는 Codex CLI용 "frontend-skill"을 제공합니다. Claude Code에서는 유사하게 <code style="font-family:var(--font-mono);font-size:13px;background:#f1f1f1;padding:1px 6px;">CLAUDE.md</code>에 디자인 규칙을 한 번 선언해두면, 이후 모든 프론트엔드 작업에서 자동으로 적용됩니다.</p>
+      <div class="code-label">CLAUDE.md에 추가할 프론트엔드 규칙</div>
+      <div class="code-block"><span class="code-comment">## 프론트엔드 디자인 규칙 (GPT-5.4 Hard Rules 기반)</span>
+
+HTML/CSS 작업 시 반드시 준수:
+- 뷰포트당 하나의 구성만 사용
+- Inter, Roboto 기본 폰트 금지 → Outfit, Plus Jakarta Sans 등 사용
+- 히어로 섹션은 풀블리드(full-bleed)
+- 카드는 클릭 가능한 컨테이너에만 사용
+- 각 섹션은 단 하나의 목적
+- 애니메이션 최소 2~3개 의도적으로 추가
+- 배경은 단순 흰색 금지 (그라디언트 또는 패턴 활용)
+
+랜딩페이지 섹션 순서:
+1. 히어로 (브랜드 + 핵심 약속)
+2. 보조 이미지
+3. 제품 상세
+4. 소셜 프루프
+5. 최종 CTA</div>
+    </div>
+
+    <div class="section-block">
+      <h3>4단계 — 모션 추가하기</h3>
+      <p>모션은 "있으면 좋은 것"이 아니라 계층 구조를 강화하는 설계 요소입니다. GPT-5.4는 Framer Motion을 권장합니다. Claude Code에서는 CSS 애니메이션으로도 충분히 구현 가능합니다.</p>
+      <div class="code-label">Claude Code 모션 프롬프트</div>
+      <div class="code-block"><span class="code-comment"># 히어로 진입 애니메이션</span>
+히어로 섹션에 입장 시퀀스 애니메이션 추가해줘:
+- 제목이 아래에서 위로 fade-in (0.6s)
+- 부제목은 0.2s 딜레이
+- CTA 버튼은 0.4s 딜레이
+- 모두 cubic-bezier(0.16, 1, 0.3, 1) 이징
+
+<span class="code-comment"># 스크롤 연동 효과</span>
+스크롤에 따라 히어로 배경이 parallax로 움직이게 해줘
+(배경 이동 속도는 스크롤의 0.5배)
+
+<span class="code-comment"># 호버 효과</span>
+카드에 호버 시 translateY(-4px) + shadow 강화
+전환 속도: 0.2s ease</div>
+    </div>
+
+  </div>
+
+  <!-- 푸터 -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <span class="footer-text">2026-03-22 · AI Study · OpenAI Blog 한글 정리</span>
+      <span class="footer-rule-word">«GPT-5.4»</span>
+      <span class="footer-text">원문: developers.openai.com/blog/designing-delightful-frontends-with-gpt-5-4</span>
+    </div>
+  </footer>
+
+</body>
+</html>
