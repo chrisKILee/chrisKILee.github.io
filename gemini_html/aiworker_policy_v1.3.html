@@ -1,0 +1,2051 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-WORKER 운영 정책 계획서 v1.2</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    /* ── Hero Header ── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      color: #fff;
+      padding: 60px 24px 50px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 30% 50%, rgba(99, 102, 241, 0.25) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 30%, rgba(168, 85, 247, 0.2) 0%, transparent 50%);
+    }
+
+    .hero-inner {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50px;
+      padding: 6px 18px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .hero h1 {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, #fff 0%, #c4b5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.7);
+      max-width: 600px;
+      margin: 0 auto 28px;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .meta-row span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .section-title .icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .icon-purple {
+      background: rgba(139, 92, 246, 0.12);
+    }
+
+    .icon-blue {
+      background: rgba(59, 130, 246, 0.12);
+    }
+
+    .icon-green {
+      background: rgba(16, 185, 129, 0.12);
+    }
+
+    .icon-orange {
+      background: rgba(249, 115, 22, 0.12);
+    }
+
+    .icon-red {
+      background: rgba(239, 68, 68, 0.12);
+    }
+
+    .icon-indigo {
+      background: rgba(99, 102, 241, 0.12);
+    }
+
+    .icon-teal {
+      background: rgba(20, 184, 166, 0.12);
+    }
+
+    /* ── Card ── */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 16px;
+    }
+
+    /* ── Goal Level Cards ── */
+    .level-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .level-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .level-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 24px 28px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+      border-left: 4px solid;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .level-card::before {
+      content: attr(data-level);
+      position: absolute;
+      right: 20px;
+      top: 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .level-card.l3 {
+      border-color: #6366f1;
+    }
+
+    .level-card.l3::before {
+      background: rgba(99, 102, 241, 0.1);
+      color: #6366f1;
+    }
+
+    .level-card.l4 {
+      border-color: #8b5cf6;
+    }
+
+    .level-card.l4::before {
+      background: rgba(139, 92, 246, 0.1);
+      color: #8b5cf6;
+    }
+
+    .level-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .level-card .level-sub {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .level-card.l3 h3 {
+      color: #4f46e5;
+    }
+
+    .level-card.l3 .level-sub {
+      color: #6366f1;
+    }
+
+    .level-card.l4 h3 {
+      color: #7c3aed;
+    }
+
+    .level-card.l4 .level-sub {
+      color: #8b5cf6;
+    }
+
+    .level-card p {
+      font-size: 15px;
+      color: #475569;
+      line-height: 1.7;
+    }
+
+    .level-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      color: #92400e;
+      margin-top: 12px;
+    }
+
+    /* ── Process Flow ── */
+    .flow-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      position: relative;
+    }
+
+    .flow-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 24px;
+      top: 52px;
+      width: 2px;
+      height: calc(100% - 8px);
+      background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+    }
+
+    .flow-dot {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      z-index: 1;
+      margin-right: 20px;
+    }
+
+    .dot-1 {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+
+    .dot-2 {
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+    }
+
+    .dot-3 {
+      background: linear-gradient(135deg, #10b981, #3b82f6);
+    }
+
+    .dot-result {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+    }
+
+    .flow-content {
+      flex: 1;
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 12px;
+    }
+
+    .flow-content h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 6px;
+    }
+
+    .flow-content p {
+      font-size: 15px;
+      color: #475569;
+    }
+
+    .flow-branch {
+      margin-left: 68px;
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .branch-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .branch-pass {
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .branch-fail {
+      background: rgba(249, 115, 22, 0.1);
+      color: #ea580c;
+      border: 1px solid rgba(249, 115, 22, 0.3);
+    }
+
+    .branch-resubmit {
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* ── Policy Table ── */
+    .policy-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .policy-table th {
+      background: #f8fafc;
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .policy-table td {
+      padding: 14px 16px;
+      font-size: 15px;
+      color: #334155;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+
+    .policy-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .policy-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    .badge-green {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .badge-red {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .badge-blue {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(59, 130, 246, 0.1);
+      color: #2563eb;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .badge-yellow {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(245, 158, 11, 0.1);
+      color: #d97706;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* ── Plan Grid (Claude Code plans) ── */
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .plan-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .plan-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+      border-top: 3px solid;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .plan-card.max {
+      border-color: #8b5cf6;
+    }
+
+    .plan-card.study {
+      border-color: #10b981;
+    }
+
+    .plan-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .plan-card.max .plan-label {
+      color: #8b5cf6;
+    }
+
+    .plan-card.study .plan-label {
+      color: #10b981;
+    }
+
+    .plan-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1a1a2e;
+    }
+
+    .plan-desc {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.65;
+    }
+
+    .plan-info {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    /* ── API / Cloud Run Flow ── */
+    .flow-simple {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .flow-node {
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    .flow-arrow {
+      font-size: 18px;
+      color: #94a3b8;
+    }
+
+    /* ── Principle List ── */
+    .principle-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .principle-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .principle-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .principle-text {
+      font-size: 15px;
+      color: #334155;
+      line-height: 1.65;
+    }
+
+    .principle-text strong {
+      color: #1a1a2e;
+    }
+
+    /* ── Danger List ── */
+    .danger-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .danger-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .danger-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: rgba(239, 68, 68, 0.04);
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+
+    .danger-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .danger-text {
+      font-size: 14px;
+      color: #7f1d1d;
+      line-height: 1.65;
+    }
+
+    /* ── GCP Table ── */
+    .gcp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .gcp-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .gcp-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 22px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border-left: 3px solid #3b82f6;
+    }
+
+    .gcp-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 6px;
+    }
+
+    .gcp-card p {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.65;
+    }
+
+    /* ── Data Table ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th {
+      background: #f8fafc;
+      text-align: left;
+      padding: 11px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .data-table td {
+      padding: 12px 14px;
+      font-size: 14px;
+      color: #334155;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ── Action Items ── */
+    .action-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .action-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      flex-shrink: 0;
+    }
+
+    .action-text {
+      flex: 1;
+      font-size: 15px;
+      color: #334155;
+    }
+
+    .action-owner {
+      font-size: 13px;
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+
+    .action-status {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      flex-shrink: 0;
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    /* ── Action Item Badges ── */
+    .ai-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .ai-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .ai-badge-tool {
+      background: #ede9fe;
+      color: #6d28d9;
+      border: 1px solid #c4b5fd;
+    }
+    .ai-badge-person {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border: 1px solid #93c5fd;
+    }
+    .ai-badge-done {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #86efac;
+    }
+    .ai-badge-wip {
+      background: #ffedd5;
+      color: #c2410c;
+      border: 1px solid #fdba74;
+    }
+    .ai-badge-link {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #7dd3fc;
+    }
+    .ai-badge-todo {
+      background: #fef9c3;
+      color: #854d0e;
+      border: 1px solid #fde047;
+      font-weight: 700;
+    }
+
+    /* ── TO-DO 메모 박스 ── */
+    .todo-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: #fffbeb;
+      border: 1.5px dashed #fbbf24;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-top: 12px;
+    }
+    .todo-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .todo-text {
+      font-size: 13.5px;
+      color: #92400e;
+      line-height: 1.6;
+    }
+
+    /* ── 메모 섹션 ── */
+    .memo-section {
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 28px;
+      margin-top: 8px;
+    }
+    .memo-section h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .memo-section p {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+    .memo-section p:last-child { margin-bottom: 0; }
+    .memo-highlight {
+      background: #eff6ff;
+      border-left: 3px solid #3b82f6;
+      padding: 10px 14px;
+      border-radius: 0 8px 8px 0;
+      font-size: 13.5px;
+      color: #1e40af;
+      margin-top: 12px;
+      line-height: 1.7;
+    }
+
+    /* ── Template Items ── */
+    .template-note {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-top: 16px;
+    }
+
+    .template-note h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 12px;
+    }
+
+    .template-tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .template-tag {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    /* ── Guide Status ── */
+    .guide-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .guide-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .guide-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 22px 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .guide-emoji {
+      font-size: 28px;
+    }
+
+    .guide-info h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+    }
+
+    .guide-info p {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    .status-pending {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* ── Notice Box ── */
+    .notice-box {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: rgba(99, 102, 241, 0.06);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-top: 16px;
+    }
+
+    .notice-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .notice-text {
+      font-size: 15px;
+      color: #3730a3;
+      line-height: 1.7;
+    }
+
+    /* ── Model Principle ── */
+    .model-principle {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: rgba(245, 158, 11, 0.06);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-top: 16px;
+    }
+
+    .model-principle .notice-text {
+      color: #78350f;
+    }
+
+    /* ── Progress Stats (섹션 3 신규) ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .stat-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stat-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 22px 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-num.purple {
+      color: #6366f1;
+    }
+
+    .stat-num.green {
+      color: #10b981;
+    }
+
+    .stat-num.orange {
+      color: #f59e0b;
+    }
+
+    .stat-num.blue {
+      color: #3b82f6;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .progress-bar-wrap {
+      margin: 8px 0 4px;
+    }
+
+    .progress-bar-bg {
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      transition: width 0.6s ease;
+    }
+
+    .progress-label {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* ── Cost Simulation ── */
+    .sim-box {
+      background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+      border: 1px solid #c4b5fd;
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-top: 16px;
+    }
+
+    .sim-box h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #4c1d95;
+      margin-bottom: 16px;
+    }
+
+    .sim-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(167, 139, 250, 0.2);
+      font-size: 15px;
+      color: #3730a3;
+    }
+
+    .sim-row:last-child {
+      border-bottom: none;
+    }
+
+    .sim-row .sim-val {
+      font-weight: 700;
+      color: #4c1d95;
+    }
+
+    .sim-highlight {
+      background: rgba(139, 92, 246, 0.1);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      font-size: 15px;
+      color: #4c1d95;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .metaphor-box {
+      background: rgba(16, 185, 129, 0.05);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-top: 12px;
+    }
+
+    .metaphor-box p {
+      font-size: 15px;
+      color: #065f46;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── Hero ── -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">📋 운영 정책 계획서 v1.3</div>
+      <h1>AI-WORKER 운영 정책 계획서</h1>
+      <p>전 직원이 AI를 자신 있게 활용할 수 있는 수준을 목표로 하는 AI-WORKER 프로젝트의 공식 운영 정책입니다.</p>
+      <div class="meta-row">
+        <span>✍️ 작성자: Chris (VntgCorp)</span>
+        <span>📅 최종 수정: 2026-03-23</span>
+        <span>🔄 상태: 검토 중</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- ── 1. 프로젝트 목표 ── -->
+    <div class="section">
+      <div class="section-title">
+        <div class="icon icon-purple">🎯</div>
+        1. 프로젝트 목표
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <p style="font-size:15px; color:#334155;">
+          AI-WORKER Project는 <strong>전 직원이 AI에 대한 친밀성을 갖고, 자기 업무의 효율성을 위해 AI를 자신 있게 활용할 수 있는 수준</strong>을 목표로 한다.
+        </p>
+      </div>
+
+      <div class="level-grid">
+        <div class="level-card l3" data-level="LEVEL 3">
+          <h3>LEVEL 3 — Workflow Integrator</h3>
+          <div class="level-sub">업무 자동화 사용자</div>
+          <p>AI 도구를 업무에 적용하여 실질적인 효율화를 달성한 수준.<br><br>
+            기존의 수작업 프로세스(예: 주간 보고 데이터 자동 취합, 티켓 자동 분류/요약 등)를 API·자동화 도구와 연결하여 <strong>사람의 개입 없이 자동으로 처리되도록 구현</strong>할
+            수 있어야 한다.</p>
+        </div>
+        <div class="level-card l4" data-level="LEVEL 4">
+          <h3>LEVEL 4 — Solution Builder</h3>
+          <div class="level-sub">솔루션 제작자</div>
+          <p>AI를 주도적으로 활용하여 팀·조직 단위 효율화를 이끄는 수준.<br><br>
+            단순한 업무 자동화를 넘어, <strong>독립적인 기능을 수행하는 AI 기반 프로토타입/솔루션</strong>(예: 사내 기술지원 챗봇 PoC, 데이터 자동 분석 대시보드 등)을 직접 기획하고
+            구현할 수 있어야 한다.</p>
+        </div>
+      </div>
+
+      <div class="level-note" style="margin-top:16px;">
+        💡 과제의 평가 레벨이 개인의 역량 레벨과 동일하지 않습니다. 목표 LEVEL 3·4 달성을 통해 AI 활용 자신감을 갖는 것이 핵심입니다.
+      </div>
+    </div>
+
+    <!-- ── 2. 제출 심사 프로세스 ── -->
+    <div class="section">
+      <div class="section-title">
+        <div class="icon icon-blue">🔄</div>
+        2. 제출 심사 프로세스
+      </div>
+
+      <div class="card">
+        <div class="flow-wrap">
+
+          <div class="flow-step">
+            <div class="flow-dot dot-1">A</div>
+            <div class="flow-content">
+              <h4>과제 제출</h4>
+              <p>팀원이 AI-WORKER 과제를 제출합니다.</p>
+            </div>
+          </div>
+
+          <div class="flow-step">
+            <div class="flow-dot dot-2">1</div>
+            <div class="flow-content">
+              <h4>1차 심사 — 센터장 / 실장</h4>
+              <p>소속 센터장 또는 실장이 1차 심사를 진행합니다.</p>
+            </div>
+          </div>
+
+          <div class="flow-branch">
+            <div class="branch-tag branch-pass">✅ PASS → 심사 완료</div>
+            <div class="branch-tag branch-fail">❓ 판단 불가 → Chris에게 소스 전달</div>
+          </div>
+
+          <div class="flow-step">
+            <div class="flow-dot dot-2">2</div>
+            <div class="flow-content">
+              <h4>2차 심사 — AI SKILL 레벨 판독</h4>
+              <p>Chris가 AI SKILL을 이용하여 LEVEL 3 이상 달성 여부를 판단합니다.</p>
+            </div>
+          </div>
+
+          <div class="flow-branch">
+            <div class="branch-tag branch-pass">✅ PASS → 심사 완료</div>
+            <div class="branch-tag branch-resubmit">🔁 기준 미달 → Resubmit 요청</div>
+          </div>
+
+          <div class="flow-step">
+            <div class="flow-dot dot-3">🏆</div>
+            <div class="flow-content">
+              <h4>우수과제 선정 프로세스</h4>
+              <p>
+                ① 각 센터장 / 실장이 우수과제 후보 추천 (센터/실 당 최대 5개)<br>
+                ② <strong>AI를 활용한 사전 검토</strong> 후 평가 후보 선정<br>
+                ③ <strong>평가위원회</strong> (리딩: CTO, 구성: 총괄·TG) 에서 심사<br>
+                ④ <strong>최종 우승자는 TG님이 결정</strong>
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="notice-box" style="margin-top:8px;">
+          <span class="notice-icon">⭐</span>
+          <span class="notice-text"><strong>우수과제 선정 기준</strong>: 기술적 수준보다 <strong>업무 효율성 측면을 우선 평가</strong>합니다.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 3. AI-WORKER 진행 현황 (신규) ── -->
+    <div class="section">
+      <div class="section-title">
+        <div class="icon icon-teal">📊</div>
+        3. AI-WORKER 진행 현황
+      </div>
+
+      <div class="stat-grid" style="grid-template-columns: repeat(5, 1fr);">
+        <div class="stat-card">
+          <div class="stat-num purple">211</div>
+          <div class="stat-label">VNTG 총원</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num orange">18</div>
+          <div class="stat-label">휴직 · 출장</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num blue">193</div>
+          <div class="stat-label">과제 대상자</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num green">183</div>
+          <div class="stat-label">과제 제출자</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:#7c3aed;">94<span style="font-size:20px;">%</span></div>
+          <div class="stat-label">제출률</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:16px; font-weight:700; color:#1a1a2e; margin-bottom:16px;">제출 현황 요약</h3>
+
+        <div class="progress-bar-wrap">
+          <div style="display:flex; justify-content:space-between; font-size:13px; color:#64748b; margin-bottom:6px;">
+            <span>제출 완료 (과제 대상자 기준)</span>
+            <span><strong>183명</strong> / 193명</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width:94.8%;"></div>
+          </div>
+          <div class="progress-label">94% 제출 완료 (2026-03-20 기준) · 미제출 10명</div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <div class="principle-list">
+            <div class="principle-item">
+              <span class="principle-icon">✅</span>
+              <span class="principle-text"><strong>과제 대상자 193명 중 183명</strong>이 제출하여 94%의 높은 참여율을 기록하고 있습니다.</span>
+            </div>
+            <div class="principle-item">
+              <span class="principle-icon">🆕</span>
+              <span class="principle-text">미제출 인원(10명) 중 <strong>신규 입사자 5명</strong>은 별도 일정으로 안내 예정입니다.</span>
+            </div>
+            <div class="principle-item">
+              <span class="principle-icon">📬</span>
+              <span class="principle-text">나머지 미제출 인원은 <strong>개별 독려</strong>를 통해 보완 제출 진행 예정입니다.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 4. AI 도구 지원 정책 ── -->
+    <div class="section">
+      <div class="section-title">
+        <div class="icon icon-green">🛠️</div>
+        4. AI 도구 지원 정책
+        <span class="ai-badge ai-badge-todo" style="margin-left:10px; font-size:12px;">TO-DO</span>
+      </div>
+      <div class="todo-box">
+        <span class="todo-icon">📝</span>
+        <div class="todo-text">
+          <strong>[TO-DO]</strong> 스토리를 만들자! — 우리 구성원들은 어떤 AI 도구를 선호하는가? 실제 사용 경험과 선호도를 수집하여 정책에 반영할 스토리 기획 필요.
+        </div>
+      </div>
+
+      <!-- 4-1 기본 도구 -->
+      <div class="card" style="margin-bottom:20px;">
+        <h3 style="font-size:17px; font-weight:700; color:#1a1a2e; margin-bottom:16px;">4-1. 기본 도구 정책</h3>
+        <table class="policy-table">
+          <thead>
+            <tr>
+              <th>도구</th>
+              <th>정책</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Antigravity</strong></td>
+              <td><span class="badge-green">✅ 권장</span></td>
+              <td>프리뷰 기간 중 대부분 기능 무료</td>
+            </tr>
+            <tr>
+              <td><strong>Cursor</strong></td>
+              <td><span class="badge-red">❌ 지원 종료</span></td>
+              <td>계정 관리 어려움, (팀관리를 위해서는) 동일 사용량 대비 2배 비용 → 지원 종료</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 4-2 Claude Code -->
+      <div class="card" style="margin-bottom:20px;">
+        <h3 style="font-size:17px; font-weight:700; color:#1a1a2e; margin-bottom:20px;">4-2. Claude Code 지원 정책</h3>
+
+        <div class="plan-grid">
+          <div class="plan-card max">
+            <div class="plan-label">MAX (20x) Plan</div>
+            <div class="plan-title">DevGroup <span style="font-size:14px; color:#64748b;">(5명 공유)</span></div>
+            <div class="plan-desc">
+              <strong>대상</strong>: 특정 과제를 위해 필요한 개발자<br>
+              <strong>신청</strong>: 기간 지정 후 구매의뢰서 작성 → CTO 최종 승인<br>
+              최대 5명 공유. 인당 약 <strong>$40</strong>
+            </div>
+            <div class="plan-info">승인자: CTO | 관리: Chris</div>
+          </div>
+          <div class="plan-card study">
+            <div class="plan-label">MAX (20x) Plan</div>
+            <div class="plan-title">StudyGroup <span style="font-size:14px; color:#64748b;">(7명 공유)</span></div>
+            <div class="plan-desc">
+              <strong>대상</strong>: AI 학습 목적<br>
+              <strong>신청</strong>: 기간 지정 후 구매의뢰서 작성 → CTO 최종 승인<br>
+              최대 2개월, 최대 7명 공유. 인당 약 <strong>$30</strong> (<strong>개인 부담금: 1만원</strong>-책임있게 사용하기 위함.)
+            </div>
+            <div class="plan-info">승인자: CTO | 관리: Chris</div>
+          </div>
+        </div>
+
+        <div class="notice-box" style="margin-top:20px;">
+          <span class="notice-icon">👤</span>
+          <span class="notice-text">Max 공유 계정 관리는 <strong>Chris</strong>가 담당합니다. 공유 그룹 배정·해제 모두 Chris에게 문의하세요.</span>
+        </div>
+      </div>
+
+      <!-- 4-3 비용 시뮬레이션 -->
+      <div class="card">
+        <h3 style="font-size:17px; font-weight:700; color:#1a1a2e; margin-bottom:8px;">4-3. 비용 시뮬레이션</h3>
+        <p style="font-size:14px; color:#64748b; margin-bottom:20px;">Claude Max ($200/월) 도입 시 두 가지 운영 방식을 비교합니다.</p>
+
+        <!-- A안 -->
+        <div
+          style="background:#f8fafc; border:1.5px solid #6366f1; border-radius:12px; padding:20px; margin-bottom:20px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+            <span
+              style="background:#6366f1; color:#fff; font-size:12px; font-weight:700; padding:3px 12px; border-radius:20px;">A안</span>
+            <h4 style="font-size:16px; font-weight:700; color:#1a1a2e; margin:0;">팀 · 센터별 계정 배분</h4>
+          </div>
+          <p style="font-size:14px; color:#475569; margin-bottom:16px;">팀별 인원 비율에 따라 Claude Max 계정 수를 배분합니다. 7~10명당 1계정
+            기준으로 최소 <strong>26개 라이센스</strong>가 필요합니다.</p>
+
+          <!-- 2열 압축 테이블 -->
+          <div style="overflow-x:auto;">
+            <table class="policy-table" style="margin:0; font-size:14px;">
+              <thead>
+                <tr>
+                  <th>부서 / 센터</th>
+                  <th style="text-align:right;">인원</th>
+                  <th style="text-align:center;">계정</th>
+                  <th style="border-left:2px solid #e2e8f0;">부서 / 센터</th>
+                  <th style="text-align:right;">인원</th>
+                  <th style="text-align:center;">계정</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>운영 1센터</td>
+                  <td style="text-align:right;">34</td>
+                  <td style="text-align:center;">4</td>
+                  <td style="border-left:2px solid #e2e8f0;">운영 2센터</td>
+                  <td style="text-align:right;">30</td>
+                  <td style="text-align:center;">4</td>
+                </tr>
+                <tr>
+                  <td>운영 3센터</td>
+                  <td style="text-align:right;">38</td>
+                  <td style="text-align:center;">4</td>
+                  <td style="border-left:2px solid #e2e8f0;">통합운영</td>
+                  <td style="text-align:right;">11</td>
+                  <td style="text-align:center;">1</td>
+                </tr>
+                <tr>
+                  <td>플랫폼서비스</td>
+                  <td style="text-align:right;">14</td>
+                  <td style="text-align:center;">2</td>
+                  <td style="border-left:2px solid #e2e8f0;">서비스개발</td>
+                  <td style="text-align:right;">13</td>
+                  <td style="text-align:center;">1</td>
+                </tr>
+                <tr>
+                  <td>R&D실</td>
+                  <td style="text-align:right;">6</td>
+                  <td style="text-align:center;">2</td>
+                  <td style="border-left:2px solid #e2e8f0;">DX서비스센터</td>
+                  <td style="text-align:right;">14</td>
+                  <td style="text-align:center;">2</td>
+                </tr>
+                <tr>
+                  <td>서비스기획센터</td>
+                  <td style="text-align:right;">11</td>
+                  <td style="text-align:center;">1</td>
+                  <td style="border-left:2px solid #e2e8f0;">영업전략 · 전략기획</td>
+                  <td style="text-align:right;">16</td>
+                  <td style="text-align:center;">2</td>
+                </tr>
+                <tr>
+                  <td colspan="3" style="color:#374151; font-size:13px;">EX실 · VC센터 · FM실 · CEO직속 · 성장혁신단<br><span
+                      style="color:#9ca3af;">(소규모 5개 부서 통합)</span></td>
+                  <td style="border-left:2px solid #e2e8f0;">인원 합계</td>
+                  <td style="text-align:right;">20</td>
+                  <td style="text-align:center;"><strong>3</strong></td>
+                </tr>
+                <tr style="background:#ede9fe;">
+                  <td colspan="2"><strong>합계</strong></td>
+                  <td style="text-align:center;"><strong>26개</strong></td>
+                  <td style="border-left:2px solid #e2e8f0; color:#7c3aed;"></td>
+                  <td style="text-align:right; color:#7c3aed;"><strong></strong></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sim-box" style="margin-top:16px; margin-bottom:0;">
+            <div class="sim-row">
+              <span>Claude Max 월 요금 (계정당)</span>
+              <span class="sim-val">$200 / 월</span>
+            </div>
+            <div class="sim-row">
+              <span>전체 배분 필요 계정 수</span>
+              <span class="sim-val">26개</span>
+            </div>
+            <div class="sim-row">
+              <span>26개 전체 구매 시 연간 비용</span>
+              <span class="sim-val" style="color:#dc2626;">약 9,048만원 / 년</span>
+            </div>
+            <div class="sim-row" style="background:rgba(99,102,241,0.08); border-radius:8px; padding:10px 4px;">
+              <span><strong>예산 4,500만원으로 구매 가능한 최대 계정</strong></span>
+              <span class="sim-val" style="color:#4f46e5; font-size:20px;"><strong>13개</strong></span>
+            </div>
+            <div class="sim-highlight" style="background:rgba(99,102,241,0.1); color:#3730a3;">
+              📌 예산 범위 내에서는 26개 중 절반(13개)만 구매 가능<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;다만, 모든 계정을 구매했더라도 <strong>실사용률 저조</strong>하거나 반대로 <strong>계정 부족</strong> 가능성 있음
+            </div>
+          </div>
+        </div>
+
+        <!-- B안 -->
+        <div style="background:#f8fafc; border:1.5px solid #10b981; border-radius:12px; padding:20px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+            <span
+              style="background:#10b981; color:#fff; font-size:12px; font-weight:700; padding:3px 12px; border-radius:20px;">B안</span>
+            <h4 style="font-size:16px; font-weight:700; color:#1a1a2e; margin:0;">필요자 신청 Pool 방식</h4>
+          </div>
+          <p style="font-size:14px; color:#475569; margin-bottom:16px;">필요한 구성원이 직접 품의를 올려 신청하며, 승인 후 공유 Pool(5명 또는 7명
+            단위)에 편입합니다. 실제 사용 수요를 기반으로 운영합니다.</p>
+
+          <div class="principle-list" style="margin-bottom:16px;">
+            <div class="principle-item">
+              <span class="principle-icon">✅</span>
+              <span class="principle-text">필요한 사람이 집중적으로 활용 — <strong>낭비 없는 효율적 운영</strong></span>
+            </div>
+            <div class="principle-item">
+              <span class="principle-icon">🔄</span>
+              <span class="principle-text">5명 또는 7명 Pool 단위로 계정 추가 — <strong>수요에 따라 유연하게 확장</strong></span>
+            </div>
+            <div class="principle-item">
+              <span class="principle-icon">⚠️</span>
+              <span class="principle-text">사전 예산 예측 어려움 — <strong>월별 실사용량 기준으로 정산</strong></span>
+            </div>
+          </div>
+
+          <div class="sim-box" style="margin-bottom:0;">
+            <div class="sim-row">
+              <span>계정 1개당 월 요금 ($200)</span>
+              <span class="sim-val">$200 / 월 · 계정</span>
+            </div>
+            <div class="sim-row">
+              <span>7명 Pool 1그룹 기준 (7계정)</span>
+              <span class="sim-val">$1,400 / 월 · 약 203만원</span>
+            </div>
+            <div class="sim-row" style="background:rgba(16,185,129,0.08); border-radius:8px; padding:10px 4px;">
+              <span><strong>예산 4,500만원으로 운영 가능한 계정 수</strong></span>
+              <span class="sim-val" style="color:#059669; font-size:20px;"><strong>13개 계정</strong></span>
+            </div>
+            <div class="sim-row">
+              <span>13계정 × 7명 공유 시 총 사용 가능 인원</span>
+              <span class="sim-val" style="color:#059669; font-weight:700;">약 91명</span>
+            </div>
+            <div class="sim-highlight" style="background:rgba(16,185,129,0.1); color:#065f46;">
+              📌 다만, 사용량 기반 과금 구조로 <strong>비용 예측이 어려운 점</strong>이 있습니다.<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;실제 사용 수요를 기반으로 모니터링하며 운영합니다.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 5. AI API 사용 정책 ── -->
+    <div class="section">
+      <div class="section-title">
+        <div class="icon icon-orange">🔑</div>
+        5. AI API 사용 정책
+      </div>
+
+      <div class="card">
+        <div class="notice-box" style="margin-bottom:20px; margin-top:0;">
+          <span class="notice-icon">📌</span>
+          <span class="notice-text"><strong>적용 범위</strong>: 개발 프로젝트 제외 — <strong>개인 프로젝트 및 Study 전용</strong>.<br>
+            상용 프로덕트는 Vertex AI 등 별도 검토를 권장합니다.</span>
+        </div>
+
+        <!-- 모델별 비용 시뮬레이션 -->
+        <h4 style="font-size:16px; font-weight:700; color:#1a1a2e; margin-bottom:12px;">💡 Gemini API 모델별 비용 시뮬레이션</h4>
+        <div class="notice-box"
+          style="margin-bottom:12px; margin-top:0; background:rgba(16,185,129,0.06); border-color:rgba(16,185,129,0.3);">
+          <span class="notice-icon">📐</span>
+          <span class="notice-text">계산 기준: 한국어 1,000자 질의 + 1,000자 응답 ≈ <strong>약 1,400 토큰</strong> (입력 700 + 출력 700)<br>
+            환율 1 USD = 1,500원 적용 / 모든 가격은 <strong>2025년 공식 단가 기준</strong></span>
+        </div>
+        <table class="policy-table" style="margin-bottom:20px;">
+          <thead>
+            <tr>
+              <th style="width:26%">모델</th>
+              <th style="width:18%">입력 단가<br><small style="font-weight:400;font-size:12px;">(1M 토큰)</small></th>
+              <th style="width:18%">출력 단가<br><small style="font-weight:400;font-size:12px;">(1M 토큰)</small></th>
+              <th style="width:18%">질의 1회 비용<br><small style="font-weight:400;font-size:12px;">(약 1,400 토큰)</small></th>
+              <th style="width:20%">₩10,000으로<br>질의 가능 횟수</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Gemini 2.0 Flash Lite</strong><br><small style="color:#6b7280;font-size:13px;">경량, 빠른
+                  응답</small></td>
+              <td style="text-align:center;">$0.075</td>
+              <td style="text-align:center;">$0.30</td>
+              <td style="text-align:center; color:#059669; font-weight:700;">약 ₩0.39</td>
+              <td style="text-align:center; font-weight:700; color:#059669; font-size:16px;">약 25,400회</td>
+            </tr>
+            <tr>
+              <td><strong>Gemini 2.0 Flash</strong><br><small style="color:#6b7280;font-size:13px;">표준, 균형형</small></td>
+              <td style="text-align:center;">$0.10</td>
+              <td style="text-align:center;">$0.40</td>
+              <td style="text-align:center; color:#0284c7; font-weight:700;">약 ₩0.53</td>
+              <td style="text-align:center; font-weight:700; color:#0284c7; font-size:16px;">약 19,000회</td>
+            </tr>
+            <tr>
+              <td><strong>Gemini 1.5 Flash</strong><br><small style="color:#6b7280;font-size:13px;">멀티모달, 128K
+                  컨텍스트</small></td>
+              <td style="text-align:center;">$0.075</td>
+              <td style="text-align:center;">$0.30</td>
+              <td style="text-align:center; color:#059669; font-weight:700;">약 ₩0.39</td>
+              <td style="text-align:center; font-weight:700; color:#059669; font-size:16px;">약 25,400회</td>
+            </tr>
+            <tr style="background:rgba(249,115,22,0.04);">
+              <td><strong>Gemini 1.5 Pro</strong><br><small style="color:#6b7280;font-size:13px;">고성능, 복잡한 추론</small>
+              </td>
+              <td style="text-align:center;">$1.25</td>
+              <td style="text-align:center;">$5.00</td>
+              <td style="text-align:center; color:#dc2626; font-weight:700;">약 ₩6.56</td>
+              <td style="text-align:center; font-weight:700; color:#dc2626; font-size:16px;">약 1,500회</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="notice-box"
+          style="margin-bottom:12px; margin-top:0; background:rgba(234,179,8,0.07); border-color:rgba(234,179,8,0.35);">
+          <span class="notice-icon">⚡</span>
+          <span class="notice-text"><strong>모델 선택 원칙</strong>: 가능한 경우 <strong>Flash/Flash Lite 모델을 우선 사용</strong>하세요.
+            Pro 모델은 복잡한 추론이
+            꼭 필요한 경우에만 사용합니다. 동일한 예산으로 Flash는 Pro 대비 <strong>약 16배</strong> 더 많은 질의가 가능합니다.</span>
+        </div>
+        <div class="notice-box"
+          style="margin-bottom:20px; margin-top:0; background:rgba(168,85,247,0.06); border-color:rgba(168,85,247,0.3);">
+          <span class="notice-icon">📋</span>
+          <span class="notice-text" style="color:#581c87;"><strong>프로젝트당 제한 사용량</strong> — 1개 프로젝트(API Key)가 사용할 수 있는 월간 토큰 상한선은 별도 확정 예정입니다.</span>
+        </div>
+        <div class="todo-box">
+          <span class="todo-icon">📝</span>
+          <div class="todo-text">
+            <strong>[TO-DO]</strong> 상한선은? — 합리적인 월간 토큰 상한선 기준 수립 필요. 사용 수요 모니터링 데이터를 기반으로 확정 예정.
+          </div>
+        </div>
+
+        <h4 style="font-size:16px; font-weight:700; color:#1a1a2e; margin-bottom:14px;">발급 및 운영 흐름</h4>
+        <div class="flow-simple">
+          <div class="flow-node">📧 이동열 매니저에게 요청</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">🔧 Gemini AI Studio<br>프로젝트 지정 후 신청</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">🔑 개인별 API Key 발급<br>(추적·모니터링 목적)</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">📊 사용량 모니터링</div>
+        </div>
+
+        <h4 style="font-size:16px; font-weight:700; color:#1a1a2e; margin:20px 0 14px;">운영 원칙</h4>
+        <div class="principle-list">
+          <div class="principle-item">
+            <span class="principle-icon">👤</span>
+            <span class="principle-text"><strong>개인별 API Key 발급</strong>: 추적·모니터링 목적으로 반드시 개인 Key를 사용합니다.</span>
+          </div>
+          <div class="principle-item">
+            <span class="principle-icon">🔔</span>
+            <span class="principle-text"><strong>한도 및 알림 설정</strong>: 각 API Key별 사용 한도(limit) 및 알림 설정. 한도 초과 시 인프라 담당자에게
+              알림.</span>
+          </div>
+          <div class="principle-item">
+            <span class="principle-icon">📉</span>
+            <span class="principle-text"><strong>사용량 현저히 감소 시</strong>: 사용자에게 확인 후 미사용 확인되면 Key Expire 처리.</span>
+          </div>
+          <div class="principle-item">
+            <span class="principle-icon">🏭</span>
+            <span class="principle-text"><strong>상용 프로덕트</strong>: 개인 Gemini API가 아닌 Vertex AI 등 별도 솔루션 검토를
+              권장합니다.</span>
+          </div>
+        </div>
+
+        <h4 style="font-size:16px; font-weight:700; color:#1a1a2e; margin:24px 0 14px;">AI API 비용 안내</h4>
+        <div class="notice-box" style="margin-bottom:12px; margin-top:0; background:rgba(99,102,241,0.06); border-color:rgba(99,102,241,0.3);">
+          <span class="notice-icon">📌</span>
+          <span class="notice-text" style="color:#3730a3;">
+            여기서의 <strong>AI API</strong>는 개인 프로젝트 코드에서 <strong>Gemini API로 AI 분석을 요청</strong>할 때 사용하는 API Key입니다.<br>
+            (예: 데이터를 넘기고 인사이트 요약 작성 요청, 결과물 자동 리뷰 생성 등)<br>
+            <span style="color:#6b7280; font-size:13px;">※ SEAH AI Chat(웹 채팅 UI)과는 별개 — 코드에서 직접 AI에게 분석·생성 작업을 요청하는 경우에 해당합니다.</span>
+          </span>
+        </div>
+        <div class="principle-list">
+          <div class="principle-item">
+            <span class="principle-icon">💸</span>
+            <span class="principle-text"><strong>Gemini AI Studio API</strong>: 소규모 학습·실험 목적에 적합. 월 사용량에 따라 비용 변동. 개인별 Key를 통해 부서별 사용량을 추적합니다.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 6. Cloud Run 지원 정책 ── -->
+    <div class="section">
+      <div class="section-title">
+        <div class="icon icon-blue">☁️</div>
+        6. Cloud Run 지원 정책
+        <span class="ai-badge ai-badge-todo" style="margin-left:10px; font-size:12px;">TO-DO</span>
+      </div>
+      <div class="todo-box">
+        <span class="todo-icon">📝</span>
+        <div class="todo-text">
+          <strong>[TO-DO]</strong> 심의 프로세스 도입 검토 — 무분별한 비용 누수 방지를 위해 Cloud Run 요청을 심의 프로세스로 운영하는 방안 논의. 발생 비용은 회사가 부담하는 방향으로 전표처리 이슈 해소 가능성 검토.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="notice-box" style="margin-bottom:12px; margin-top:0;">
+          <span class="notice-icon">📌</span>
+          <span class="notice-text"><strong>적용 범위</strong>: 개발 프로젝트 제외 — <strong>개인 프로젝트 중 부서장 승인이 있는 경우</strong> (팀장,
+            센터장/실장)</span>
+        </div>
+        <div class="notice-box"
+          style="margin-bottom:8px; margin-top:0; background:rgba(249,115,22,0.06); border-color:rgba(249,115,22,0.25);">
+          <span class="notice-icon">💰</span>
+          <span class="notice-text" style="color:#7c2d12;"><strong>비용 귀속</strong>: 발생 비용은 해당 부서에 귀속됩니다.</span>
+        </div>
+        <div class="notice-box"
+          style="margin-bottom:20px; margin-top:0; background:rgba(220,38,38,0.05); border-color:rgba(220,38,38,0.25);">
+          <span class="notice-icon">⚠️</span>
+          <div style="color:#7f1d1d; line-height:1.7;">
+            <strong>전표처리 이슈</strong><br>
+            책임감 있는 운영과 무분별한 요청으로 인한 비용 누수를 방지하기 위해서는 <strong>비용 귀속(부서별 청구)이 필요</strong>합니다.<br>
+            그러나 현재 GCP 비용을 부서별로 분리 청구하려면 <strong>사내 전표 처리 절차</strong>를 거쳐야 하는 운영 이슈가 있습니다.<br>
+            <span style="color:#991b1b; font-weight:600;">→ 단기적으로는 라벨(label) 기반 사용량 모니터링으로 운영하되, 전표처리 간소화 방안은 추후 별도 정리가
+              필요합니다.</span>
+          </div>
+        </div>
+
+        <h4 style="font-size:16px; font-weight:700; color:#1a1a2e; margin-bottom:14px;">인스턴스 생성 흐름</h4>
+        <div class="flow-simple">
+          <div class="flow-node">🟢 테루아 준비 완료<br>→ 테루아 통해 생성</div>
+          <div class="flow-arrow">|</div>
+          <div class="flow-node">⏳ 테루아 준비 전<br>→ 인프라팀 이동열 매니저에게 요청</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">🖥️ 인스턴스 생성</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">📊 사용 현황 모니터링</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">🗑️ 미사용 감지 시<br>담당자 확인 후 삭제</div>
+        </div>
+
+        <div class="notice-box" style="margin-top:20px;">
+          <span class="notice-icon">📝</span>
+          <span class="notice-text"><strong>Action Item</strong>: 요청 템플릿 정리 필요 (아래 10번 Action Items 참조)</span>
+        </div>
+
+        <h4 style="font-size:16px; font-weight:700; color:#1a1a2e; margin:24px 0 14px;">운영의 주체</h4>
+        <div class="principle-list">
+          <div class="principle-item">
+            <span class="principle-icon">🏢</span>
+            <span class="principle-text"><strong>운영의 주체는 승인 부서</strong>입니다. AI-WORKER는 모두가 함께 만들어가는 프로젝트인 만큼, Cloud Run
+              서비스도 부서 내 누구나 운영할 수 있어야 합니다.</span>
+          </div>
+          <div class="principle-item">
+            <span class="principle-icon">🗑️</span>
+            <span class="principle-text"><strong>미사용 서비스 종료</strong>: 불필요한 비용 발생을 방지하기 위해, 사용하지 않는 서비스는 해당 부서에서 직접 종료
+              요청을 합니다.</span>
+          </div>
+          <div class="principle-item">
+            <span class="principle-icon">🔄</span>
+            <span class="principle-text"><strong>부서 내 기술 이전 필수</strong>: 운영자 퇴사나 조직 변경 시에도 서비스가 단절되지 않도록, 운영 지식은 반드시 부서
+              내에 공유·이전되어야 합니다.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 7. GCP 운영 시 필수 준수 사항 ── -->
+    <div class="section">
+      <div class="section-title">
+        <div class="icon icon-indigo">☁️</div>
+        7. GCP 운영 시 필수 준수 사항
+      </div>
+
+      <div class="gcp-grid">
+        <div class="gcp-card">
+          <h4>🔑 AI API 키 관리</h4>
+          <p>GCP Secret Manager에 등록 후 Cloud Run 환경변수로 주입합니다.</p>
+        </div>
+        <div class="gcp-card">
+          <h4>🛡️ 서비스 계정 권한</h4>
+          <p>최소 권한 원칙(Least Privilege)을 적용합니다.</p>
+        </div>
+        <div class="gcp-card">
+          <h4>📋 AI 호출 로그</h4>
+          <p>Cloud Logging에 자동 수집됩니다. (비용 추적 및 감사 목적)</p>
+        </div>
+        <div class="gcp-card">
+          <h4>💰 비용 추적</h4>
+          <p>GCP Billing 대시보드의 <strong>라벨(label)</strong> 기능으로 프로젝트별 분리 추적합니다.</p>
+        </div>
+      </div>
+
+      <div class="model-principle" style="margin-top:16px;">
+        <span class="notice-icon">⚡</span>
+        <span class="notice-text" style="color:#78350f;"><strong>모델 선택 원칙</strong>: 작업 난이도에 맞는 모델을 선택한다. <strong>고성능 모델을
+            단순 작업에 사용하는 것을 금지한다.</strong></span>
+      </div>
+    </div>
+
+    <!-- ── 8. LLM 데이터 사용 정책 ── -->
+    <div class="section">
+      <div class="section-title">
+        <div class="icon icon-red">🤖</div>
+        8. Gemini 도구 활용 가이드
+      </div>
+
+      <!-- 7-1 현재 활용 현황 -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3 style="font-size:17px; font-weight:700; color:#1a1a2e; margin-bottom:16px;">8-1. VNTG 현재 활용 현황</h3>
+        <div class="notice-box"
+          style="margin-bottom:16px; margin-top:0; background:rgba(99,102,241,0.06); border-color:rgba(99,102,241,0.3);">
+          <span class="notice-icon">ℹ️</span>
+          <span class="notice-text">VNTG는 현재 <strong>Google Workspace 기반 Gemini Pro</strong>를 공식 사용 중입니다.
+            아래 도구들은 이미 업무에 활용하거나 활용 가능한 Google AI 서비스입니다.</span>
+        </div>
+        <div class="principle-list">
+          <div class="principle-item">
+            <span class="principle-icon">✨</span>
+            <span class="principle-text"><strong>Gemini (채팅/어시스턴트)</strong>: Google Workspace 연동 AI 어시스턴트.
+              문서 요약, 초안 작성, 아이디어 정리, Q&A 등 일반 업무에 활용. Gmail·Docs·Sheets 연동으로 업무 맥락을 파악해 답변 가능.</span>
+          </div>
+          <div class="principle-item">
+            <span class="principle-icon">💎</span>
+            <span class="principle-text"><strong>Gems (커스텀 AI 페르소나)</strong>: 업무별 맞춤 AI 어시스턴트 생성 기능.
+              "코드 리뷰 전문가", "회의록 정리봇" 등 반복 업무용 전용 AI를 만들어 팀 내 공유 가능.</span>
+          </div>
+          <div class="principle-item">
+            <span class="principle-icon">📓</span>
+            <span class="principle-text"><strong>NotebookLM</strong>: 문서·PDF·URL을 업로드하면 AI가 내용을 분석·요약·Q&A해주는 도구.
+              기술 문서 분석, 규정 검토, 리서치 자료 정리에 효과적.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7-2 업무 유형별 추천 도구 -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3 style="font-size:17px; font-weight:700; color:#1a1a2e; margin-bottom:16px;">8-2. 업무 유형별 추천 도구</h3>
+        <table class="policy-table">
+          <thead>
+            <tr>
+              <th style="width:30%">업무 유형</th>
+              <th style="width:25%">추천 도구</th>
+              <th>활용 방법</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>문서 요약 / 정리</strong></td>
+              <td><span class="badge-blue">NotebookLM</span></td>
+              <td>PDF·URL 업로드 후 핵심 내용 추출, 질의응답</td>
+            </tr>
+            <tr>
+              <td><strong>이메일·보고서 초안</strong></td>
+              <td><span class="badge-blue">Gemini (Workspace)</span></td>
+              <td>Gmail에서 Gemini 버튼으로 초안 작성 요청</td>
+            </tr>
+            <tr>
+              <td><strong>반복 업무 자동화</strong></td>
+              <td><span class="badge-blue">Gems</span></td>
+              <td>전용 페르소나 생성 후 팀 내 공유</td>
+            </tr>
+            <tr>
+              <td><strong>스프레드시트 분석</strong></td>
+              <td><span class="badge-blue">Gemini in Sheets</span></td>
+              <td>데이터 해석, 수식 생성, 인사이트 도출</td>
+            </tr>
+            <tr>
+              <td><strong>코드 작성 / 리뷰</strong></td>
+              <td><span class="badge-blue">Gemini (채팅)</span></td>
+              <td>코드 블록 붙여넣기 후 리뷰·개선 요청</td>
+            </tr>
+            <tr>
+              <td><strong>기술 문서 학습</strong></td>
+              <td><span class="badge-blue">NotebookLM</span></td>
+              <td>공식 문서·사내 가이드 업로드 후 질의</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 8-3 보안 원칙 -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3 style="font-size:17px; font-weight:700; color:#1a1a2e; margin-bottom:16px;">8-3. 보안 원칙: 신뢰하거나, 사용하지 않거나</h3>
+
+        <div class="notice-box" style="margin-bottom:20px; margin-top:0; background:rgba(99,102,241,0.06); border-color:rgba(99,102,241,0.3);">
+          <span class="notice-icon">💡</span>
+          <span class="notice-text" style="color:#3730a3;">
+            보안을 100% 확보하면서 AI를 제대로 활용하기는 어렵습니다.<br>
+            <strong>각 AI 서비스가 공표한 보안 정책을 신뢰하고 사용하거나, 신뢰하지 못한다면 사용하지 않는 것</strong>이 현실적인 원칙입니다.
+          </span>
+        </div>
+
+        <h4 style="font-size:15px; font-weight:700; color:#374151; margin-bottom:10px;">VNTG 공식 입장</h4>
+        <div class="principle-list" style="margin-bottom:20px;">
+          <div class="principle-item">
+            <span class="principle-icon">✨</span>
+            <span class="principle-text"><strong>일반 업무 → Gemini 사용</strong>: VNTG는 현재 Google Workspace 기반 Gemini Pro를 공식 사용 중입니다.
+              문서 작성, 요약, Q&amp;A 등 일반 업무는 Gemini를 적극 활용하세요.</span>
+          </div>
+          <div class="principle-item">
+            <span class="principle-icon">📓</span>
+            <span class="principle-text"><strong>민감한 정보 → NotebookLM 활용</strong>: 내부 자료 분석이 필요한 경우
+              <strong>반드시 Workspace 계정</strong>으로 접속한 NotebookLM을 사용하세요.
+              개인 Google 계정 사용 시 업무 자료가 학습에 활용될 수 있습니다.</span>
+          </div>
+        </div>
+
+        <h4 style="font-size:15px; font-weight:700; color:#374151; margin-bottom:10px;">최소한 지켜야 할 2가지</h4>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:4px;">
+          <div style="background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:10px; padding:16px;">
+            <div style="font-size:13px; font-weight:700; color:#166534; margin-bottom:8px;">① Opt-out — Workspace 계정 사용</div>
+            <div style="font-size:13px; color:#374151; line-height:1.8;">
+              Workspace 조직 계정으로 접속 시 관리자 설정에 의해 <strong>데이터 학습 opt-out이 자동 적용</strong>됩니다.<br>
+              <span style="color:#6b7280; font-size:12px;">→ 개인 Google 계정(무료) 사용 금지</span>
+            </div>
+          </div>
+          <div style="background:#fff7ed; border:1.5px solid #fed7aa; border-radius:10px; padding:16px;">
+            <div style="font-size:13px; font-weight:700; color:#92400e; margin-bottom:8px;">② 공유 주의</div>
+            <div style="font-size:13px; color:#374151; line-height:1.8;">
+              NotebookLM 노트북·Gems(커스텀 AI)에 사내 민감 자료가 포함된 경우 <strong>외부 이메일로 공유 금지</strong>.<br>
+              <span style="color:#6b7280; font-size:12px;">→ Workspace 계정 간 내부 공유만 허용</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 9. AI 사용 가이드 ── -->
+    <div class="section">
+      <div class="section-title">
+        <div class="icon icon-green">📚</div>
+        9. AI 사용 가이드 (문서화 예정)
+        <span class="ai-badge ai-badge-todo" style="margin-left:10px; font-size:12px;">TO-DO</span>
+      </div>
+      <div class="todo-box">
+        <span class="todo-icon">📝</span>
+        <div class="todo-text">
+          <strong>[TO-DO]</strong> 정보보호팀에서 가이드 기준 수립 — AI 사용 가이드(전 임직원 대상)의 기본 프레임은 정보보호팀 주도로 잡는 방안 검토 필요.
+        </div>
+      </div>
+
+      <div class="guide-grid">
+        <div class="guide-card">
+          <div class="guide-emoji">📗</div>
+          <div class="guide-info">
+            <h4>AI 사용 가이드</h4>
+            <p>대상: 전 임직원</p>
+            <span class="status-pending">📝 작성 예정</span>
+          </div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-emoji">📘</div>
+          <div class="guide-info">
+            <h4>AI 개발 가이드</h4>
+            <p>대상: 개발·운영팀</p>
+            <span class="status-pending">📝 작성 예정</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 10. Action Items ── -->
+    <div class="section">
+      <div class="section-title">
+        <div class="icon icon-orange">✅</div>
+        10. Action Items
+      </div>
+
+      <div class="action-grid">
+        <div class="action-item">
+          <div class="action-num">1</div>
+          <div class="action-text">spec 생성 skill 작성</div>
+          <div class="ai-badges">
+            <span class="ai-badge ai-badge-tool">/create-doc-by-code</span>
+            <span class="ai-badge ai-badge-person">Chris</span>
+            <span class="ai-badge ai-badge-done">완료</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-num">2</div>
+          <div class="action-text">레벨 판독 skill 작성</div>
+          <div class="ai-badges">
+            <span class="ai-badge ai-badge-tool">/create-doc-by-code</span>
+            <span class="ai-badge ai-badge-person">Chris</span>
+            <span class="ai-badge ai-badge-done">완료</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-num">3</div>
+          <div class="action-text">AI-Tool 요청 템플릿 정리</div>
+          <div class="ai-badges">
+            <a href="https://page.chrisnolja.dev/gemini_html/aive_request_guide.html" target="_blank" class="ai-badge ai-badge-link">바로가기 →</a>
+            <span class="ai-badge ai-badge-person">Chris</span>
+            <span class="ai-badge ai-badge-done">완료</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-num">4</div>
+          <div class="action-text">AI API 요청 템플릿 정리</div>
+          <div class="ai-badges">
+            <a href="https://page.chrisnolja.dev/gemini_html/aive_request_guide.html" target="_blank" class="ai-badge ai-badge-link">바로가기 →</a>
+            <span class="ai-badge ai-badge-person">Chris</span>
+            <span class="ai-badge ai-badge-done">완료</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-num">5</div>
+          <div class="action-text">Cloud Run 요청 템플릿 정리</div>
+          <div class="ai-badges">
+            <a href="https://page.chrisnolja.dev/gemini_html/aive_request_guide.html" target="_blank" class="ai-badge ai-badge-link">바로가기 →</a>
+            <span class="ai-badge ai-badge-person">Chris</span>
+            <span class="ai-badge ai-badge-done">완료</span>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-num">6</div>
+          <div class="action-text">입력 금지 데이터 범위 확정</div>
+          <div class="action-owner">—</div>
+          <div class="action-status">⬜ 미완료</div>
+        </div>
+        <div class="action-item">
+          <div class="action-num">7</div>
+          <div class="action-text">Gemini opt-out 설정 현황 점검 (관리 콘솔)</div>
+          <div class="action-owner">—</div>
+          <div class="action-status">⬜ 미완료</div>
+        </div>
+        <div class="action-item">
+          <div class="action-num">8</div>
+          <div class="action-text">미제출 인원 개별 독려 및 신규 입사자 별도 일정 안내</div>
+          <div class="ai-badges">
+            <span class="ai-badge ai-badge-person">EX실</span>
+            <span class="ai-badge ai-badge-wip">진행중</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="template-note">
+        <h4>📋 요청 템플릿에 포함되어야 할 항목</h4>
+        <div class="template-tag-list">
+          <span class="template-tag">사용 빈도</span>
+          <span class="template-tag">개발 환경 필요 여부</span>
+          <span class="template-tag">사용 목적</span>
+          <span class="template-tag">기술 스택</span>
+          <span class="template-tag">사용 기간</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 메모: 다음 단계 논의 ── -->
+    <div class="section">
+      <div class="section-title">
+        <div class="icon icon-purple">💬</div>
+        메모 — AI-WORKER, 다음 단계를 논하다
+      </div>
+      <div class="memo-section">
+        <h3>📌 지속 가능한 운영 체계로의 전환</h3>
+        <p>
+          AI-WORKER 1단계(경쟁 과제 중심 운영)는 성공적으로 마무리되었다.
+          이니셔티브가 조직 내에서 AI에 대한 관심과 참여를 이끌어냈다는 점에서 분명한 성과가 있다.
+        </p>
+        <p>
+          그러나 현재의 이벤트성·경쟁 중심 방식을 그대로 반복하는 것만으로는 장기적 효과를 담보하기 어렵다.
+          조직이 AI를 일상 업무에 진정으로 내재화하려면, AI-WORKER를 <strong>'단발성 프로젝트'</strong>가 아닌
+          <strong>'지속 가능한 운영 체계'</strong>로 전환하는 설계가 필요하다.
+        </p>
+        <div class="memo-highlight">
+          회사가 AI-WORKER라는 이니셔티브를 보유하고 있다는 것 자체가 경쟁 우위다.<br>
+          이를 유지·발전시키기 위해서는 다음 세 가지가 뒷받침되어야 한다:<br>
+          <strong>① 운영 방식의 제도화</strong> — 일회성 이벤트를 넘어 상시 운영 가능한 구조 설계<br>
+          <strong>② 자발적 참여 문화 정착</strong> — 구성원 스스로가 AI 활용을 선택하는 동기 부여 메커니즘<br>
+          <strong>③ 성과 측정 체계 구축</strong> — 업무 효율화 효과를 정량적으로 추적·공유하는 방법론 확립
+        </div>
+        <p style="margin-top:16px; color:#64748b; font-size:13px;">
+          * 이 메모는 2026-03-23 미팅 논의를 바탕으로 정리한 내부 검토 내용입니다.
+        </p>
+      </div>
+    </div>
+
+    <!-- ── Footer ── -->
+    <div style="text-align:center; padding:24px 0 0; color:#94a3b8; font-size:13px;">
+      본 문서는 AI-WORKER 운영 정책을 정리한 내부 계획서입니다. — VntgCorp AI-WORKER Project
+    </div>
+
+  </div>
+</body>
+
+</html>
