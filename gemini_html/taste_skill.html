@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taste Skill — AI 바이브코딩 디자인 스킬</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Germania+One&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #FA3C00;
+      --color-secondary: #F08321;
+      --color-surface: #FFFFFF;
+      --color-text: #111827;
+      --color-muted: #6B5E52;
+      --font-primary: 'Roboto', sans-serif;
+      --font-display: 'Germania One', serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-primary);
+      background-color: #E8E0D8;
+      color: var(--color-text);
+      min-height: 100vh;
+    }
+
+    /* ─── Textures ─── */
+    .texture-leather {
+      background-color: #2C1A0E;
+      background-image:
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 8px),
+        repeating-linear-gradient(-45deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 8px);
+    }
+    .texture-paper {
+      background-color: #F5F0E8;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+    }
+
+    /* ─── Components ─── */
+    .card-skeu {
+      background: linear-gradient(145deg, #FFFFFF, #F0EBE3);
+      border-radius: 12px;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.9) inset,
+        0 -1px 0 rgba(0,0,0,0.08) inset,
+        0 8px 24px rgba(0,0,0,0.15),
+        0 2px 6px rgba(0,0,0,0.1);
+      border: 1px solid rgba(0,0,0,0.08);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card-skeu:hover {
+      transform: translateY(-3px);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.9) inset,
+        0 -1px 0 rgba(0,0,0,0.08) inset,
+        0 14px 32px rgba(0,0,0,0.18),
+        0 4px 10px rgba(0,0,0,0.12);
+    }
+    .card-leather {
+      border-radius: 10px;
+      padding: 28px;
+      position: relative;
+      border: 2px solid rgba(255,255,255,0.08);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.4);
+    }
+    .card-leather::before {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 2px dashed rgba(255,255,255,0.12);
+      border-radius: 6px;
+      pointer-events: none;
+    }
+    .panel-inset {
+      background: linear-gradient(145deg, #D0C8C0, #E8E0D8);
+      border-radius: 12px;
+      box-shadow:
+        4px 4px 10px rgba(0,0,0,0.25),
+        -2px -2px 6px rgba(255,255,255,0.7),
+        2px 2px 5px rgba(0,0,0,0.15) inset,
+        -1px -1px 3px rgba(255,255,255,0.5) inset;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .btn-skeu {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 24px;
+      border-radius: 8px;
+      font-family: var(--font-primary);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      position: relative;
+      transition: all 0.08s ease;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: linear-gradient(180deg, #FF6630 0%, #FA3C00 40%, #CC2E00 100%);
+      color: #fff;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.4) inset,
+        0 -1px 0 rgba(0,0,0,0.3) inset,
+        0 4px 8px rgba(250,60,0,0.45),
+        0 2px 3px rgba(0,0,0,0.3);
+      text-shadow: 0 -1px 0 rgba(0,0,0,0.4);
+      border: 1px solid rgba(0,0,0,0.25);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(180deg, #FF7744 0%, #FF4C11 40%, #DD3A00 100%);
+      transform: translateY(-1px);
+    }
+    .btn-primary:active { transform: translateY(1px); }
+    .badge-skeu {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .badge-orange {
+      background: linear-gradient(180deg, #FF7744, #FA3C00);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(250,60,0,0.4), 0 1px 0 rgba(255,255,255,0.3) inset;
+    }
+    .badge-amber {
+      background: linear-gradient(180deg, #FBB040, #F08321);
+      color: #1a0a00;
+      box-shadow: 0 2px 6px rgba(240,131,33,0.4), 0 1px 0 rgba(255,255,255,0.3) inset;
+    }
+    .badge-green {
+      background: linear-gradient(180deg, #34D399, #10B981);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(16,185,129,0.4), 0 1px 0 rgba(255,255,255,0.3) inset;
+    }
+    .badge-slate {
+      background: linear-gradient(180deg, #94A3B8, #64748B);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(100,116,139,0.3), 0 1px 0 rgba(255,255,255,0.3) inset;
+    }
+    .progress-skeu {
+      height: 18px;
+      border-radius: 9px;
+      background: linear-gradient(180deg, #B8B0A8 0%, #D0C8C0 50%, #C0B8B0 100%);
+      box-shadow: 2px 2px 4px rgba(0,0,0,0.3) inset, -1px -1px 2px rgba(255,255,255,0.5) inset;
+      padding: 3px;
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #FF6630 0%, #FA3C00 40%, #CC2E00 100%);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 2px 6px rgba(250,60,0,0.4);
+    }
+    .progress-fill-amber {
+      background: linear-gradient(180deg, #FBB040 0%, #F08321 40%, #C06010 100%);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 2px 6px rgba(240,131,33,0.4);
+    }
+    .divider-skeu {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.15) 70%, transparent);
+      margin: 8px 0;
+    }
+    .tag-skeu {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      background: linear-gradient(180deg, #F5F0E8, #EAE5DC);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15), 0 1px 0 rgba(255,255,255,0.8) inset;
+      border: 1px solid rgba(0,0,0,0.1);
+      color: #4A3728;
+    }
+
+    /* ─── Layout ─── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* ─── Header ─── */
+    .hero {
+      padding: 60px 24px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-inner { max-width: 1100px; margin: 0 auto; }
+    .hero-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 16px;
+    }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      color: #fff;
+      line-height: 1.05;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      margin-bottom: 8px;
+    }
+    .hero-title span {
+      color: #F08321;
+      text-shadow: 0 0 20px rgba(240,131,33,0.5), 0 2px 8px rgba(0,0,0,0.6);
+    }
+    .hero-sub {
+      font-size: 17px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 28px;
+      max-width: 560px;
+      line-height: 1.6;
+    }
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .hero-date {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ─── Sections ─── */
+    .section { padding: 52px 24px; }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 26px;
+      color: #2C1A0E;
+      margin-bottom: 6px;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    }
+    .section-sub {
+      font-size: 15px;
+      color: var(--color-muted);
+      margin-bottom: 32px;
+    }
+
+    /* ─── Skills grid ─── */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .skill-card {
+      padding: 28px 24px;
+    }
+    .skill-num {
+      font-family: var(--font-display);
+      font-size: 42px;
+      line-height: 1;
+      color: var(--color-primary);
+      text-shadow: 0 2px 4px rgba(250,60,0,0.3);
+      margin-bottom: 12px;
+    }
+    .skill-name {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: #2C1A0E;
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+    }
+    .skill-desc {
+      font-size: 14px;
+      color: var(--color-muted);
+      line-height: 1.65;
+    }
+
+    /* ─── Dial controls ─── */
+    .dials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .dial-card { padding: 24px; }
+    .dial-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .dial-name {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: #2C1A0E;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .dial-value {
+      font-family: var(--font-display);
+      font-size: 28px;
+      color: var(--color-primary);
+      text-shadow: 0 1px 2px rgba(250,60,0,0.3);
+    }
+    .dial-bar-wrap {
+      margin-bottom: 14px;
+    }
+    .dial-ticks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+    }
+    .dial-ticks span {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-muted);
+    }
+    .dial-levels { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+    .dial-level {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #4A3728;
+    }
+    .dial-level-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-muted);
+      white-space: nowrap;
+      padding-top: 1px;
+    }
+
+    /* ─── How to use ─── */
+    .steps-list { display: flex; flex-direction: column; gap: 16px; }
+    .step-item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 20px;
+    }
+    .step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #FF6630, #CC2E00);
+      box-shadow: 0 3px 8px rgba(250,60,0,0.4), 0 1px 0 rgba(255,255,255,0.3) inset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 16px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .step-content { flex: 1; }
+    .step-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #2C1A0E;
+      margin-bottom: 4px;
+    }
+    .step-desc {
+      font-size: 14px;
+      color: var(--color-muted);
+      line-height: 1.6;
+    }
+
+    /* ─── Code block ─── */
+    .code-block {
+      background: #1C0F06;
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: #E8D8C8;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4) inset, 0 1px 0 rgba(255,255,255,0.05) inset;
+      border: 1px solid rgba(255,255,255,0.06);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .code-comment { color: #7A6050; }
+    .code-key { color: #F08321; }
+    .code-val { color: #34D399; }
+    .code-path { color: #60A5FA; }
+
+    /* ─── Comparison table ─── */
+    .compare-table { width: 100%; border-collapse: collapse; }
+    .compare-table th {
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .compare-table td {
+      padding: 14px 16px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.75);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      vertical-align: top;
+      line-height: 1.55;
+    }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td.feature { font-weight: 600; color: rgba(255,255,255,0.9); white-space: nowrap; }
+    .check { color: #34D399; font-size: 16px; }
+    .cross { color: #F87171; font-size: 16px; }
+
+    /* ─── Use cases ─── */
+    .usecase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .usecase-card { padding: 20px; }
+    .usecase-scenario {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .usecase-combo {
+      font-size: 14px;
+      font-weight: 700;
+      color: #2C1A0E;
+      margin-bottom: 10px;
+    }
+    .usecase-settings {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* ─── Source link ─── */
+    .source-bar {
+      background: linear-gradient(145deg, #1C0F06, #2C1A0E);
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .source-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .source-link {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: #60A5FA;
+      text-decoration: none;
+    }
+    .source-link:hover { text-decoration: underline; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+    @media (max-width: 600px) {
+      .hero-title { font-size: 2.2rem; }
+      .compare-table th, .compare-table td { padding: 10px 12px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Hero ─── -->
+<header class="hero texture-leather">
+  <div class="hero-inner">
+    <p class="hero-label">unclejobs.ai · AI Threads · 2026-03-16</p>
+    <h1 class="hero-title">Taste<br><span>Skill</span></h1>
+    <p class="hero-sub">AI가 만든 티 나는 밋밋한 디자인 대신, 프로페셔널한 프론트엔드를 뽑아주는 4개 스킬 조합.</p>
+    <div class="hero-meta">
+      <span class="badge-skeu badge-orange">New Tool</span>
+      <span class="badge-skeu badge-amber">Vibe Coding</span>
+      <span class="badge-skeu badge-green">Open Source</span>
+      <span class="hero-date">github.com/Leonxlnx/taste-skill</span>
+    </div>
+  </div>
+</header>
+
+<!-- ─── Problem ─── -->
+<section class="section texture-paper">
+  <div class="container">
+    <h2 class="section-title">왜 필요한가?</h2>
+    <p class="section-sub">AI 코딩 도구의 프론트엔드 결과물이 갖는 공통적인 문제</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+      <div class="card-skeu" style="padding: 22px;">
+        <div style="font-size: 28px; margin-bottom: 10px;">📐</div>
+        <div style="font-size: 14px; font-weight: 700; color: #2C1A0E; margin-bottom: 6px;">천편일률 레이아웃</div>
+        <div style="font-size: 13px; color: var(--color-muted); line-height: 1.6;">어느 AI가 만들어도 비슷한 그리드 구조. 개성이 없다.</div>
+      </div>
+      <div class="card-skeu" style="padding: 22px;">
+        <div style="font-size: 28px; margin-bottom: 10px;">🎨</div>
+        <div style="font-size: 14px; font-weight: 700; color: #2C1A0E; margin-bottom: 6px;">무난한 색상</div>
+        <div style="font-size: 13px; color: var(--color-muted); line-height: 1.6;">파란색 버튼, 회색 카드. 2020년 부트스트랩 템플릿 수준.</div>
+      </div>
+      <div class="card-skeu" style="padding: 22px;">
+        <div style="font-size: 28px; margin-bottom: 10px;">💤</div>
+        <div style="font-size: 14px; font-weight: 700; color: #2C1A0E; margin-bottom: 6px;">애니메이션 없음</div>
+        <div style="font-size: 13px; color: var(--color-muted); line-height: 1.6;">호버 효과도 없는 정적인 UI. 생동감이 없다.</div>
+      </div>
+      <div class="card-skeu" style="padding: 22px;">
+        <div style="font-size: 28px; margin-bottom: 10px;">🔲</div>
+        <div style="font-size: 14px; font-weight: 700; color: #2C1A0E; margin-bottom: 6px;">대충 처리된 여백</div>
+        <div style="font-size: 13px; color: var(--color-muted); line-height: 1.6;">요소 간 간격이 들쭉날쭉. 리듬감이 없다.</div>
+      </div>
+    </div>
+
+    <div class="panel-inset" style="margin-top: 24px; padding: 20px 24px;">
+      <p style="font-size: 15px; color: #4A3728; line-height: 1.7;">
+        <strong>frontend-design</strong> 스킬이 이 문제를 풀어왔는데, <strong>Taste Skill</strong>은 접근이 좀 달라요.
+        4개의 스킬을 조합해서, 단계별로 다른 문제를 해결합니다.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── 4 Skills ─── -->
+<section class="section" style="background: #E0D8D0; padding-top: 52px;">
+  <div class="container">
+    <h2 class="section-title">4개의 스킬 구성</h2>
+    <p class="section-sub">각 스킬은 독립적이며, 필요한 것만 골라 쓸 수 있습니다</p>
+
+    <div class="skills-grid">
+      <!-- taste-skill -->
+      <div class="card-skeu skill-card">
+        <div class="skill-num">01</div>
+        <div class="skill-name">taste-skill</div>
+        <div style="margin-bottom: 10px;"><span class="badge-skeu badge-orange">메인 디자인</span></div>
+        <div class="skill-desc">처음부터 잘 만드는 법을 가르치는 스킬. 레이아웃, 타이포그래피, 색상, 여백, 모션. AI가 프론트엔드 코드를 쓸 때 "이건 이렇게 해야 좋아 보인다"는 기준을 심어줍니다.</div>
+        <div class="divider-skeu" style="margin-top: 14px;"></div>
+        <div style="margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap;">
+          <span class="tag-skeu">DESIGN_VARIANCE</span>
+          <span class="tag-skeu">MOTION_INTENSITY</span>
+          <span class="tag-skeu">VISUAL_DENSITY</span>
+        </div>
+      </div>
+
+      <!-- redesign-skill -->
+      <div class="card-skeu skill-card">
+        <div class="skill-num">02</div>
+        <div class="skill-name">redesign-skill</div>
+        <div style="margin-bottom: 10px;"><span class="badge-skeu badge-amber">업그레이드</span></div>
+        <div class="skill-desc">이미 만든 게 있는데 디자인이 별로일 때. 처음부터 다시 만드는 게 아니라, 지금 있는 걸 감사(audit)하고 가장 큰 문제부터 고치는 방식. "전부 갈아엎어"가 아니라 "이것만 고치면 확 달라진다"를 찾아줍니다.</div>
+      </div>
+
+      <!-- soft-skill -->
+      <div class="card-skeu skill-card">
+        <div class="skill-num">03</div>
+        <div class="skill-name">soft-skill</div>
+        <div style="margin-bottom: 10px;"><span class="badge-skeu badge-green">프리미엄</span></div>
+        <div class="skill-desc">프리미엄 폰트, 넉넉한 여백, 깊이감 있는 카드 디자인, 스프링 기반 부드러운 애니메이션, 플로팅 네비게이션. AI의 천편일률적인 기본값을 전부 금지시키고 "비싸 보이는 느낌"을 공짜로 넣어줍니다.</div>
+      </div>
+
+      <!-- output-skill -->
+      <div class="card-skeu skill-card">
+        <div class="skill-num">04</div>
+        <div class="skill-name">output-skill</div>
+        <div style="margin-bottom: 10px;"><span class="badge-skeu badge-slate">행동 교정</span></div>
+        <div class="skill-desc">AI가 코드를 쓰다가 <code style="font-family: var(--font-mono); font-size: 12px; background: #F0EBE3; padding: 1px 5px; border-radius: 3px;">// 나머지는 여기에 구현</code> 으로 플레이스홀더만 남기고 넘어가거나, 반만 쓰고 끝내는 걸 방지합니다. 아무리 디자인 스킬이 좋아도 코드가 절반이면 소용없으니까.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Dials ─── -->
+<section class="section texture-paper">
+  <div class="container">
+    <h2 class="section-title">taste-skill 세팅 다이얼</h2>
+    <p class="section-sub">세 가지 숫자(1~10)를 바꾸면 같은 프로젝트도 완전히 다른 느낌이 나옵니다</p>
+
+    <div class="dials-grid">
+      <!-- DESIGN_VARIANCE -->
+      <div class="card-skeu dial-card">
+        <div class="dial-header">
+          <div class="dial-name">Design_Variance</div>
+          <div class="dial-value">1–10</div>
+        </div>
+        <div class="dial-bar-wrap">
+          <div class="progress-skeu">
+            <div class="progress-fill" style="width: 60%;"></div>
+          </div>
+          <div class="dial-ticks">
+            <span>1</span><span>5</span><span>10</span>
+          </div>
+        </div>
+        <div style="font-size: 13px; color: var(--color-muted); font-weight: 700; margin-bottom: 8px;">레이아웃 실험성</div>
+        <div class="dial-levels">
+          <div class="dial-level">
+            <span class="dial-level-label">1–3</span>
+            <span>깔끔하고 정돈된 그리드. 안전한 구성.</span>
+          </div>
+          <div class="dial-level">
+            <span class="dial-level-label">4–7</span>
+            <span>요소가 겹치고, 크기가 다양해지는 구성.</span>
+          </div>
+          <div class="dial-level">
+            <span class="dial-level-label">8–10</span>
+            <span>비대칭, 넓은 여백, 아주 모던한 느낌.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOTION_INTENSITY -->
+      <div class="card-skeu dial-card">
+        <div class="dial-header">
+          <div class="dial-name">Motion_Intensity</div>
+          <div class="dial-value">1–10</div>
+        </div>
+        <div class="dial-bar-wrap">
+          <div class="progress-skeu">
+            <div class="progress-fill progress-fill-amber" style="width: 40%;"></div>
+          </div>
+          <div class="dial-ticks">
+            <span>1</span><span>5</span><span>10</span>
+          </div>
+        </div>
+        <div style="font-size: 13px; color: var(--color-muted); font-weight: 700; margin-bottom: 8px;">애니메이션 강도</div>
+        <div class="dial-levels">
+          <div class="dial-level">
+            <span class="dial-level-label">1–3</span>
+            <span>거의 없음. 심플한 호버 효과 정도.</span>
+          </div>
+          <div class="dial-level">
+            <span class="dial-level-label">4–7</span>
+            <span>페이드인, 스무스 스크롤링.</span>
+          </div>
+          <div class="dial-level">
+            <span class="dial-level-label">8–10</span>
+            <span>마그네틱 효과, 스프링 물리, 스크롤 트리거 애니메이션.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISUAL_DENSITY -->
+      <div class="card-skeu dial-card">
+        <div class="dial-header">
+          <div class="dial-name">Visual_Density</div>
+          <div class="dial-value">1–10</div>
+        </div>
+        <div class="dial-bar-wrap">
+          <div class="progress-skeu">
+            <div class="progress-fill" style="width: 50%;"></div>
+          </div>
+          <div class="dial-ticks">
+            <span>1</span><span>5</span><span>10</span>
+          </div>
+        </div>
+        <div style="font-size: 13px; color: var(--color-muted); font-weight: 700; margin-bottom: 8px;">화면 밀도</div>
+        <div class="dial-levels">
+          <div class="dial-level">
+            <span class="dial-level-label">1–3</span>
+            <span>크고 여유롭게. 한 번에 하나씩. 럭셔리 느낌.</span>
+          </div>
+          <div class="dial-level">
+            <span class="dial-level-label">4–7</span>
+            <span>일반적인 앱이나 웹사이트 수준.</span>
+          </div>
+          <div class="dial-level">
+            <span class="dial-level-label">8–10</span>
+            <span>빽빽하고 컴팩트. 대시보드, 데이터 중심 인터페이스.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Use Cases ─── -->
+<section class="section" style="background: #E0D8D0;">
+  <div class="container">
+    <h2 class="section-title">시나리오별 조합</h2>
+    <p class="section-sub">프로젝트 성격에 따라 다이얼 값을 조정하세요</p>
+
+    <div class="usecase-grid">
+      <div class="card-skeu usecase-card">
+        <div class="usecase-scenario">럭셔리 랜딩</div>
+        <div class="usecase-combo">Luxury Brand Landing</div>
+        <div class="usecase-settings">
+          <span class="tag-skeu">VARIANCE 8</span>
+          <span class="tag-skeu">MOTION 7</span>
+          <span class="tag-skeu">DENSITY 2</span>
+        </div>
+      </div>
+      <div class="card-skeu usecase-card">
+        <div class="usecase-scenario">관리자 대시보드</div>
+        <div class="usecase-combo">Admin Dashboard</div>
+        <div class="usecase-settings">
+          <span class="tag-skeu">VARIANCE 2</span>
+          <span class="tag-skeu">MOTION 3</span>
+          <span class="tag-skeu">DENSITY 9</span>
+        </div>
+      </div>
+      <div class="card-skeu usecase-card">
+        <div class="usecase-scenario">SaaS 랜딩</div>
+        <div class="usecase-combo">SaaS Landing Page</div>
+        <div class="usecase-settings">
+          <span class="tag-skeu">VARIANCE 6</span>
+          <span class="tag-skeu">MOTION 6</span>
+          <span class="tag-skeu">DENSITY 5</span>
+        </div>
+      </div>
+      <div class="card-skeu usecase-card">
+        <div class="usecase-scenario">포트폴리오</div>
+        <div class="usecase-combo">Portfolio Site</div>
+        <div class="usecase-settings">
+          <span class="tag-skeu">VARIANCE 7</span>
+          <span class="tag-skeu">MOTION 8</span>
+          <span class="tag-skeu">DENSITY 3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── How to use ─── -->
+<section class="section texture-paper">
+  <div class="container">
+    <h2 class="section-title">사용 방법</h2>
+    <p class="section-sub">SKILL.md 파일을 프로젝트에 복사하고, AI한테 읽으라고 하면 끝</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;" class="use-grid">
+      <div>
+        <div class="steps-list">
+          <div class="card-skeu step-item">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">GitHub에서 다운로드</div>
+              <div class="step-desc">taste-skill 레포에서 필요한 SKILL.md 파일을 내려받습니다.</div>
+            </div>
+          </div>
+          <div class="card-skeu step-item">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">프로젝트에 복사</div>
+              <div class="step-desc">Claude Code는 <code style="font-family: var(--font-mono); font-size: 12px;">.claude/skills/</code> 폴더에 넣으면 자동 발동. Cursor는 SKILL.md로 참조.</div>
+            </div>
+          </div>
+          <div class="card-skeu step-item">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">AI에게 읽으라고 지시</div>
+              <div class="step-desc">스킬 파일을 인식시키면 이후 UI 생성 시 자동으로 적용됩니다.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="code-block"><span class="code-comment"># Claude Code — 자동 발동</span>
+<span class="code-path">.claude/skills/</span>
+<span class="code-path">├── taste-skill.md</span>
+<span class="code-path">├── soft-skill.md</span>
+<span class="code-path">└── output-skill.md</span>
+
+<span class="code-comment"># 새 프로젝트 추천 조합</span>
+<span class="code-key">taste-skill</span>  <span class="code-comment"># 메인 디자인 기준</span>
+<span class="code-key">soft-skill</span>   <span class="code-comment"># 프리미엄 레이어</span>
+<span class="code-key">output-skill</span> <span class="code-comment"># 게으름 방지</span>
+
+<span class="code-comment"># 기존 프로젝트 개선</span>
+<span class="code-key">redesign-skill</span> <span class="code-comment"># 감사 + 핵심 수정</span>
+<span class="code-key">output-skill</span>   <span class="code-comment"># 코드 완성 보장</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Comparison ─── -->
+<section class="section texture-leather">
+  <div class="container">
+    <h2 class="section-title" style="color: rgba(255,255,255,0.9);">frontend-design vs Taste Skill</h2>
+    <p class="section-sub" style="color: rgba(255,255,255,0.5);">두 가지를 함께 쓰는 것도 가능합니다</p>
+
+    <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+      <table class="compare-table" style="background: rgba(255,255,255,0.04);">
+        <thead style="background: rgba(255,255,255,0.06);">
+          <tr>
+            <th>항목</th>
+            <th>frontend-design</th>
+            <th>Taste Skill</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="feature">출처</td>
+            <td>Anthropic 빌트인 스킬</td>
+            <td>커뮤니티 오픈소스</td>
+          </tr>
+          <tr>
+            <td class="feature">설치</td>
+            <td><span class="check">✓</span> 별도 설치 불필요</td>
+            <td>GitHub에서 다운로드 필요</td>
+          </tr>
+          <tr>
+            <td class="feature">구성</td>
+            <td>단일 스킬</td>
+            <td>4개 스킬 조합</td>
+          </tr>
+          <tr>
+            <td class="feature">디자인 조절</td>
+            <td>고정된 기준</td>
+            <td><span class="check">✓</span> 다이얼 3개로 세밀 조정</td>
+          </tr>
+          <tr>
+            <td class="feature">"비싸 보이게"</td>
+            <td><span class="cross">✗</span> 없음</td>
+            <td><span class="check">✓</span> soft-skill 전담</td>
+          </tr>
+          <tr>
+            <td class="feature">코드 완성 강제</td>
+            <td><span class="cross">✗</span> 없음</td>
+            <td><span class="check">✓</span> output-skill 전담</td>
+          </tr>
+          <tr>
+            <td class="feature">기존 프로젝트 개선</td>
+            <td><span class="cross">✗</span> 없음</td>
+            <td><span class="check">✓</span> redesign-skill 전담</td>
+          </tr>
+          <tr>
+            <td class="feature">함께 사용</td>
+            <td colspan="2" style="text-align: center; color: #34D399;">가능 — frontend-design이 기본 품질, Taste Skill이 프리미엄 레이어</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Conclusion ─── -->
+<section class="section texture-paper">
+  <div class="container">
+    <div class="panel-inset" style="padding: 32px;">
+      <div style="font-family: var(--font-display); font-size: 22px; color: #2C1A0E; margin-bottom: 16px;">스킬을 잘 조합하는 시대</div>
+      <p style="font-size: 15px; color: #4A3728; line-height: 1.8; margin-bottom: 16px;">
+        바이브코딩으로 만든 결과물에서 "AI가 만든 티"를 빼는 게 점점 쉬워지고 있어요.
+        프롬프트를 잘 쓰는 시대에서, 스킬을 잘 조합하는 시대로 넘어가고 있습니다.
+      </p>
+      <p style="font-size: 15px; color: #4A3728; line-height: 1.8;">
+        SKILL.md 파일 하나가 디자인 감각을 대신해주는 시대. 이게 바이브코더에게 가장 좋은 소식이에요.
+      </p>
+    </div>
+
+    <div class="source-bar" style="margin-top: 24px;">
+      <div>
+        <div class="source-label">원본 출처</div>
+        <div style="font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 3px;">unclejobs.ai · AI Threads · 2026-03-16</div>
+      </div>
+      <a href="https://github.com/Leonxlnx/taste-skill" class="source-link" target="_blank" rel="noopener">
+        github.com/Leonxlnx/taste-skill →
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  @media (max-width: 700px) {
+    .use-grid { grid-template-columns: 1fr !important; }
+  }
+</style>
+</body>
+</html>
