@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code 2.1.83 업데이트 완전 정리</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAFAF8;
+      --surface: #F2F2EE;
+      --surface2: #E8E8E2;
+      --border: #D8D8D0;
+      --text-primary: #1A1A18;
+      --text-secondary: #5A5A52;
+      --text-muted: #8A8A82;
+      --accent: #C45C2E;
+      --accent-light: #F0E4DC;
+      --accent-hover: #A84C24;
+      --green: #2D7A4F;
+      --green-light: #D8EFE3;
+      --blue: #2855A0;
+      --blue-light: #D8E4F8;
+      --amber: #B86A00;
+      --amber-light: #FFF0D0;
+      --red: #C0392B;
+      --red-light: #FCE8E6;
+      --purple: #6B3FA0;
+      --purple-light: #EDE4F8;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', 'Apple SD Gothic Neo', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      font-size: 16px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── 헤더 ─────────────────────────────── */
+    .site-header {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .site-header a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    .site-header a:hover { color: var(--accent); }
+    .breadcrumb-sep { color: var(--border); font-size: 14px; }
+    .version-badge-header {
+      margin-left: auto;
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── 히어로 ─────────────────────────────── */
+    .hero {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 72px 24px 48px;
+    }
+    .meta-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+    }
+    .badge-version {
+      background: var(--accent);
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+    .badge-date { background: var(--surface2); color: var(--text-secondary); }
+    .badge-count { background: var(--accent-light); color: var(--accent); }
+
+    .hero-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .hero-desc {
+      font-size: 17px;
+      color: var(--text-secondary);
+      max-width: 640px;
+      line-height: 1.75;
+    }
+
+    /* ── 하이라이트 카드 ─────────────────────── */
+    .highlight-grid {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 56px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .highlight-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      text-align: center;
+    }
+    .highlight-num {
+      font-family: 'Fraunces', serif;
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .highlight-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* ── 검색 UX 일러스트 ─────────────────────── */
+    .search-demo {
+      max-width: 900px;
+      margin: 0 auto 56px;
+      padding: 0 24px;
+    }
+    .search-demo-inner {
+      background: #1A1A18;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid #333330;
+    }
+    .terminal-bar {
+      background: #2A2A26;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #333330;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #FF5F57; }
+    .dot-y { background: #FEBC2E; }
+    .dot-g { background: #28C840; }
+    .terminal-title { color: #8A8A82; font-size: 13px; margin-left: 8px; font-family: 'JetBrains Mono', monospace; }
+    .terminal-body { padding: 20px 24px; }
+    .terminal-line { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.8; }
+    .t-dim { color: #5A5A52; }
+    .t-green { color: #5AB890; }
+    .t-amber { color: #E8B860; }
+    .t-accent { color: #E07850; }
+    .t-white { color: #E8E8E0; }
+    .t-blue { color: #6090D8; }
+    .t-highlight { background: rgba(200,100,50,0.25); color: #F0A070; border-radius: 2px; padding: 0 2px; }
+    .t-cursor { display: inline-block; width: 8px; height: 14px; background: #E8E8E0; vertical-align: middle; animation: blink 1s step-end infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ── 섹션 공통 ─────────────────────────────── */
+    .section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 64px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .icon-green { background: var(--green-light); }
+    .icon-blue { background: var(--blue-light); }
+    .icon-amber { background: var(--amber-light); }
+    .icon-red { background: var(--red-light); }
+    .icon-purple { background: var(--purple-light); }
+    .section-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .section-count {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: var(--surface2);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* ── 기능 카드 ─────────────────────────────── */
+    .feature-list { display: flex; flex-direction: column; gap: 16px; }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .feature-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 2px 12px rgba(196,92,46,0.08);
+    }
+    .feature-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .feature-num {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .feature-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+    .feature-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .feature-body {
+      padding-left: 42px;
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.75;
+    }
+    .before-after {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .ba-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 13px;
+    }
+    .ba-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .ba-before .ba-label { color: var(--red); }
+    .ba-after .ba-label { color: var(--green); }
+    .ba-text { color: var(--text-secondary); line-height: 1.6; }
+
+    code {
+      background: var(--surface2);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.87em;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* ── 키 콤보 시각화 ─────────────────────────── */
+    kbd {
+      display: inline-flex;
+      align-items: center;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      padding: 2px 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    /* ── 개선 카드 ─────────────────────────────── */
+    .improve-list { display: flex; flex-direction: column; gap: 12px; }
+    .improve-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--blue);
+      border-radius: var(--radius-sm);
+      padding: 18px 20px;
+    }
+    .improve-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary); }
+    .improve-body { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+    /* ── 버그픽스 카드 ─────────────────────────── */
+    .fix-list { display: flex; flex-direction: column; gap: 10px; }
+    .fix-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .fix-icon {
+      width: 24px;
+      height: 24px;
+      background: var(--amber-light);
+      color: var(--amber);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .fix-content { flex: 1; }
+    .fix-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: var(--text-primary); }
+    .fix-body { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
+
+    /* ── 보안 카드 ─────────────────────────────── */
+    .security-list { display: flex; flex-direction: column; gap: 12px; }
+    .security-card {
+      background: var(--red-light);
+      border: 1px solid rgba(192,57,43,0.2);
+      border-radius: var(--radius-sm);
+      padding: 18px 20px;
+    }
+    .security-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--red); }
+    .security-body { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+    /* ── 워크플로우 다이어그램 ─────────────────── */
+    .diagram-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      margin-bottom: 20px;
+    }
+    .diagram-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    /* ── 기타 수정 테이블 ─────────────────────── */
+    .extra-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .extra-table th {
+      background: var(--surface2);
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .extra-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .extra-table tr:last-child td { border-bottom: none; }
+    .extra-table tr:nth-child(even) td { background: var(--surface); }
+    .extra-table .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tag-fix { background: var(--amber-light); color: var(--amber); }
+    .tag-perf { background: var(--blue-light); color: var(--blue); }
+
+    /* ── 버전 타임라인 ─────────────────────────── */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 20px;
+      top: 12px;
+      bottom: 12px;
+      width: 2px;
+      background: var(--border);
+    }
+    .tl-item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 16px 0;
+      position: relative;
+    }
+    .tl-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 2px solid;
+      background: var(--bg);
+      position: relative;
+      z-index: 1;
+      margin-top: 4px;
+    }
+    .tl-dot-current { border-color: var(--accent); background: var(--accent); }
+    .tl-dot-next { border-color: var(--border); }
+    .tl-content { flex: 1; }
+    .tl-ver {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .tl-date { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .tl-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
+    .tl-current-label {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* ── 푸터 ─────────────────────────────── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .footer a { color: var(--accent); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* ── 반응형 ─────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 48px 20px 32px; }
+      .section { padding: 0 20px 48px; }
+      .highlight-grid { padding: 0 20px 40px; grid-template-columns: repeat(2, 1fr); }
+      .before-after { grid-template-columns: 1fr; }
+      .feature-body { padding-left: 0; margin-top: 10px; }
+      .search-demo { padding: 0 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header class="site-header">
+  <a href="/gemini_html/index.html">← 홈</a>
+  <span class="breadcrumb-sep">/</span>
+  <a href="#">🔥 R&D Hot News</a>
+  <span class="breadcrumb-sep">/</span>
+  <span style="font-size:14px;color:var(--text-secondary)">Claude Code 2.1.83</span>
+  <span class="version-badge-header">v2.1.83</span>
+</header>
+
+<!-- 히어로 -->
+<section class="hero">
+  <div class="meta-row">
+    <span class="badge badge-version">v2.1.83</span>
+    <span class="badge badge-date">📅 2026-03-24</span>
+    <span class="badge badge-count">⚡ 65개 변경사항</span>
+  </div>
+  <h1 class="hero-title">
+    Claude Code 2.1.83<br>
+    <em>완전 정리</em>
+  </h1>
+  <p class="hero-desc">
+    단순 패치가 아닙니다. 65개 변경사항이 담긴 대형 릴리즈입니다.
+    트랜스크립트 검색, 팀 정책 관리, 플러그인 보안, 반응형 훅까지 —
+    실제로 불편했던 워크플로우를 하나씩 해결한 업데이트를 정리했습니다.
+  </p>
+</section>
+
+<!-- 수치 요약 -->
+<div class="highlight-grid">
+  <div class="highlight-card">
+    <div class="highlight-num">7</div>
+    <div class="highlight-label">신규 기능</div>
+  </div>
+  <div class="highlight-card">
+    <div class="highlight-num">4</div>
+    <div class="highlight-label">성능 개선</div>
+  </div>
+  <div class="highlight-card">
+    <div class="highlight-num">3</div>
+    <div class="highlight-label">버그 수정</div>
+  </div>
+  <div class="highlight-card">
+    <div class="highlight-num">2</div>
+    <div class="highlight-label">보안 강화</div>
+  </div>
+  <div class="highlight-card">
+    <div class="highlight-num">65</div>
+    <div class="highlight-label">전체 변경사항</div>
+  </div>
+</div>
+
+<!-- 트랜스크립트 검색 데모 -->
+<div class="search-demo">
+  <div class="diagram-title" style="margin-bottom:12px;text-align:left;font-size:12px;color:var(--text-muted);">
+    🔍 트랜스크립트 검색 — 실제 사용 흐름
+  </div>
+  <div class="search-demo-inner">
+    <div class="terminal-bar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <span class="terminal-title">Claude Code — transcript mode</span>
+    </div>
+    <div class="terminal-body">
+      <div class="terminal-line"><span class="t-dim"># 1단계: 트랜스크립트 모드 진입</span></div>
+      <div class="terminal-line"><span class="t-green">Ctrl+O</span> <span class="t-dim">→ 이전 대화 목록 표시</span></div>
+      <br>
+      <div class="terminal-line"><span class="t-dim"># 2단계: 검색 모드 활성화</span></div>
+      <div class="terminal-line"><span class="t-amber">/</span> <span class="t-dim">→ 검색창 활성화</span></div>
+      <div class="terminal-line"><span class="t-dim">search: </span><span class="t-accent">useCallback</span><span class="t-cursor"></span></div>
+      <br>
+      <div class="terminal-line"><span class="t-dim"># 3단계: 매치 간 이동</span></div>
+      <div class="terminal-line">
+        <span class="t-green">n</span><span class="t-dim"> → 다음 매치 &nbsp; </span>
+        <span class="t-green">N</span><span class="t-dim"> → 이전 매치</span>
+      </div>
+      <br>
+      <div class="terminal-line"><span class="t-dim">─── 결과 ───────────────────────────────────</span></div>
+      <div class="terminal-line"><span class="t-blue">[ 1/3 ]</span> <span class="t-dim">...컴포넌트에서 </span><span class="t-highlight">useCallback</span><span class="t-dim"> 언제 써야 해?</span></div>
+      <div class="terminal-line"><span class="t-blue">[ 2/3 ]</span> <span class="t-dim">...</span><span class="t-highlight">useCallback</span><span class="t-dim"> deps 배열에 함수 넣어도 돼?</span></div>
+      <div class="terminal-line"><span class="t-blue">[ 3/3 ]</span> <span class="t-dim">...React.memo + </span><span class="t-highlight">useCallback</span><span class="t-dim"> 조합 예제...</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 신규 기능 -->
+<section class="section" style="margin-top:56px;">
+  <div class="section-header">
+    <div class="section-icon icon-green">✨</div>
+    <h2 class="section-title">신규 기능</h2>
+    <span class="section-count">7가지</span>
+  </div>
+
+  <div class="feature-list">
+
+    <!-- 1. 트랜스크립트 검색 -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-num">1</div>
+        <div>
+          <div class="feature-name">트랜스크립트 검색</div>
+          <div class="feature-sub">Ctrl+O → / → n/N</div>
+        </div>
+      </div>
+      <div class="feature-body">
+        <p>긴 세션에서 특정 대화를 찾으려면 끝없이 위로 스크롤해야 했습니다. 이제 <kbd>Ctrl+O</kbd> 로 트랜스크립트 모드에 진입한 뒤 <kbd>/</kbd> 를 누르면 검색창이 활성화됩니다. <kbd>n</kbd> / <kbd>N</kbd> 으로 매치 간 앞뒤 이동이 가능합니다.</p>
+        <div class="before-after">
+          <div class="ba-box ba-before">
+            <div class="ba-label">Before</div>
+            <div class="ba-text">특정 내용 찾으려면 마우스로 수동 스크롤, 시간 낭비</div>
+          </div>
+          <div class="ba-box ba-after">
+            <div class="ba-label">After</div>
+            <div class="ba-text">Ctrl+O → / → 검색어 입력 → n/N 이동</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. managed-settings.d -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-num">2</div>
+        <div>
+          <div class="feature-name">팀별 정책 드롭인 디렉토리</div>
+          <div class="feature-sub">managed-settings.d/</div>
+        </div>
+      </div>
+      <div class="feature-body">
+        <p>기존에는 <code>managed-settings.json</code> 하나로 전체 정책을 관리해야 했습니다. 이제 <code>managed-settings.d/</code> 디렉토리에 팀별 JSON 파일을 넣으면 <strong>알파벳 순으로 자동 병합</strong>됩니다.</p>
+        <div class="before-after">
+          <div class="ba-box ba-before">
+            <div class="ba-label">Before</div>
+            <div class="ba-text">팀별 정책 추가할 때마다 단일 JSON 파일 편집 → 충돌 위험</div>
+          </div>
+          <div class="ba-box ba-after">
+            <div class="ba-label">After</div>
+            <div class="ba-text">각 팀이 자신의 파일만 관리 → 자동 병합</div>
+          </div>
+        </div>
+        <p style="margin-top:12px;">예시 디렉토리 구조:</p>
+        <pre style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-secondary);overflow-x:auto;">managed-settings.d/
+  ├── 00-base.json          (기본 정책)
+  ├── 10-security-team.json (보안팀 정책)
+  └── 20-frontend-team.json (프론트엔드팀 정책)</pre>
+      </div>
+    </div>
+
+    <!-- 3. 플러그인 API 키 Keychain -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-num">3</div>
+        <div>
+          <div class="feature-name">플러그인 API 키 안전 저장</div>
+          <div class="feature-sub">macOS Keychain / 보호 자격증명 파일</div>
+        </div>
+      </div>
+      <div class="feature-body">
+        <p>플러그인의 <code>manifest.userConfig</code> 에서 <code>sensitive: true</code> 로 표시한 설정값은 이제 <strong>macOS Keychain</strong> 에 암호화 저장됩니다. Windows/Linux 등 다른 플랫폼에서는 OS 보호 자격증명 파일에 저장합니다.</p>
+        <div class="before-after">
+          <div class="ba-box ba-before">
+            <div class="ba-label">Before</div>
+            <div class="ba-text">API 키를 평문 설정 파일에 저장하거나 매번 직접 입력</div>
+          </div>
+          <div class="ba-box ba-after">
+            <div class="ba-label">After</div>
+            <div class="ba-text">플러그인 활성화 시 입력받아 OS 보안 저장소에 자동 보관</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. CwdChanged / FileChanged 훅 -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-num">4</div>
+        <div>
+          <div class="feature-name">CwdChanged / FileChanged 훅 이벤트</div>
+          <div class="feature-sub">반응형 환경 관리 (direnv 등)</div>
+        </div>
+      </div>
+      <div class="feature-body">
+        <p>작업 디렉토리(<code>CwdChanged</code>)나 파일(<code>FileChanged</code>)이 변경될 때 훅이 자동으로 실행됩니다. <code>direnv</code>처럼 디렉토리별로 환경 변수를 자동 로드하는 도구와 연동하기에 최적화되어 있습니다.</p>
+
+        <!-- direnv 연동 다이어그램 -->
+        <div class="diagram-wrap" style="margin-top:16px;">
+          <div class="diagram-title">CwdChanged 훅 동작 흐름</div>
+          <svg viewBox="0 0 700 80" style="width:100%;max-width:680px;display:block;margin:0 auto;">
+            <defs>
+              <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L8,3 z" fill="#8A8A82"/>
+              </marker>
+            </defs>
+            <!-- 박스들 -->
+            <rect x="10" y="20" width="130" height="40" rx="8" fill="#F2F2EE" stroke="#D8D8D0" stroke-width="1.5"/>
+            <text x="75" y="44" text-anchor="middle" fill="#1A1A18" font-size="12" font-family="Inter,sans-serif" font-weight="600">cd 다른_디렉토리</text>
+            <line x1="142" y1="40" x2="175" y2="40" stroke="#8A8A82" stroke-width="1.5" marker-end="url(#arrow2)"/>
+            <rect x="177" y="20" width="140" height="40" rx="8" fill="#C45C2E" stroke="none"/>
+            <text x="247" y="44" text-anchor="middle" fill="#fff" font-size="12" font-family="Inter,sans-serif" font-weight="700">CwdChanged 훅 실행</text>
+            <line x1="319" y1="40" x2="352" y2="40" stroke="#8A8A82" stroke-width="1.5" marker-end="url(#arrow2)"/>
+            <rect x="354" y="20" width="130" height="40" rx="8" fill="#F2F2EE" stroke="#D8D8D0" stroke-width="1.5"/>
+            <text x="419" y="38" text-anchor="middle" fill="#1A1A18" font-size="11" font-family="Inter,sans-serif">direnv allow</text>
+            <text x="419" y="53" text-anchor="middle" fill="#5A5A52" font-size="10" font-family="Inter,sans-serif">환경변수 자동 로드</text>
+            <line x1="486" y1="40" x2="519" y2="40" stroke="#8A8A82" stroke-width="1.5" marker-end="url(#arrow2)"/>
+            <rect x="521" y="20" width="150" height="40" rx="8" fill="#D8EFE3" stroke="none"/>
+            <text x="596" y="38" text-anchor="middle" fill="#2D7A4F" font-size="11" font-family="Inter,sans-serif" font-weight="600">프로젝트별 환경변수</text>
+            <text x="596" y="53" text-anchor="middle" fill="#2D7A4F" font-size="10" font-family="Inter,sans-serif">자동 적용 완료</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 응답 전 중단 시 입력 복원 -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-num">5</div>
+        <div>
+          <div class="feature-name">응답 전 중단 시 입력 자동 복원</div>
+          <div class="feature-sub">Interrupt → 입력 복원 → 수정 후 재전송</div>
+        </div>
+      </div>
+      <div class="feature-body">
+        <p>프롬프트를 전송하고 응답을 기다리다가 실수로 <kbd>Esc</kbd> 를 눌러 중단하면, 기존에는 입력했던 내용이 사라졌습니다. 이제 <strong>응답이 오기 전에 중단하면 입력이 자동으로 복원</strong>되어 바로 수정 후 재전송할 수 있습니다.</p>
+      </div>
+    </div>
+
+    <!-- 6. 응답 중 /status -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-num">6</div>
+        <div>
+          <div class="feature-name">응답 중에도 /status 즉시 확인</div>
+          <div class="feature-sub">큐 대기 없이 즉시 실행</div>
+        </div>
+      </div>
+      <div class="feature-body">
+        <p>기존에는 <code>/status</code> 명령이 Claude가 응답을 완료할 때까지 큐에 대기했습니다. 이제 <strong>응답이 진행 중인 상태에서도 즉시 실행</strong>됩니다. 긴 작업 중에도 현재 상태를 언제든 확인할 수 있습니다.</p>
+      </div>
+    </div>
+
+    <!-- 7. --resume 개선 -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-num">7</div>
+        <div>
+          <div class="feature-name">--resume 메모리 및 시작 속도 개선</div>
+          <div class="feature-sub">대용량 세션 재개 최적화</div>
+        </div>
+      </div>
+      <div class="feature-body">
+        <p>대용량 세션을 <code>--resume</code> 으로 재개할 때 메모리 사용량과 시작 레이턴시가 개선되었습니다. 긴 작업 세션을 반복적으로 이어서 사용하는 경우 체감되는 차이가 있습니다.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 버그 수정 -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-icon icon-amber">🔧</div>
+    <h2 class="section-title">버그 수정</h2>
+    <span class="section-count">3가지 (주요)</span>
+  </div>
+
+  <div class="fix-list">
+    <div class="fix-card">
+      <div class="fix-icon">🔊</div>
+      <div class="fix-content">
+        <div class="fix-title">음성 모드 시작 시 1~8초 UI 멈춤</div>
+        <div class="fix-body">음성 입력이 활성화된 상태로 Claude Code를 시작하면 1~8초간 UI가 완전히 멈추는 문제가 있었습니다. 네이티브 오디오 모듈을 시작 시점에 즉시(eagerly) 로드하는 것이 원인이었으며, 지연 로드(lazy loading) 방식으로 전환하여 해결했습니다.</div>
+      </div>
+    </div>
+    <div class="fix-card">
+      <div class="fix-icon">🖥️</div>
+      <div class="fix-content">
+        <div class="fix-title">유휴 상태 렌더링 깜빡임</div>
+        <div class="fix-body">몇 초간 아무 작업도 하지 않으면 화면이 빈 화면으로 순간 깜빡이는 현상이 있었습니다. 유휴 상태 렌더링 로직을 안정화하여 수정했습니다.</div>
+      </div>
+    </div>
+    <div class="fix-card">
+      <div class="fix-icon">⏱️</div>
+      <div class="fix-content">
+        <div class="fix-title">대용량 파일 diff 무한 행</div>
+        <div class="fix-body">공통 라인이 거의 없는 매우 큰 파일을 diff할 때 프로그램이 멈추는(hang) 문제가 있었습니다. 이제 <strong>5초 타임아웃</strong>이 적용되며, 시간 초과 시 안전하게 폴백 처리됩니다.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 보안 -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-icon icon-red">🛡️</div>
+    <h2 class="section-title">보안 강화</h2>
+    <span class="section-count">2가지</span>
+  </div>
+
+  <div class="security-list">
+    <div class="security-card">
+      <div class="security-title">gitignore 디렉토리 스킬 탐색 제외</div>
+      <div class="security-body">
+        <code>.gitignore</code> 에 포함된 <code>node_modules</code>, <code>.env</code> 등의 디렉토리에서 스킬·플러그인이 로드될 수 있는 취약점이 수정되었습니다. 이제 Claude Code는 gitignore로 지정된 디렉토리를 스킬 탐색에서 완전히 제외합니다.
+      </div>
+    </div>
+    <div class="security-card">
+      <div class="security-title">.mcp.json 서버별 승인 대화상자 복원</div>
+      <div class="security-body">
+        <code>--mcp-config</code> CLI 플래그가 <code>allowedMcpServers</code> / <code>deniedMcpServers</code> 로 설정된 관리형 정책을 우회할 수 있는 버그가 수정되었습니다. 첫 실행 시 MCP 서버별 승인 대화상자가 항상 올바르게 표시됩니다.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 기타 수정 사항 -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-icon icon-blue">📋</div>
+    <h2 class="section-title">기타 주요 수정</h2>
+    <span class="section-count">추가 항목</span>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+    <table class="extra-table">
+      <thead>
+        <tr>
+          <th>항목</th>
+          <th>내용</th>
+          <th>유형</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>caffeinate</code> 프로세스 누수</td>
+          <td>Claude Code 종료 후 caffeinate 프로세스가 남아 Mac이 잠들지 않는 문제 수정</td>
+          <td><span class="tag tag-fix">Fix</span></td>
+        </tr>
+        <tr>
+          <td>백그라운드 서브에이전트 소실</td>
+          <td>컨텍스트 압축 후 백그라운드 에이전트가 사라져 중복 생성되던 문제 수정</td>
+          <td><span class="tag tag-fix">Fix</span></td>
+        </tr>
+        <tr>
+          <td>SDK 세션 히스토리 손실</td>
+          <td>훅 progress/attachment 메시지로 인한 parentUuid 체인 분기 문제 수정</td>
+          <td><span class="tag tag-fix">Fix</span></td>
+        </tr>
+        <tr>
+          <td>Linux ALSA 오류</td>
+          <td>오디오 하드웨어 없는 환경(Docker, headless, WSL1)에서 ALSA 오류가 UI를 오염시키는 문제 수정</td>
+          <td><span class="tag tag-fix">Fix</span></td>
+        </tr>
+        <tr>
+          <td>Remote Control 메모리 누수</td>
+          <td>tool use ID가 무기한 누적되는 메모리 누수 수정</td>
+          <td><span class="tag tag-fix">Fix</span></td>
+        </tr>
+        <tr>
+          <td>VSCode 세션 히스토리</td>
+          <td>URL을 통해 세션 재열기 시 히스토리가 올바르게 로드되지 않던 문제 수정</td>
+          <td><span class="tag tag-fix">Fix</span></td>
+        </tr>
+        <tr>
+          <td><code>claude -p</code> 시작 속도</td>
+          <td>인증되지 않은 HTTP/SSE MCP 서버가 있을 때 시작 시간 ~600ms 단축</td>
+          <td><span class="tag tag-perf">Perf</span></td>
+        </tr>
+        <tr>
+          <td><code>--bare -p</code> SDK 패턴</td>
+          <td>API 요청까지 도달 시간 ~14% 개선</td>
+          <td><span class="tag tag-perf">Perf</span></td>
+        </tr>
+        <tr>
+          <td>tool result 파일 미정리</td>
+          <td><code>cleanupPeriodDays</code> 설정을 무시하고 파일이 영구 남는 문제 수정</td>
+          <td><span class="tag tag-fix">Fix</span></td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+B</code> readline 간섭</td>
+          <td>유휴 프롬프트에서 Ctrl+B가 readline backward-char와 충돌하던 문제 수정</td>
+          <td><span class="tag tag-fix">Fix</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 이후 버전 흐름 -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-icon icon-purple">🗓️</div>
+    <h2 class="section-title">최근 릴리즈 흐름</h2>
+    <span class="section-count">2026년 3월</span>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px 24px 8px;">
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot tl-dot-current"></div>
+        <div class="tl-content">
+          <div class="tl-ver">v2.1.83 <span class="tl-current-label">이 페이지</span></div>
+          <div class="tl-date">2026-03-24</div>
+          <div class="tl-desc">65개 변경사항 — 트랜스크립트 검색, managed-settings.d, 플러그인 Keychain, CwdChanged/FileChanged 훅, 보안 수정 등</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot tl-dot-next"></div>
+        <div class="tl-content">
+          <div class="tl-ver">v2.1.84</div>
+          <div class="tl-date">2026-03-25</div>
+          <div class="tl-desc">PowerShell 도구 (Windows 옵트인 프리뷰), TaskCreated / WorktreeCreate 훅 이벤트, Deep Link 5000자 지원</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot tl-dot-next"></div>
+        <div class="tl-content">
+          <div class="tl-ver">v2.1.85</div>
+          <div class="tl-date">2026-03-26</div>
+          <div class="tl-desc">훅의 조건부 <code>if</code> 필드, 스케줄 작업 타임스탬프 마커, <code>/compact</code> 컨텍스트 초과 오류 수정</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 업그레이드 안내 -->
+<section class="section">
+  <div style="background:var(--accent-light);border:1px solid rgba(196,92,46,0.2);border-radius:var(--radius);padding:28px 28px;">
+    <div style="display:flex;gap:16px;align-items:flex-start;">
+      <div style="font-size:28px;flex-shrink:0;">⬆️</div>
+      <div>
+        <div style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">업그레이드 방법</div>
+        <p style="font-size:15px;color:var(--text-secondary);margin-bottom:16px;">아래 명령어로 최신 버전으로 업그레이드하세요.</p>
+        <pre style="background:var(--text-primary);color:#E8E8E0;border-radius:var(--radius-sm);padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:13px;overflow-x:auto;">npm install -g @anthropic-ai/claude-code@latest
+# 또는
+npm install -g claude@latest</pre>
+        <p style="font-size:13px;color:var(--text-muted);margin-top:12px;">
+          📄 공식 릴리즈 노트:
+          <a href="https://docs.anthropic.com/en/release-notes/claude-code" style="color:var(--accent);" target="_blank">docs.anthropic.com/en/release-notes/claude-code</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <p>Claude Code 2.1.83 · 출처: <a href="https://docs.anthropic.com/en/release-notes/claude-code" target="_blank">Anthropic 공식 릴리즈 노트</a></p>
+  <p style="margin-top:6px;">정리: AI Tech Feed · 2026-03-27</p>
+</footer>
+
+</body>
+</html>

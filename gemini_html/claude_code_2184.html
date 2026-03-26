@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code 2.1.84 업데이트 정리</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --new-color:   #1A7F5A;
+      --new-bg:      #F0FDF4;
+      --new-bdr:     #86EFAC;
+      --impr-color:  #1D4ED8;
+      --impr-bg:     #EFF6FF;
+      --impr-bdr:    #93C5FD;
+      --fix-color:   #92400E;
+      --fix-bg:      #FFFBEB;
+      --fix-bdr:     #FCD34D;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* ── Top Bar ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .topbar-meta {
+      font-size: 12px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 28px 60px;
+    }
+    .hero-inner { max-width: 1100px; margin: 0 auto; }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-bdr);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .hero-desc {
+      font-size: 17px;
+      color: var(--ink-3);
+      max-width: 600px;
+      line-height: 1.65;
+      margin-bottom: 32px;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .hero-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+    }
+
+    /* ── Stats Bar ── */
+    .stats-bar {
+      background: var(--bg-2);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 28px;
+    }
+    .stats-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      text-align: center;
+    }
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-num.new  { color: var(--new-color); }
+    .stat-num.impr { color: var(--impr-color); }
+    .stat-num.fix  { color: var(--accent); }
+    .stat-label {
+      font-size: 12px;
+      color: var(--ink-4);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Main Layout ── */
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 28px 80px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    /* ── Sidebar TOC ── */
+    .toc {
+      position: sticky;
+      top: 68px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .toc-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-4);
+      margin-bottom: 14px;
+    }
+    .toc-item {
+      display: block;
+      font-size: 13px;
+      color: var(--ink-3);
+      text-decoration: none;
+      padding: 5px 8px;
+      border-radius: 6px;
+      margin-bottom: 2px;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .toc-item:hover {
+      background: var(--bg-2);
+      color: var(--ink);
+    }
+    .toc-item.new  { border-left-color: var(--new-color); }
+    .toc-item.impr { border-left-color: var(--impr-color); }
+    .toc-item.fix  { border-left-color: var(--fix-color); }
+    .toc-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 10px 0;
+    }
+    .toc-version {
+      font-size: 11px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+      text-align: center;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Content ── */
+    .content { min-width: 0; }
+
+    .section {
+      margin-bottom: 56px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .section-badge.new  { background: var(--new-bg);  color: var(--new-color);  border: 1px solid var(--new-bdr); }
+    .section-badge.impr { background: var(--impr-bg); color: var(--impr-color); border: 1px solid var(--impr-bdr); }
+    .section-badge.fix  { background: var(--fix-bg);  color: var(--fix-color);  border: 1px solid var(--fix-bdr); }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+    .section-count {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+      background: var(--bg-2);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    /* ── Feature Card ── */
+    .feature-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 22px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .feature-card:hover {
+      border-color: var(--border-2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .feature-card.highlight-new  { border-left: 3px solid var(--new-color); }
+    .feature-card.highlight-impr { border-left: 3px solid var(--impr-color); }
+    .feature-card.highlight-fix  { border-left: 3px solid var(--fix-color); }
+
+    .feature-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .feature-desc {
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.65;
+    }
+    .feature-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      color: var(--ink-3);
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .feature-tag.windows { background: #EFF6FF; color: #1D4ED8; }
+    .feature-tag.mcp     { background: #F5F3FF; color: #6D28D9; }
+    .feature-tag.ux      { background: #F0FDF4; color: #15803D; }
+    .feature-tag.perf    { background: #FFF7ED; color: #C2410C; }
+    .feature-tag.voice   { background: #FFF1F2; color: #BE123C; }
+    .feature-tag.vscode  { background: #EFF6FF; color: #1D4ED8; }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--code-bg);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--accent);
+    }
+
+    /* ── Visual: Flow Diagram ── */
+    .diagram-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 32px;
+    }
+    .diagram-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 20px;
+    }
+
+    /* ── Callout ── */
+    .callout {
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .callout.info { background: var(--impr-bg); border: 1px solid var(--impr-bdr); }
+    .callout.warn { background: var(--fix-bg);  border: 1px solid var(--fix-bdr); }
+    .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .callout-text { font-size: 14px; color: var(--ink-2); line-height: 1.6; }
+    .callout-text strong { color: var(--ink); }
+
+    /* ── Quick Highlight ── */
+    .highlight-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .hl-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .hl-icon { font-size: 24px; flex-shrink: 0; }
+    .hl-body {}
+    .hl-title { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+    .hl-desc  { font-size: 12px; color: var(--ink-4); line-height: 1.5; }
+
+    /* ── Footer ── */
+    .footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 28px 28px;
+      text-align: center;
+    }
+    .footer-text {
+      font-size: 13px;
+      color: var(--ink-4);
+    }
+    .footer-text a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .footer-text a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .main { grid-template-columns: 1fr; }
+      .toc  { display: none; }
+      .hero { padding: 48px 20px 40px; }
+      .stats-inner { grid-template-columns: repeat(3, 1fr); }
+      .highlight-row { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="page-wrap" style="width:100%;display:flex;align-items:center;justify-content:space-between;">
+    <span class="topbar-brand">❋ Claude Code Release Notes</span>
+    <span class="topbar-meta">v2.1.84 · 2026-03-27</span>
+  </div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">🔥 Hot News · Release Notes</div>
+    <h1 class="hero-title">Claude Code <em>2.1.84</em></h1>
+    <p class="hero-desc">
+      Windows PowerShell 지원, 장시간 자리 비울 때 <code>/clear</code> 제안, 스킬·룰 <code>paths:</code> YAML 리스트 문법 등
+      대거 업데이트. 공식 <a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md" style="color:var(--accent);" target="_blank">CHANGELOG</a> 기반 정리.
+    </p>
+    <div class="hero-meta">
+      <span class="hero-meta-item">📅 2026-03-27</span>
+      <span class="hero-meta-item">📦 anthropics/claude-code</span>
+      <span class="hero-meta-item">✅ 공식 CHANGELOG 기반</span>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-card">
+      <div class="stat-num new">13</div>
+      <div class="stat-label">새 기능</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num impr">10</div>
+      <div class="stat-label">개선</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num fix">19</div>
+      <div class="stat-label">버그 수정</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--ink);">42</div>
+      <div class="stat-label">전체 변경</div>
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-title">목차</div>
+    <a class="toc-item" href="#highlights">✨ 주요 하이라이트</a>
+    <div class="toc-divider"></div>
+    <a class="toc-item new"  href="#new">🟢 새 기능 (13)</a>
+    <a class="toc-item impr" href="#improvements">🔵 개선 (10)</a>
+    <a class="toc-item fix"  href="#fixes">🟠 버그 수정 (19)</a>
+    <div class="toc-version">
+      이전 버전: 2.1.83<br>
+      다음 버전: 2.1.85
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Highlights -->
+    <section id="highlights" class="section">
+      <div class="section-header">
+        <span class="section-badge new">✨ 주요 하이라이트</span>
+        <span class="section-title">이번 버전에서 가장 눈에 띄는 변화</span>
+      </div>
+
+      <div class="highlight-row">
+        <div class="hl-card">
+          <div class="hl-icon">🪟</div>
+          <div class="hl-body">
+            <div class="hl-title">PowerShell (Windows)</div>
+            <div class="hl-desc">Bash 대신 PowerShell을 직접 사용. opt-in 프리뷰 제공</div>
+          </div>
+        </div>
+        <div class="hl-card">
+          <div class="hl-icon">⏰</div>
+          <div class="hl-body">
+            <div class="hl-title">자리 비움 후 /clear 제안</div>
+            <div class="hl-desc">75분 이상 자리 비운 뒤 복귀하면 낡은 컨텍스트 정리 유도</div>
+          </div>
+        </div>
+        <div class="hl-card">
+          <div class="hl-icon">📋</div>
+          <div class="hl-body">
+            <div class="hl-title">paths: YAML 리스트</div>
+            <div class="hl-desc">스킬·룰 frontmatter에서 여러 경로 패턴을 리스트로 선언 가능</div>
+          </div>
+        </div>
+        <div class="hl-card">
+          <div class="hl-icon">📊</div>
+          <div class="hl-body">
+            <div class="hl-title">토큰 카운트 "1.5m" 표시</div>
+            <div class="hl-desc">100만 이상 토큰을 "1512.6k" 대신 "1.5m"으로 한눈에 파악</div>
+          </div>
+        </div>
+        <div class="hl-card">
+          <div class="hl-icon">🔌</div>
+          <div class="hl-body">
+            <div class="hl-title">MCP 도구 설명 2KB 제한</div>
+            <div class="hl-desc">OpenAPI 기반 서버가 컨텍스트를 과도하게 차지하던 문제 해소</div>
+          </div>
+        </div>
+        <div class="hl-card">
+          <div class="hl-icon">🇰🇷</div>
+          <div class="hl-body">
+            <div class="hl-title">CJK 입력 IME 수정</div>
+            <div class="hl-desc">한국어·일본어·중국어 IME 조합 창이 커서를 따라가지 않던 문제 해결</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual Diagram -->
+      <div class="diagram-wrap">
+        <div class="diagram-title">자리 비움 후 복귀 흐름</div>
+        <svg viewBox="0 0 680 80" style="width:100%;max-width:680px;" role="img" aria-label="idle return flow">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#A8A8A3"/>
+            </marker>
+          </defs>
+          <!-- Box 1 -->
+          <rect x="10" y="20" width="130" height="40" rx="8" fill="#F4F4F1" stroke="#D4D4CF" stroke-width="1.5"/>
+          <text x="75" y="44" text-anchor="middle" fill="#3D3D3A" font-size="13" font-family="Inter,sans-serif">자리 비움</text>
+          <!-- Arrow -->
+          <line x1="140" y1="40" x2="195" y2="40" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+          <text x="167" y="33" text-anchor="middle" fill="#A8A8A3" font-size="11" font-family="Inter,sans-serif">75분+</text>
+          <!-- Box 2 -->
+          <rect x="195" y="20" width="150" height="40" rx="8" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+          <text x="270" y="44" text-anchor="middle" fill="#C4522A" font-size="13" font-family="Inter,sans-serif">Claude Code 감지</text>
+          <!-- Arrow -->
+          <line x1="345" y1="40" x2="400" y2="40" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+          <!-- Box 3 -->
+          <rect x="400" y="20" width="150" height="40" rx="8" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1.5"/>
+          <text x="475" y="38" text-anchor="middle" fill="#15803D" font-size="13" font-family="Inter,sans-serif">/clear 제안 팝업</text>
+          <text x="475" y="53" text-anchor="middle" fill="#15803D" font-size="11" font-family="Inter,sans-serif">(토큰 낭비 방지)</text>
+          <!-- Arrow -->
+          <line x1="550" y1="40" x2="605" y2="40" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+          <!-- Box 4 -->
+          <rect x="605" y="20" width="65" height="40" rx="8" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.5"/>
+          <text x="637" y="44" text-anchor="middle" fill="#1D4ED8" font-size="13" font-family="Inter,sans-serif">새 세션</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 새 기능 -->
+    <section id="new" class="section">
+      <div class="section-header">
+        <span class="section-badge new">🟢 새 기능</span>
+        <span class="section-title">New Features</span>
+        <span class="section-count">13개</span>
+      </div>
+
+      <div class="callout info">
+        <div class="callout-icon">ℹ️</div>
+        <div class="callout-text">
+          <strong>출처:</strong> 공식 GitHub CHANGELOG (<code>anthropics/claude-code</code>) — v2.1.84 항목 기준으로 정리했습니다.
+        </div>
+      </div>
+
+      <div class="feature-grid">
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag windows">Windows</span>
+          <div class="feature-title">PowerShell 도구 (opt-in 프리뷰)</div>
+          <div class="feature-desc">
+            Windows에서 Bash 대신 PowerShell을 Claude Code 도구로 직접 사용할 수 있습니다. 현재 opt-in 프리뷰 단계.
+            자세한 내용: <code>docs/en/tools-reference#powershell-tool</code>
+          </div>
+        </div>
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag ux">UX</span>
+          <div class="feature-title">75분 자리 비움 후 /clear 제안</div>
+          <div class="feature-desc">
+            세션이 75분 이상 유휴 상태였다가 재개되면 <code>/clear</code>를 권유하는 팝업이 나타납니다.
+            낡은 컨텍스트에 토큰을 낭비하지 않도록 유도하는 기능입니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag">paths: YAML 리스트</span>
+          <div class="feature-title">스킬·룰 paths: 프론트매터에 YAML 리스트 문법 지원</div>
+          <div class="feature-desc">
+            Rules와 Skills의 <code>paths:</code> 프론트매터에 glob 패턴을 YAML 리스트 형태로 여러 개 선언할 수 있습니다.
+            기존 단일 문자열 방식 대신 다중 경로 패턴을 깔끔하게 관리할 수 있습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag mcp">MCP</span>
+          <div class="feature-title">MCP 도구 설명 · 서버 안내문 2KB 제한</div>
+          <div class="feature-desc">
+            MCP 도구 설명과 서버 instructions가 최대 2KB로 제한됩니다.
+            OpenAPI 기반 MCP 서버가 컨텍스트 윈도우를 과도하게 차지하던 문제를 해소합니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag mcp">MCP</span>
+          <div class="feature-title">MCP 서버 중복 제거 (로컬 설정 우선)</div>
+          <div class="feature-desc">
+            로컬 설정과 claude.ai 커넥터 모두에 동일하게 설정된 MCP 서버가 있으면 자동으로 중복 제거됩니다.
+            로컬 설정이 우선권을 가집니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag ux">UX</span>
+          <div class="feature-title">백그라운드 Bash 작업 정지 시 45초 후 알림</div>
+          <div class="feature-desc">
+            백그라운드에서 실행 중인 Bash 작업이 인터랙티브 프롬프트에서 멈춰 있는 것 같으면 약 45초 후에 알림을 표시합니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag ux">Hook</span>
+          <div class="feature-title">TaskCreated 훅 추가</div>
+          <div class="feature-desc">
+            <code>TaskCreate</code> 도구로 태스크가 생성될 때 발동하는 <code>TaskCreated</code> 훅이 추가되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag">WorktreeCreate Hook</span>
+          <div class="feature-title">WorktreeCreate 훅에 type: "http" 지원</div>
+          <div class="feature-desc">
+            <code>WorktreeCreate</code> 훅이 <code>type: "http"</code>를 지원합니다.
+            응답 JSON의 <code>hookSpecificOutput.worktreePath</code>로 생성된 워크트리 경로를 반환할 수 있습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag">Enterprise</span>
+          <div class="feature-title">allowedChannelPlugins 관리 설정 추가</div>
+          <div class="feature-desc">
+            팀/엔터프라이즈 관리자가 채널 플러그인 허용 목록을 정의할 수 있는 <code>allowedChannelPlugins</code> 설정이 추가되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag">디버깅</span>
+          <div class="feature-title">API 요청에 x-client-request-id 헤더 추가</div>
+          <div class="feature-desc">
+            모든 API 요청에 <code>x-client-request-id</code> 헤더가 포함되어 타임아웃 등 이슈 디버깅 시 요청 추적이 쉬워집니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag ux">딥링크</span>
+          <div class="feature-title">딥링크가 선호 터미널에서 열림</div>
+          <div class="feature-desc">
+            <code>claude-cli://</code> 딥링크가 감지 순서상 맨 처음 터미널이 아닌 사용자가 선호하는 터미널에서 열립니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag">스트리밍</span>
+          <div class="feature-title">CLAUDE_STREAM_IDLE_TIMEOUT_MS 환경변수</div>
+          <div class="feature-desc">
+            스트리밍 유휴 와치독 임계값을 환경변수로 설정할 수 있습니다 (기본값 90초).
+          </div>
+        </div>
+
+        <div class="feature-card highlight-new">
+          <span class="feature-tag">3rd Party</span>
+          <div class="feature-title">ANTHROPIC_DEFAULT_*_MODEL_SUPPORTS 환경변수</div>
+          <div class="feature-desc">
+            Bedrock, Vertex, Foundry 등 써드파티 프로바이더용 고정 모델의 effort/thinking 능력 감지를 오버라이드하는 환경변수가 추가됩니다.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 개선 -->
+    <section id="improvements" class="section">
+      <div class="section-header">
+        <span class="section-badge impr">🔵 개선</span>
+        <span class="section-title">Improvements</span>
+        <span class="section-count">10개</span>
+      </div>
+
+      <div class="feature-grid">
+
+        <div class="feature-card highlight-impr">
+          <span class="feature-tag perf">표시</span>
+          <div class="feature-title">1M+ 토큰 "1.5m" 표기</div>
+          <div class="feature-desc">
+            100만 이상의 토큰 수가 <code>1512.6k</code> 대신 <code>1.5m</code>으로 표시됩니다. 대용량 컨텍스트를 한눈에 파악하기 쉬워집니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-impr">
+          <span class="feature-tag mcp">캐싱</span>
+          <div class="feature-title">ToolSearch 활성화 시에도 시스템 프롬프트 캐싱 동작</div>
+          <div class="feature-desc">
+            <code>ToolSearch</code>가 활성화된 상태, 즉 MCP 도구를 사용하는 경우에도 글로벌 시스템 프롬프트 캐싱이 정상 동작합니다. 캐시 적중률이 향상됩니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-impr">
+          <span class="feature-tag perf">시작속도</span>
+          <div class="feature-title">인터랙티브 시작 약 30ms 단축</div>
+          <div class="feature-desc">
+            <code>setup()</code>을 슬래시 커맨드·에이전트 로딩과 병렬로 실행하여 인터랙티브 시작이 약 30ms 빨라졌습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-impr">
+          <span class="feature-tag mcp">시작속도</span>
+          <div class="feature-title">MCP 서버 시작 시 REPL 즉시 렌더링</div>
+          <div class="feature-desc">
+            <code>claude "prompt"</code> 실행 시 MCP 서버가 모두 연결될 때까지 기다리지 않고 REPL이 즉시 렌더링됩니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-impr">
+          <span class="feature-tag perf">캐싱</span>
+          <div class="feature-title">p90 프롬프트 캐시 적중률 향상</div>
+          <div class="feature-desc">
+            내부 최적화를 통해 p90 프롬프트 캐시 적중률이 개선되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-impr">
+          <span class="feature-tag windows">Windows</span>
+          <div class="feature-title">Windows 드라이브 루트 위험 제거 감지 개선</div>
+          <div class="feature-desc">
+            <code>C:\</code>, <code>C:\Windows</code> 등 Windows 드라이브 루트의 위험한 제거 명령을 더 정확하게 감지합니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-impr">
+          <span class="feature-tag ux">스크롤</span>
+          <div class="feature-title">긴 세션에서 스크롤 최상단 리셋 감소</div>
+          <div class="feature-desc">
+            메시지 창이 컴팩션 및 그룹 변경에 영향을 받지 않도록 개선되어 긴 세션에서 불필요하게 스크롤이 맨 위로 이동하는 현상이 줄어듭니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-impr">
+          <span class="feature-tag ux">렌더링</span>
+          <div class="feature-title">애니메이션 도구 진행 상황 플리커 감소</div>
+          <div class="feature-desc">
+            뷰포트 위로 스크롤될 때 애니메이션 도구 진행 바가 깜빡이는 현상이 감소했습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-impr">
+          <span class="feature-tag vscode">VSCode</span>
+          <div class="feature-title">사용량 비율 및 리셋 시간 경고 배너</div>
+          <div class="feature-desc">
+            VSCode 확장에서 사용량 비율과 리셋 시간을 보여주는 속도 제한 경고 배너가 추가되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-impr">
+          <span class="feature-tag perf">통계</span>
+          <div class="feature-title">통계 스크린샷 (Ctrl+S) 16배 빨라짐</div>
+          <div class="feature-desc">
+            <code>/stats</code>에서 <code>Ctrl+S</code>로 찍는 스크린샷이 모든 빌드에서 동작하며 16배 빨라졌습니다.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 버그 수정 -->
+    <section id="fixes" class="section">
+      <div class="section-header">
+        <span class="section-badge fix">🟠 버그 수정</span>
+        <span class="section-title">Bug Fixes</span>
+        <span class="section-count">19개</span>
+      </div>
+
+      <div class="feature-grid">
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag voice">음성</span>
+          <div class="feature-title">Push-to-talk 키 누를 때 문자가 입력창에 새어들던 문제</div>
+          <div class="feature-desc">
+            음성 모드에서 push-to-talk 키를 누르고 있을 때 문자가 텍스트 입력창에 입력되거나 트랜스크립트가 잘못된 위치에 삽입되던 문제가 해결되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag">CJK 입력</span>
+          <div class="feature-title">IME 조합 창이 커서를 따라가지 않던 문제</div>
+          <div class="feature-desc">
+            네이티브 터미널 커서가 텍스트 입력 캐럿을 추적하지 않아 한국어·일본어·중국어 IME 조합 창이 올바른 위치에 렌더링되지 않던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag">Git</span>
+          <div class="feature-title">Scalar/GVFS 부분 클론 저장소에서 시작 시 대량 blob 다운로드</div>
+          <div class="feature-desc">
+            Scalar 또는 GVFS 같은 부분 클론(partial clone) 저장소에서 Claude Code를 시작할 때 불필요한 대량 blob 다운로드가 발생하던 시작 성능 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag">macOS</span>
+          <div class="feature-title">macOS에서 산발적 "Not logged in" 오류</div>
+          <div class="feature-desc">
+            macOS 키체인 일시적 읽기 실패로 인해 발생하던 "Not logged in" 오류가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag ux">탐색</span>
+          <div class="feature-title">푸터 항목에 포커스 시 위/아래 화살표 키 응답 없는 문제</div>
+          <div class="feature-desc">
+            푸터 항목이 포커스된 상태에서 위/아래 화살표 키가 반응하지 않던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag">콜드 스타트</span>
+          <div class="feature-title">핵심 도구가 bypass 없이 지연되어 Edit/Write 실패하던 문제</div>
+          <div class="feature-desc">
+            콜드 스타트 시 핵심 도구들이 bypass 활성화 없이 지연될 수 있는 경쟁 조건으로 인해 <code>Edit</code>/<code>Write</code>가 <code>InputValidationError</code>로 실패하던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag ux">키보드</span>
+          <div class="feature-title">Ctrl+U (kill-to-line-start)가 줄 경계에서 no-op이던 문제</div>
+          <div class="feature-desc">
+            멀티라인 입력에서 줄 경계에 있을 때 <code>Ctrl+U</code>가 아무 작동도 하지 않아, 반복 입력으로 여러 줄을 지울 수 없던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag ux">키바인딩</span>
+          <div class="feature-title">기본 코드 바인딩 null-해제 시 코드 대기 모드 진입하던 문제</div>
+          <div class="feature-desc">
+            예를 들어 <code>"ctrl+x ctrl+k": null</code>로 기본 코드 바인딩을 해제해도 <code>ctrl+x</code>가 여전히 코드 대기 모드로 진입하던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag">마우스</span>
+          <div class="feature-title">트랜스크립트 검색 입력에 마우스 이벤트가 "mouse" 텍스트로 삽입되던 문제</div>
+          <div class="feature-desc">
+            마우스 이벤트가 트랜스크립트 검색 입력에 리터럴 "mouse" 텍스트로 삽입되던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag">워크플로우</span>
+          <div class="feature-title">--json-schema 세션과 서브에이전트 간 API 400 오류</div>
+          <div class="feature-desc">
+            외부 세션이 <code>--json-schema</code>를 사용하고 서브에이전트도 스키마를 지정할 때 API 400 오류가 발생하던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag ux">렌더링</span>
+          <div class="feature-title">일부 터미널에서 사용자 메시지 버블의 이모지 배경 누락</div>
+          <div class="feature-desc">
+            특정 터미널에서 사용자 메시지 버블 내 이모지 뒤의 배경색이 누락되던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag">권한</span>
+          <div class="feature-title">Edit(.claude) allow 규칙이 세션 동안 유지되지 않던 문제</div>
+          <div class="feature-desc">
+            <code>Edit(.claude)</code> allow 규칙이 있는 사용자에게 "이 세션 동안 설정 편집 허용" 옵션이 적용되지 않던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag">첨부파일</span>
+          <div class="feature-title">대용량 편집 파일 첨부 스니펫 생성 시 hang</div>
+          <div class="feature-desc">
+            대용량 편집 파일에 대한 첨부 스니펫을 생성할 때 프로그램이 응답하지 않던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag mcp">MCP</span>
+          <div class="feature-title">서버 재연결 시 도구/리소스 캐시 누수</div>
+          <div class="feature-desc">
+            MCP 서버가 재연결될 때 도구/리소스 캐시가 누수되던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag ux">링크</span>
+          <div class="feature-title">issue/PR 참조 링크 조건 변경</div>
+          <div class="feature-desc">
+            이슈/PR 참조가 <code>owner/repo#123</code> 형식으로 작성된 경우에만 클릭 가능한 링크가 됩니다. 기존에 자동 링크되던 단순 <code>#123</code> 형식은 더 이상 링크로 처리되지 않습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag ux">슬래시 커맨드</span>
+          <div class="feature-title">현재 인증 설정에서 사용 불가 슬래시 커맨드 숨김</div>
+          <div class="feature-desc">
+            <code>/voice</code>, <code>/mobile</code>, <code>/chrome</code>, <code>/upgrade</code> 등 현재 설정에서 사용 불가한 슬래시 커맨드들이 목록에서 숨겨집니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag">스크롤</span>
+          <div class="feature-title">스크롤 중 스트리밍 시 오래된 콘텐츠가 보이던 문제</div>
+          <div class="feature-desc">
+            스트리밍 중 위로 스크롤할 때 오래된 콘텐츠가 비쳐 보이던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag">터미널</span>
+          <div class="feature-title">종료 후 터미널이 enhanced keyboard mode에 남아있던 문제</div>
+          <div class="feature-desc">
+            Ghostty, Kitty, WezTerm 등 Kitty 키보드 프로토콜을 지원하는 터미널에서 Claude Code 종료 후 enhanced keyboard mode가 해제되지 않아 <code>Ctrl+C</code>, <code>Ctrl+D</code>가 작동하지 않던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+        <div class="feature-card highlight-fix">
+          <span class="feature-tag vscode">VSCode</span>
+          <div class="feature-title">앱 재시작 후 세션 기록이 올바르게 로드되지 않던 문제</div>
+          <div class="feature-desc">
+            VSCode에서 URL 또는 재시작 후 세션을 다시 열 때 세션 기록이 올바르게 로드되지 않던 문제가 수정되었습니다.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- Footer -->
+<div class="footer">
+  <p class="footer-text">
+    출처:
+    <a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md" target="_blank">anthropics/claude-code CHANGELOG</a>
+    · 2026-03-27 정리
+  </p>
+</div>
+
+</body>
+</html>
