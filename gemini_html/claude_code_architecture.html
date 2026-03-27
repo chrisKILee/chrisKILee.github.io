@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code 프로젝트 아키텍처</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* Top Bar */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ink); }
+    .topbar-meta { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    /* Hero */
+    .hero { background: var(--surface); border-bottom: 1px solid var(--border); padding: 72px 28px 60px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-bg); border: 1px solid var(--accent-bdr);
+      color: var(--accent); border-radius: 99px; padding: 5px 14px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900; line-height: 1.08;
+      letter-spacing: -0.025em; color: var(--ink);
+      max-width: 740px; margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
+    .hero-desc { font-size: 17px; color: var(--ink-3); max-width: 640px; line-height: 1.75; margin-bottom: 36px; }
+    .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 6px 12px;
+      font-size: 13px; font-weight: 500; color: var(--ink-2);
+    }
+
+    /* Section */
+    .section { padding: 56px 28px; border-bottom: 1px solid var(--border); }
+    .section-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); max-width: 80px; }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700; letter-spacing: -0.02em;
+      color: var(--ink); margin-bottom: 10px;
+    }
+    .section-desc { font-size: 15px; color: var(--ink-3); max-width: 620px; margin-bottom: 36px; line-height: 1.7; }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card__header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+    .card__icon { font-size: 22px; margin-bottom: 8px; }
+    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__body { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__footer { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+    .card__tag { font-size: 11px; font-weight: 600; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* Folder Tree */
+    .tree-wrap {
+      background: #1a1a1a; border-radius: 10px; overflow: hidden;
+      border: 1px solid #333; margin: 24px 0;
+    }
+    .tree-bar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 14px; border-bottom: 1px solid #333; background: #111;
+    }
+    .tree-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .tree-label { font-size: 11px; font-family: var(--font-mono); color: #666; margin-left: auto; }
+    pre.tree-body {
+      padding: 20px; font-family: var(--font-mono); font-size: 13px;
+      line-height: 1.8; overflow-x: auto; white-space: pre;
+      color: #d4d4d4; background: #1a1a1a;
+    }
+    .tree-dir { color: #6fb8f5; }
+    .tree-file { color: #a8d9a7; }
+    .tree-comment { color: #6b6b66; }
+    .tree-accent { color: #f4a261; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--bg-2); border: 1px solid var(--border);
+      padding: 11px 16px; text-align: left;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--ink-3);
+    }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:hover td { background: var(--bg); }
+
+    /* Callouts */
+    .callout {
+      border-left: 3px solid; padding: 14px 18px;
+      border-radius: 0 8px 8px 0; margin: 20px 0;
+      font-size: 14px; line-height: 1.65;
+    }
+    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+    /* Code block */
+    .code-wrap { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 0; }
+    .code-bar { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--bg-2); }
+    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body { padding: 18px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; color: var(--ink-2); }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
+      background: var(--ink); display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--surface); margin-top: 2px;
+    }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* Tag */
+    .tag { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+
+    /* SVG diagram */
+    .diagram-wrap { margin: 28px 0; }
+    .diagram-wrap svg { width: 100%; max-width: 800px; display: block; }
+
+    /* Pro Tips grid */
+    .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 24px; }
+    .tip-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 18px;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .tip-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+    .tip-text { font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+    .tip-text strong { color: var(--ink); display: block; margin-bottom: 2px; font-size: 13px; }
+
+    /* Footer */
+    footer {
+      padding: 28px; border-top: 1px solid var(--border);
+      background: var(--surface); display: flex;
+      justify-content: space-between; align-items: center;
+      gap: 12px; flex-wrap: wrap;
+      font-size: 13px; color: var(--ink-4);
+    }
+
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">Claude Code 프로젝트 아키텍처</span>
+  <span class="topbar-meta">2026-03-28</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">❋ Claude Code Guide</div>
+    <h1>프로덕션 수준의<br>Claude Code <em>프로젝트 구조</em></h1>
+    <p class="hero-desc">
+      AI 보조 개발 환경을 제대로 세팅하려면 워크스페이스 구조 설계가 핵심입니다.
+      Skills · Hooks · MCP · Subagents · Plugins — 5가지 확장 타입으로 구성된
+      Claude Code 아키텍처를 한눈에 정리합니다.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">📄 CLAUDE.md</span>
+      <span class="chip">⚡ Skills</span>
+      <span class="chip">🪝 Hooks</span>
+      <span class="chip">🔌 MCP</span>
+      <span class="chip">🤖 Subagents</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: 전체 구조 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 프로젝트 구조</div>
+    <h2 class="section-title">워크스페이스 폴더 트리</h2>
+    <p class="section-desc">
+      프로덕션 수준의 Claude Code 프로젝트는 아래와 같은 구조를 가집니다.
+      각 폴더와 파일의 역할을 이해하면 협업과 유지보수가 훨씬 쉬워집니다.
+    </p>
+
+    <div class="tree-wrap">
+      <div class="tree-bar">
+        <div class="tree-dot" style="background:#ef4444;"></div>
+        <div class="tree-dot" style="background:#f59e0b;"></div>
+        <div class="tree-dot" style="background:#22c55e;"></div>
+        <span class="tree-label">project structure</span>
+      </div>
+      <pre class="tree-body"><span class="tree-dir">my_project/</span>
+<span class="tree-accent">├── CLAUDE.md</span>              <span class="tree-comment">← 프로젝트 메모리 & 스타일 가이드</span>
+<span class="tree-dir">├── .claude/</span>               <span class="tree-comment">← 설정, 명령어, 확장</span>
+<span class="tree-file">│   ├── settings.json</span>
+<span class="tree-file">│   ├── settings.local.json</span>
+<span class="tree-dir">│   └── commands/</span>          <span class="tree-comment">← 슬래시 명령어</span>
+<span class="tree-dir">├── skills/</span>                <span class="tree-comment">← 태스크 매칭 시 자동 활성화</span>
+<span class="tree-dir">│   ├── code-review/</span>
+<span class="tree-file">│   │   └── SKILL.md</span>
+<span class="tree-dir">│   └── security-audit/</span>
+<span class="tree-file">│       └── SKILL.md</span>
+<span class="tree-dir">├── agentx/</span>                <span class="tree-comment">← 멀티에이전트 정의</span>
+<span class="tree-file">│   ├── code-reviewer.yml</span>
+<span class="tree-file">│   └── test-writer.yml</span>
+<span class="tree-dir">├── plugins/</span>               <span class="tree-comment">← 배포 가능한 번들 셋업</span>
+<span class="tree-file">│   └── manifest.json</span>
+<span class="tree-accent">├── .mcp.json</span>              <span class="tree-comment">← MCP 서버 통합 설정</span>
+<span class="tree-dir">├── src/</span>
+<span class="tree-dir">│   ├── components/</span>
+<span class="tree-dir">│   └── services/</span>
+<span class="tree-dir">├── tests/</span>
+<span class="tree-file">├── .env.example</span>
+<span class="tree-file">└── README.md</span></pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-title">핵심 원칙</div>
+      CLAUDE.md가 Claude의 장기 기억 역할을 합니다. 프로젝트 컨벤션, 기술 스택, 보안 규칙 등을 여기에 정의하면 매 세션마다 자동으로 참조됩니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: 핵심 구성요소 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 핵심 구성요소</div>
+    <h2 class="section-title">Key Components</h2>
+    <p class="section-desc">5개 파일/폴더가 Claude Code 워크스페이스의 핵심을 이룹니다.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">📄</div>
+          <div class="card__title">CLAUDE.md</div>
+        </div>
+        <div class="card__body">
+          <p>프로젝트 메모리이자 스타일 가이드. 기술 스택, 아키텍처 개요, 테스트 요구사항, Git 워크플로우, 보안 규칙, 파일 네이밍 컨벤션을 정의합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">Project Memory</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">⚙️</div>
+          <div class="card__title">.claude/</div>
+        </div>
+        <div class="card__body">
+          <p>Claude Code의 설정 폴더. settings.json으로 권한·훅을 제어하고, commands/ 폴더에 슬래시 명령어를 정의합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">Config & Extensions</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">⚡</div>
+          <div class="card__title">skills/</div>
+        </div>
+        <div class="card__body">
+          <p>태스크 매칭 시 자동으로 활성화되는 스킬 모음. 각 스킬 폴더에 SKILL.md, scripts/, references/를 두어 모듈화합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">Auto-activated Skills</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔌</div>
+          <div class="card__title">.mcp.json</div>
+        </div>
+        <div class="card__body">
+          <p>MCP(Model Context Protocol) 서버 통합 설정. GitHub, PostgreSQL, Playwright, Filesystem 등 외부 도구를 연결합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">MCP Server Config</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🤖</div>
+          <div class="card__title">agentx/</div>
+        </div>
+        <div class="card__body">
+          <p>멀티에이전트 조율 정의. code-reviewer, test-writer 등 역할별 서브에이전트를 YAML로 정의해 병렬 실행합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">Subagent Definitions</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: 확장 타입 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 확장 타입</div>
+    <h2 class="section-title">5가지 Extension Types</h2>
+    <p class="section-desc">Claude Code 워크플로우를 강화하는 5가지 확장 메커니즘입니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>타입</th>
+            <th>활성화 시점</th>
+            <th>역할</th>
+            <th>예시</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>⚡ Skills</strong></td>
+            <td>태스크 매칭 시 자동</td>
+            <td>특정 작업에 특화된 가이드·스크립트 제공</td>
+            <td>code-review, security-audit, deploy</td>
+          </tr>
+          <tr>
+            <td><strong>🪝 Hooks</strong></td>
+            <td>라이프사이클 이벤트</td>
+            <td>PreToolUse · PostToolUse · SessionStart 등 시점에 스크립트 실행</td>
+            <td>시크릿 감지, 린트 자동 실행, Slack 알림</td>
+          </tr>
+          <tr>
+            <td><strong>🔌 MCP</strong></td>
+            <td>항상 연결 유지</td>
+            <td>외부 도구·서비스와 실시간 연동</td>
+            <td>GitHub PRs, PostgreSQL, Playwright</td>
+          </tr>
+          <tr>
+            <td><strong>🤖 Subagents</strong></td>
+            <td>명시적 호출 시</td>
+            <td>복잡한 작업을 병렬로 분산 처리</td>
+            <td>테스트 작성 + 코드 리뷰 동시 진행</td>
+          </tr>
+          <tr>
+            <td><strong>📦 Plugins</strong></td>
+            <td>설치 시 일괄 적용</td>
+            <td>설정·스킬·훅을 묶어 배포 가능한 단위로 패키징</td>
+            <td>vercel-plugin, ccpp (Claude Code Power Pack)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: Hook Events -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 Hook Events</div>
+    <h2 class="section-title">라이프사이클 훅</h2>
+    <p class="section-desc">Claude가 특정 행동을 취하는 시점에 자동으로 실행되는 셸 스크립트입니다.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔴</div>
+          <div class="card__title">PreToolUse</div>
+        </div>
+        <div class="card__body">
+          <p>도구 실행 직전 호출. 위험한 명령을 차단하거나, 시크릿 노출을 감지하는 데 사용합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">Block before execution</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🟡</div>
+          <div class="card__title">PostToolUse</div>
+        </div>
+        <div class="card__body">
+          <p>도구 실행 직후 호출. 파일 수정 후 자동 린트, 테스트 실행, 로그 기록 등에 활용합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">Auto lint after writes</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🟢</div>
+          <div class="card__title">SessionStart</div>
+        </div>
+        <div class="card__body">
+          <p>세션 시작·재개 시 호출. 컨텍스트 주입, 초기화 스크립트, 환경 변수 로드 등에 사용합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">Load content on launch</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">💾</div>
+          <div class="card__title">SessionStop</div>
+        </div>
+        <div class="card__body">
+          <p>세션 종료 시 호출. 세션 요약 저장, 작업 상태 기록, 핸드오프 문서 자동 생성 등에 활용합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">Save session summaries</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔒</div>
+          <div class="card__title">PreCommit</div>
+        </div>
+        <div class="card__body">
+          <p>git commit 전 호출. API 키·비밀번호 등 시크릿이 코드에 포함됐는지 자동으로 탐지합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">Secret detection</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔔</div>
+          <div class="card__title">Notification</div>
+        </div>
+        <div class="card__body">
+          <p>작업 완료·오류 발생 시 호출. Slack 웹훅, 이메일, 데스크탑 알림 등으로 이벤트를 전달합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">Slack webhook alerts</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top: 28px;">
+      <p class="section-desc" style="margin-bottom: 16px;">settings.json 훅 설정 예시:</p>
+      <div class="code-wrap">
+        <div class="code-bar">
+          <div class="code-dot" style="background:#ef4444;"></div>
+          <div class="code-dot" style="background:#f59e0b;"></div>
+          <div class="code-dot" style="background:#22c55e;"></div>
+          <span class="code-lang">json — .claude/settings.json</span>
+        </div>
+        <pre class="code-body">{
+  "permissions": { "allow": [...], "deny": [...] },
+  "hooks": {
+    "PreToolUse": [{ "matcher": "Bash",
+      "hooks": [{ "type": "command",
+        "command": "sbock-safety.sh" }]}],
+    "PostToolUse": [{ "matcher": "Write",
+      "hooks": [{ "type": "command",
+        "command": "npm run lint" }]}]
+  },
+  "env": {
+    "MAX_THINKING_TOKENS": "10000",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50"
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: MCP 서버 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 MCP 통합</div>
+    <h2 class="section-title">인기 MCP 서버</h2>
+    <p class="section-desc">
+      MCP(Model Context Protocol)는 Claude가 외부 도구·데이터에 직접 접근할 수 있게 해주는 표준 프로토콜입니다.
+      .mcp.json에 서버를 등록하면 Claude가 해당 도구를 자유롭게 사용할 수 있습니다.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>MCP 서버</th><th>기능</th><th>주요 용도</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>GitHub</strong></td>
+            <td>PRs, Issues, Repos 조회·생성</td>
+            <td>PR 리뷰 자동화, 이슈 트래킹</td>
+          </tr>
+          <tr>
+            <td><strong>JIRA / Linear</strong></td>
+            <td>티켓 조회·업데이트</td>
+            <td>작업 스케줄링, 진척 추적</td>
+          </tr>
+          <tr>
+            <td><strong>PostgreSQL</strong></td>
+            <td>DB 직접 쿼리</td>
+            <td>데이터 분석, 스키마 탐색</td>
+          </tr>
+          <tr>
+            <td><strong>Playwright</strong></td>
+            <td>브라우저 자동화</td>
+            <td>E2E 테스트, UI 스크래핑</td>
+          </tr>
+          <tr>
+            <td><strong>Filesystem</strong></td>
+            <td>파일 읽기·쓰기 (스코프 제한)</td>
+            <td>문서 자동 생성, 파일 관리</td>
+          </tr>
+          <tr>
+            <td><strong>Slack</strong></td>
+            <td>메시지 전송, 채널 조회</td>
+            <td>알림 발송, 팀 커뮤니케이션</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-wrap" style="margin-top: 24px;">
+      <div class="code-bar">
+        <div class="code-dot" style="background:#ef4444;"></div>
+        <div class="code-dot" style="background:#f59e0b;"></div>
+        <div class="code-dot" style="background:#22c55e;"></div>
+        <span class="code-lang">json — .mcp.json</span>
+      </div>
+      <pre class="code-body">{
+  "mcpServers": {
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-github"],
+      "env": { "GITHUB_TOKEN": "${GITHUB_TOKEN}" }
+    },
+    "postgres": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-postgres"],
+      "env": { "DATABASE_URL": "${DATABASE_URL}" }
+    }
+  }
+}</pre>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">보안 주의</div>
+      .mcp.json에 API 키를 직접 입력하지 말 것. 반드시 환경 변수(${GITHUB_TOKEN} 등)로 참조하고, .env 파일은 .gitignore에 추가하세요.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: 시작 가이드 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">06 시작 가이드</div>
+    <h2 class="section-title">Getting Started — 6단계</h2>
+    <p class="section-desc">Claude Code 프로젝트 아키텍처를 처음 세팅하는 순서입니다.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Claude Code 설치</div>
+          <div class="step-body">npm으로 전역 설치합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body">npm i -g @anthropic-ai/claude-code</pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">프로젝트 디렉토리로 이동 후 claude 실행</div>
+          <div class="step-body">프로젝트 루트에서 claude 명령을 입력하면 자동으로 CLAUDE.md를 탐색합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body">cd your_project && claude</pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">CLAUDE.md 작성</div>
+          <div class="step-body">기술 스택, 아키텍처, 컨벤션, 보안 규칙을 정의합니다. Claude가 매 세션마다 자동으로 이 파일을 읽습니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title">.claude/commands/ 에 슬래시 명령어 추가</div>
+          <div class="step-body">자주 쓰는 작업 패턴을 /review, /deploy 같은 명령어로 정의합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div>
+          <div class="step-title">.mcp.json 에 MCP 서버 등록</div>
+          <div class="step-body">GitHub, PostgreSQL, Playwright 등 필요한 외부 도구를 연결합니다. API 키는 반드시 환경 변수로 참조합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div>
+          <div class="step-title">skills/ 추가로 워크플로우 확장</div>
+          <div class="step-body">프로젝트가 성장하면서 code-review, security-audit, deploy 등 스킬을 하나씩 추가해 자동화 범위를 넓힙니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 7: 컨텍스트 관리 & Pro Tips -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">07 Pro Tips</div>
+    <h2 class="section-title">컨텍스트 관리 & 베스트 프랙티스</h2>
+    <p class="section-desc">Claude Code를 효과적으로 사용하기 위한 핵심 팁입니다.</p>
+
+    <div class="callout info" style="margin-bottom: 28px;">
+      <div class="callout-title">컨텍스트 사용률 가이드</div>
+      0~60% — 정상 작업 / 60~70% — 사용량 모니터링 / 70~80% — /compact 실행 / 80%+ — /clear 필수
+    </div>
+
+    <div class="tips-grid">
+      <div class="tip-item">
+        <span class="tip-icon">🔄</span>
+        <div class="tip-text">
+          <strong>Start small, iterate fast</strong>
+          작은 단위로 시작해 빠르게 반복하세요. 한 번에 큰 작업보다 모듈화된 소작업이 더 좋은 결과를 냅니다.
+        </div>
+      </div>
+      <div class="tip-item">
+        <span class="tip-icon">📝</span>
+        <div class="tip-text">
+          <strong>스킬 문서를 명확하게</strong>
+          SKILL.md의 설명이 구체적일수록 Claude가 정확하게 매칭·활용합니다.
+        </div>
+      </div>
+      <div class="tip-item">
+        <span class="tip-icon">🧩</span>
+        <div class="tip-text">
+          <strong>모듈형 스킬 설계</strong>
+          복잡한 작업은 작은 스킬 단위로 쪼개세요. 재사용성과 유지보수성이 높아집니다.
+        </div>
+      </div>
+      <div class="tip-item">
+        <span class="tip-icon">🔐</span>
+        <div class="tip-text">
+          <strong>시크릿은 환경 변수로</strong>
+          API 키·비밀번호를 코드나 설정 파일에 직접 넣지 마세요. 항상 환경 변수를 사용합니다.
+        </div>
+      </div>
+      <div class="tip-item">
+        <span class="tip-icon">🧹</span>
+        <div class="tip-text">
+          <strong>컨텍스트 80%에서 /clear</strong>
+          컨텍스트가 오래될수록 응답 품질이 저하됩니다. /compact → /clear 패턴으로 관리하세요.
+        </div>
+      </div>
+      <div class="tip-item">
+        <span class="tip-icon">🤖</span>
+        <div class="tip-text">
+          <strong>서브에이전트로 병렬 처리</strong>
+          독립적인 작업(테스트 작성 + 코드 리뷰)은 서브에이전트로 동시에 실행해 시간을 절약합니다.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>Claude Code 프로젝트 아키텍처</span>
+  <span>2026-03-28 · ❋ Claude</span>
+</footer>
+
+</body>
+</html>
