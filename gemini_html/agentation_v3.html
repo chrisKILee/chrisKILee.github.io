@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agentation v3.0 — 레이아웃 모드</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* Top Bar */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+    .topbar-meta { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    /* Hero */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 28px 60px;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-bdr);
+      color: var(--accent);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      max-width: 740px;
+      margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
+    .hero-desc { font-size: 17px; color: var(--ink-3); max-width: 600px; line-height: 1.75; margin-bottom: 36px; }
+    .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-2);
+    }
+
+    /* Section */
+    .section { padding: 56px 28px; border-bottom: 1px solid var(--border); }
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); max-width: 80px; }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .section-desc { font-size: 15px; color: var(--ink-3); max-width: 620px; margin-bottom: 36px; line-height: 1.7; }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card__header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+    .card__icon { font-size: 22px; margin-bottom: 8px; }
+    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__body { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__footer { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+    .card__tag { font-size: 11px; font-weight: 600; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* Before/After 비교 */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } }
+    .compare-box {
+      border-radius: 10px;
+      padding: 24px;
+      border: 1px solid var(--border);
+    }
+    .compare-box.before { background: var(--bg-2); }
+    .compare-box.after { background: var(--accent-bg); border-color: var(--accent-bdr); }
+    .compare-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 4px;
+      margin-bottom: 14px;
+    }
+    .compare-box.before .compare-badge { background: var(--border-2); color: var(--ink-3); }
+    .compare-box.after .compare-badge { background: var(--accent); color: #fff; }
+    .compare-title { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+    .compare-body { font-size: 14px; color: var(--ink-3); line-height: 1.7; }
+
+    /* Arrow between compare */
+    .compare-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 0;
+    }
+
+    /* SVG 다이어그램 컨테이너 */
+    .diagram-wrap { margin: 32px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 32px; overflow-x: auto; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:hover td { background: var(--bg); }
+
+    /* Callouts */
+    .callout {
+      border-left: 3px solid;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+    /* Code block */
+    .code-wrap { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 0; }
+    .code-bar { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--bg-2); }
+    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body {
+      padding: 18px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink-2);
+    }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--surface);
+      margin-top: 2px;
+    }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* Tags */
+    .tag { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+
+    /* Schema kind 배지 */
+    .kind-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+    .kind-box {
+      flex: 1;
+      min-width: 200px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      background: var(--surface);
+    }
+    .kind-box .kind-label {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .kind-box.feedback .kind-label { background: #eff6ff; color: #1e40af; }
+    .kind-box.placement .kind-label { background: var(--success-bg); color: var(--success); }
+    .kind-box.rearrange .kind-label { background: var(--accent-bg); color: var(--accent); }
+    .kind-box p { font-size: 13px; color: var(--ink-3); line-height: 1.6; }
+
+    /* Footer */
+    footer {
+      padding: 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--ink-4);
+    }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+      .diagram-wrap { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">Agentation v3.0</span>
+  <span class="topbar-meta">2026-03-27</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">🆕 Layout Mode · v3.0</div>
+    <h1>피드백 도구에서<br><em>기획 도구로</em></h1>
+    <p class="hero-desc">Agentation이 레이아웃 모드를 달고 v3.0으로 나아갑니다. "이거 고쳐"에서 "이렇게 만들어"로 — 텍스트 설명 대신 그려서 보여주는 UI 기획 도구.</p>
+    <div class="hero-chips">
+      <span class="chip">⌨️ L키로 모드 전환</span>
+      <span class="chip">🎨 65+ 컴포넌트 타입</span>
+      <span class="chip">📐 Annotation Schema 1.1</span>
+      <span class="chip">⚡ React · 의존성 제로</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: v2 vs v3 비교 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 변화</div>
+    <h2 class="section-title">무엇이 달라졌나</h2>
+    <p class="section-desc">기존 v2는 "문제를 가리키는" 도구였습니다. v3.0은 "방향을 보여주는" 도구로 확장됐습니다.</p>
+
+    <div class="compare-grid">
+      <div class="compare-box before">
+        <span class="compare-badge">v2 · 기존</span>
+        <div class="compare-title">피드백 도구</div>
+        <div class="compare-body">
+          화면 요소를 클릭해서 "이거 고쳐"라고 가리키는 방식.<br><br>
+          클래스명, CSS 셀렉터, 위치를 캡처해서 Claude Code나 Cursor가 바로 알아듣는 마크다운을 생성합니다.
+        </div>
+      </div>
+      <div class="compare-box after">
+        <span class="compare-badge">v3.0 · 신규</span>
+        <div class="compare-title">기획 + 피드백 도구</div>
+        <div class="compare-body">
+          레이아웃 모드 추가로 "이렇게 만들어"가 가능해졌습니다.<br><br>
+          에이전트에게 전달되는 건 글 문단이 아니라 <strong>좌표와 치수</strong>입니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 아키텍처 다이어그램 -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 780 100" style="width:100%;max-width:780px;display:block;margin:0 auto;" aria-label="Agentation 동작 흐름 다이어그램">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#A8A8A3"/>
+          </marker>
+        </defs>
+        <!-- 박스 1 -->
+        <rect x="10" y="30" width="140" height="40" rx="8" fill="#F4F4F1" stroke="#D4D4CF" stroke-width="1.5"/>
+        <text x="80" y="55" text-anchor="middle" fill="#3D3D3A" font-size="13" font-family="Inter, sans-serif" font-weight="600">사용자 (브라우저)</text>
+        <!-- 화살표 1 -->
+        <line x1="150" y1="50" x2="200" y2="50" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- 박스 2 -->
+        <rect x="200" y="30" width="160" height="40" rx="8" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="280" y="55" text-anchor="middle" fill="#C4522A" font-size="13" font-family="Inter, sans-serif" font-weight="600">Agentation Overlay</text>
+        <!-- 화살표 2 -->
+        <line x1="360" y1="50" x2="410" y2="50" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- 박스 3 -->
+        <rect x="410" y="20" width="160" height="60" rx="8" fill="#F0FDF4" stroke="#1A7F5A" stroke-width="1.5"/>
+        <text x="490" y="44" text-anchor="middle" fill="#1A7F5A" font-size="12" font-family="Inter, sans-serif" font-weight="700">Annotation Schema 1.1</text>
+        <text x="490" y="64" text-anchor="middle" fill="#3D3D3A" font-size="11" font-family="JetBrains Mono, monospace">kind: feedback | placement | rearrange</text>
+        <!-- 화살표 3 -->
+        <line x1="570" y1="50" x2="620" y2="50" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- 박스 4 -->
+        <rect x="620" y="30" width="140" height="40" rx="8" fill="#F4F4F1" stroke="#D4D4CF" stroke-width="1.5"/>
+        <text x="690" y="49" text-anchor="middle" fill="#3D3D3A" font-size="12" font-family="Inter, sans-serif" font-weight="600">Claude Code</text>
+        <text x="690" y="63" text-anchor="middle" fill="#6B6B66" font-size="11" font-family="Inter, sans-serif">/ Cursor (MCP)</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: 레이아웃 모드 3가지 기능 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 기능</div>
+    <h2 class="section-title">레이아웃 모드 3가지</h2>
+    <p class="section-desc"><code style="font-family:var(--font-mono);font-size:14px;background:var(--code-bg);padding:2px 6px;border-radius:4px;">L</code> 키를 누르면 모드가 전환됩니다. 세 가지 작업이 가능합니다.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">📐</div>
+          <div class="card__title">와이어프레이밍</div>
+        </div>
+        <div class="card__body">
+          <p>"Wireframe New Page"를 켜면 현재 페이지가 페이드아웃됩니다. 불투명도 슬라이더로 기존 화면을 참고하면서 새 레이아웃을 스케치합니다.<br><br>상단 용도 필드에 "가격표와 후기가 포함된 랜딩 페이지" 같은 컨텍스트를 함께 전달합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">Wireframe New Page</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">↕️</div>
+          <div class="card__title">섹션 재배치</div>
+        </div>
+        <div class="card__body">
+          <p>페이지의 모든 섹션이 드래그 가능해집니다. 마우스를 올리면 CSS 셀렉터 라벨과 함께 아웃라인이 표시되고, 끌어서 순서를 바꿉니다.<br><br>예: "후기 섹션을 가격표 위로 올려줘"를 말 대신 행동으로.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">kind: rearrange</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🧩</div>
+          <div class="card__title">컴포넌트 배치</div>
+        </div>
+        <div class="card__body">
+          <p>5개 카테고리(Layout, Content, Controls, Elements, Blocks)에 65개 이상의 컴포넌트 타입이 있습니다. 골라서 끌어다 놓고 크기를 조절합니다.<br><br>배치마다 컴포넌트 타입, 픽셀 치수, 위치가 기록됩니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">kind: placement</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip" style="margin-top:28px;">
+      <div class="callout-title">상태 유지</div>
+      와이어프레임 상태와 재배치 상태는 따로 저장됩니다. 모드를 왔다 갔다 해도 작업이 날아가지 않습니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: 컴포넌트 카테고리 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 컴포넌트</div>
+    <h2 class="section-title">65+ 컴포넌트 타입</h2>
+    <p class="section-desc">5개 카테고리로 분류된 컴포넌트 팔레트에서 선택해 배치합니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>카테고리</th>
+            <th>용도</th>
+            <th>예시</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Layout</strong></td>
+            <td>페이지 구조 잡기</td>
+            <td>Section, Container, Grid, Sidebar, Header, Footer</td>
+          </tr>
+          <tr>
+            <td><strong>Content</strong></td>
+            <td>텍스트·미디어 영역</td>
+            <td>Heading, Paragraph, Image, Video, Card, List</td>
+          </tr>
+          <tr>
+            <td><strong>Controls</strong></td>
+            <td>인터랙션 요소</td>
+            <td>Button, Input, Select, Checkbox, Toggle, Form</td>
+          </tr>
+          <tr>
+            <td><strong>Elements</strong></td>
+            <td>보조 UI 요소</td>
+            <td>Badge, Icon, Divider, Tooltip, Tag, Avatar</td>
+          </tr>
+          <tr>
+            <td><strong>Blocks</strong></td>
+            <td>복합 섹션 블록</td>
+            <td>Hero, Pricing Table, Testimonials, CTA, FAQ</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: 기술 변경 — Schema 1.1 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 기술</div>
+    <h2 class="section-title">Annotation Format Schema 1.1</h2>
+    <p class="section-desc">어노테이션에 <code style="font-family:var(--font-mono);font-size:13px;background:var(--code-bg);padding:2px 6px;border-radius:4px;">kind</code> 필드가 추가됐습니다. 에이전트가 뭘 해야 하는지 구조화된 데이터로 바로 파악합니다.</p>
+
+    <div class="kind-grid">
+      <div class="kind-box feedback">
+        <span class="kind-label">feedback</span>
+        <p>기존 피드백 모드. 화면 요소를 클릭해서 CSS 셀렉터·위치를 캡처한 마크다운을 생성합니다.</p>
+      </div>
+      <div class="kind-box placement">
+        <span class="kind-label">placement</span>
+        <p>컴포넌트 배치 모드. 타입, 픽셀 치수, 위치 좌표가 구조화된 데이터로 기록됩니다.</p>
+      </div>
+      <div class="kind-box rearrange">
+        <span class="kind-label">rearrange</span>
+        <p>섹션 재배치 모드. 드래그한 섹션의 셀렉터와 새 순서 정보가 에이전트에게 전달됩니다.</p>
+      </div>
+    </div>
+
+    <!-- 코드 예시 -->
+    <div style="margin-top:28px;">
+      <p style="font-size:14px;color:var(--ink-3);margin-bottom:12px;">어노테이션 데이터 예시 (placement 타입)</p>
+      <div class="code-wrap">
+        <div class="code-bar">
+          <div class="code-dot" style="background:#ef4444;"></div>
+          <div class="code-dot" style="background:#f59e0b;"></div>
+          <div class="code-dot" style="background:#22c55e;"></div>
+          <span class="code-lang">json</span>
+        </div>
+        <pre class="code-body">{
+  "kind": "placement",
+  "component": {
+    "type": "Pricing Table",
+    "category": "Blocks"
+  },
+  "position": { "x": 120, "y": 480 },
+  "dimensions": { "width": 860, "height": 320 },
+  "context": "가격표와 후기가 포함된 랜딩 페이지"
+}</pre>
+      </div>
+    </div>
+
+    <div class="callout info" style="margin-top:8px;">
+      <div class="callout-title">MCP 서버 연동</div>
+      MCP 서버가 돌고 있으면 레이아웃 변경이 <strong>실시간</strong>으로 에이전트에게 전달됩니다. Claude Code나 Cursor 어느 에이전트든 동일하게 작동합니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: 변하지 않은 것 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 기반</div>
+    <h2 class="section-title">변하지 않은 것</h2>
+    <p class="section-desc">레이아웃 모드가 추가됐지만 핵심 철학은 그대로입니다.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">⚛️</div>
+          <div class="card__title">React 기반</div>
+        </div>
+        <div class="card__body">
+          <p>React로 만들어진 오버레이 컴포넌트입니다. 어떤 React 앱에도 올릴 수 있습니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">React</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">📦</div>
+          <div class="card__title">의존성 제로</div>
+        </div>
+        <div class="card__body">
+          <p>외부 라이브러리 없이 동작합니다. 설치 시 기존 프로젝트 의존성에 영향을 주지 않습니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">Zero Dependencies</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🤖</div>
+          <div class="card__title">에이전트 불문</div>
+        </div>
+        <div class="card__body">
+          <p>Claude Code, Cursor, Copilot 등 어느 AI 에이전트와도 연동됩니다. 표준 마크다운·구조화 데이터 출력.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">Agent-Agnostic</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>Agentation v3.0 — 레이아웃 모드 · 2026-03-27</span>
+  <a href="https://www.agentation.com/blog/layout-mode" target="_blank" rel="noopener">공식 블로그 →</a>
+</footer>
+
+</body>
+</html>
