@@ -581,14 +581,27 @@
     }
 
     function openSvg(svgEl, label) {
-      // img 숨기고 SVG 클론 삽입
       lbImg.style.display = 'none';
       lbImg.src = '';
       const prev = lbWrap.querySelector('svg.lb-svg-clone');
       if (prev) prev.remove();
       const clone = svgEl.cloneNode(true);
       clone.classList.add('lb-svg-clone');
-      clone.style.cssText = 'max-width:88vw;max-height:86vh;width:auto;height:auto;border-radius:10px;box-shadow:0 24px 80px rgba(0,0,0,.6);background:#13131a;';
+
+      // viewBox에서 종횡비 계산 → 명시적 px 크기 설정
+      const vb = (svgEl.getAttribute('viewBox') || '0 0 480 480').split(/[\s,]+/).map(Number);
+      const vw = vb[2] || 480, vh = vb[3] || 480;
+      const maxW = window.innerWidth  * 0.88;
+      const maxH = window.innerHeight * 0.84;
+      const scale = Math.min(maxW / vw, maxH / vh);
+      clone.setAttribute('width',  Math.round(vw * scale));
+      clone.setAttribute('height', Math.round(vh * scale));
+      clone.style.cssText = 'display:block;border-radius:10px;box-shadow:0 24px 80px rgba(0,0,0,.6);';
+
+      // 원본 inline style에서 배경색 유지 (없으면 흰 배경)
+      const origBg = svgEl.style.background || svgEl.style.backgroundColor || '#fff';
+      clone.style.background = origBg;
+
       lbWrap.appendChild(clone);
       lbCap.textContent = label || '';
       overlay.classList.add('open');
