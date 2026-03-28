@@ -315,6 +315,36 @@ footer {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* ── LIGHTBOX ── */
+.lb-trigger { cursor: zoom-in; }
+#lightbox {
+  display: none; position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+#lightbox.open { display: flex; }
+#lightbox-inner {
+  position: relative; max-width: 92vw; max-height: 92vh;
+  display: flex; align-items: center; justify-content: center;
+}
+#lightbox-inner img {
+  max-width: 90vw; max-height: 88vh;
+  border-radius: 10px; box-shadow: 0 8px 48px rgba(0,0,0,.6);
+  object-fit: contain;
+}
+#lightbox-inner svg {
+  max-width: 90vw; max-height: 88vh;
+  border-radius: 10px; background: var(--bg3); padding: 16px;
+  box-shadow: 0 8px 48px rgba(0,0,0,.6);
+}
+#lightbox-close {
+  position: absolute; top: -14px; right: -14px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg2); border: 1px solid var(--border2);
+  color: var(--text1); font-size: 18px; line-height: 30px; text-align: center;
+  cursor: pointer; z-index: 1; user-select: none;
+}
 </style>
 </head>
 <body>
@@ -1131,6 +1161,59 @@ footer {
 <footer>
   <p>RAG 완전 정복 · 2026-03-28 · <a href="https://page.chrisnolja.dev" style="color:var(--purple2);text-decoration:none;">page.chrisnolja.dev</a></p>
 </footer>
+
+
+<div id="lightbox">
+  <div id="lightbox-inner">
+    <span id="lightbox-close">×</span>
+  </div>
+</div>
+<script>
+(function(){
+  const lb = document.getElementById('lightbox');
+  const inner = document.getElementById('lightbox-inner');
+  const closeBtn = document.getElementById('lightbox-close');
+
+  function openLightbox(el) {
+    // 이전 콘텐츠 제거 (닫기 버튼 유지)
+    Array.from(inner.children).forEach(c => { if(c !== closeBtn) c.remove(); });
+
+    if (el.tagName === 'IMG') {
+      const img = document.createElement('img');
+      img.src = el.src;
+      img.alt = el.alt || '';
+      inner.appendChild(img);
+    } else if (el.tagName === 'svg' || el.tagName === 'SVG') {
+      const clone = el.cloneNode(true);
+      // 크기 제한을 위해 width/height 속성 제거, CSS로 제어
+      clone.removeAttribute('width');
+      clone.removeAttribute('height');
+      clone.style.width = '100%';
+      clone.style.height = 'auto';
+      inner.appendChild(clone);
+    }
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // 모든 이미지/SVG에 클릭 트리거 등록
+  document.querySelectorAll(
+    '.image-original img, .image-korean svg, .image-single img'
+  ).forEach(el => {
+    el.classList.add('lb-trigger');
+    el.addEventListener('click', () => openLightbox(el));
+  });
+
+  closeBtn.addEventListener('click', closeLightbox);
+  lb.addEventListener('click', e => { if(e.target === lb) closeLightbox(); });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeLightbox(); });
+})();
+</script>
 
 </body>
 </html>
