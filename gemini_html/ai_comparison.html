@@ -563,28 +563,63 @@
   </div>
   <script>
   (function(){
-    const overlay = document.getElementById('lb-overlay');
-    const lbImg   = document.getElementById('lb-img');
-    const lbClose = document.getElementById('lb-close');
-    const lbCap   = document.getElementById('lb-caption');
+    const overlay  = document.getElementById('lb-overlay');
+    const lbWrap   = document.getElementById('lb-img-wrap');
+    const lbImg    = document.getElementById('lb-img');
+    const lbClose  = document.getElementById('lb-close');
+    const lbCap    = document.getElementById('lb-caption');
 
-    function openLB(src, alt) {
+    function openImg(src, alt) {
+      // SVG 클론 제거 후 img 표시
+      const prev = lbWrap.querySelector('svg.lb-svg-clone');
+      if (prev) prev.remove();
+      lbImg.style.display = '';
       lbImg.src = src;
       lbCap.textContent = alt || '';
       overlay.classList.add('open');
       document.body.style.overflow = 'hidden';
     }
+
+    function openSvg(svgEl, label) {
+      // img 숨기고 SVG 클론 삽입
+      lbImg.style.display = 'none';
+      lbImg.src = '';
+      const prev = lbWrap.querySelector('svg.lb-svg-clone');
+      if (prev) prev.remove();
+      const clone = svgEl.cloneNode(true);
+      clone.classList.add('lb-svg-clone');
+      clone.style.cssText = 'max-width:88vw;max-height:86vh;width:auto;height:auto;border-radius:10px;box-shadow:0 24px 80px rgba(0,0,0,.6);background:#13131a;';
+      lbWrap.appendChild(clone);
+      lbCap.textContent = label || '';
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
     function closeLB() {
       overlay.classList.remove('open');
       document.body.style.overflow = '';
       lbImg.src = '';
+      lbImg.style.display = '';
+      const prev = lbWrap.querySelector('svg.lb-svg-clone');
+      if (prev) prev.remove();
     }
 
-    // 모든 .image-pair, .image-original, .image-single 안의 img에 클릭 이벤트
+    // img 태그 — .image-pair, .image-single 안
     document.querySelectorAll('.image-pair img, .image-single img').forEach(img => {
       img.classList.add('lb-trigger');
       img.title = '클릭하면 크게 보기';
-      img.addEventListener('click', () => openLB(img.src, img.alt));
+      img.addEventListener('click', () => openImg(img.src, img.alt));
+    });
+
+    // SVG 태그 — .image-pair, .image-single 안
+    document.querySelectorAll('.image-pair svg, .image-single svg').forEach(svg => {
+      svg.classList.add('lb-trigger');
+      svg.style.cursor = 'zoom-in';
+      svg.title = '클릭하면 크게 보기';
+      // 라벨 텍스트 추출 (image-label div)
+      const wrap = svg.closest('.image-korean, .image-original, .image-single');
+      const label = wrap ? (wrap.querySelector('.image-label')?.textContent || '') : '';
+      svg.addEventListener('click', () => openSvg(svg, label));
     });
 
     lbClose.addEventListener('click', closeLB);
