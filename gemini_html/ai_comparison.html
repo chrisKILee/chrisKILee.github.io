@@ -26,41 +26,39 @@
     .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
+
     /* ── LIGHTBOX ── */
-    .lb-trigger { cursor: zoom-in; transition: opacity .15s; display: block; }
-    .lb-trigger:hover { opacity: .88; }
+    .lightbox-trigger { cursor: zoom-in; display: block; transition: opacity .15s; }
+    .lightbox-trigger:hover { opacity: .85; }
     #lb-overlay {
       display: none; position: fixed; inset: 0; z-index: 9999;
-      background: rgba(0,0,0,.88); backdrop-filter: blur(6px);
+      background: rgba(0,0,0,.92);
       align-items: center; justify-content: center;
-      padding: 24px;
     }
     #lb-overlay.open { display: flex; }
-    #lb-img-wrap {
-      position: relative; max-width: 92vw; max-height: 92vh;
+    #lb-content {
+      position: relative;
+      max-width: 90vw; max-height: 90vh;
       display: flex; align-items: center; justify-content: center;
     }
-    #lb-img-wrap img, #lb-img-wrap svg {
-      max-width: 100%; max-height: 88vh;
-      border-radius: 10px; box-shadow: 0 24px 80px rgba(0,0,0,.6);
-      object-fit: contain;
+    #lb-content img {
+      max-width: 90vw; max-height: 90vh;
+      object-fit: contain; border-radius: 8px;
+      display: block;
+    }
+    #lb-content svg.lb-svg-clone {
+      display: block; border-radius: 8px;
     }
     #lb-close {
-      position: fixed; top: 20px; right: 24px;
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
-      color: #fff; font-size: 22px; line-height: 1;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      position: fixed; top: 16px; right: 20px;
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+      color: #fff; font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
       transition: background .15s;
     }
-    #lb-close:hover { background: rgba(255,255,255,.25); }
-    #lb-caption {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,.6); color: #e4e4e7;
-      font-size: 13px; padding: 6px 18px; border-radius: 20px;
-      white-space: nowrap; max-width: 80vw; overflow: hidden; text-overflow: ellipsis;
-    }
-  </style>
+    #lb-close:hover { background: rgba(255,255,255,.3); }
+    </style>
 </head>
 <body class="bg-white text-zinc-800 antialiased">
 
@@ -555,91 +553,67 @@
 
   </div>
 
+
   <!-- LIGHTBOX -->
-  <div id="lb-overlay" role="dialog" aria-modal="true">
-    <div id="lb-img-wrap"><img id="lb-img" src="" alt=""></div>
+  <div id="lb-overlay">
+    <div id="lb-content">
+      <img id="lb-img" src="" alt="">
+    </div>
     <button id="lb-close" aria-label="닫기">✕</button>
-    <div id="lb-caption"></div>
   </div>
   <script>
-  (function(){
-    const overlay  = document.getElementById('lb-overlay');
-    const lbWrap   = document.getElementById('lb-img-wrap');
-    const lbImg    = document.getElementById('lb-img');
-    const lbClose  = document.getElementById('lb-close');
-    const lbCap    = document.getElementById('lb-caption');
+  (function () {
+    const overlay = document.getElementById('lb-overlay');
+    const content = document.getElementById('lb-content');
+    const lbImg   = document.getElementById('lb-img');
+    const lbClose = document.getElementById('lb-close');
 
-    function openImg(src, alt) {
-      // SVG 클론 제거 후 img 표시
-      const prev = lbWrap.querySelector('svg.lb-svg-clone');
-      if (prev) prev.remove();
-      lbImg.style.display = '';
-      lbImg.src = src;
-      lbCap.textContent = alt || '';
+    function open(el) {
+      // SVG 클론 정리
+      content.querySelectorAll('svg.lb-svg-clone').forEach(s => s.remove());
+
+      if (el.tagName.toLowerCase() === 'img') {
+        lbImg.src = el.src;
+        lbImg.alt = el.alt || '';
+        lbImg.style.display = 'block';
+      } else {
+        lbImg.style.display = 'none';
+        lbImg.src = '';
+        const clone = el.cloneNode(true);
+        clone.classList.add('lb-svg-clone');
+        // viewBox 비율로 90vw/90vh 안에 맞게 크기 설정
+        const vb = (el.getAttribute('viewBox') || '0 0 480 480').trim().split(/[\s,]+/).map(Number);
+        const vw = vb[2] || 480, vh = vb[3] || 480;
+        const scale = Math.min(window.innerWidth * .9 / vw, window.innerHeight * .9 / vh);
+        clone.setAttribute('width',  Math.round(vw * scale));
+        clone.setAttribute('height', Math.round(vh * scale));
+        // 원본 배경 유지
+        clone.style.background = el.style.background || el.style.backgroundColor || '#fff';
+        content.appendChild(clone);
+      }
+
       overlay.classList.add('open');
       document.body.style.overflow = 'hidden';
     }
 
-    function openSvg(svgEl, label) {
-      lbImg.style.display = 'none';
-      lbImg.src = '';
-      const prev = lbWrap.querySelector('svg.lb-svg-clone');
-      if (prev) prev.remove();
-      const clone = svgEl.cloneNode(true);
-      clone.classList.add('lb-svg-clone');
-
-      // viewBox에서 종횡비 계산 → 명시적 px 크기 설정
-      const vb = (svgEl.getAttribute('viewBox') || '0 0 480 480').split(/[\s,]+/).map(Number);
-      const vw = vb[2] || 480, vh = vb[3] || 480;
-      const maxW = window.innerWidth  * 0.88;
-      const maxH = window.innerHeight * 0.84;
-      const scale = Math.min(maxW / vw, maxH / vh);
-      clone.setAttribute('width',  Math.round(vw * scale));
-      clone.setAttribute('height', Math.round(vh * scale));
-      clone.style.cssText = 'display:block;border-radius:10px;box-shadow:0 24px 80px rgba(0,0,0,.6);';
-
-      // 원본 inline style에서 배경색 유지 (없으면 흰 배경)
-      const origBg = svgEl.style.background || svgEl.style.backgroundColor || '#fff';
-      clone.style.background = origBg;
-
-      lbWrap.appendChild(clone);
-      lbCap.textContent = label || '';
-      overlay.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeLB() {
+    function close() {
       overlay.classList.remove('open');
       document.body.style.overflow = '';
       lbImg.src = '';
-      lbImg.style.display = '';
-      const prev = lbWrap.querySelector('svg.lb-svg-clone');
-      if (prev) prev.remove();
+      lbImg.style.display = 'block';
+      content.querySelectorAll('svg.lb-svg-clone').forEach(s => s.remove());
     }
 
-    // img 태그 — .image-pair, .image-single 안
-    document.querySelectorAll('.image-pair img, .image-single img').forEach(img => {
-      img.classList.add('lb-trigger');
-      img.title = '클릭하면 크게 보기';
-      img.addEventListener('click', () => openImg(img.src, img.alt));
+    // 트리거 등록: image-pair, image-single 안의 img / svg
+    document.querySelectorAll('.image-pair img, .image-single img, .image-pair svg, .image-single svg').forEach(el => {
+      el.classList.add('lightbox-trigger');
+      el.addEventListener('click', () => open(el));
     });
 
-    // SVG 태그 — .image-pair, .image-single 안
-    document.querySelectorAll('.image-pair svg, .image-single svg').forEach(svg => {
-      svg.classList.add('lb-trigger');
-      svg.style.cursor = 'zoom-in';
-      svg.title = '클릭하면 크게 보기';
-      // 라벨 텍스트 추출 (image-label div)
-      const wrap = svg.closest('.image-korean, .image-original, .image-single');
-      const label = wrap ? (wrap.querySelector('.image-label')?.textContent || '') : '';
-      svg.addEventListener('click', () => openSvg(svg, label));
-    });
-
-    lbClose.addEventListener('click', closeLB);
-    overlay.addEventListener('click', e => { if (e.target === overlay) closeLB(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLB(); });
+    lbClose.addEventListener('click', close);
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   })();
   </script>
-
 </body>
 </html>

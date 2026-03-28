@@ -353,7 +353,39 @@ footer {
   color: var(--text1); font-size: 18px; line-height: 30px; text-align: center;
   cursor: pointer; z-index: 1; user-select: none;
 }
-</style>
+
+    /* ── LIGHTBOX ── */
+    .lightbox-trigger { cursor: zoom-in; display: block; transition: opacity .15s; }
+    .lightbox-trigger:hover { opacity: .85; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,.92);
+      align-items: center; justify-content: center;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-content {
+      position: relative;
+      max-width: 90vw; max-height: 90vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #lb-content img {
+      max-width: 90vw; max-height: 90vh;
+      object-fit: contain; border-radius: 8px;
+      display: block;
+    }
+    #lb-content svg.lb-svg-clone {
+      display: block; border-radius: 8px;
+    }
+    #lb-close {
+      position: fixed; top: 16px; right: 20px;
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+      color: #fff; font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    #lb-close:hover { background: rgba(255,255,255,.3); }
+  </style>
 </head>
 <body>
 
@@ -1223,5 +1255,66 @@ footer {
 })();
 </script>
 
+  <!-- LIGHTBOX -->
+  <div id="lb-overlay">
+    <div id="lb-content">
+      <img id="lb-img" src="" alt="">
+    </div>
+    <button id="lb-close" aria-label="닫기">✕</button>
+  </div>
+  <script>
+  (function () {
+    const overlay = document.getElementById('lb-overlay');
+    const content = document.getElementById('lb-content');
+    const lbImg   = document.getElementById('lb-img');
+    const lbClose = document.getElementById('lb-close');
+
+    function open(el) {
+      // SVG 클론 정리
+      content.querySelectorAll('svg.lb-svg-clone').forEach(s => s.remove());
+
+      if (el.tagName.toLowerCase() === 'img') {
+        lbImg.src = el.src;
+        lbImg.alt = el.alt || '';
+        lbImg.style.display = 'block';
+      } else {
+        lbImg.style.display = 'none';
+        lbImg.src = '';
+        const clone = el.cloneNode(true);
+        clone.classList.add('lb-svg-clone');
+        // viewBox 비율로 90vw/90vh 안에 맞게 크기 설정
+        const vb = (el.getAttribute('viewBox') || '0 0 480 480').trim().split(/[\s,]+/).map(Number);
+        const vw = vb[2] || 480, vh = vb[3] || 480;
+        const scale = Math.min(window.innerWidth * .9 / vw, window.innerHeight * .9 / vh);
+        clone.setAttribute('width',  Math.round(vw * scale));
+        clone.setAttribute('height', Math.round(vh * scale));
+        // 원본 배경 유지
+        clone.style.background = el.style.background || el.style.backgroundColor || '#fff';
+        content.appendChild(clone);
+      }
+
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+      lbImg.src = '';
+      lbImg.style.display = 'block';
+      content.querySelectorAll('svg.lb-svg-clone').forEach(s => s.remove());
+    }
+
+    // 트리거 등록: image-pair, image-single 안의 img / svg
+    document.querySelectorAll('.image-pair img, .image-single img, .image-pair svg, .image-single svg').forEach(el => {
+      el.classList.add('lightbox-trigger');
+      el.addEventListener('click', () => open(el));
+    });
+
+    lbClose.addEventListener('click', close);
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  })();
+  </script>
 </body>
 </html>
