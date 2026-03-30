@@ -71,6 +71,7 @@
           <p class="text-xs font-semibold text-zinc-400 uppercase tracking-widest px-3 mb-2">조합 집계</p>
           <div class="space-y-0.5">
             <a href="#combo" class="nav-link">WBS × OS버전 × OS타입</a>
+            <a href="#grouped" class="nav-link">WBS별 OS버전 상세</a>
           </div>
         </div>
       </div>
@@ -379,6 +380,15 @@
         <p class="text-xs text-zinc-400 mt-2" id="combo-result-info"></p>
       </section>
 
+      <!-- 섹션 7: WBS별 OS버전 계층형 테이블 -->
+      <section id="grouped" class="mb-16">
+        <h2 class="text-xl font-bold text-zinc-900 mb-1">WBS별 OS버전 상세 현황</h2>
+        <p class="text-sm text-zinc-500 mb-5">WBS를 기준으로 묶어 OS버전·OS타입별 호스트 수를 나열합니다 · WBS 헤더 클릭으로 접기/펼치기</p>
+        <div id="grouped-table-wrap" class="rounded-xl border border-zinc-200 overflow-hidden">
+          <!-- JS로 렌더링 -->
+        </div>
+      </section>
+
     </main>
 
     <!-- 오른쪽 목차 -->
@@ -391,6 +401,7 @@
         <a href="#wbs-chart" class="toc-link">WBS 차트</a>
         <a href="#wbs-table" class="toc-link">WBS 테이블</a>
         <a href="#combo" class="toc-link">조합 집계</a>
+        <a href="#grouped" class="toc-link">WBS별 OS버전</a>
       </div>
     </aside>
 
@@ -623,6 +634,122 @@
       renderCombo();
     }
 
+    // ── WBS별 OS버전 계층형 테이블 ──
+    const groupedCollapsed = new Set(); // 접힌 WBS
+
+    function renderGrouped() {
+      // WBS 순서는 wbs_total 기준(호스트 수 내림차순)
+      const wbsOrder = Object.keys(DATA.wbs_total);
+
+      // combo를 WBS > OS패밀리 > OS버전 > OS타입 으로 그루핑
+      const grouped = {};
+      wbsOrder.forEach(w => { grouped[w] = {}; });
+      Object.entries(DATA.combo).forEach(([key, cnt]) => {
+        const [wbs, osv, ost] = key.split('||');
+        if (!grouped[wbs]) grouped[wbs] = {};
+        // OS패밀리 판별
+        const f = DATA.wbs_family[wbs];
+        let fam = 'Windows';
+        if (f) {
+          const lnxVers = Object.keys(f.lnx_vers || {});
+          const found = lnxVers.find(lv => lv.includes(osv) || osv.includes(lv.split(' ').pop()));
+          if (found || (f.win === 0 && f.lnx > 0)) fam = 'Linux';
+          // unix 판단: win/lnx 아닌 버전
+          if (!found && !Object.keys(f.win_vers || {}).includes(osv)) {
+            fam = f.unix > 0 ? 'Unix' : 'Linux';
+          }
+        }
+        if (!grouped[wbs][osv]) grouped[wbs][osv] = { fam, rows: {} };
+        grouped[wbs][osv].rows[ost] = (grouped[wbs][osv].rows[ost] || 0) + cnt;
+      });
+
+      // OS패밀리 색상
+      const famColor = {
+        Windows: { bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af', dot: '#3b82f6' },
+        Linux:   { bg: '#f0fdf4', border: '#bbf7d0', text: '#166534', dot: '#22c55e' },
+        Unix:    { bg: '#fff7ed', border: '#fed7aa', text: '#9a3412', dot: '#f97316' },
+      };
+
+      const wrap = document.getElementById('grouped-table-wrap');
+
+      let html = `<table class="w-full text-sm border-collapse">
+        <thead class="bg-zinc-50 border-b-2 border-zinc-200 sticky top-14 z-10">
+          <tr>
+            <th class="text-left px-4 py-3 font-semibold text-zinc-600 w-44">WBS</th>
+            <th class="text-left px-4 py-3 font-semibold text-zinc-600">OS버전</th>
+            <th class="text-center px-4 py-3 font-semibold text-zinc-600 w-24">OS타입</th>
+            <th class="text-right px-4 py-3 font-semibold text-zinc-600 w-20">호스트 수</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      wbsOrder.forEach((wbs, wi) => {
+        const versions = grouped[wbs];
+        const total = DATA.wbs_total[wbs];
+        const isCollapsed = groupedCollapsed.has(wbs);
+        const rowsBg = wi % 2 === 0 ? '#ffffff' : '#fafafa';
+
+        // WBS 그룹 헤더 행 (클릭 접기/펼치기)
+        html += `<tr class="border-t-2 border-zinc-200 cursor-pointer select-none"
+          style="background:#f1f5f9"
+          onclick="toggleGroup('${wbs.replace(/'/g,"\\'")}')">
+          <td colspan="3" class="px-4 py-2.5 font-bold text-zinc-800">
+            <span class="mr-2 text-zinc-400 text-xs" id="arrow-${wi}">${isCollapsed ? '▶' : '▼'}</span>
+            ${shortWbs(wbs)}
+          </td>
+          <td class="px-4 py-2.5 text-right font-black text-zinc-900">${total}</td>
+        </tr>`;
+
+        if (!isCollapsed) {
+          // OS버전별 정렬: 카운트 내림차순
+          const sortedVersions = Object.entries(versions)
+            .map(([osv, info]) => {
+              const subtotal = Object.values(info.rows).reduce((a,b)=>a+b,0);
+              return { osv, info, subtotal };
+            })
+            .sort((a,b) => b.subtotal - a.subtotal);
+
+          sortedVersions.forEach(({ osv, info, subtotal }) => {
+            const c = famColor[info.fam] || famColor.Windows;
+            const ostEntries = Object.entries(info.rows).sort((a,b) => b[1]-a[1]);
+            const rowCount = ostEntries.length;
+
+            ostEntries.forEach(([ost, cnt], i) => {
+              html += `<tr style="background:${rowsBg}">`;
+              if (i === 0) {
+                // OS버전 셀 — rowspan
+                html += `<td class="px-4 py-2 text-zinc-400 text-xs border-b border-zinc-100 w-44">
+                    ${i === 0 && subtotal !== cnt ? `<span class="font-semibold text-zinc-500">${subtotal}</span>` : ''}
+                  </td>
+                  <td class="px-4 py-2 border-b border-zinc-100 font-mono text-xs" rowspan="${rowCount}">
+                    <span class="inline-flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${c.dot}"></span>
+                      <span style="color:${c.text}">${osv}</span>
+                    </span>
+                  </td>`;
+              } else {
+                html += `<td class="px-4 py-2 text-zinc-400 text-xs border-b border-zinc-100"></td>`;
+              }
+              html += `<td class="px-4 py-2 text-center border-b border-zinc-100">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${ost === '32bit' ? 'badge-32' : 'badge-64'}">${ost}</span>
+                </td>
+                <td class="px-4 py-2 text-right font-bold text-zinc-800 border-b border-zinc-100">${cnt}</td>
+              </tr>`;
+            });
+          });
+        }
+      });
+
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+    }
+
+    function toggleGroup(wbs) {
+      if (groupedCollapsed.has(wbs)) groupedCollapsed.delete(wbs);
+      else groupedCollapsed.add(wbs);
+      renderGrouped();
+    }
+
     // ── 초기화 ──
     document.addEventListener('DOMContentLoaded', () => {
       renderWbsBars();
@@ -631,6 +758,7 @@
       populateFilters();
       document.getElementById('combo-total-count').textContent = comboRows.length;
       renderCombo();
+      renderGrouped();
     });
   </script>
 
