@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>통합모니터링 대상 서버 현황</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .nav-link { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; font-size: 14px; color: #71717a; transition: all 0.15s; cursor: pointer; }
+    .nav-link:hover { background: #f4f4f5; color: #18181b; }
+    .nav-link.active { background: #f4f4f5; color: #18181b; font-weight: 500; }
+    a { text-decoration: none; }
+    .stat-bar { transition: width 0.6s ease; }
+    select, input[type="text"] { outline: none; }
+    select:focus, input[type="text"]:focus { border-color: #10b981; }
+    .toc-link { display: block; font-size: 13px; color: #71717a; padding: 3px 0; transition: color 0.15s; }
+    .toc-link:hover { color: #18181b; }
+    .badge-32 { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-64 { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    @media (max-width: 768px) {
+      aside { display: none !important; }
+      main { margin-left: 0 !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-zinc-800 antialiased">
+
+  <!-- 탑 헤더 -->
+  <header class="fixed top-0 inset-x-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-filter backdrop-blur h-14 flex items-center px-6">
+    <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+          </svg>
+        </div>
+        <span class="font-semibold text-zinc-900">플랫폼인프라</span>
+        <span class="text-zinc-300">·</span>
+        <span class="text-sm text-zinc-500">통합모니터링 대상 서버 현황</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-zinc-400 font-mono">기준: 호스트상태 = 운영중</span>
+        <span class="ml-2 bg-emerald-100 text-emerald-700 text-xs font-semibold px-2 py-1 rounded-full">2026-03-30</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto pt-14 flex">
+
+    <!-- 왼쪽 사이드바 -->
+    <aside class="fixed top-14 bottom-0 w-56 overflow-y-auto border-r border-zinc-200 py-8 px-4">
+      <div class="space-y-6">
+        <div>
+          <p class="text-xs font-semibold text-zinc-400 uppercase tracking-widest px-3 mb-2">요약</p>
+          <div class="space-y-0.5">
+            <a href="#summary" class="nav-link active">전체 현황</a>
+            <a href="#os-family" class="nav-link">OS 패밀리</a>
+            <a href="#os-type" class="nav-link">OS 타입(32/64bit)</a>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-zinc-400 uppercase tracking-widest px-3 mb-2">WBS 현황</p>
+          <div class="space-y-0.5">
+            <a href="#wbs-chart" class="nav-link">WBS별 호스트 수</a>
+            <a href="#wbs-table" class="nav-link">WBS 상세 테이블</a>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-zinc-400 uppercase tracking-widest px-3 mb-2">조합 집계</p>
+          <div class="space-y-0.5">
+            <a href="#combo" class="nav-link">WBS × OS버전 × OS타입</a>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="ml-56 flex-1 px-10 py-10 max-w-4xl">
+
+      <!-- 히어로 배너 -->
+      <div class="mb-10 relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-600 p-8 text-white">
+        <div class="relative z-10">
+          <span class="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">인프라 현황</span>
+          <h1 class="text-3xl font-extrabold mb-2">통합모니터링 대상 서버 현황</h1>
+          <p class="text-emerald-50 text-base">호스트 조회 탭 기준 · 호스트상태 = 운영중 필터 적용 · WBS / OS버전 / OS타입 조합 집계</p>
+          <div class="mt-6 flex gap-6">
+            <div class="text-center">
+              <div class="text-4xl font-black">454</div>
+              <div class="text-emerald-100 text-sm mt-1">운영중 총 호스트</div>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl font-black">33</div>
+              <div class="text-emerald-100 text-sm mt-1">WBS 종류</div>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl font-black">35</div>
+              <div class="text-emerald-100 text-sm mt-1">OS버전 종류</div>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl font-black">2</div>
+              <div class="text-emerald-100 text-sm mt-1">OS타입(32/64bit)</div>
+            </div>
+          </div>
+        </div>
+        <!-- 배경 장식 -->
+        <div class="absolute -right-8 -top-8 w-48 h-48 rounded-full bg-white/5"></div>
+        <div class="absolute -right-4 bottom-0 w-32 h-32 rounded-full bg-white/5"></div>
+      </div>
+
+      <!-- 섹션 1: 전체 현황 -->
+      <section id="summary" class="mb-12">
+        <h2 class="text-xl font-bold text-zinc-900 mb-1">전체 현황</h2>
+        <p class="text-sm text-zinc-500 mb-6">Host (34).xls &gt; 호스트 조회 탭 &gt; 호스트상태=운영중 필터 결과</p>
+
+        <div class="grid grid-cols-3 gap-4 mb-8">
+          <div class="border border-zinc-200 rounded-xl p-5">
+            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">전체 운영 호스트</div>
+            <div class="text-3xl font-black text-zinc-900">454</div>
+            <div class="text-sm text-zinc-500 mt-1">호스트상태 = 운영</div>
+          </div>
+          <div class="border border-zinc-200 rounded-xl p-5">
+            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">64bit 호스트</div>
+            <div class="text-3xl font-black text-emerald-600">359</div>
+            <div class="text-sm text-zinc-500 mt-1">전체의 79.1%</div>
+          </div>
+          <div class="border border-zinc-200 rounded-xl p-5">
+            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">32bit 호스트</div>
+            <div class="text-3xl font-black text-amber-600">95</div>
+            <div class="text-sm text-zinc-500 mt-1">전체의 20.9% (레거시)</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 섹션 2: OS 패밀리 -->
+      <section id="os-family" class="mb-12">
+        <h2 class="text-xl font-bold text-zinc-900 mb-1">OS 패밀리별 현황</h2>
+        <p class="text-sm text-zinc-500 mb-6">OS명 기준으로 분류한 운영체제 패밀리 분포</p>
+
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="w-32 text-sm text-zinc-600 text-right flex-shrink-0">Windows</div>
+            <div class="flex-1 bg-zinc-100 rounded-full h-7 overflow-hidden">
+              <div class="bg-blue-500 h-full rounded-full flex items-center pl-3" style="width:87.4%">
+                <span class="text-white text-xs font-bold">397</span>
+              </div>
+            </div>
+            <div class="w-12 text-xs text-zinc-400 text-right">87.4%</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-32 text-sm text-zinc-600 text-right flex-shrink-0">CentOS</div>
+            <div class="flex-1 bg-zinc-100 rounded-full h-7 overflow-hidden">
+              <div class="bg-red-400 h-full rounded-full flex items-center pl-3" style="width:3.5%">
+                <span class="text-white text-xs font-bold">16</span>
+              </div>
+            </div>
+            <div class="w-12 text-xs text-zinc-400 text-right">3.5%</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-32 text-sm text-zinc-600 text-right flex-shrink-0">Oracle/Solaris</div>
+            <div class="flex-1 bg-zinc-100 rounded-full h-7 overflow-hidden">
+              <div class="bg-orange-400 h-full rounded-full flex items-center pl-3" style="width:2.0%">
+                <span class="text-white text-xs font-bold">9</span>
+              </div>
+            </div>
+            <div class="w-12 text-xs text-zinc-400 text-right">2.0%</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-32 text-sm text-zinc-600 text-right flex-shrink-0">Rocky Linux</div>
+            <div class="flex-1 bg-zinc-100 rounded-full h-7 overflow-hidden">
+              <div class="bg-green-500 h-full rounded-full flex items-center pl-3" style="width:2.0%">
+                <span class="text-white text-xs font-bold">9</span>
+              </div>
+            </div>
+            <div class="w-12 text-xs text-zinc-400 text-right">2.0%</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-32 text-sm text-zinc-600 text-right flex-shrink-0">Ubuntu</div>
+            <div class="flex-1 bg-zinc-100 rounded-full h-7 overflow-hidden">
+              <div class="bg-orange-500 h-full rounded-full flex items-center pl-3" style="width:1.8%">
+                <span class="text-white text-xs font-bold">8</span>
+              </div>
+            </div>
+            <div class="w-12 text-xs text-zinc-400 text-right">1.8%</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-32 text-sm text-zinc-600 text-right flex-shrink-0">RHEL</div>
+            <div class="flex-1 bg-zinc-100 rounded-full h-7 overflow-hidden">
+              <div class="bg-red-600 h-full rounded-full flex items-center pl-3" style="width:1.1%">
+                <span class="text-white text-xs font-bold">5</span>
+              </div>
+            </div>
+            <div class="w-12 text-xs text-zinc-400 text-right">1.1%</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-32 text-sm text-zinc-600 text-right flex-shrink-0">SUSE Linux</div>
+            <div class="flex-1 bg-zinc-100 rounded-full h-7 overflow-hidden">
+              <div class="bg-lime-600 h-full rounded-full flex items-center pl-3" style="width:0.9%">
+                <span class="text-white text-xs font-bold">4</span>
+              </div>
+            </div>
+            <div class="w-12 text-xs text-zinc-400 text-right">0.9%</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-32 text-sm text-zinc-600 text-right flex-shrink-0">AIX</div>
+            <div class="flex-1 bg-zinc-100 rounded-full h-7 overflow-hidden">
+              <div class="bg-zinc-500 h-full rounded-full flex items-center pl-3" style="width:0.9%">
+                <span class="text-white text-xs font-bold">4</span>
+              </div>
+            </div>
+            <div class="w-12 text-xs text-zinc-400 text-right">0.9%</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-32 text-sm text-zinc-600 text-right flex-shrink-0">Linux(미확인)</div>
+            <div class="flex-1 bg-zinc-100 rounded-full h-7 overflow-hidden">
+              <div class="bg-zinc-400 h-full rounded-full flex items-center pl-3" style="width:0.4%">
+                <span class="text-white text-xs font-bold">2</span>
+              </div>
+            </div>
+            <div class="w-12 text-xs text-zinc-400 text-right">0.4%</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 섹션 3: OS 타입 -->
+      <section id="os-type" class="mb-12">
+        <h2 class="text-xl font-bold text-zinc-900 mb-1">OS 타입 현황 (32bit vs 64bit)</h2>
+        <p class="text-sm text-zinc-500 mb-6">32bit 호스트는 레거시 OS(Windows 2003, XP 등)에 집중</p>
+
+        <!-- SVG 도넛 차트 -->
+        <div class="flex items-center gap-10 mb-6">
+          <svg viewBox="0 0 180 180" style="width:160px;height:160px;flex-shrink:0;">
+            <!-- 64bit: 359/454 = 79.1% → 285deg -->
+            <circle cx="90" cy="90" r="70" fill="none" stroke="#e4e4e7" stroke-width="28"/>
+            <!-- 64bit (emerald) -->
+            <circle cx="90" cy="90" r="70" fill="none" stroke="#10b981" stroke-width="28"
+              stroke-dasharray="348.2 440" stroke-dashoffset="110"
+              transform="rotate(-90 90 90)"/>
+            <!-- 32bit (amber) -->
+            <circle cx="90" cy="90" r="70" fill="none" stroke="#f59e0b" stroke-width="28"
+              stroke-dasharray="91.8 440" stroke-dashoffset="-238.2"
+              transform="rotate(-90 90 90)"/>
+            <text x="90" y="85" text-anchor="middle" font-size="22" font-weight="900" fill="#111827">454</text>
+            <text x="90" y="103" text-anchor="middle" font-size="11" fill="#71717a">전체</text>
+          </svg>
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 rounded-full bg-emerald-500 flex-shrink-0"></div>
+              <div>
+                <div class="font-bold text-zinc-900 text-lg">64bit <span class="text-emerald-600">359대</span></div>
+                <div class="text-sm text-zinc-500">전체의 79.1% · 현재 표준 아키텍처</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 rounded-full bg-amber-400 flex-shrink-0"></div>
+              <div>
+                <div class="font-bold text-zinc-900 text-lg">32bit <span class="text-amber-600">95대</span></div>
+                <div class="text-sm text-zinc-500">전체의 20.9% · 레거시 전환 검토 필요</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
+          <span class="text-amber-500 text-lg flex-shrink-0">⚠️</span>
+          <p class="text-sm text-amber-800">32bit 호스트 95대 중 다수는 Windows Server 2003, XP Professional 등 EOL(지원 종료) OS입니다. 마이그레이션 우선순위 검토가 필요합니다.</p>
+        </div>
+      </section>
+
+      <!-- 섹션 4: WBS별 호스트 수 차트 -->
+      <section id="wbs-chart" class="mb-12">
+        <h2 class="text-xl font-bold text-zinc-900 mb-1">WBS별 호스트 수</h2>
+        <p class="text-sm text-zinc-500 mb-6">운영중 호스트를 WBS(계열사/조직) 기준으로 집계한 결과</p>
+
+        <div class="space-y-2" id="wbs-bars">
+          <!-- JS로 렌더링 -->
+        </div>
+      </section>
+
+      <!-- 섹션 5: WBS 상세 테이블 -->
+      <section id="wbs-table" class="mb-12">
+        <h2 class="text-xl font-bold text-zinc-900 mb-1">WBS 상세 테이블</h2>
+        <p class="text-sm text-zinc-500 mb-6">WBS별 32bit / 64bit 분리 현황</p>
+
+        <div class="overflow-x-auto rounded-xl border border-zinc-200">
+          <table class="w-full text-sm">
+            <thead class="bg-zinc-50 border-b border-zinc-200">
+              <tr>
+                <th class="text-left px-4 py-3 font-semibold text-zinc-600">WBS</th>
+                <th class="text-right px-4 py-3 font-semibold text-zinc-600">합계</th>
+                <th class="text-right px-4 py-3 font-semibold text-amber-600">32bit</th>
+                <th class="text-right px-4 py-3 font-semibold text-emerald-600">64bit</th>
+                <th class="text-left px-4 py-3 font-semibold text-zinc-600">비율</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-100" id="wbs-detail-tbody">
+              <!-- JS로 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 섹션 6: WBS x OS버전 x OS타입 조합 -->
+      <section id="combo" class="mb-16">
+        <h2 class="text-xl font-bold text-zinc-900 mb-1">WBS × OS버전 × OS타입 조합 집계</h2>
+        <p class="text-sm text-zinc-500 mb-5">전체 <span class="font-bold text-zinc-800" id="combo-total-count"></span>개 조합 · 필터로 좁혀볼 수 있습니다</p>
+
+        <!-- 필터 -->
+        <div class="flex flex-wrap gap-3 mb-5 p-4 bg-zinc-50 rounded-xl border border-zinc-200">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-zinc-500">WBS</label>
+            <select id="filter-wbs" class="text-sm border border-zinc-200 rounded-lg px-3 py-1.5 bg-white min-w-[180px]">
+              <option value="">전체</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-zinc-500">OS버전</label>
+            <select id="filter-osv" class="text-sm border border-zinc-200 rounded-lg px-3 py-1.5 bg-white min-w-[160px]">
+              <option value="">전체</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-zinc-500">OS타입</label>
+            <select id="filter-ost" class="text-sm border border-zinc-200 rounded-lg px-3 py-1.5 bg-white">
+              <option value="">전체</option>
+              <option value="32bit">32bit</option>
+              <option value="64bit">64bit</option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button onclick="resetFilters()" class="text-sm bg-white border border-zinc-200 text-zinc-600 px-4 py-1.5 rounded-lg hover:bg-zinc-50 transition-colors">초기화</button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-zinc-200">
+          <table class="w-full text-sm">
+            <thead class="bg-zinc-50 border-b border-zinc-200">
+              <tr>
+                <th class="text-left px-4 py-3 font-semibold text-zinc-600 cursor-pointer hover:bg-zinc-100" onclick="sortTable('wbs')">WBS ↕</th>
+                <th class="text-left px-4 py-3 font-semibold text-zinc-600 cursor-pointer hover:bg-zinc-100" onclick="sortTable('osv')">OS버전 ↕</th>
+                <th class="text-center px-4 py-3 font-semibold text-zinc-600">OS타입</th>
+                <th class="text-right px-4 py-3 font-semibold text-zinc-600 cursor-pointer hover:bg-zinc-100" onclick="sortTable('cnt')">호스트 수 ↕</th>
+              </tr>
+            </thead>
+            <tbody id="combo-tbody" class="divide-y divide-zinc-100">
+              <!-- JS로 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-zinc-400 mt-2" id="combo-result-info"></p>
+      </section>
+
+    </main>
+
+    <!-- 오른쪽 목차 -->
+    <aside class="hidden xl:block w-48 fixed top-14 right-0 bottom-0 py-8 px-4 overflow-y-auto border-l border-zinc-100">
+      <p class="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-3">이 페이지</p>
+      <div class="space-y-1">
+        <a href="#summary" class="toc-link">전체 현황</a>
+        <a href="#os-family" class="toc-link">OS 패밀리</a>
+        <a href="#os-type" class="toc-link">OS 타입</a>
+        <a href="#wbs-chart" class="toc-link">WBS 차트</a>
+        <a href="#wbs-table" class="toc-link">WBS 테이블</a>
+        <a href="#combo" class="toc-link">조합 집계</a>
+      </div>
+    </aside>
+
+  </div>
+
+  <script>
+    // ── 데이터 ──
+    const DATA = {
+      wbs_total: {"WBS_(주)세아베스틸":113,"WBS_(주)세아창원특수강":86,"WBS_(주)세아제강":55,"WBS_(주)브이엔티지":43,"WBS_공용":30,"WBS_(주)세아씨엠":20,"WBS_(주)세아홀딩스":14,"WBS_(주)세아MNS":12,"WBS_(주)세아특수강":10,"WBS_(주)세아LNS":8,"WBS_(주)세아메탈":7,"WBS_세아항공방산소재":7,"WBS_(주)세아베스틸지주":6,"WBS_(주)세아FSI":6,"WBS_(주)세아네트웍스":6,"WBS_동아스틸":5,"WBS_청도세아 정밀금속유한공사":3,"WBS_아이언그레이":3,"WBS_소주세아 정밀금속유한공사":2,"WBS_CTCKorea":2,"WBS_세아JAPAN":2,"WBS_(주)세아제강지주":2,"WBS_타이세아 정밀금속유한공사":2,"WBS_HPP":1,"WBS_포스세아선재 유한공사 남통":1,"WBS_포스세아선재 유한공사 천진":1,"WBS_SSVC":1,"WBS_SGJ":1,"WBS_SGT":1,"WBS_SGV":1,"WBS_SSUAE":1,"WBS_SGI":1,"(WBS 없음)":1},
+      combo: {"WBS_(주)세아베스틸||2012 Standard||64bit":31,"WBS_(주)세아베스틸||2003 Standard||32bit":24,"WBS_(주)세아제강||2022 Standard||64bit":24,"WBS_(주)세아베스틸||2008 R2 Standard||64bit":22,"WBS_(주)세아창원특수강||2003 R2 Standard||32bit":18,"WBS_(주)브이엔티지||2016 Standard||64bit":16,"WBS_(주)세아씨엠||2012 R2 Standard||64bit":15,"WBS_(주)세아창원특수강||2003 Standard||32bit":10,"WBS_(주)세아창원특수강||2008 Standard||32bit":9,"WBS_(주)브이엔티지||2012 Standard||64bit":8,"WBS_(주)세아창원특수강||2012 Standard||64bit":8,"WBS_(주)세아창원특수강||2008 R2 Standard||64bit":7,"WBS_(주)세아특수강||2012 Standard||64bit":7,"WBS_(주)세아제강||2016 Standard||64bit":7,"WBS_공용||2012 Standard||64bit":6,"WBS_(주)세아창원특수강||2008 Standard||64bit":5,"WBS_(주)세아베스틸지주||2019 Standard||64bit":5,"WBS_(주)세아FSI||2022 Standard||64bit":5,"WBS_(주)세아제강||2012 R2 Standard||64bit":5,"WBS_(주)세아홀딩스||2012 R2 Standard||64bit":5,"WBS_(주)브이엔티지||7.8||64bit":5,"WBS_(주)세아MNS||2025 Standard||64bit":5,"WBS_(주)세아제강||2019 Standard||64bit":5,"WBS_(주)세아베스틸||2022 Standard||64bit":5,"WBS_(주)세아창원특수강||2022 Standard||64bit":5,"WBS_공용||2008 Standard||32bit":4,"WBS_(주)세아베스틸||2008 Standard||32bit":4,"WBS_동아스틸||2012 R2 Standard||64bit":4,"WBS_(주)세아베스틸||7.5||64bit":4,"WBS_(주)세아창원특수강||2012 R2 Standard||64bit":4,"WBS_(주)세아창원특수강||2008 Enterprise||32bit":4,"WBS_(주)세아창원특수강||2003 Enterprise||32bit":4,"WBS_공용||9.5||64bit":4,"WBS_(주)세아베스틸||2016 Standard||64bit":3,"WBS_(주)세아베스틸||8.8||64bit":3,"WBS_(주)세아베스틸||2012 R2 Standard||64bit":3,"WBS_(주)세아창원특수강||8.8||64bit":3,"WBS_세아항공방산소재||2016 Standard||64bit":3,"WBS_(주)브이엔티지||2022 Standard||64bit":3,"WBS_(주)세아제강||2008 R2 Standard||64bit":3,"WBS_공용||2012 R2 Standard||64bit":3,"WBS_(주)세아LNS||2019 Standard||64bit":3,"WBS_(주)세아메탈||2012 Standard||64bit":3,"WBS_(주)세아MNS||Enterprise 15||64bit":3,"WBS_청도세아 정밀금속유한공사||2016 Standard||64bit":3,"WBS_(주)브이엔티지||9.5||64bit":3,"WBS_(주)세아제강||2012 Standard||64bit":3,"WBS_(주)세아베스틸||Enterprise 7.5||64bit":3,"WBS_(주)세아제강||20.04||64bit":3,"WBS_(주)세아제강||7.1||64bit":3,"WBS_(주)세아메탈||2025 Standard||64bit":2,"WBS_(주)세아베스틸||2019 Standard||64bit":2,"WBS_소주세아 정밀금속유한공사||2008 Standard||32bit":2,"WBS_(주)세아창원특수강||XP Professional||32bit":2,"WBS_(주)세아씨엠||2016 Standard||64bit":2,"WBS_세아항공방산소재||2022 Standard||64bit":2,"WBS_세아항공방산소재||2019 Standard||64bit":2,"WBS_(주)세아창원특수강||2019 Standard||64bit":2,"WBS_(주)브이엔티지||2008 Standard||64bit":2,"WBS_공용||2016 Standard||64bit":2,"WBS_(주)세아홀딩스||2016 Standard||64bit":2,"WBS_(주)세아홀딩스||2003 Standard||32bit":2,"WBS_(주)세아LNS||2012 R2 Standard||64bit":2,"WBS_(주)세아LNS||2016 Standard||64bit":2,"WBS_(주)세아메탈||2012 R2 Standard||64bit":2,"WBS_(주)세아MNS||2012 R2 Standard||64bit":2,"WBS_(주)세아MNS||2008 R2 Standard||64bit":2,"WBS_공용||2008 R2 Standard||64bit":2,"WBS_아이언그레이||2012 R2 Standard||64bit":2,"WBS_(주)세아특수강||2016 Standard||64bit":2,"WBS_(주)세아네트웍스||2016 Standard||64bit":2,"WBS_공용||2022 Standard||64bit":2,"WBS_(주)세아홀딩스||7.5||64bit":2,"WBS_(주)세아베스틸||2008 Standard||64bit":2,"WBS_공용||7.7||64bit":2,"WBS_(주)세아창원특수강||20.04||64bit":2,"WBS_공용||4.8||64bit":2,"WBS_(주)세아베스틸지주||2016 Standard||64bit":1,"WBS_(주)세아씨엠||2022 Standard||64bit":1,"WBS_(주)세아창원특수강||2003 R2 Standard||64bit":1,"WBS_CTCKorea||2012 Standard||64bit":1,"WBS_CTCKorea||2022 Standard||64bit":1,"WBS_동아스틸||2016 Standard||64bit":1,"WBS_공용||6.4||32bit":1,"WBS_(주)브이엔티지||Enterprise 9.0||64bit":1,"WBS_(주)세아씨엠||2003 Standard||32bit":1,"WBS_(주)세아씨엠||2012 Standard||64bit":1,"WBS_(주)세아홀딩스||2008 Standard||32bit":1,"WBS_HPP||2019 Standard||64bit":1,"WBS_(주)세아베스틸||8.5||64bit":1,"WBS_(주)세아창원특수강||7 (미확인)||64bit":1,"WBS_(주)세아베스틸||2008 R2 Standard||32bit":1,"WBS_포스세아선재 유한공사 남통||2012 R2 Standard||64bit":1,"WBS_(주)세아베스틸||미확인||64bit":1,"WBS_(주)세아FSI||2008 R2 Standard||64bit":1,"WBS_포스세아선재 유한공사 천진||2012 R2 Standard||64bit":1,"WBS_세아JAPAN||2012 R2 Standard||64bit":1,"WBS_아이언그레이||2016 Standard||64bit":1,"WBS_SSVC||2003 R2 Standard||32bit":1,"WBS_SGJ||2016 Standard||64bit":1,"WBS_SGT||2019 Standard||64bit":1,"WBS_SGV||2016 Standard||64bit":1,"WBS_(주)세아특수강||5.3||64bit":1,"WBS_(주)세아제강지주||2019 Standard||64bit":1,"WBS_(주)세아창원특수강||7 (미확인)||32bit":1,"WBS_(주)세아네트웍스||2019 Standard||64bit":1,"WBS_(주)세아네트웍스||2008 R2 Standard||64bit":1,"WBS_(주)세아네트웍스||2012 R2 Standard||64bit":1,"WBS_(주)세아네트웍스||2012 Standard||64bit":1,"WBS_타이세아 정밀금속유한공사||2003 R2 Standard||32bit":1,"WBS_타이세아 정밀금속유한공사||2008 R2 Standard||64bit":1,"WBS_SSUAE||2008 Standard||32bit":1,"WBS_(주)세아제강지주||7.7||64bit":1,"WBS_SGI||2012 R2 Standard||64bit":1,"WBS_(주)세아베스틸||2000 Standard||32bit":1,"WBS_공용||8.1||64bit":1,"WBS_(주)브이엔티지||미확인||64bit":1,"WBS_공용||2019 Standard||64bit":1,"(WBS 없음)||8.7||64bit":1,"WBS_(주)세아베스틸||7.0||64bit":1,"WBS_(주)브이엔티지||2019 Standard||64bit":1,"WBS_(주)세아LNS||2008 R2 Standard||64bit":1,"WBS_(주)세아제강||9.5||64bit":1,"WBS_세아JAPAN||2016 Standard||64bit":1,"WBS_(주)세아베스틸||XP Professional||32bit":1,"WBS_(주)브이엔티지||2003 Standard||32bit":1,"WBS_(주)브이엔티지||8.7||64bit":1,"WBS_(주)브이엔티지||Enterprise 8.7||64bit":1,"WBS_(주)세아제강||2003 Standard||32bit":1,"WBS_(주)세아홀딩스||미확인||64bit":1,"WBS_(주)세아베스틸||Enterprise 11||64bit":1,"WBS_(주)세아홀딩스||2008 R2 Standard||64bit":1}
+    };
+
+    // 라벨에서 'WBS_' 접두사 제거
+    function shortWbs(w) { return w.replace(/^WBS_/, ''); }
+
+    // ── WBS 바 차트 렌더링 ──
+    function renderWbsBars() {
+      const container = document.getElementById('wbs-bars');
+      const max = Math.max(...Object.values(DATA.wbs_total));
+      const entries = Object.entries(DATA.wbs_total);
+      container.innerHTML = entries.map(([wbs, cnt]) => {
+        const pct = (cnt / max * 100).toFixed(1);
+        const label = shortWbs(wbs);
+        return `
+          <div class="flex items-center gap-3">
+            <div class="w-40 text-xs text-zinc-600 text-right flex-shrink-0 truncate" title="${wbs}">${label}</div>
+            <div class="flex-1 bg-zinc-100 rounded-full h-6 overflow-hidden">
+              <div class="bg-emerald-500 h-full rounded-full flex items-center pl-2 transition-all" style="width:${pct}%">
+                ${cnt >= 10 ? `<span class="text-white text-xs font-bold">${cnt}</span>` : ''}
+              </div>
+            </div>
+            <div class="w-8 text-xs text-zinc-500 text-right">${cnt}</div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── WBS 상세 테이블 (32/64bit 분리) ──
+    function renderWbsDetail() {
+      // combo에서 WBS별 32/64 집계
+      const wbsBit = {};
+      Object.entries(DATA.combo).forEach(([key, cnt]) => {
+        const [wbs, , ost] = key.split('||');
+        if (!wbsBit[wbs]) wbsBit[wbs] = {bit32: 0, bit64: 0};
+        if (ost === '32bit') wbsBit[wbs].bit32 += cnt;
+        else wbsBit[wbs].bit64 += cnt;
+      });
+      const tbody = document.getElementById('wbs-detail-tbody');
+      const rows = Object.entries(DATA.wbs_total).map(([wbs, total]) => {
+        const b = wbsBit[wbs] || {bit32: 0, bit64: 0};
+        const pct64 = Math.round(b.bit64 / total * 100);
+        return `<tr class="hover:bg-zinc-50">
+          <td class="px-4 py-2.5 text-zinc-700 font-medium">${shortWbs(wbs)}</td>
+          <td class="px-4 py-2.5 text-right font-bold text-zinc-900">${total}</td>
+          <td class="px-4 py-2.5 text-right">
+            ${b.bit32 > 0 ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold badge-32">${b.bit32}</span>` : '<span class="text-zinc-300">-</span>'}
+          </td>
+          <td class="px-4 py-2.5 text-right">
+            ${b.bit64 > 0 ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold badge-64">${b.bit64}</span>` : '<span class="text-zinc-300">-</span>'}
+          </td>
+          <td class="px-4 py-2.5">
+            <div class="flex items-center gap-2">
+              <div class="flex-1 bg-zinc-100 rounded-full h-2 overflow-hidden" style="min-width:60px">
+                <div class="bg-emerald-500 h-full" style="width:${pct64}%"></div>
+              </div>
+              <span class="text-xs text-zinc-400">${pct64}%</span>
+            </div>
+          </td>
+        </tr>`;
+      });
+      tbody.innerHTML = rows.join('');
+    }
+
+    // ── 조합 테이블 ──
+    let comboRows = [];
+    let sortKey = 'cnt';
+    let sortDir = -1;
+
+    function buildComboRows() {
+      comboRows = Object.entries(DATA.combo).map(([key, cnt]) => {
+        const [wbs, osv, ost] = key.split('||');
+        return { wbs, osv, ost, cnt };
+      });
+    }
+
+    function populateFilters() {
+      const wbsSel = document.getElementById('filter-wbs');
+      const osvSel = document.getElementById('filter-osv');
+      const wbsSet = [...new Set(comboRows.map(r => r.wbs))].sort();
+      const osvSet = [...new Set(comboRows.map(r => r.osv))].sort();
+      wbsSet.forEach(w => { const o = document.createElement('option'); o.value = w; o.textContent = shortWbs(w); wbsSel.appendChild(o); });
+      osvSet.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; osvSel.appendChild(o); });
+    }
+
+    function getFiltered() {
+      const wbs = document.getElementById('filter-wbs').value;
+      const osv = document.getElementById('filter-osv').value;
+      const ost = document.getElementById('filter-ost').value;
+      return comboRows.filter(r =>
+        (!wbs || r.wbs === wbs) &&
+        (!osv || r.osv === osv) &&
+        (!ost || r.ost === ost)
+      );
+    }
+
+    function sortTable(key) {
+      if (sortKey === key) sortDir *= -1;
+      else { sortKey = key; sortDir = key === 'cnt' ? -1 : 1; }
+      renderCombo();
+    }
+
+    function renderCombo() {
+      const filtered = getFiltered();
+      const sorted = [...filtered].sort((a, b) => {
+        const va = a[sortKey], vb = b[sortKey];
+        if (typeof va === 'number') return (va - vb) * sortDir;
+        return va.localeCompare(vb, 'ko') * sortDir;
+      });
+      const tbody = document.getElementById('combo-tbody');
+      if (sorted.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-zinc-400">결과 없음</td></tr>';
+      } else {
+        tbody.innerHTML = sorted.map(r => `
+          <tr class="hover:bg-zinc-50">
+            <td class="px-4 py-2.5 text-zinc-700">${shortWbs(r.wbs)}</td>
+            <td class="px-4 py-2.5 text-zinc-700 font-mono text-xs">${r.osv}</td>
+            <td class="px-4 py-2.5 text-center">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${r.ost === '32bit' ? 'badge-32' : 'badge-64'}">${r.ost}</span>
+            </td>
+            <td class="px-4 py-2.5 text-right font-bold text-zinc-900">${r.cnt}</td>
+          </tr>`).join('');
+      }
+      document.getElementById('combo-result-info').textContent =
+        `${sorted.length}개 조합 표시 중 (전체 ${comboRows.length}개)`;
+    }
+
+    function resetFilters() {
+      document.getElementById('filter-wbs').value = '';
+      document.getElementById('filter-osv').value = '';
+      document.getElementById('filter-ost').value = '';
+      renderCombo();
+    }
+
+    // 이벤트 바인딩
+    ['filter-wbs', 'filter-osv', 'filter-ost'].forEach(id => {
+      document.getElementById(id).addEventListener('change', renderCombo);
+    });
+
+    // ── 초기화 ──
+    document.addEventListener('DOMContentLoaded', () => {
+      renderWbsBars();
+      renderWbsDetail();
+      buildComboRows();
+      populateFilters();
+      document.getElementById('combo-total-count').textContent = comboRows.length;
+      renderCombo();
+    });
+  </script>
+
+  <script data-page-hash="HR4C7SQ" src="/gemini_html/page-footer.js"></script>
+</body>
+</html>
