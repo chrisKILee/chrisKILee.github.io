@@ -70,8 +70,8 @@
         <div>
           <p class="text-xs font-semibold text-zinc-400 uppercase tracking-widest px-3 mb-2">조합 집계</p>
           <div class="space-y-0.5">
-            <a href="#combo" class="nav-link">WBS × OS버전 × OS타입</a>
             <a href="#grouped" class="nav-link">WBS별 OS버전 상세</a>
+            <a href="#combo" class="nav-link">WBS × OS버전 × OS타입</a>
           </div>
         </div>
       </div>
@@ -304,7 +304,16 @@
         </div>
       </section>
 
-      <!-- 섹션 6: WBS x OS버전 x OS타입 조합 -->
+      <!-- 섹션 6: WBS별 OS버전 계층형 테이블 -->
+      <section id="grouped" class="mb-16">
+        <h2 class="text-xl font-bold text-zinc-900 mb-1">WBS별 OS버전 상세 현황</h2>
+        <p class="text-sm text-zinc-500 mb-5">WBS를 기준으로 묶어 OS버전·OS타입별 호스트 수를 나열합니다 · OS버전은 출시일 최신순 · WBS 헤더 클릭으로 접기/펼치기</p>
+        <div id="grouped-table-wrap" class="rounded-xl border border-zinc-200 overflow-hidden">
+          <!-- JS로 렌더링 -->
+        </div>
+      </section>
+
+      <!-- 섹션 7: WBS x OS버전 x OS타입 조합 -->
       <section id="combo" class="mb-16">
         <h2 class="text-xl font-bold text-zinc-900 mb-1">WBS × OS버전 × OS타입 조합 집계</h2>
         <p class="text-sm text-zinc-500 mb-5">전체 <span class="font-bold text-zinc-800" id="combo-total-count"></span>개 조합 · 필터로 좁혀볼 수 있습니다</p>
@@ -380,15 +389,6 @@
         <p class="text-xs text-zinc-400 mt-2" id="combo-result-info"></p>
       </section>
 
-      <!-- 섹션 7: WBS별 OS버전 계층형 테이블 -->
-      <section id="grouped" class="mb-16">
-        <h2 class="text-xl font-bold text-zinc-900 mb-1">WBS별 OS버전 상세 현황</h2>
-        <p class="text-sm text-zinc-500 mb-5">WBS를 기준으로 묶어 OS버전·OS타입별 호스트 수를 나열합니다 · WBS 헤더 클릭으로 접기/펼치기</p>
-        <div id="grouped-table-wrap" class="rounded-xl border border-zinc-200 overflow-hidden">
-          <!-- JS로 렌더링 -->
-        </div>
-      </section>
-
     </main>
 
     <!-- 오른쪽 목차 -->
@@ -400,8 +400,8 @@
         <a href="#os-type" class="toc-link">OS 타입</a>
         <a href="#wbs-chart" class="toc-link">WBS 차트</a>
         <a href="#wbs-table" class="toc-link">WBS 테이블</a>
-        <a href="#combo" class="toc-link">조합 집계</a>
         <a href="#grouped" class="toc-link">WBS별 OS버전</a>
+        <a href="#combo" class="toc-link">조합 집계</a>
       </div>
     </aside>
 
@@ -634,6 +634,43 @@
       renderCombo();
     }
 
+    // ── OS버전 출시연도 조회표 (최신순 정렬용) ──
+    const OS_RELEASE_YEAR = {
+      // Windows Server
+      '2025 Standard': 2024, '2025 Datacenter': 2024,
+      '2022 Standard': 2021, '2022 Datacenter': 2021,
+      '2019 Standard': 2018, '2019 Datacenter': 2018,
+      '2016 Standard': 2016, '2016 Datacenter': 2016,
+      '2012 R2 Standard': 2013, '2012 R2 Datacenter': 2013,
+      '2012 Standard': 2012, '2012 Datacenter': 2012,
+      '2008 R2 Standard': 2009, '2008 R2 Enterprise': 2009, '2008 R2 Datacenter': 2009,
+      '2008 Standard': 2008, '2008 Enterprise': 2008, '2008 Datacenter': 2008,
+      '2003 R2 Standard': 2005, '2003 R2 Enterprise': 2005,
+      '2003 Standard': 2003, '2003 Enterprise': 2003,
+      '2000 Standard': 2000,
+      'XP Professional': 2001,
+      '7 (미확인)': 2009,
+      // RHEL/Rocky/CentOS/Ubuntu/SUSE — 데이터에 나타나는 버전 문자열
+      '9.5': 2024, 'Enterprise 9.0': 2022,
+      '8.7': 2022, 'Enterprise 8.7': 2022,
+      '8.5': 2021, '8.1': 2020,
+      '20.04': 2020,
+      '7.8': 2020, '7.7': 2019, 'Enterprise 7.5': 2018, '7.5': 2018,
+      '7.1': 2015, '7.0': 2014,
+      'Enterprise 15': 2018,
+      '6.4': 2013,
+      'Enterprise 11': 2009,
+      '5.3': 2009,
+      '4.8': 2007,
+    };
+    function osvSortKey(osv) {
+      if (osv in OS_RELEASE_YEAR) return OS_RELEASE_YEAR[osv];
+      // 숫자로 시작하는 미지정 버전은 major 번호로 추정
+      const m = osv.match(/^(\d{4})/);
+      if (m) return parseInt(m[1]);
+      return -1; // 미확인 등은 맨 뒤
+    }
+
     // ── WBS별 OS버전 계층형 테이블 ──
     const groupedCollapsed = new Set(); // 접힌 WBS
 
@@ -701,13 +738,16 @@
         </tr>`;
 
         if (!isCollapsed) {
-          // OS버전별 정렬: 카운트 내림차순
+          // OS버전별 정렬: 출시일 최신순, 동점이면 카운트 내림차순
           const sortedVersions = Object.entries(versions)
             .map(([osv, info]) => {
               const subtotal = Object.values(info.rows).reduce((a,b)=>a+b,0);
               return { osv, info, subtotal };
             })
-            .sort((a,b) => b.subtotal - a.subtotal);
+            .sort((a,b) => {
+              const diff = osvSortKey(b.osv) - osvSortKey(a.osv);
+              return diff !== 0 ? diff : b.subtotal - a.subtotal;
+            });
 
           sortedVersions.forEach(({ osv, info, subtotal }) => {
             const c = famColor[info.fam] || famColor.Windows;
