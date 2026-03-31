@@ -417,6 +417,7 @@
 
       <!-- ── SECTION 8: 포항/군산/순천/창원 설치 대조 ── -->
       <section id="site-compare" style="padding:60px 0;">
+        <div style="background:#0f0f11;border-radius:20px;padding:32px 28px;">
         <div style="margin-bottom:32px;">
           <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:6px;padding:4px 12px;margin-bottom:12px;">
             <span style="color:#f87171;font-size:11px;font-weight:700;letter-spacing:0.08em;">SECTION 8</span>
@@ -632,6 +633,7 @@
             </div>
           </div>
         </div>
+        </div><!-- /dark wrapper -->
       </section>
 
     </main>
@@ -932,16 +934,20 @@
         // OS패밀리 판별
         const f = DATA.wbs_family[wbs];
         let fam = 'Windows';
+        let displayOsv = osv; // 기본: 원본 버전; Windows 또는 풀네임 미확인 시 그대로 사용
         if (f) {
           const lnxVers = Object.keys(f.lnx_vers || {});
           const found = lnxVers.find(lv => lv.includes(osv) || osv.includes(lv.split(' ').pop()));
-          if (found || (f.win === 0 && f.lnx > 0)) fam = 'Linux';
+          if (found || (f.win === 0 && f.lnx > 0)) {
+            fam = 'Linux';
+            if (found) displayOsv = found; // "Red Hat Linux Enterprise 9.5" 등 풀네임 사용
+          }
           // unix 판단: win/lnx 아닌 버전
           if (!found && !Object.keys(f.win_vers || {}).includes(osv)) {
             fam = f.unix > 0 ? 'Unix' : 'Linux';
           }
         }
-        if (!grouped[wbs][osv]) grouped[wbs][osv] = { fam, rows: {} };
+        if (!grouped[wbs][osv]) grouped[wbs][osv] = { fam, rows: {}, displayOsv };
         grouped[wbs][osv].rows[ost] = (grouped[wbs][osv].rows[ost] || 0) + cnt;
       });
 
@@ -1009,7 +1015,7 @@
                   <td class="px-4 py-2 border-b border-zinc-100 font-mono text-xs" rowspan="${rowCount}">
                     <span class="inline-flex items-center gap-1.5">
                       <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${c.dot}"></span>
-                      <span style="color:${c.text}">${osv}</span>
+                      <span style="color:${c.text}">${info.displayOsv}</span>
                     </span>
                   </td>`;
               } else {
