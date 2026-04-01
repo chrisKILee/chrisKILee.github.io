@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Microsoft VibeVoice — 오픈소스 음성 AI 완전 가이드</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090B;
+      --bg2: #111115;
+      --bg3: #18181c;
+      --border: rgba(139,92,246,0.18);
+      --border2: rgba(139,92,246,0.32);
+      --text: #FAFAFA;
+      --text2: #A1A1AA;
+      --text3: #71717A;
+      --purple: #8B5CF6;
+      --purple-light: #A78BFA;
+      --rose: #F43F5E;
+      --green: #22C55E;
+      --amber: #F59E0B;
+      --cyan: #22D3EE;
+      --font: 'Outfit', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(139,92,246,.4); border-radius: 3px; }
+    a { color: var(--purple-light); text-decoration: none; }
+    a:hover { opacity: .8; }
+
+    /* Header */
+    .header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(9,9,11,.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 24px; height: 54px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .header-badge {
+      background: rgba(139,92,246,.15);
+      border: 1px solid var(--border2);
+      color: var(--purple-light);
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 100px;
+    }
+    .header-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .star-badge {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(245,158,11,.1);
+      border: 1px solid rgba(245,158,11,.25);
+      color: var(--amber);
+      font-size: 12px; font-weight: 600;
+      padding: 4px 10px; border-radius: 100px;
+    }
+    .mit-badge {
+      background: rgba(34,197,94,.08);
+      border: 1px solid rgba(34,197,94,.2);
+      color: var(--green);
+      font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 100px;
+    }
+
+    /* Hero */
+    .hero {
+      max-width: 900px; margin: 0 auto;
+      padding: clamp(56px,10vw,100px) 24px 64px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--purple-light);
+      font-size: 12px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .hero-eyebrow::before, .hero-eyebrow::after {
+      content: ''; display: block;
+      width: 28px; height: 1px;
+      background: var(--purple);
+      opacity: .5;
+    }
+    .hero-title {
+      font-size: clamp(2.2rem, 6vw, 3.8rem);
+      font-weight: 900; line-height: 1.1;
+      letter-spacing: -.02em;
+      margin-bottom: 20px;
+    }
+    .hero-title .accent {
+      background: linear-gradient(135deg, var(--purple-light), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 17px; color: var(--text2);
+      max-width: 600px; margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    .hero-stats {
+      display: flex; justify-content: center; gap: 40px;
+      flex-wrap: wrap; margin-bottom: 36px;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat-num {
+      font-size: 2.2rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--purple-light), var(--rose));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+    .hero-stat-label { font-size: 12px; color: var(--text3); margin-top: 4px; }
+    .hero-cta-row { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--purple); color: #fff;
+      font-size: 14px; font-weight: 700;
+      padding: 11px 22px; border-radius: 10px;
+      transition: background .2s;
+    }
+    .btn-primary:hover { background: var(--purple-light); opacity: 1; color: var(--bg); }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: transparent;
+      border: 1px solid var(--border2); color: var(--text2);
+      font-size: 14px; font-weight: 600;
+      padding: 11px 22px; border-radius: 10px;
+      transition: all .2s;
+    }
+    .btn-outline:hover { border-color: var(--purple); color: var(--text); opacity: 1; }
+
+    /* Section */
+    .section { max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
+    .section-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--purple-light); margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800; line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .section-sub { font-size: 15px; color: var(--text2); margin-bottom: 40px; }
+    hr.divider {
+      max-width: 1100px; margin: 0 auto 72px;
+      border: none; border-top: 1px solid var(--border);
+      padding: 0 24px;
+    }
+
+    /* Model Cards */
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .model-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: border-color .2s, transform .2s;
+    }
+    .model-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-3px);
+    }
+    .model-card.highlight { border-color: rgba(139,92,246,.5); }
+    .model-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 100px;
+      margin-bottom: 14px;
+    }
+    .tag-asr { background: rgba(34,211,238,.1); color: var(--cyan); border: 1px solid rgba(34,211,238,.2); }
+    .tag-tts { background: rgba(139,92,246,.1); color: var(--purple-light); border: 1px solid var(--border2); }
+    .tag-rt { background: rgba(34,197,94,.08); color: var(--green); border: 1px solid rgba(34,197,94,.2); }
+    .model-name { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+    .model-size {
+      font-size: 12px; color: var(--text3);
+      font-family: var(--mono); margin-bottom: 14px;
+    }
+    .model-desc { font-size: 14px; color: var(--text2); line-height: 1.65; margin-bottom: 16px; }
+    .model-features { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .model-features li {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 13px; color: var(--text2);
+    }
+    .model-features li::before {
+      content: '✓'; color: var(--green);
+      font-weight: 700; flex-shrink: 0;
+    }
+    .model-num {
+      font-size: 2rem; font-weight: 900;
+      color: var(--purple-light); line-height: 1;
+      margin-bottom: 4px;
+    }
+    .model-num-label { font-size: 11px; color: var(--text3); }
+
+    /* Tech Architecture SVG */
+    .svg-wrap {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 24px;
+      margin-bottom: 24px;
+    }
+
+    /* Benchmark Table */
+    .bench-table-wrap {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .bench-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .bench-table th {
+      background: var(--bg3);
+      font-size: 12px; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--text3);
+      padding: 12px 20px; text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .bench-table td {
+      font-size: 15px; padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text2);
+    }
+    .bench-table tr:last-child td { border-bottom: none; }
+    .bench-table tr:hover td { background: var(--bg3); }
+    .good-score { color: var(--green); font-weight: 700; font-family: var(--mono); }
+    .mid-score { color: var(--amber); font-weight: 700; font-family: var(--mono); }
+
+    /* Code Block */
+    .code-section { margin-bottom: 28px; }
+    .code-header {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      padding: 10px 16px;
+    }
+    .code-lang {
+      font-size: 12px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--purple-light);
+    }
+    .copy-btn {
+      background: rgba(139,92,246,.15);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 6px;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: var(--font);
+    }
+    .copy-btn:hover { background: rgba(139,92,246,.3); color: var(--text); }
+    pre.code-body {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 0 0 10px 10px;
+      padding: 20px;
+      overflow-x: auto;
+      white-space: pre;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.75;
+      color: #E4E4E7;
+      margin: 0;
+    }
+    .kw { color: #C084FC; }   /* keyword */
+    .str { color: #86EFAC; }  /* string */
+    .cm { color: #52525B; }   /* comment */
+    .fn { color: #67E8F9; }   /* function */
+    .nu { color: #FCA5A5; }   /* number */
+
+    /* Community Cards */
+    .community-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .comm-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .comm-num {
+      font-size: 1.8rem; font-weight: 900;
+      color: var(--purple-light); line-height: 1;
+      margin-bottom: 4px;
+    }
+    .comm-label { font-size: 12px; color: var(--text3); }
+
+    /* Timeline */
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+    .tl-item {
+      display: flex; gap: 20px;
+      padding-bottom: 28px;
+      position: relative;
+    }
+    .tl-item:last-child { padding-bottom: 0; }
+    .tl-dot-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      flex-shrink: 0; width: 20px;
+    }
+    .tl-dot {
+      width: 10px; height: 10px;
+      background: var(--purple);
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 0 2px var(--purple);
+      flex-shrink: 0;
+      margin-top: 6px;
+    }
+    .tl-line {
+      flex: 1;
+      width: 1px;
+      background: var(--border);
+      margin-top: 4px;
+    }
+    .tl-item:last-child .tl-line { display: none; }
+    .tl-date {
+      font-size: 11px; font-weight: 700;
+      color: var(--purple-light);
+      letter-spacing: .06em;
+      flex-shrink: 0; width: 80px;
+      padding-top: 4px;
+    }
+    .tl-body { flex: 1; }
+    .tl-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .tl-desc { font-size: 13px; color: var(--text2); line-height: 1.55; }
+
+    /* Comparison Table */
+    .compare-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .compare-table th {
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 13px; font-weight: 700;
+      color: var(--text2);
+      background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-table td {
+      padding: 14px 20px;
+      font-size: 14px; color: var(--text2);
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: var(--bg3); }
+    .yes { color: var(--green); font-weight: 700; }
+    .no { color: var(--text3); }
+    .model-col { font-weight: 700; color: var(--text); }
+
+    /* Callout */
+    .callout {
+      display: flex; gap: 14px;
+      background: rgba(139,92,246,.07);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+    .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .callout-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .callout-text { font-size: 13px; color: var(--text2); line-height: 1.6; }
+    .callout.warn {
+      background: rgba(245,158,11,.06);
+      border-color: rgba(245,158,11,.2);
+    }
+    .callout.info {
+      background: rgba(34,211,238,.06);
+      border-color: rgba(34,211,238,.2);
+    }
+
+    @media (max-width: 640px) {
+      .model-grid { grid-template-columns: 1fr; }
+      .hero-stats { gap: 24px; }
+      .community-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .model-card { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <span class="header-badge">🤖 AI Study</span>
+      <span class="header-title">Microsoft VibeVoice</span>
+      <div class="header-right">
+        <span class="star-badge">★ 33.1k</span>
+        <span class="mit-badge">MIT</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-eyebrow">Microsoft Open Source · 음성 AI</div>
+    <h1 class="hero-title">
+      회의 녹음을 던졌더니<br>
+      <span class="accent">모든 걸 정리해줬다</span>
+    </h1>
+    <p class="hero-sub">
+      API 키도 없다. 구독도 없다. 오픈소스다.<br>
+      Microsoft VibeVoice — TTS·ASR·실시간 음성 AI를 하나의 패밀리로.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">33.1k</div>
+        <div class="hero-stat-label">GitHub 스타</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">60분</div>
+        <div class="hero-stat-label">ASR 단일 패스 처리</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">90분</div>
+        <div class="hero-stat-label">TTS 음성 합성</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">50+</div>
+        <div class="hero-stat-label">지원 언어</div>
+      </div>
+    </div>
+    <div class="hero-cta-row">
+      <a href="https://github.com/microsoft/VibeVoice" target="_blank" class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub 보기
+      </a>
+      <a href="https://aka.ms/vibevoice-asr" target="_blank" class="btn-outline">
+        🎙️ ASR 라이브 데모
+      </a>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 3 Models -->
+  <section class="section">
+    <p class="section-label">모델 패밀리</p>
+    <h2 class="section-title">3가지 모델, 각기 다른 역할</h2>
+    <p class="section-sub">VibeVoice는 단일 모델이 아닙니다. 용도에 맞게 선택할 수 있는 3종 세트입니다.</p>
+
+    <div class="model-grid">
+      <!-- ASR -->
+      <div class="model-card highlight">
+        <span class="model-tag tag-asr">🎙️ ASR</span>
+        <div class="model-name">VibeVoice-ASR</div>
+        <div class="model-size">9B parameters · safetensors BF16</div>
+        <div class="model-num">60분</div>
+        <div class="model-num-label">단일 패스 처리 가능</div>
+        <div style="height:14px"></div>
+        <div class="model-desc">
+          회의 녹음을 넣으면 <strong style="color:var(--text)">누가 · 언제 · 무엇을</strong> 말했는지 한 번에 정리. 화자 분리(Speaker Diarization)까지 자동으로 처리합니다.
+        </div>
+        <ul class="model-features">
+          <li>60분 오디오 단일 패스 처리 (Whisper는 30초 단위 슬라이딩 윈도우)</li>
+          <li>화자 분류(Speaker ID) + 타임스탬프 + 텍스트 동시 출력</li>
+          <li>50+ 언어 자동 감지 및 코드 스위칭</li>
+          <li>커스텀 핫워드(Hot-word) 지원</li>
+          <li>LoRA 파인튜닝 지원</li>
+        </ul>
+      </div>
+
+      <!-- TTS -->
+      <div class="model-card">
+        <span class="model-tag tag-tts">🔊 TTS</span>
+        <div class="model-name">VibeVoice-TTS</div>
+        <div class="model-size">1.5B parameters · 64K context</div>
+        <div class="model-num">90분 · 4인</div>
+        <div class="model-num-label">합성 가능 길이 · 화자 수</div>
+        <div style="height:14px"></div>
+        <div class="model-desc">
+          팟캐스트 수준의 자연스러운 대화 음성을 합성합니다. 4명의 화자 목소리를 동시에 지원하며, LLM이 대화 흐름을 이해해 자연스러운 억양을 만들어냅니다.
+        </div>
+        <ul class="model-features">
+          <li>최대 90분 길이 음성 합성</li>
+          <li>최대 4인 화자 동시 지원</li>
+          <li>자연스러운 대화 흐름 (팟캐스트·회의록 생성)</li>
+          <li>Next-token diffusion 아키텍처</li>
+          <li>영어·중국어·다국어 합성</li>
+        </ul>
+      </div>
+
+      <!-- Realtime -->
+      <div class="model-card">
+        <span class="model-tag tag-rt">⚡ 실시간</span>
+        <div class="model-name">VibeVoice-Realtime</div>
+        <div class="model-size">0.5B parameters · 경량 모델</div>
+        <div class="model-num">~300ms</div>
+        <div class="model-num-label">응답 지연시간</div>
+        <div style="height:14px"></div>
+        <div class="model-desc">
+          스트리밍 텍스트를 입력받아 즉시 음성을 생성합니다. 챗봇 음성 응답, 실시간 내레이션 등에 최적화된 경량 모델입니다.
+        </div>
+        <ul class="model-features">
+          <li>약 300ms 저지연 응답</li>
+          <li>스트리밍 텍스트 입력 지원</li>
+          <li>최대 10분 길이 음성 생성</li>
+          <li>Google Colab 데모 제공</li>
+          <li>HuggingFace 다운로드 358k+</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Tech: 7.5Hz Tokenizer -->
+  <section class="section">
+    <p class="section-label">핵심 기술</p>
+    <h2 class="section-title">비밀은 7.5Hz 토크나이저</h2>
+    <p class="section-sub">
+      초당 7.5프레임만으로 음성을 압축하는 연속 음성 토크나이저(Continuous Speech Tokenizer)가 핵심입니다.
+      일반적인 TTS가 초당 수백 프레임을 처리하는 것과 대조됩니다.
+    </p>
+
+    <div class="svg-wrap" style="margin-bottom:28px;">
+      <!-- Architecture Diagram -->
+      <svg viewBox="0 0 720 180" style="width:100%;max-width:720px;display:block;margin:0 auto;">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#8B5CF6"/>
+          </marker>
+          <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#22D3EE"/>
+          </marker>
+        </defs>
+        <!-- 입력 -->
+        <rect x="10" y="65" width="100" height="50" rx="8" fill="#18181c" stroke="rgba(34,211,238,0.4)" stroke-width="1.5"/>
+        <text x="60" y="86" text-anchor="middle" fill="#22D3EE" font-size="11" font-family="JetBrains Mono">오디오 입력</text>
+        <text x="60" y="102" text-anchor="middle" fill="#71717A" font-size="10" font-family="JetBrains Mono">Raw Audio</text>
+
+        <!-- 화살표 1 -->
+        <line x1="110" y1="90" x2="148" y2="90" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- 토크나이저 -->
+        <rect x="150" y="55" width="130" height="70" rx="8" fill="#18181c" stroke="rgba(139,92,246,0.5)" stroke-width="1.5"/>
+        <text x="215" y="81" text-anchor="middle" fill="#A78BFA" font-size="12" font-family="Outfit" font-weight="700">연속 음성</text>
+        <text x="215" y="96" text-anchor="middle" fill="#A78BFA" font-size="12" font-family="Outfit" font-weight="700">토크나이저</text>
+        <text x="215" y="114" text-anchor="middle" fill="#71717A" font-size="10" font-family="JetBrains Mono">7.5Hz · 압축</text>
+
+        <!-- 화살표 2 -->
+        <line x1="280" y1="90" x2="318" y2="90" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- LLM (문맥 이해) -->
+        <rect x="320" y="40" width="130" height="50" rx="8" fill="#18181c" stroke="rgba(139,92,246,0.35)" stroke-width="1.5"/>
+        <text x="385" y="63" text-anchor="middle" fill="#C084FC" font-size="12" font-family="Outfit" font-weight="700">LLM</text>
+        <text x="385" y="78" text-anchor="middle" fill="#71717A" font-size="10" font-family="JetBrains Mono">문맥 이해</text>
+
+        <!-- LLM → Diffusion -->
+        <line x1="385" y1="90" x2="385" y2="108" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Diffusion Heads -->
+        <rect x="320" y="110" width="130" height="50" rx="8" fill="#18181c" stroke="rgba(244,63,94,0.35)" stroke-width="1.5"/>
+        <text x="385" y="132" text-anchor="middle" fill="#FB7185" font-size="11" font-family="Outfit" font-weight="700">Diffusion Heads</text>
+        <text x="385" y="148" text-anchor="middle" fill="#71717A" font-size="10" font-family="JetBrains Mono">음향 세부 생성</text>
+
+        <!-- 화살표 3 -->
+        <line x1="450" y1="90" x2="488" y2="90" stroke="#22D3EE" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+        <!-- 출력 -->
+        <rect x="490" y="55" width="130" height="70" rx="8" fill="#18181c" stroke="rgba(34,211,238,0.4)" stroke-width="1.5"/>
+        <text x="555" y="81" text-anchor="middle" fill="#22D3EE" font-size="11" font-family="Outfit" font-weight="700">출력</text>
+        <text x="555" y="96" text-anchor="middle" fill="#A1A1AA" font-size="10" font-family="JetBrains Mono">텍스트·화자·</text>
+        <text x="555" y="111" text-anchor="middle" fill="#A1A1AA" font-size="10" font-family="JetBrains Mono">타임스탬프</text>
+
+        <!-- 라벨 -->
+        <text x="215" y="148" text-anchor="middle" fill="#52525B" font-size="9" font-family="JetBrains Mono">품질↑ · 연산↓</text>
+        <text x="385" y="174" text-anchor="middle" fill="#52525B" font-size="9" font-family="JetBrains Mono">Next-token diffusion 아키텍처</text>
+      </svg>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;">
+      <div class="callout info">
+        <span class="callout-icon">⚡</span>
+        <div>
+          <div class="callout-title">7.5Hz의 의미</div>
+          <div class="callout-text">초당 7.5프레임으로 음성을 표현합니다. 일반 오디오가 초당 수백~수천 프레임인 것에 비해 극단적으로 압축된 표현 방식입니다. 덕분에 긴 오디오도 LLM 컨텍스트 안에 담을 수 있습니다.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <span class="callout-icon">🧠</span>
+        <div>
+          <div class="callout-title">LLM + Diffusion 조합</div>
+          <div class="callout-text">LLM이 대화의 문맥과 흐름을 이해하고, Diffusion Heads가 실제 음성의 음향적 세부사항을 생성합니다. 이 두 구조의 조합이 자연스러운 억양과 화자 구분을 가능하게 합니다.</div>
+        </div>
+      </div>
+      <div class="callout warn">
+        <span class="callout-icon">📏</span>
+        <div>
+          <div class="callout-title">Whisper와의 차이</div>
+          <div class="callout-text">Whisper는 30초 슬라이딩 윈도우로 긴 오디오를 잘게 잘라서 처리합니다. VibeVoice-ASR은 60분을 단일 패스로 처리해 화자 맥락이 끊기지 않습니다.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Usage -->
+  <section class="section">
+    <p class="section-label">사용 방법</p>
+    <h2 class="section-title">설치 및 실행 가이드</h2>
+    <p class="section-sub">ASR 모델 기준. TTS는 현재 오용 방지를 위해 공식 코드가 비공개 상태입니다.</p>
+
+    <div class="callout warn" style="margin-bottom:28px;">
+      <span class="callout-icon">⚠️</span>
+      <div>
+        <div class="callout-title">TTS 코드 비공개 안내</div>
+        <div class="callout-text">VibeVoice-TTS는 딥페이크·허위정보 생성 위험을 고려해 공식 설치 가이드 및 사용 코드가 의도적으로 제거된 상태입니다. 연구 목적의 ASR은 공개되어 있습니다.</div>
+      </div>
+    </div>
+
+    <!-- Step 1: Install -->
+    <div class="code-section">
+      <div class="code-header">
+        <span class="code-lang">bash · 설치</span>
+        <button class="copy-btn" onclick="copyCode(this)">복사</button>
+      </div>
+<pre class="code-body"><span class="cm"># 1. 레포지토리 클론</span>
+git clone https://github.com/microsoft/VibeVoice.git
+cd VibeVoice
+
+<span class="cm"># 2. 의존성 설치 (NVIDIA Container 24.07 ~ 25.12 권장)</span>
+pip install -e .
+
+<span class="cm"># 3. 모델은 HuggingFace Hub에서 자동 다운로드됨</span>
+<span class="cm">#    모델 ID: microsoft/VibeVoice-ASR</span></pre>
+    </div>
+
+    <!-- Step 2: Gradio Demo -->
+    <div class="code-section">
+      <div class="code-header">
+        <span class="code-lang">bash · Gradio 데모 실행</span>
+        <button class="copy-btn" onclick="copyCode(this)">복사</button>
+      </div>
+<pre class="code-body"><span class="cm"># 브라우저 UI로 바로 테스트</span>
+python demo/vibevoice_asr_gradio_demo.py \
+  --model_path microsoft/VibeVoice-ASR \
+  --share
+
+<span class="cm"># --share 옵션: 외부 공유 URL 생성 (Gradio 터널)</span></pre>
+    </div>
+
+    <!-- Step 3: File Inference -->
+    <div class="code-section">
+      <div class="code-header">
+        <span class="code-lang">bash · 오디오 파일 추론</span>
+        <button class="copy-btn" onclick="copyCode(this)">복사</button>
+      </div>
+<pre class="code-body"><span class="cm"># 오디오 파일 직접 분석</span>
+python demo/vibevoice_asr_inference_from_file.py \
+  --model_path microsoft/VibeVoice-ASR \
+  --audio_files /path/to/meeting.wav
+
+<span class="cm"># 출력 예시:</span>
+<span class="cm"># [00:00:00 → 00:00:15] Speaker A: 오늘 회의 시작하겠습니다.</span>
+<span class="cm"># [00:00:16 → 00:00:42] Speaker B: 지난 주 결과부터 공유드리면...</span>
+<span class="cm"># [00:00:43 → 00:01:20] Speaker A: 네, 좋습니다. 이어서...</span></pre>
+    </div>
+
+    <!-- HuggingFace Transformers -->
+    <div class="code-section">
+      <div class="code-header">
+        <span class="code-lang">python · HuggingFace Transformers v5.3+ 통합</span>
+        <button class="copy-btn" onclick="copyCode(this)">복사</button>
+      </div>
+<pre class="code-body"><span class="cm"># HuggingFace Transformers v5.3 이상에서 공식 지원</span>
+<span class="cm"># (2026년 3월 정식 통합 완료)</span>
+<span class="kw">from</span> transformers <span class="kw">import</span> AutoModel, AutoProcessor
+
+processor = AutoProcessor.from_pretrained(<span class="str">"microsoft/VibeVoice-ASR"</span>)
+model = AutoModel.from_pretrained(<span class="str">"microsoft/VibeVoice-ASR"</span>)
+
+<span class="cm"># Realtime 모델 (0.5B) — Colab 데모 제공</span>
+<span class="cm"># https://huggingface.co/microsoft/VibeVoice-Realtime-0.5B</span></pre>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">🌐</span>
+      <div>
+        <div class="callout-title">코드 없이 바로 테스트하려면</div>
+        <div class="callout-text">
+          공식 라이브 플레이그라운드:
+          <a href="https://aka.ms/vibevoice-asr" target="_blank" style="color:var(--cyan);">aka.ms/vibevoice-asr</a>
+          — 회원가입 없이 오디오 파일 업로드 후 즉시 ASR 테스트 가능합니다.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Benchmark -->
+  <section class="section">
+    <p class="section-label">벤치마크 · 성능</p>
+    <h2 class="section-title">검증된 수치</h2>
+    <p class="section-sub">MLC-Challenge 데이터셋 기준. DER(화자 분류 오류율)과 WER(단어 인식 오류율)이 낮을수록 좋습니다.</p>
+
+    <div class="bench-table-wrap" style="margin-bottom:24px;">
+      <table class="bench-table">
+        <thead>
+          <tr>
+            <th>언어</th>
+            <th>DER — 화자 분류 오류율</th>
+            <th>WER — 단어 인식 오류율</th>
+            <th>평가</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="model-col">English</td>
+            <td><span class="good-score">4.28%</span></td>
+            <td><span class="mid-score">7.99%</span></td>
+            <td style="font-size:13px;color:var(--text3);">MLC-Challenge 데이터셋</td>
+          </tr>
+          <tr>
+            <td class="model-col">Vietnamese</td>
+            <td><span class="good-score">0.16%</span></td>
+            <td><span style="color:var(--text3);font-family:var(--mono);font-size:13px;">확인 중</span></td>
+            <td style="font-size:13px;color:var(--text3);">MLC-Challenge 데이터셋</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;">
+        <div style="font-size:1.8rem;font-weight:900;color:var(--cyan);line-height:1;">536k+</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px;">ASR 모델 HF 다운로드 수</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;">
+        <div style="font-size:1.8rem;font-weight:900;color:var(--purple-light);line-height:1;">961</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px;">ASR 모델 HF 좋아요</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;">
+        <div style="font-size:1.8rem;font-weight:900;color:var(--green);line-height:1;">1.16k</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px;">Realtime 모델 HF 좋아요</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;">
+        <div style="font-size:1.8rem;font-weight:900;color:var(--amber);line-height:1;">219</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px;">HF 컬렉션 업보트</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Comparison: VibeVoice vs Whisper -->
+  <section class="section">
+    <p class="section-label">비교</p>
+    <h2 class="section-title">VibeVoice vs Whisper</h2>
+    <p class="section-sub">Whisper에서 갈아타는 주요 이유를 기능 단위로 비교합니다.</p>
+
+    <div style="overflow-x:auto;border-radius:16px;border:1px solid var(--border);">
+      <table class="compare-table" style="border:none;border-radius:0;">
+        <thead>
+          <tr>
+            <th>기능</th>
+            <th>VibeVoice-ASR</th>
+            <th>Whisper large-v3</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>긴 오디오 처리 방식</td>
+            <td><span class="yes">60분 단일 패스</span></td>
+            <td><span class="no">30초 슬라이딩 윈도우</span></td>
+          </tr>
+          <tr>
+            <td>화자 분리 (Diarization)</td>
+            <td><span class="yes">기본 내장</span></td>
+            <td><span class="no">별도 파이프라인 필요</span></td>
+          </tr>
+          <tr>
+            <td>타임스탬프 생성</td>
+            <td><span class="yes">기본 내장</span></td>
+            <td><span class="yes">기본 내장</span></td>
+          </tr>
+          <tr>
+            <td>커스텀 핫워드</td>
+            <td><span class="yes">지원</span></td>
+            <td><span class="no">미지원 (기본)</span></td>
+          </tr>
+          <tr>
+            <td>파인튜닝</td>
+            <td><span class="yes">LoRA 지원</span></td>
+            <td><span class="yes">지원</span></td>
+          </tr>
+          <tr>
+            <td>HuggingFace 통합</td>
+            <td><span class="yes">Transformers v5.3+</span></td>
+            <td><span class="yes">Transformers 지원</span></td>
+          </tr>
+          <tr>
+            <td>라이선스</td>
+            <td><span class="yes">MIT (완전 오픈소스)</span></td>
+            <td><span class="yes">MIT</span></td>
+          </tr>
+          <tr>
+            <td>모델 크기</td>
+            <td><span style="color:var(--amber);font-weight:600;">9B (ASR)</span></td>
+            <td><span class="yes">1.5B</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Community / Reviews -->
+  <section class="section">
+    <p class="section-label">커뮤니티 반응</p>
+    <h2 class="section-title">사람들의 평가</h2>
+    <p class="section-sub">HuggingFace, GitHub 등에서 수집된 커뮤니티 수치와 주요 반응입니다.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:32px;">
+
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">주요 사용 사례</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;">
+          <li style="font-size:14px;color:var(--text2);display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--purple-light);">→</span> 회의 녹음 자동 정리 (누가 뭘 말했는지)</li>
+          <li style="font-size:14px;color:var(--text2);display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--purple-light);">→</span> 팟캐스트 자동 자막 생성</li>
+          <li style="font-size:14px;color:var(--text2);display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--purple-light);">→</span> 인터뷰 화자 분리 및 타임스탬프</li>
+          <li style="font-size:14px;color:var(--text2);display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--purple-light);">→</span> 콜센터 다화자 기록 분석</li>
+        </ul>
+      </div>
+
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">HuggingFace 수치</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--text2);">ASR 다운로드</span>
+            <span style="font-family:var(--mono);color:var(--cyan);font-weight:700;">536k+</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--text2);">Realtime 다운로드</span>
+            <span style="font-family:var(--mono);color:var(--green);font-weight:700;">358k+</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--text2);">컬렉션 기여자</span>
+            <span style="font-family:var(--mono);color:var(--purple-light);font-weight:700;">215+</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--text2);">GitHub 스타</span>
+            <span style="font-family:var(--mono);color:var(--amber);font-weight:700;">33,100+</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">주의사항</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;">
+          <li style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--rose);">!</span> 딥페이크·허위정보 생성 위험 명시</li>
+          <li style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--rose);">!</span> 상업용은 추가 테스트 필수</li>
+          <li style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--amber);">!</span> TTS 코드는 의도적 비공개</li>
+          <li style="font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--amber);">!</span> ASR 9B 파라미터 — GPU 필요</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Timeline -->
+  <section class="section">
+    <p class="section-label">업데이트 이력</p>
+    <h2 class="section-title">출시 타임라인</h2>
+    <p class="section-sub">GitHub 공식 릴리즈 기준.</p>
+
+    <div class="timeline" style="max-width:600px;">
+      <div class="tl-item">
+        <div class="tl-date">2026.03</div>
+        <div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-body">
+          <div class="tl-title">HuggingFace Transformers v5.3 공식 통합</div>
+          <div class="tl-desc">VibeVoice-ASR이 HuggingFace Transformers 라이브러리에 정식 포함. <code style="font-family:var(--mono);font-size:12px;color:var(--purple-light);">AutoModel.from_pretrained()</code>으로 바로 사용 가능.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">2026.01</div>
+        <div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-body">
+          <div class="tl-title">ASR 모델 공개 + 파인튜닝 코드 출시</div>
+          <div class="tl-desc">VibeVoice-ASR (9B) 공개. LoRA 파인튜닝 코드 및 데모 스크립트 포함. MLC-Challenge 벤치마크 공개.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">2025.12</div>
+        <div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-body">
+          <div class="tl-title">VibeVoice-Realtime 출시</div>
+          <div class="tl-desc">0.5B 경량 실시간 TTS 모델 출시. ~300ms 지연, Google Colab 데모 제공.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  function copyCode(btn) {
+    var pre = btn.closest('.code-section').querySelector('pre');
+    var text = pre.innerText;
+    navigator.clipboard.writeText(text).then(function() {
+      btn.textContent = '복사됨!';
+      setTimeout(function() { btn.textContent = '복사'; }, 2000);
+    });
+  }
+  </script>
+
+  <script data-page-hash="KHEAVT7" src="/gemini_html/page-footer.js"></script>
+</body>
+</html>
