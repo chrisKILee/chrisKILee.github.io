@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{TITLE}}</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f8f9fb;
+      --surface: #ffffff;
+      --border: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --accent-bg: #eff6ff;
+      --accent-text: #1d4ed8;
+      --code-bg: #1e1e2e;
+      --code-text: #cdd6f4;
+      --warn-bg: #fff7ed;
+      --warn-border: #fed7aa;
+      --warn-text: #9a3412;
+      --sidebar-w: 240px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; min-height: 100vh; }
+    .layout { display: flex; min-height: 100vh; }
+
+    /* 사이드바 */
+    .sidebar { width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0; padding: 28px 0; }
+    .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .sidebar-logo .badge { font-size: 0.7rem; font-weight: 600; background: var(--accent-bg); color: var(--accent); padding: 2px 8px; border-radius: 20px; letter-spacing: 0.04em; margin-bottom: 6px; display: inline-block; }
+    .sidebar-logo h1 { font-size: 0.95rem; font-weight: 700; color: var(--text); line-height: 1.4; }
+    .nav-group { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 12px 20px 4px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; font-size: 0.855rem; font-weight: 500; color: var(--muted); cursor: pointer; border: none; background: none; width: 100%; text-align: left; transition: color 0.15s, background 0.15s; }
+    .nav-item:hover { color: var(--text); background: var(--bg); }
+    .nav-item.active { color: var(--accent-text); background: var(--accent-bg); font-weight: 600; }
+    .nav-item .icon { width: 16px; height: 16px; opacity: 0.6; }
+    .nav-item.active .icon { opacity: 1; }
+
+    /* 메인 */
+    .main { flex: 1; max-width: 780px; padding: 40px 48px; }
+    .page-header { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .page-tag { font-size: 0.72rem; font-weight: 600; color: var(--accent); background: var(--accent-bg); padding: 3px 10px; border-radius: 20px; letter-spacing: 0.04em; display: inline-block; margin-bottom: 10px; }
+    .page-title { font-size: 1.75rem; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.25; margin-bottom: 8px; }
+    .page-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
+
+    /* 콘텐츠 요소 */
+    .section { margin-bottom: 36px; }
+    .section-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .section-title::before { content: ''; width: 3px; height: 16px; background: var(--accent); border-radius: 4px; flex-shrink: 0; }
+    p { font-size: 0.9rem; color: var(--muted); line-height: 1.75; margin-bottom: 12px; }
+
+    /* 카드 그리드 */
+    .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 16px 0; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; transition: box-shadow 0.2s, border-color 0.2s; }
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); border-color: #d1d5db; }
+    .card-icon { font-size: 1.25rem; margin-bottom: 8px; }
+    .card-title { font-size: 0.875rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .card-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+    /* 코드 */
+    .code-block { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 16px 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.65; overflow-x: auto; margin: 12px 0; }
+
+    /* 콜아웃 */
+    .callout { display: flex; gap: 12px; padding: 14px 16px; border-radius: 10px; margin: 16px 0; font-size: 0.85rem; line-height: 1.6; }
+    .callout.info { background: var(--accent-bg); border: 1px solid #bfdbfe; color: var(--accent-text); }
+    .callout.warn { background: var(--warn-bg); border: 1px solid var(--warn-border); color: var(--warn-text); }
+
+    /* 스텝 리스트 */
+    .step-list { list-style: none; counter-reset: steps; }
+    .step-list li { counter-increment: steps; display: flex; gap: 14px; margin-bottom: 16px; }
+    .step-list li::before { content: counter(steps); width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: white; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+    .step-content { flex: 1; }
+    .step-title { font-size: 0.875rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .step-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+    /* 테이블 */
+    .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { background: var(--bg); color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 14px; color: var(--text); border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg); }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { padding: 24px 20px; max-width: 100%; }
+      .card-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- 사이드바 -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="badge">{{BADGE}}</span>
+      <h1>{{PRODUCT_NAME}}</h1>
+    </div>
+    <div class="nav-group">{{NAV_SECTION_1}}</div>
+    <button class="nav-item active" onclick="showSection(this,'s1')">
+      <span class="icon">📄</span> {{NAV_1_1}}
+    </button>
+    <button class="nav-item" onclick="showSection(this,'s2')">
+      <span class="icon">🚀</span> {{NAV_1_2}}
+    </button>
+    <button class="nav-item" onclick="showSection(this,'s3')">
+      <span class="icon">⚙️</span> {{NAV_1_3}}
+    </button>
+    <div class="nav-group">{{NAV_SECTION_2}}</div>
+    <button class="nav-item" onclick="showSection(this,'s4')">
+      <span class="icon">🔧</span> {{NAV_2_1}}
+    </button>
+    <button class="nav-item" onclick="showSection(this,'s5')">
+      <span class="icon">📊</span> {{NAV_2_2}}
+    </button>
+    <button class="nav-item" onclick="showSection(this,'s6')">
+      <span class="icon">❓</span> {{NAV_2_3}}
+    </button>
+  </aside>
+
+  <!-- 메인 -->
+  <main class="main">
+
+    <!-- 섹션 1: 소개 -->
+    <div id="s1">
+      <div class="page-header">
+        <span class="page-tag">{{PAGE_TAG}}</span>
+        <h2 class="page-title">{{HEADING}}</h2>
+        <p class="page-desc">{{DESCRIPTION}}</p>
+      </div>
+
+      <div class="callout info">
+        <span>💡</span>
+        <span>{{INFO_TEXT}}</span>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">{{SECTION_1_TITLE}}</h3>
+        <p>{{SECTION_1_P1}}</p>
+        <div class="card-grid">
+          <div class="card"><div class="card-icon">{{CARD_1_ICON}}</div><div class="card-title">{{CARD_1_TITLE}}</div><div class="card-desc">{{CARD_1_DESC}}</div></div>
+          <div class="card"><div class="card-icon">{{CARD_2_ICON}}</div><div class="card-title">{{CARD_2_TITLE}}</div><div class="card-desc">{{CARD_2_DESC}}</div></div>
+          <div class="card"><div class="card-icon">{{CARD_3_ICON}}</div><div class="card-title">{{CARD_3_TITLE}}</div><div class="card-desc">{{CARD_3_DESC}}</div></div>
+          <div class="card"><div class="card-icon">{{CARD_4_ICON}}</div><div class="card-title">{{CARD_4_TITLE}}</div><div class="card-desc">{{CARD_4_DESC}}</div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">{{SECTION_2_TITLE}}</h3>
+        <ol class="step-list">
+          <li><div class="step-content"><div class="step-title">{{STEP_1_TITLE}}</div><div class="step-desc">{{STEP_1_DESC}}</div></div></li>
+          <li><div class="step-content"><div class="step-title">{{STEP_2_TITLE}}</div><div class="step-desc">{{STEP_2_DESC}}</div></div></li>
+          <li><div class="step-content"><div class="step-title">{{STEP_3_TITLE}}</div><div class="step-desc">{{STEP_3_DESC}}</div></div></li>
+          <li><div class="step-content"><div class="step-title">{{STEP_4_TITLE}}</div><div class="step-desc">{{STEP_4_DESC}}</div></div></li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">{{SECTION_3_TITLE}}</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>{{TH_1}}</th><th>{{TH_2}}</th><th>{{TH_3}}</th></tr></thead>
+            <tbody>
+              <tr><td>{{TD_1_1}}</td><td>{{TD_1_2}}</td><td>{{TD_1_3}}</td></tr>
+              <tr><td>{{TD_2_1}}</td><td>{{TD_2_2}}</td><td>{{TD_2_3}}</td></tr>
+              <tr><td>{{TD_3_1}}</td><td>{{TD_3_2}}</td><td>{{TD_3_3}}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <span>⚠️</span>
+        <span>{{WARNING_TEXT}}</span>
+      </div>
+    </div>
+
+    <!-- 다른 섹션들 -->
+    <div id="s2" style="display:none">
+      <div class="page-header"><span class="page-tag">{{NAV_1_2}}</span><h2 class="page-title">{{NAV_1_2}}</h2><p class="page-desc">{{SECTION_2_DESC}}</p></div>
+      <div class="section"><p>{{SECTION_2_CONTENT}}</p><div class="code-block">{{CODE_EXAMPLE}}</div></div>
+    </div>
+    <div id="s3" style="display:none">
+      <div class="page-header"><span class="page-tag">{{NAV_1_3}}</span><h2 class="page-title">{{NAV_1_3}}</h2><p class="page-desc">{{SECTION_3_DESC}}</p></div>
+      <div class="section"><p>{{SECTION_3_CONTENT}}</p></div>
+    </div>
+    <div id="s4" style="display:none">
+      <div class="page-header"><span class="page-tag">{{NAV_2_1}}</span><h2 class="page-title">{{NAV_2_1}}</h2></div>
+      <div class="section"><p>{{SECTION_4_CONTENT}}</p></div>
+    </div>
+    <div id="s5" style="display:none">
+      <div class="page-header"><span class="page-tag">{{NAV_2_2}}</span><h2 class="page-title">{{NAV_2_2}}</h2></div>
+      <div class="section"><p>{{SECTION_5_CONTENT}}</p></div>
+    </div>
+    <div id="s6" style="display:none">
+      <div class="page-header"><span class="page-tag">{{NAV_2_3}}</span><h2 class="page-title">{{NAV_2_3}}</h2></div>
+      <div class="section"><p>{{SECTION_6_CONTENT}}</p></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  function showSection(btn, id) {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.main > div').forEach(d => d.style.display = 'none');
+    btn.classList.add('active');
+    document.getElementById(id).style.display = 'block';
+  }
+</script>
+</body>
+</html>

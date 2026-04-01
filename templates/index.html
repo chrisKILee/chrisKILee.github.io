@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>add-new-page 템플릿 갤러리</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; }
+
+    .thumb-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      border-radius: 10px 10px 0 0;
+      background: #1e2030;
+      cursor: pointer;
+    }
+    .thumb-wrap iframe {
+      position: absolute;
+      top: 0; left: 0;
+      width: 1440px;
+      height: 900px;
+      border: none;
+      transform-origin: top left;
+      pointer-events: none;
+    }
+    .thumb-overlay {
+      position: absolute;
+      inset: 0;
+      background: transparent;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .thumb-wrap:hover .thumb-overlay {
+      opacity: 1;
+      background: rgba(0,0,0,0.45);
+    }
+    .card { transition: transform 0.2s, box-shadow 0.2s; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+
+    .num-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.75);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .badge-dark    { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+    .badge-light   { background: rgba(20,184,166,0.12); color: #2dd4bf; border: 1px solid rgba(20,184,166,0.3); }
+    .badge-emerald { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+    .badge-sky     { background: rgba(56,189,248,0.12); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); }
+    .badge-indigo  { background: rgba(99,102,241,0.12); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+    .badge-glass   { background: rgba(168,85,247,0.12); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+    .badge-minimal { background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
+    .badge-warm    { background: rgba(217,119,87,0.12); color: #f4a07a; border: 1px solid rgba(217,119,87,0.3); }
+    .badge-blue    { background: rgba(37,99,235,0.12); color: #60a5fa; border: 1px solid rgba(37,99,235,0.3); }
+    .badge-travel  { background: rgba(30,58,138,0.15); color: #93c5fd; border: 1px solid rgba(30,58,138,0.35); }
+    .badge-feed    { background: rgba(99,102,241,0.12); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.35); }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- 헤더 -->
+  <header class="border-b border-white/8 px-8 py-5 flex items-center justify-between sticky top-0 z-50" style="background: rgba(15,17,23,0.9); backdrop-filter: blur(12px);">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-lg" style="background: rgba(139,92,246,0.2);">🎨</div>
+      <div>
+        <div class="font-bold text-white text-base">add-new-page 템플릿 갤러리</div>
+        <div class="text-xs text-slate-500">Tailwind CSS CDN 기반 · 자립형 HTML</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-4 text-sm text-slate-400">
+      <span>총 <strong class="text-white">23개</strong> 템플릿</span>
+      <a href="https://tailwindcss.com/plus/templates" target="_blank" class="hover:text-slate-200 transition-colors">Tailwind Plus ↗</a>
+      <a href="https://ui.shadcn.com/blocks" target="_blank" class="hover:text-slate-200 transition-colors">shadcn/ui ↗</a>
+      <a href="https://cruip.com" target="_blank" class="hover:text-slate-200 transition-colors">Cruip ↗</a>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-8 py-12">
+
+    <!-- 안내 -->
+    <div class="mb-10 p-5 rounded-2xl" style="background: rgba(139,92,246,0.07); border: 1px solid rgba(139,92,246,0.2);">
+      <p class="text-sm text-slate-300 mb-2">
+        💡 <strong class="text-white">사용법 (두 가지):</strong>
+      </p>
+      <ul class="text-sm text-slate-400 space-y-1 ml-4">
+        <li>① 번호로 선택:
+          <code class="text-violet-300 bg-white/5 px-2 py-0.5 rounded text-xs mx-1">"3번 템플릿으로 해줘"</code>
+          또는
+          <code class="text-violet-300 bg-white/5 px-2 py-0.5 rounded text-xs mx-1">"5"</code>
+          이라고 답하면 됩니다.
+        </li>
+        <li>② 이름으로 지정:
+          <code class="text-violet-300 bg-white/5 px-2 py-0.5 rounded text-xs mx-1">/add-new-page template=saas-landing</code>
+          형식으로 사용합니다.
+        </li>
+        <li>③ 카드 클릭 → 실제 미리보기 확인 후 선택 가능합니다.</li>
+      </ul>
+    </div>
+
+    <!-- 빠른 선택 번호판 -->
+    <div class="mb-8 flex flex-wrap gap-2">
+      <span class="text-xs text-slate-500 self-center mr-2">빠른 선택:</span>
+      <div id="quick-nums"></div>
+    </div>
+
+    <!-- 템플릿 그리드 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="grid"></div>
+
+  </main>
+
+  <script>
+    const templates = [
+      {
+        id: 'dark-dashboard',
+        file: 'dark-dashboard.html',
+        name: 'Dark Dashboard',
+        badge: '어두운 배경',
+        badgeClass: 'badge-dark',
+        desc: '메트릭 카드, 보라/청록 강조. 기존 gemini_html 사이트 스타일.',
+        when: '대시보드 · 도구 소개 · 현황판',
+        ref: null,
+        tags: ['dark', 'metrics', 'cards'],
+        accentColor: '#a78bfa'
+      },
+      {
+        id: 'spotlight',
+        file: 'spotlight.html',
+        name: 'Spotlight',
+        badge: '포트폴리오',
+        badgeClass: 'badge-light',
+        desc: 'zinc 배경, teal 강조. 아티클 목록, 경력, 뉴스레터 구독 포함.',
+        when: '개인 소개 · 포트폴리오 · 팀원 페이지',
+        ref: 'https://spotlight.tailwindui.com',
+        refLabel: 'spotlight.tailwindui.com',
+        tags: ['light', 'portfolio', 'blog'],
+        accentColor: '#2dd4bf'
+      },
+      {
+        id: 'protocol',
+        file: 'protocol.html',
+        name: 'Protocol',
+        badge: 'API 문서',
+        badgeClass: 'badge-emerald',
+        desc: '흰 배경, 에메랄드 강조. 3열 레이아웃, 코드 블록, 에러 테이블.',
+        when: 'API 문서 · 기술 레퍼런스',
+        ref: 'https://protocol.tailwindui.com',
+        refLabel: 'protocol.tailwindui.com',
+        tags: ['light', 'docs', 'api'],
+        accentColor: '#34d399'
+      },
+      {
+        id: 'syntax',
+        file: 'syntax.html',
+        name: 'Syntax',
+        badge: '기술 문서',
+        badgeClass: 'badge-sky',
+        desc: 'white/slate 배경, sky/indigo 강조. 퀵링크 카드, 콜아웃 박스.',
+        when: '가이드 · 튜토리얼 · 기술 문서',
+        ref: 'https://syntax.tailwindui.com',
+        refLabel: 'syntax.tailwindui.com',
+        tags: ['light', 'docs', 'sidebar'],
+        accentColor: '#38bdf8'
+      },
+      {
+        id: 'saas-landing',
+        file: 'saas-landing.html',
+        name: 'SaaS Landing',
+        badge: '랜딩 페이지',
+        badgeClass: 'badge-indigo',
+        desc: '인디고 그라디언트 히어로, 6개 기능 카드, 2단 요금제 섹션.',
+        when: '서비스/프로그램 소개 · 랜딩',
+        ref: 'https://tailwindcss.com/plus/templates/salient',
+        refLabel: 'Tailwind Plus / Salient',
+        tags: ['light', 'landing', 'saas'],
+        accentColor: '#818cf8'
+      },
+      {
+        id: 'glassmorphism',
+        file: 'glassmorphism.html',
+        name: 'Glassmorphism',
+        badge: '글래스 효과',
+        badgeClass: 'badge-glass',
+        desc: '어두운 그라디언트 배경, 유리 카드, 네온 글로우. 임팩트 극대화.',
+        when: '프레젠테이션 · 프로젝트 쇼케이스',
+        ref: 'https://cruip.com/stellar',
+        refLabel: 'Cruip / Stellar',
+        tags: ['dark', 'glass', 'visual'],
+        accentColor: '#c084fc'
+      },
+      {
+        id: 'minimal',
+        file: 'minimal.html',
+        name: 'Minimal',
+        badge: '미니멀 아티클',
+        badgeClass: 'badge-minimal',
+        desc: '흰 배경, Georgia 폰트. 저자 섹션, 블록쿼트, 관련 글 목록.',
+        when: '블로그 글 · 리포트 · 인사이트 문서',
+        ref: 'https://tailwindcss.com/plus/templates/primer',
+        refLabel: 'Tailwind Plus / Primer',
+        tags: ['light', 'blog', 'article'],
+        accentColor: '#94a3b8'
+      },
+      {
+        id: 'warm-doc',
+        file: 'warm-doc.html',
+        name: 'Warm Doc',
+        badge: 'Notion 스타일',
+        badgeClass: 'badge-warm',
+        desc: '크림 배경(#f7f6f2), 테라코타 강조(#d97757). 탭 전환, 코드 블록, 4칸 카드.',
+        when: '기술 문서 · 내부 가이드 · 정책 문서',
+        ref: 'https://page.chrisnolja.dev/gemini_html/contents/DBABVY6/claude.html',
+        refLabel: 'claude.html (내부)',
+        tags: ['warm', 'sidebar', 'tabs'],
+        accentColor: '#f4a07a'
+      },
+      {
+        id: 'light-sidebar',
+        file: 'light-sidebar.html',
+        name: 'Light Sidebar',
+        badge: '클린 사이드바',
+        badgeClass: 'badge-blue',
+        desc: 'CSS 변수 기반, Inter+JetBrains Mono 폰트. 스텝 리스트, 콜아웃, 테이블 포함.',
+        when: '기술 설명 · 가이드 · 도구 소개',
+        ref: 'https://page.chrisnolja.dev/gemini_html/contents/XRQSNFX/antigravity_with_figma.html',
+        refLabel: 'antigravity (내부)',
+        tags: ['light', 'sidebar', 'steps'],
+        accentColor: '#60a5fa'
+      },
+      {
+        id: 'travel-guide',
+        file: 'travel-guide.html',
+        name: 'Travel Guide',
+        badge: '히어로+타임라인',
+        badgeClass: 'badge-travel',
+        desc: 'Noto Sans KR, 네이비/레드/골드 팔레트. 히어로 헤더, 타임라인, 체크리스트.',
+        when: '여행 계획 · 일정표 · 이벤트 가이드',
+        ref: 'https://page.chrisnolja.dev/gemini_html/contents/K3ESMSD/kyoto_family_trip.html',
+        refLabel: '교토 여행 (내부)',
+        tags: ['light', 'timeline', 'checklist'],
+        accentColor: '#93c5fd'
+      },
+      {
+        id: 'card-feed',
+        file: 'card-feed.html',
+        name: 'Card Feed',
+        badge: '카드 피드',
+        badgeClass: 'badge-feed',
+        desc: 'Inter 폰트, CSS 변수 기반. 프로스트 글래스 네비, 카테고리 필터탭, 카드 그리드 + 페이지네이션.',
+        when: '뉴스 피드 · 블로그 인덱스 · 아티클 목록',
+        ref: 'https://page.chrisnolja.dev/',
+        refLabel: 'AI Tech Feed (내부)',
+        tags: ['light', 'feed', 'grid', 'pagination'],
+        accentColor: '#6366f1'
+      },
+      {
+        id: 'mood-hack',
+        file: 'mood-hack.html',
+        name: 'Mood Hack',
+        badge: '다크 그라디언트',
+        badgeClass: 'badge-dark',
+        desc: '다크(#0e0e11), 보라/핑크 그라디언트, Pretendard. Sticky TOC nav, 카드·스텝·callout·코드블럭.',
+        when: '가이드 · 팁 아티클 · 기술 튜토리얼 · 디자인 무드',
+        ref: null,
+        tags: ['dark', 'gradient', 'toc', 'steps'],
+        accentColor: '#a78bfa'
+      },
+      {
+        id: 'dramatic',
+        file: 'dramatic.html',
+        name: 'Dramatic',
+        badge: '고대비 다크',
+        badgeClass: 'badge-dark',
+        desc: 'Outfit 900 초대형 타이포, 보라/로즈 그라디언트. CSS 변수 토큰 기반. 스탯·카드·스텝·테이블 포함.',
+        when: '임팩트 쇼케이스 · 기술 소개 · 제품 하이라이트',
+        ref: null,
+        tags: ['dark', 'dramatic', 'high-contrast'],
+        accentColor: '#8B5CF6'
+      },
+      {
+        id: 'professional',
+        file: 'professional.html',
+        name: 'Professional',
+        badge: '밝은 배경',
+        badgeClass: 'badge-warm',
+        desc: 'Poppins 기반 전자상가 스타일. 노란(#FECE14)+블랙 고대비. 오프셋 섀도우 카드, 스탯·스텝·테이블 포함.',
+        when: '제품 소개 · 전자상가 비즈니스 · 기업 랜딩',
+        ref: null,
+        tags: ['light', 'professional', 'modern'],
+        accentColor: '#FECE14'
+      },
+      {
+        id: 'neobrutalism',
+        file: 'neobrutalism.html',
+        name: 'Neobrutalism',
+        badge: '밝은 배경',
+        badgeClass: 'badge-warm',
+        desc: 'Inter 900 + 2px 테두리 + 오프셋 섀도우. 황금(#FDC800)+인디고(#432DD7) 고대비 팔레트. 물리적 hover 피드백.',
+        when: '포트폴리오 · 테크 스타트업 · 개성적 랜딩',
+        ref: null,
+        tags: ['light', 'neobrutalism', 'high-contrast'],
+        accentColor: '#FDC800'
+      },
+      {
+        id: 'brutalism',
+        file: 'brutalism.html',
+        name: 'Brutalism',
+        badge: '콘크리트 배경',
+        badgeClass: 'badge-warm',
+        desc: 'Darker Grotesque 900 + 3px border + 5px offset shadow. 테라코타(#DD614C)+앰버(#DAA144). 반디자인 미학.',
+        when: '포트폴리오 · 예술 프로젝트 · 강렬한 랜딩',
+        ref: null,
+        tags: ['light', 'brutalism', 'anti-design'],
+        accentColor: '#DD614C'
+      },
+      {
+        id: 'skeumorphism',
+        file: 'skeumorphism.html',
+        name: 'Skeumorphism',
+        badge: '밝은 배경',
+        badgeClass: 'badge-warm',
+        desc: '현실 재질 모방 UI. 가죽·금속·종이·나무 텍스처, 3D 그림자와 인셋 효과로 촉각적 깊이감 구현. Roboto + Germania One.',
+        when: '앱 인터페이스 · 게임 UI · 레트로 디지털',
+        ref: null,
+        tags: ['light', 'skeuomorphism', 'realistic'],
+        accentColor: '#FA3C00'
+      },
+      {
+        id: 'creative',
+        file: 'creative.html',
+        name: 'Creative',
+        badge: '밝은 배경',
+        badgeClass: 'badge-blue',
+        desc: 'Bangers 디스플레이 + Inter 본문 + IBM Plex Mono. 파랑/보라/핑크 3색 그라디언트 블롭. 플레이풀 랜딩 스타일.',
+        when: '랜딩 페이지 · 크리에이터 포트폴리오 · SaaS',
+        ref: null,
+        tags: ['light', 'creative', 'playful'],
+        accentColor: '#3B82F6'
+      },
+      {
+        id: 'colorful',
+        file: 'colorful.html',
+        name: 'Colorful',
+        badge: '밝은 배경',
+        badgeClass: 'badge-blue',
+        desc: '8색 시맨틱 토큰 + 레인보우 그라디언트 애니메이션. Inter 900 + JetBrains Mono. 고대비·플레이풀·프리미엄.',
+        when: '대시보드 · SaaS 랜딩 · 데이터 시각화',
+        ref: null,
+        tags: ['light', 'colorful', 'high-contrast'],
+        accentColor: '#3B82F6'
+      },
+      {
+        id: 'editorial',
+        file: 'editorial.html',
+        name: 'Editorial',
+        badge: '밝은 배경',
+        badgeClass: 'badge-minimal',
+        desc: 'Near-black primary + Gelasio 세리프. 기사 그리드·타이포 쇼케이스·풀쿼트. 절제된 에디토리얼 미학.',
+        when: '미디어 · 뉴스레터 · 기술 블로그 · 문서',
+        ref: null,
+        tags: ['light', 'editorial', 'minimal'],
+        accentColor: '#111111'
+      },
+      {
+        id: 'heroui',
+        file: 'heroui.html',
+        name: 'HeroUI',
+        badge: '크림 배경',
+        badgeClass: 'badge-minimal',
+        desc: 'Fraunces 제목 + Inter 본문. 테라코타 단색 강조. CSS 변수 기반 디자인 시스템. 절제된 고급감.',
+        when: '기술 가이드 · AI 도구 소개 · 제품 설명',
+        ref: null,
+        tags: ['light', 'minimal', 'elegant'],
+        accentColor: '#c2410c'
+      },
+      {
+        id: 'impeccable',
+        file: 'impeccable.html',
+        name: 'Impeccable',
+        badge: '크림 배경',
+        badgeClass: 'badge-minimal',
+        desc: 'Playfair Display 초대형 + 잉크 단색. 신문 그리드 레이아웃. 극단적 여백과 타이포그래피 계층.',
+        when: '심층 분석 · 레퍼런스 · 리포트 · 정책 문서',
+        ref: null,
+        tags: ['light', 'editorial', 'high-contrast'],
+        accentColor: '#1a1a1a'
+      },
+      {
+        id: 'green-app',
+        file: 'green-app.html',
+        name: 'Green App',
+        badge: '앱 대시보드',
+        badgeClass: 'badge-emerald',
+        desc: '흰 배경(#F9FAFB), 그린/에메랄드 강조. 유리 상단 nav + 모바일 하단 nav. 앱 쉘 스타일 대시보드.',
+        when: '앱 대시보드 · 내부 플랫폼 · 업무 포털 · 참여 서비스',
+        ref: null,
+        tags: ['light', 'green', 'app', 'dashboard', 'mobile'],
+        accentColor: '#10b981'
+      }
+    ];
+
+    const grid = document.getElementById('grid');
+    const quickNums = document.getElementById('quick-nums');
+
+    // 빠른 선택 번호 버튼
+    const numWrap = document.createElement('div');
+    numWrap.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px;';
+    templates.forEach((t, i) => {
+      const btn = document.createElement('button');
+      btn.style.cssText = `width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#94a3b8; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.15s;`;
+      btn.textContent = i + 1;
+      btn.title = t.name;
+      btn.onmouseover = () => { btn.style.background = 'rgba(139,92,246,0.25)'; btn.style.color = '#c4b5fd'; btn.style.borderColor = 'rgba(139,92,246,0.5)'; };
+      btn.onmouseout  = () => { btn.style.background = 'rgba(255,255,255,0.06)'; btn.style.color = '#94a3b8'; btn.style.borderColor = 'rgba(255,255,255,0.12)'; };
+      btn.onclick = () => {
+        document.querySelectorAll('#grid .card')[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
+      numWrap.appendChild(btn);
+    });
+    quickNums.appendChild(numWrap);
+
+    // 템플릿 카드 렌더
+    templates.forEach((t, i) => {
+      const card = document.createElement('div');
+      card.className = 'card rounded-2xl overflow-hidden cursor-pointer';
+      card.style.background = 'rgba(255,255,255,0.04)';
+      card.style.border = '1px solid rgba(255,255,255,0.08)';
+
+      card.innerHTML = `
+        <div class="thumb-wrap" onclick="window.open('${t.file}','_blank')">
+          <div class="num-badge">${i + 1}</div>
+          <iframe src="${t.file}" loading="lazy" title="${t.name}"></iframe>
+          <div class="thumb-overlay">
+            <div style="background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 13px; font-weight: 600; padding: 8px 20px; border-radius: 999px;">
+              미리보기 열기 ↗
+            </div>
+          </div>
+        </div>
+        <div style="padding: 18px 20px 20px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px;">
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <span style="font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.06); color: #64748b; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">${i + 1}</span>
+              <span style="font-size: 15px; font-weight: 700; color: #f1f5f9;">${t.name}</span>
+            </div>
+            <span class="${t.badgeClass}" style="font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px;">${t.badge}</span>
+          </div>
+          <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 10px;">${t.desc}</p>
+          <div style="font-size: 12px; color: #475569; margin-bottom: 12px;">
+            <span style="color: #94a3b8;">적합한 용도:</span> ${t.when}
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap: wrap; gap: 8px;">
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              ${t.tags.map(tag => `<span style="font-size:11px; background: rgba(255,255,255,0.06); color: #64748b; padding: 2px 8px; border-radius: 6px;">#${tag}</span>`).join('')}
+            </div>
+            ${t.ref ? `<a href="${t.ref}" target="_blank" style="font-size:11px; color: #475569; text-decoration:none; display:flex; align-items:center; gap:3px;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">
+              ${t.refLabel} ↗
+            </a>` : '<span style="font-size:11px; color:#334155;">— (자체 제작)</span>'}
+          </div>
+          <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:8px;">
+            <code style="font-size: 12px; background: rgba(255,255,255,0.05); color: #a78bfa; padding: 4px 10px; border-radius: 6px; user-select: all; flex:1;">template=${t.id}</code>
+            <span style="font-size: 11px; color: #334155; white-space:nowrap;">또는 "${i+1}번"</span>
+          </div>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    // 썸네일 iframe 스케일 자동 계산
+    function scaleIframes() {
+      document.querySelectorAll('.thumb-wrap').forEach(wrap => {
+        const iframe = wrap.querySelector('iframe');
+        if (!iframe) return;
+        const scale = wrap.clientWidth / 1440;
+        iframe.style.transform = `scale(${scale})`;
+        iframe.style.height = (wrap.clientWidth / 16 * 10 / scale) + 'px';
+      });
+    }
+
+    scaleIframes();
+    window.addEventListener('resize', scaleIframes);
+  </script>
+</body>
+</html>

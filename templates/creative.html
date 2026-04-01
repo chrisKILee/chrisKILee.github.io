@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{TITLE}}</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --color-primary: #3B82F6;
+      --color-secondary: #8B5CF6;
+      --color-surface: #FFFFFF;
+      --color-text: #111827;
+      --color-success: #16A34A;
+      --color-warning: #D97706;
+      --color-danger: #DC2626;
+      --font-display: 'Bangers', cursive;
+      --font-primary: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-surface);
+      color: var(--color-text);
+      overflow-x: hidden;
+    }
+
+    /* ── Animated gradient blobs ── */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      animation: drift 12s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+    }
+    .blob-1 { background: var(--color-primary); width: 500px; height: 500px; top: -100px; left: -150px; animation-delay: 0s; }
+    .blob-2 { background: var(--color-secondary); width: 400px; height: 400px; top: 100px; right: -100px; animation-delay: -4s; }
+    .blob-3 { background: #EC4899; width: 300px; height: 300px; bottom: -50px; left: 30%; animation-delay: -8s; }
+
+    @keyframes drift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -40px) scale(1.05); }
+      66% { transform: translate(-20px, 20px) scale(0.95); }
+    }
+
+    /* ── Gradient text ── */
+    .gradient-text {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 50%, #EC4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .gradient-text-alt {
+      background: linear-gradient(135deg, var(--color-secondary) 0%, #EC4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: #fff;
+      font-family: var(--font-primary);
+      font-weight: 700;
+      font-size: 15px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(59,130,246,0.4);
+      transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.01em;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(59,130,246,0.5);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 28px;
+      background: transparent;
+      color: var(--color-primary);
+      font-family: var(--font-primary);
+      font-weight: 700;
+      font-size: 15px;
+      border: 2px solid var(--color-primary);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-outline:hover {
+      background: rgba(59,130,246,0.08);
+      transform: translateY(-2px);
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: transparent;
+      color: #6B7280;
+      font-family: var(--font-primary);
+      font-weight: 600;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-ghost:hover { background: #F3F4F6; color: var(--color-text); }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 16px;
+      padding: 28px;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(59,130,246,0.04) 0%, rgba(139,92,246,0.04) 100%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+      border-color: rgba(59,130,246,0.3);
+    }
+    .card:hover::before { opacity: 1; }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .badge-blue {
+      background: rgba(59,130,246,0.1);
+      color: var(--color-primary);
+      border: 1px solid rgba(59,130,246,0.2);
+    }
+    .badge-violet {
+      background: rgba(139,92,246,0.1);
+      color: var(--color-secondary);
+      border: 1px solid rgba(139,92,246,0.2);
+    }
+    .badge-gradient {
+      background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.12));
+      color: var(--color-primary);
+      border: 1px solid rgba(59,130,246,0.2);
+    }
+
+    /* ── Tags / chips ── */
+    .chip {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      font-weight: 400;
+      background: #F3F4F6;
+      color: #6B7280;
+      border: 1px solid #E5E7EB;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #9CA3AF;
+      margin-bottom: 8px;
+    }
+
+    /* ── Stat card ── */
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 52px;
+      letter-spacing: 0.02em;
+      line-height: 1;
+    }
+
+    /* ── Progress bar ── */
+    .progress-bar {
+      height: 8px;
+      border-radius: 4px;
+      background: #E5E7EB;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+      transition: width 0.6s ease;
+    }
+
+    /* ── Nav ── */
+    .nav-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(229,231,235,0.8);
+    }
+    .nav-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-link {
+      font-size: 14px;
+      font-weight: 600;
+      color: #6B7280;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: all 0.15s;
+    }
+    .nav-link:hover { color: var(--color-text); background: #F3F4F6; }
+
+    /* ── Main layout ── */
+    .main-wrap {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 60px 24px;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #E5E7EB 20%, #E5E7EB 80%, transparent);
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    /* ── Feature icon ── */
+    .feat-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-shrink: 0;
+    }
+
+    /* ── Floating tag animation ── */
+    .float-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      animation: float 4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+    }
+    .float-tag:nth-child(2) { animation-delay: -1.5s; }
+    .float-tag:nth-child(3) { animation-delay: -3s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    /* ── Code block ── */
+    .code-block {
+      background: #0F172A;
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.8;
+      border: 1px solid #1E293B;
+      overflow-x: auto;
+    }
+
+    /* ── Scroll ── */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #F9FAFB; }
+    ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Navigation ─── -->
+  <nav class="nav-wrap">
+    <div class="nav-inner">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="
+          width:32px;height:32px;border-radius:8px;
+          background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));
+          display:flex;align-items:center;justify-content:center;
+        ">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <span style="font-family:var(--font-display);font-size:22px;letter-spacing:0.04em;" class="gradient-text">{{TITLE}}</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:4px;">
+        <a href="#" class="nav-link">Features</a>
+        <a href="#" class="nav-link">Showcase</a>
+        <a href="#" class="nav-link">Pricing</a>
+        <a href="#" class="nav-link">Docs</a>
+        <div style="width:1px;height:20px;background:#E5E7EB;margin:0 8px;"></div>
+        <button class="btn-primary" style="padding:8px 20px;font-size:13px;border-radius:8px;">Get Started</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── Hero ─── -->
+  <section style="position:relative;overflow:hidden;padding:100px 24px 80px;">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div style="max-width:1600px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;position:relative;z-index:1;">
+
+      <!-- Left copy -->
+      <div>
+        <div style="margin-bottom:24px;">
+          <span class="badge badge-gradient">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--color-primary)"><circle cx="12" cy="12" r="8"/></svg>
+            {{BADGE}}
+          </span>
+        </div>
+
+        <h1 style="font-family:var(--font-display);font-size:68px;line-height:1.05;letter-spacing:0.03em;margin-bottom:6px;color:var(--color-text);">
+          {{HEADING}}
+        </h1>
+        <h1 style="font-family:var(--font-display);font-size:68px;line-height:1.05;letter-spacing:0.03em;margin-bottom:28px;" class="gradient-text">
+          {{HEADING_EM}}
+        </h1>
+
+        <p style="font-size:18px;line-height:1.7;color:#6B7280;max-width:480px;margin-bottom:40px;">
+          {{DESCRIPTION}}
+        </p>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:48px;">
+          <button class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Start for Free
+          </button>
+          <button class="btn-outline">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>
+            Watch Demo
+          </button>
+        </div>
+
+        <!-- Social proof row -->
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="display:flex;">
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#8B5CF6);border:2px solid #fff;margin-right:-10px;"></div>
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#EC4899);border:2px solid #fff;margin-right:-10px;"></div>
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#EC4899,#F59E0B);border:2px solid #fff;margin-right:-10px;"></div>
+            <div style="width:32px;height:32px;border-radius:50%;background:#E5E7EB;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#6B7280;">+4k</div>
+          </div>
+          <div>
+            <div style="display:flex;gap:2px;margin-bottom:3px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div style="font-size:13px;color:#9CA3AF;">Loved by 4,000+ creators</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Visual card stack -->
+      <div style="position:relative;height:420px;display:flex;align-items:center;justify-content:center;">
+
+        <!-- Background card 3 -->
+        <div style="
+          position:absolute;
+          width:300px;
+          background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(236,72,153,0.15));
+          border:1px solid rgba(139,92,246,0.2);
+          border-radius:20px;
+          padding:24px;
+          transform:rotate(8deg) translateX(60px) translateY(20px);
+          backdrop-filter:blur(8px);
+        ">
+          <div style="font-family:var(--font-mono);font-size:11px;color:#8B5CF6;margin-bottom:10px;">// analytics</div>
+          <div style="font-family:var(--font-display);font-size: clamp(1.75rem, 4.5vw, 2.25rem);color:#8B5CF6;">98.2%</div>
+          <div style="font-size:13px;color:#9CA3AF;margin-top:4px;">User satisfaction</div>
+        </div>
+
+        <!-- Background card 2 -->
+        <div style="
+          position:absolute;
+          width:300px;
+          background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(139,92,246,0.1));
+          border:1px solid rgba(59,130,246,0.2);
+          border-radius:20px;
+          padding:24px;
+          transform:rotate(-5deg) translateX(-50px) translateY(30px);
+          backdrop-filter:blur(8px);
+        ">
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--color-primary);margin-bottom:10px;">// performance</div>
+          <div style="font-family:var(--font-display);font-size: clamp(1.75rem, 4.5vw, 2.25rem);color:var(--color-primary);">3.2ms</div>
+          <div style="font-size:13px;color:#9CA3AF;margin-top:4px;">Avg response time</div>
+        </div>
+
+        <!-- Main card (front) -->
+        <div style="
+          position:relative;
+          width:320px;
+          background:#fff;
+          border:1px solid #E5E7EB;
+          border-radius:20px;
+          padding:28px;
+          box-shadow:0 24px 60px rgba(0,0,0,0.12);
+          z-index:2;
+        ">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+            <div>
+              <div class="section-label" style="margin-bottom:4px;">{{BADGE}}</div>
+              <div style="font-family:var(--font-display);font-size:28px;" class="gradient-text">{{HEADING_EM}}</div>
+            </div>
+            <div style="
+              width:40px;height:40px;border-radius:10px;
+              background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));
+              display:flex;align-items:center;justify-content:center;
+            ">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:#374151;font-weight:600;">
+              <span>Progress</span><span style="color:var(--color-primary);font-family:var(--font-mono);">84%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:84%;"></div></div>
+          </div>
+          <div style="margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:#374151;font-weight:600;">
+              <span>Performance</span><span style="color:var(--color-secondary);font-family:var(--font-mono);">61%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:61%;background:linear-gradient(90deg,var(--color-secondary),#EC4899);"></div></div>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span class="chip">playful</span>
+            <span class="chip">creative</span>
+            <span class="chip">landing</span>
+          </div>
+        </div>
+
+        <!-- Floating tags -->
+        <div style="position:absolute;top:30px;right:-10px;display:flex;flex-direction:column;gap:10px;">
+          <div class="float-tag" style="background:#fff;border:1px solid #E5E7EB;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span style="font-size:12px;font-weight:700;color:var(--color-text);">No-code ready</span>
+          </div>
+          <div class="float-tag" style="background:#fff;border:1px solid #E5E7EB;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-secondary)" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span style="font-size:12px;font-weight:700;color:var(--color-text);">WCAG 2.2 AA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Marquee logos ── -->
+  <section style="padding:20px 0 40px;border-top:1px solid #F3F4F6;border-bottom:1px solid #F3F4F6;overflow:hidden;background:#FAFAFA;">
+    <div style="text-align:center;margin-bottom:16px;">
+      <span style="font-size:13px;color:#9CA3AF;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;">Trusted by builders at</span>
+    </div>
+    <div style="display:flex;justify-content:center;gap:48px;align-items:center;flex-wrap:wrap;padding:0 24px;">
+      <div style="font-family:var(--font-display);font-size:22px;letter-spacing:0.04em;color:#D1D5DB;">Acme</div>
+      <div style="font-family:var(--font-display);font-size:22px;letter-spacing:0.04em;color:#D1D5DB;">Globex</div>
+      <div style="font-family:var(--font-display);font-size:22px;letter-spacing:0.04em;color:#D1D5DB;">Initech</div>
+      <div style="font-family:var(--font-display);font-size:22px;letter-spacing:0.04em;color:#D1D5DB;">Umbrella</div>
+      <div style="font-family:var(--font-display);font-size:22px;letter-spacing:0.04em;color:#D1D5DB;">Soylent</div>
+      <div style="font-family:var(--font-display);font-size:22px;letter-spacing:0.04em;color:#D1D5DB;">Skynet</div>
+    </div>
+  </section>
+
+  <!-- ─── Stats ─── -->
+  <section class="main-wrap" style="padding-top:72px;padding-bottom:72px;">
+    <div style="text-align:center;margin-bottom:56px;">
+      <p class="section-label">By the numbers</p>
+      <h2 style="font-family:var(--font-display);font-size: clamp(2rem, 5.5vw, 2.75rem);letter-spacing:0.03em;color:var(--color-text);">Results That <span class="gradient-text">Speak</span></h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:64px;">
+      <div class="card" style="text-align:center;padding:36px 24px;">
+        <div class="stat-value gradient-text">48K+</div>
+        <div style="font-size:14px;color:#9CA3AF;margin-top:8px;font-weight:500;">Active Users</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:#D1D5DB;margin-top:4px;">↑ 23% this month</div>
+      </div>
+      <div class="card" style="text-align:center;padding:36px 24px;">
+        <div class="stat-value gradient-text-alt">99.9%</div>
+        <div style="font-size:14px;color:#9CA3AF;margin-top:8px;font-weight:500;">Uptime SLA</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:#D1D5DB;margin-top:4px;">30-day rolling avg</div>
+      </div>
+      <div class="card" style="text-align:center;padding:36px 24px;">
+        <div class="stat-value" style="font-family:var(--font-display);font-size:52px;color:var(--color-primary);">3.2ms</div>
+        <div style="font-size:14px;color:#9CA3AF;margin-top:8px;font-weight:500;">Avg Latency</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:#D1D5DB;margin-top:4px;">p95 global edge</div>
+      </div>
+      <div class="card" style="text-align:center;padding:36px 24px;">
+        <div class="stat-value" style="font-family:var(--font-display);font-size:52px;color:#16A34A;">4.9★</div>
+        <div style="font-size:14px;color:#9CA3AF;margin-top:8px;font-weight:500;">Avg Rating</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:#D1D5DB;margin-top:4px;">4,200+ reviews</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── Features grid ─── -->
+  <section class="main-wrap" style="padding-top:72px;padding-bottom:72px;">
+    <div style="text-align:center;margin-bottom:56px;">
+      <p class="section-label">Features</p>
+      <h2 style="font-family:var(--font-display);font-size: clamp(2rem, 5.5vw, 2.75rem);letter-spacing:0.03em;color:var(--color-text);margin-bottom:12px;">
+        Everything You Need to <span class="gradient-text">Create</span>
+      </h2>
+      <p style="font-size:16px;color:#9CA3AF;max-width:500px;margin:0 auto;">Playful tools for serious results. Build landing pages that convert, delight, and inspire.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+      <!-- Card 1 -->
+      <div class="card" style="padding:32px;">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(59,130,246,0.2));">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <h3 style="font-family:var(--font-display);font-size:22px;letter-spacing:0.02em;color:var(--color-text);margin-bottom:10px;">Instant Deploy</h3>
+        <p style="font-size:14px;line-height:1.7;color:#9CA3AF;margin-bottom:20px;">Push to production in seconds. Zero config, zero drama. Your creative vision ships fast.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">CI/CD</span><span class="chip">edge</span>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card" style="padding:32px;">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(139,92,246,0.12),rgba(139,92,246,0.2));">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-secondary)" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 style="font-family:var(--font-display);font-size:22px;letter-spacing:0.02em;color:var(--color-text);margin-bottom:10px;">Built-in Security</h3>
+        <p style="font-size:14px;line-height:1.7;color:#9CA3AF;margin-bottom:20px;">WCAG 2.2 AA by default. DDoS protection, WAF, and smart rate limiting included.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">WCAG</span><span class="chip">WAF</span>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card" style="padding:32px;">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(236,72,153,0.12),rgba(236,72,153,0.2));">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        </div>
+        <h3 style="font-family:var(--font-display);font-size:22px;letter-spacing:0.02em;color:var(--color-text);margin-bottom:10px;">Component Library</h3>
+        <p style="font-size:14px;line-height:1.7;color:#9CA3AF;margin-bottom:20px;">60+ production-ready components. Drag, drop, customize. Your brand, your rules.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">60+ comps</span><span class="chip">themeable</span>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="card" style="padding:32px;">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(16,163,74,0.12),rgba(16,163,74,0.2));">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3 style="font-family:var(--font-display);font-size:22px;letter-spacing:0.02em;color:var(--color-text);margin-bottom:10px;">Live Analytics</h3>
+        <p style="font-size:14px;line-height:1.7;color:#9CA3AF;margin-bottom:20px;">Real-time dashboards, Core Web Vitals, conversion funnels. Know what's working.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">real-time</span><span class="chip">CWV</span>
+        </div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="card" style="padding:32px;">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(217,119,6,0.12),rgba(217,119,6,0.2));">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        </div>
+        <h3 style="font-family:var(--font-display);font-size:22px;letter-spacing:0.02em;color:var(--color-text);margin-bottom:10px;">AI Personalize</h3>
+        <p style="font-size:14px;line-height:1.7;color:#9CA3AF;margin-bottom:20px;">Geolocation, device targeting, A/B tests — all powered by edge config. No extra tools.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">A/B</span><span class="chip">edge flags</span>
+        </div>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="card" style="padding:32px;">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(139,92,246,0.15));">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2"/><rect x="2" y="13" width="9" height="9" rx="2"/><rect x="13" y="13" width="9" height="9" rx="2"/></svg>
+        </div>
+        <h3 style="font-family:var(--font-display);font-size:22px;letter-spacing:0.02em;color:var(--color-text);margin-bottom:10px;">100+ Templates</h3>
+        <p style="font-size:14px;line-height:1.7;color:#9CA3AF;margin-bottom:20px;">Start with a Bangers-bold statement page and customize every pixel. Creative freedom, zero friction.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">playful</span><span class="chip">landing</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── Code preview section ─── -->
+  <section class="main-wrap" style="padding-top:72px;padding-bottom:72px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;">
+      <div>
+        <p class="section-label">Developer first</p>
+        <h2 style="font-family:var(--font-display);font-size: clamp(2rem, 5.5vw, 2.75rem);letter-spacing:0.03em;color:var(--color-text);margin-bottom:16px;">
+          Code That <span class="gradient-text">Feels Good</span>
+        </h2>
+        <p style="font-size:16px;line-height:1.7;color:#9CA3AF;margin-bottom:32px;">Type-safe, tree-shakeable, and fully documented. Build with the tools you already love.</p>
+
+        <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:36px;">
+          <div style="display:flex;align-items:flex-start;gap:12px;">
+            <div style="width:24px;height:24px;border-radius:6px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:15px;color:var(--color-text);margin-bottom:3px;">TypeScript native</div>
+              <div style="font-size:14px;color:#9CA3AF;">Full type-safety out of the box, no extra setup.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;">
+            <div style="width:24px;height:24px;border-radius:6px;background:rgba(139,92,246,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-secondary)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:15px;color:var(--color-text);margin-bottom:3px;">IBM Plex Mono</div>
+              <div style="font-size:14px;color:#9CA3AF;">Mono font for code blocks that pop on any background.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;">
+            <div style="width:24px;height:24px;border-radius:6px;background:rgba(236,72,153,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:15px;color:var(--color-text);margin-bottom:3px;">Zero-config deploy</div>
+              <div style="font-size:14px;color:#9CA3AF;">Git push → production in 30 seconds flat.</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-outline">Read the Docs →</button>
+      </div>
+
+      <!-- Code block -->
+      <div class="code-block">
+        <div style="color:#6B7280;margin-bottom:12px;">// {{HEADING_EM}}</div>
+        <div><span style="color:#7C3AED;">import</span> <span style="color:#E5E7EB;">{ creative }</span> <span style="color:#7C3AED;">from</span> <span style="color:#34D399;">'@creative/ui'</span></div>
+        <div style="margin-top:12px;"><span style="color:#7C3AED;">const</span> <span style="color:#93C5FD;">page</span> <span style="color:#6B7280;">=</span> creative<span style="color:#E5E7EB;">(</span>{</div>
+        <div style="padding-left:16px;"><span style="color:#34D399;">  theme</span><span style="color:#6B7280;">:</span> <span style="color:#FCA5A5;">"playful"</span><span style="color:#6B7280;">,</span></div>
+        <div style="padding-left:16px;"><span style="color:#34D399;">  primary</span><span style="color:#6B7280;">:</span> <span style="color:#FCA5A5;">"#3B82F6"</span><span style="color:#6B7280;">,</span></div>
+        <div style="padding-left:16px;"><span style="color:#34D399;">  font</span><span style="color:#6B7280;">:</span> <span style="color:#FCA5A5;">"Bangers"</span><span style="color:#6B7280;">,</span></div>
+        <div style="padding-left:16px;"><span style="color:#34D399;">  landing</span><span style="color:#6B7280;">:</span> <span style="color:#FCA5A5;">true</span></div>
+        <div style="color:#E5E7EB;">}<span style="color:#E5E7EB;">)</span></div>
+        <div style="margin-top:16px;color:#6B7280;">// → Deploys to edge in 32ms</div>
+        <div style="color:#6B7280;">// → 100/100 Lighthouse score</div>
+        <div style="margin-top:16px;">
+          <span style="
+            display:inline-block;
+            padding:4px 12px;
+            border-radius:6px;
+            background:linear-gradient(135deg,#3B82F6,#8B5CF6);
+            color:#fff;
+            font-size:11px;
+            font-weight:700;
+          ">▶ BUILD</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTA ─── -->
+  <section style="padding:80px 24px;background:linear-gradient(135deg,rgba(59,130,246,0.04) 0%,rgba(139,92,246,0.06) 50%,rgba(236,72,153,0.04) 100%);border-top:1px solid #F3F4F6;">
+    <div style="max-width:700px;margin:0 auto;text-align:center;">
+      <p class="section-label" style="margin-bottom:16px;">Get started today</p>
+      <h2 style="font-family:var(--font-display);font-size:52px;letter-spacing:0.03em;color:var(--color-text);margin-bottom:16px;">
+        Build Something <span class="gradient-text">Playful</span>
+      </h2>
+      <p style="font-size:17px;color:#9CA3AF;margin-bottom:40px;line-height:1.7;">
+        Join 4,000+ creators who build stunning landing pages with the Creative design system.
+      </p>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;">
+        <button class="btn-primary" style="padding:16px 36px;font-size:16px;border-radius:14px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Start Free — No Card
+        </button>
+        <button class="btn-outline" style="padding:16px 36px;font-size:16px;border-radius:14px;">
+          View Examples
+        </button>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:13px;color:#D1D5DB;">{{DATE}} · No credit card required</div>
+    </div>
+  </section>
+
+  <!-- ─── Footer ─── -->
+  <footer style="background:#F9FAFB;border-top:1px solid #E5E7EB;padding:40px 24px;">
+    <div style="max-width:1600px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="
+          width:26px;height:26px;border-radius:7px;
+          background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));
+          display:flex;align-items:center;justify-content:center;
+        ">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <span style="font-family:var(--font-display);font-size:18px;letter-spacing:0.03em;" class="gradient-text">{{TITLE}}</span>
+      </div>
+      <div style="display:flex;gap:20px;">
+        <a href="#" style="font-size:13px;color:#9CA3AF;text-decoration:none;font-weight:500;">Privacy</a>
+        <a href="#" style="font-size:13px;color:#9CA3AF;text-decoration:none;font-weight:500;">Terms</a>
+        <a href="#" style="font-size:13px;color:#9CA3AF;text-decoration:none;font-weight:500;">Docs</a>
+        <a href="#" style="font-size:13px;color:#9CA3AF;text-decoration:none;font-weight:500;">Blog</a>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:12px;color:#D1D5DB;">© {{DATE}} {{TITLE}}</div>
+    </div>
+  </footer>
+
+</body>
+</html>

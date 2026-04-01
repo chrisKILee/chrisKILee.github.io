@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{TITLE}}</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F7F8FA;
+      --surface: #FFFFFF;
+      --border: #E5E7EB;
+      --text-primary: #111827;
+      --text-secondary: #6B7280;
+      --text-muted: #9CA3AF;
+      --accent: #2563EB;
+      --accent-hover: #1D4ED8;
+
+      /* 카테고리 색상 — 용도에 맞게 수정 */
+      --cat-1: #7C3AED;
+      --cat-1-bg: #F5F3FF;
+      --cat-1-border: #DDD6FE;
+
+      --cat-2: #2563EB;
+      --cat-2-bg: #EFF6FF;
+      --cat-2-border: #BFDBFE;
+
+      --cat-3: #059669;
+      --cat-3-bg: #ECFDF5;
+      --cat-3-border: #A7F3D0;
+
+      --cat-4: #D97706;
+      --cat-4-bg: #FFFBEB;
+      --cat-4-border: #FDE68A;
+
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      word-break: keep-all;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      height: 60px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 18px; color: var(--text-primary); text-decoration: none;
+    }
+    .nav-logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+    .nav-links a {
+      font-size: 14px; color: var(--text-secondary); text-decoration: none;
+      padding: 6px 12px; border-radius: 6px; transition: background 0.15s, color 0.15s;
+    }
+    .nav-links a:hover { background: var(--bg); color: var(--text-primary); }
+
+    /* ── Hero ── */
+    .hero { max-width: 1200px; margin: 0 auto; padding: 64px 24px 40px; }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;
+    }
+    .hero-tag::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 44px); font-weight: 700;
+      line-height: 1.2; letter-spacing: -0.02em; color: var(--text-primary); margin-bottom: 12px;
+    }
+    .hero-sub { font-size: 16px; color: var(--text-secondary); max-width: 520px; line-height: 1.7; }
+
+    /* ── Filter Tabs ── */
+    .filter-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px 32px; }
+    .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tab-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 100px; border: 1px solid var(--border);
+      background: var(--surface); font-size: 13px; font-weight: 500;
+      color: var(--text-secondary); cursor: pointer; transition: all 0.15s; line-height: 1;
+    }
+    .tab-btn:hover { border-color: #D1D5DB; color: var(--text-primary); }
+    .tab-btn.active { background: var(--text-primary); border-color: var(--text-primary); color: #fff; }
+    .tab-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+    /* ── Grid ── */
+    .grid-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); border-color: #D1D5DB; }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .cat-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; padding: 4px 10px;
+      border-radius: 100px; letter-spacing: 0.04em; flex-shrink: 0;
+    }
+    .cat-badge::before { content: ''; display: block; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .cat-1 { color: var(--cat-1); background: var(--cat-1-bg); border: 1px solid var(--cat-1-border); }
+    .cat-2 { color: var(--cat-2); background: var(--cat-2-bg); border: 1px solid var(--cat-2-border); }
+    .cat-3 { color: var(--cat-3); background: var(--cat-3-bg); border: 1px solid var(--cat-3-border); }
+    .cat-4 { color: var(--cat-4); background: var(--cat-4-bg); border: 1px solid var(--cat-4-border); }
+    .card-title { font-size: 15px; font-weight: 600; line-height: 1.45; color: var(--text-primary); }
+    .card-summary { font-size: 13px; color: var(--text-secondary); line-height: 1.6; flex: 1; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+    .card-date { font-size: 12px; color: var(--text-muted); }
+    .card-arrow { font-size: 13px; color: var(--text-muted); transition: transform 0.15s, color 0.15s; }
+    .card:hover .card-arrow { transform: translateX(3px); color: var(--accent); }
+
+    /* ── Empty State ── */
+    .empty-state { grid-column: 1 / -1; text-align: center; padding: 80px 24px; color: var(--text-muted); }
+    .empty-state p { font-size: 15px; }
+
+    /* ── Pagination ── */
+    .pagination { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 32px 0 0; }
+    .page-btn {
+      min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface);
+      font-size: 13px; font-weight: 500; color: var(--text-secondary);
+      cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+    }
+    .page-btn:hover:not(:disabled) { border-color: #D1D5DB; color: var(--text-primary); background: var(--bg); }
+    .page-btn.active { background: var(--text-primary); border-color: var(--text-primary); color: #fff; }
+    .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .page-info { font-size: 13px; color: var(--text-muted); padding: 0 8px; }
+
+    /* ── Footer ── */
+    footer { border-top: 1px solid var(--border); background: var(--surface); }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto; padding: 24px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    footer p { font-size: 13px; color: var(--text-muted); }
+    footer a { color: var(--text-secondary); text-decoration: none; font-size: 13px; }
+    footer a:hover { color: var(--text-primary); }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .hero { padding: 40px 16px 28px; }
+      .filter-wrap, .grid-wrap { padding-left: 16px; padding-right: 16px; }
+      .card-grid { grid-template-columns: 1fr; }
+      .nav-inner { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#">
+      <span class="nav-logo-dot"></span>
+      {{SITE_NAME}}
+    </a>
+    <div class="nav-links">
+      <a href="#">{{NAV_1}}</a>
+      <a href="#">{{NAV_2}}</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-tag">{{HERO_TAG}}</div>
+  <h1>{{HEADING}}</h1>
+  <p class="hero-sub">{{DESCRIPTION}}</p>
+</header>
+
+<div class="filter-wrap">
+  <div class="filter-tabs">
+    <button class="tab-btn active" data-cat="all">전체</button>
+    <button class="tab-btn" data-cat="cat1">
+      <span class="tab-dot" style="background:var(--cat-1)"></span>
+      {{CAT_1_LABEL}}
+    </button>
+    <button class="tab-btn" data-cat="cat2">
+      <span class="tab-dot" style="background:var(--cat-2)"></span>
+      {{CAT_2_LABEL}}
+    </button>
+    <button class="tab-btn" data-cat="cat3">
+      <span class="tab-dot" style="background:var(--cat-3)"></span>
+      {{CAT_3_LABEL}}
+    </button>
+    <button class="tab-btn" data-cat="cat4">
+      <span class="tab-dot" style="background:var(--cat-4)"></span>
+      {{CAT_4_LABEL}}
+    </button>
+  </div>
+</div>
+
+<main class="grid-wrap">
+  <div class="card-grid" id="card-grid"></div>
+  <div class="pagination" id="pagination"></div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <p>{{FOOTER_TEXT}}</p>
+    <a href="#">{{FOOTER_LINK_TEXT}} →</a>
+  </div>
+</footer>
+
+<script>
+  // ──────────────────────────────────────────
+  // 데이터: 아래 ITEMS 배열을 콘텐츠에 맞게 수정하세요.
+  // category 값은 'cat1' | 'cat2' | 'cat3' | 'cat4' 중 하나.
+  // ──────────────────────────────────────────
+  const CAT_LABEL = {
+    cat1: '{{CAT_1_LABEL}}',
+    cat2: '{{CAT_2_LABEL}}',
+    cat3: '{{CAT_3_LABEL}}',
+    cat4: '{{CAT_4_LABEL}}'
+  };
+
+  const ITEMS = [
+    {
+      id: 'item-001',
+      category: 'cat1',
+      title: '{{ITEM_1_TITLE}}',
+      summary: '{{ITEM_1_SUMMARY}}',
+      date: '{{ITEM_1_DATE}}',
+      link: '{{ITEM_1_LINK}}'
+    },
+    {
+      id: 'item-002',
+      category: 'cat2',
+      title: '{{ITEM_2_TITLE}}',
+      summary: '{{ITEM_2_SUMMARY}}',
+      date: '{{ITEM_2_DATE}}',
+      link: '{{ITEM_2_LINK}}'
+    },
+    {
+      id: 'item-003',
+      category: 'cat3',
+      title: '{{ITEM_3_TITLE}}',
+      summary: '{{ITEM_3_SUMMARY}}',
+      date: '{{ITEM_3_DATE}}',
+      link: '{{ITEM_3_LINK}}'
+    },
+    {
+      id: 'item-004',
+      category: 'cat4',
+      title: '{{ITEM_4_TITLE}}',
+      summary: '{{ITEM_4_SUMMARY}}',
+      date: '{{ITEM_4_DATE}}',
+      link: '{{ITEM_4_LINK}}'
+    },
+    {
+      id: 'item-005',
+      category: 'cat1',
+      title: '{{ITEM_5_TITLE}}',
+      summary: '{{ITEM_5_SUMMARY}}',
+      date: '{{ITEM_5_DATE}}',
+      link: '{{ITEM_5_LINK}}'
+    },
+    {
+      id: 'item-006',
+      category: 'cat2',
+      title: '{{ITEM_6_TITLE}}',
+      summary: '{{ITEM_6_SUMMARY}}',
+      date: '{{ITEM_6_DATE}}',
+      link: '{{ITEM_6_LINK}}'
+    }
+  ];
+
+  const PAGE_SIZE = 9;
+  let currentCat = 'all';
+  let currentPage = 1;
+
+  function fmtDate(d) {
+    if (!d) return '';
+    const [y, m, dd] = d.split('-');
+    return `${y}년 ${parseInt(m)}월 ${parseInt(dd)}일`;
+  }
+
+  function getFiltered() {
+    return ITEMS
+      .filter(a => currentCat === 'all' || a.category === currentCat)
+      .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  }
+
+  function renderCards() {
+    const grid = document.getElementById('card-grid');
+    const all = getFiltered();
+    const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = 1;
+
+    const items = all.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+    if (items.length === 0) {
+      grid.innerHTML = '<div class="empty-state"><p>표시할 아이템이 없습니다.</p></div>';
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+
+    grid.innerHTML = items.map(a => `
+      <article class="card" onclick="${a.link && a.link !== '{{ITEM_1_LINK}}' ? `window.open('${a.link}','_blank')` : 'void(0)'}">
+        <div class="card-header">
+          <span class="cat-badge cat-${a.category.replace('cat','')}">${CAT_LABEL[a.category] || a.category}</span>
+        </div>
+        <h2 class="card-title">${a.title}</h2>
+        <p class="card-summary">${a.summary}</p>
+        <div class="card-footer">
+          <span class="card-date">${fmtDate(a.date)}</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </article>
+    `).join('');
+
+    renderPagination(totalPages);
+  }
+
+  function renderPagination(totalPages) {
+    const pg = document.getElementById('pagination');
+    if (totalPages <= 1) { pg.innerHTML = ''; return; }
+
+    const prev = `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
+    const next = `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
+
+    const range = [];
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) range.push(i);
+    }
+    const pages = [];
+    let prev_ = null;
+    for (const p of range) {
+      if (prev_ && p - prev_ > 1) pages.push('…');
+      pages.push(p);
+      prev_ = p;
+    }
+
+    const nums = pages.map(p =>
+      p === '…'
+        ? `<span class="page-info">…</span>`
+        : `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`
+    ).join('');
+
+    pg.innerHTML = `${prev}${nums}${next}`;
+  }
+
+  function goPage(p) {
+    currentPage = p;
+    renderCards();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // 필터 탭
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCat = btn.dataset.cat;
+      currentPage = 1;
+      renderCards();
+    });
+  });
+
+  renderCards();
+</script>
+</body>
+</html>
