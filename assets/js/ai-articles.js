@@ -598,5 +598,34 @@ const AI_ARTICLES = [
         { date: "2026-03-17", event: "OpenAI API 및 Azure AI Foundry를 통해 GPT-5.4 mini·nano 제공 개시" }
       ]
     }
+  },
+  {
+    id: "claude-008",
+    category: "claude",
+    title: "Claude Code 캐시 버그 — 유출 소스로 찾은 두 줄짜리 패치",
+    date: "2026-04-01",
+    summary: "세션 재개마다 캐시 적중률 26%로 추락, Reddit 유저가 두 줄 패치로 99%로 복구",
+    originalUrl: "/gemini_html/claude_code_cache_bug_leaked_patch.html",
+    detail: {
+      overview: "Claude Code가 세션을 저장할 때 deferred_tools_delta·mcp_instructions_delta 기록을 삭제하는 버그로 인해 세션 재개 시마다 캐시가 완전히 무효화되는 현상이 발견됐습니다. Reddit 유저 Rangizingo가 유출된 소스코드를 AI로 분석해 db8() 함수의 두 줄 패치로 캐시 적중률을 26%에서 99%로 끌어올렸습니다. 독립 실행 바이너리의 Bun 포크 문제(버그 #2)도 함께 확인됐으며, npm 버전으로 우회 가능합니다.",
+      keyPoints: [
+        { label: "패치 전 캐시 적중률", value: "26% (턴 15 기준) — 세션이 길수록 악화" },
+        { label: "패치 후 캐시 적중률", value: "99% — 턴 2부터 즉시 안정" },
+        { label: "패치 크기", value: "2줄 (db8() 함수 내 KEEP_SUBTYPES 예외 처리)" },
+        { label: "검증 버전", value: "Claude Code v2.1.81 (함수명 난독화로 버전마다 상이)" },
+        { label: "우회 방법", value: "npm 버전 사용 시 버그 #2(Bun 포크) 자동 회피" }
+      ],
+      comparison: [
+        { "항목": "캐시 적중률 (턴 1)", "패치 전": "67%", "패치 후": "13% (재개 첫 턴)" },
+        { "항목": "캐시 적중률 (턴 2+)", "패치 전": "지속 하락", "패치 후": "99% 안정 유지" },
+        { "항목": "세션 재개 시 도구 재전송", "패치 전": "매번 전체 재전송", "패치 후": "기록 유지로 생략" },
+        { "항목": "Bun 포크 cch= 버그", "독립 실행 바이너리": "영향받음", "npm 버전": "영향 없음" }
+      ],
+      timeline: [
+        { date: "2026-04-01", event: "Rangizingo(Reddit)가 유출 소스 분석으로 버그 2개 발견, 패치 공개" },
+        { date: "2026-04-01", event: "GitHub cc-cache-fix 저장소 및 apply-patch.js 배포" },
+        { date: "미정", event: "Anthropic 공식 수정 배포 예정 — 이후 패치 불필요" }
+      ]
+    }
   }
 ];
