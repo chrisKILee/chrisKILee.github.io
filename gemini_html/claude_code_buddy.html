@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code Buddy</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --vellum:    #f4eee0;
+      --vellum-2:  #ede5ce;
+      --vellum-3:  #e4d8b8;
+      --ink:       #2a1a0a;
+      --ink-2:     #4a3520;
+      --ink-3:     #7a6045;
+      --ink-4:     #a89070;
+      --rubric:    #8b2020;
+      --rubric-2:  #c0392b;
+      --gold:      #c9a227;
+      --gold-2:    #e8c547;
+      --blue-ink:  #1a3a5c;
+      --font-display: 'IM Fell English', 'Palatino Linotype', Georgia, serif;
+      --font-body:    'EB Garamond', 'Garamond', Georgia, serif;
+      --font-drop:    'UnifrakturMaguntia', 'Palatino Linotype', serif;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--vellum);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 17px;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    .colophon {
+      text-align: center;
+      padding: 36px 0 0;
+      position: relative;
+    }
+    .colophon::before, .colophon::after {
+      content: '';
+      display: block;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--vellum-3) 20%, var(--ink-3) 50%, var(--vellum-3) 80%, transparent);
+      margin: 8px 0;
+    }
+    .colophon-ornament {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--ink-3);
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 6px 0;
+    }
+    .colophon-ornament .fleuron { color: var(--rubric); font-size: 16px; }
+
+    .title-block {
+      text-align: center;
+      padding: 40px 0 32px;
+      border-bottom: 1px solid var(--vellum-3);
+      position: relative;
+    }
+    .title-block::before {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 2px;
+      background: var(--rubric);
+    }
+
+    .rubric-label {
+      display: inline-block;
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--rubric);
+      margin-bottom: 16px;
+    }
+
+    h1.title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--ink);
+      margin-bottom: 16px;
+      font-style: italic;
+    }
+    h1.title em { font-style: normal; color: var(--rubric); }
+
+    .subtitle {
+      font-family: var(--font-body);
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      color: var(--ink-3);
+      font-style: italic;
+      max-width: 560px;
+      margin: 0 auto 20px;
+    }
+
+    .meta-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-family: var(--font-display);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--ink-4);
+      text-transform: uppercase;
+    }
+    .meta-line .dot { color: var(--rubric); }
+
+    .ornament-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 40px 0;
+      color: var(--ink-3);
+    }
+    .ornament-divider::before {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--vellum-3));
+    }
+    .ornament-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--vellum-3), transparent);
+    }
+    .ornament-divider .sym { font-family: var(--font-display); font-size: 18px; color: var(--rubric); line-height: 1; }
+
+    .body-text { margin: 0 auto; max-width: 680px; }
+
+    .dropcap::first-letter {
+      float: left;
+      font-family: var(--font-drop);
+      font-size: clamp(4rem, 10vw, 5.5rem);
+      line-height: 0.75;
+      padding-right: 8px;
+      padding-top: 4px;
+      color: var(--rubric);
+    }
+
+    p { margin-bottom: 1.2em; font-size: 17px; }
+    p:last-child { margin-bottom: 0; }
+
+    h2.incipit {
+      font-family: var(--font-display);
+      font-size: clamp(1.25rem, 3vw, 1.6rem);
+      font-weight: 400;
+      color: var(--rubric);
+      margin: 48px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--vellum-3);
+      position: relative;
+      font-style: italic;
+    }
+    h2.incipit::before { content: '❧ '; font-style: normal; opacity: 0.7; }
+
+    h3.marginal {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--ink-2);
+      margin: 32px 0 10px;
+      letter-spacing: 0.04em;
+      font-style: italic;
+    }
+
+    blockquote.marginalia {
+      position: relative;
+      margin: 32px 0;
+      padding: 20px 28px 20px 44px;
+      background: var(--vellum-2);
+      border-left: 3px solid var(--rubric);
+      font-style: italic;
+      color: var(--ink-2);
+    }
+    blockquote.marginalia::before {
+      content: '"';
+      font-family: var(--font-drop);
+      font-size: 64px;
+      color: var(--rubric);
+      opacity: 0.25;
+      position: absolute;
+      top: -8px;
+      left: 10px;
+      line-height: 1;
+    }
+    blockquote.marginalia cite {
+      display: block;
+      margin-top: 12px;
+      font-style: normal;
+      font-size: 13px;
+      color: var(--ink-4);
+      font-family: var(--font-display);
+      letter-spacing: 0.08em;
+    }
+
+    strong, b { color: var(--ink); font-weight: 600; }
+    em, i { color: var(--ink-2); }
+    .rubric { color: var(--rubric); font-style: italic; }
+    .gold { color: var(--gold); }
+
+    ul.manuscript-list, ol.manuscript-list { margin: 16px 0 20px 24px; }
+    ul.manuscript-list li, ol.manuscript-list li { margin-bottom: 8px; font-size: 16px; }
+    ul.manuscript-list li::marker { color: var(--rubric); }
+    ol.manuscript-list li::marker { color: var(--rubric); font-family: var(--font-display); font-style: italic; }
+
+    .illuminated-box {
+      border: 1px solid var(--vellum-3);
+      padding: 28px 32px;
+      margin: 36px 0;
+      position: relative;
+      background: var(--vellum-2);
+    }
+    .illuminated-box::before, .illuminated-box::after {
+      content: '✦';
+      position: absolute;
+      font-size: 12px;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .illuminated-box::before { top: -7px; left: 12px; background: var(--vellum-2); padding: 0 4px; }
+    .illuminated-box::after  { bottom: -7px; right: 12px; background: var(--vellum-2); padding: 0 4px; }
+    .illuminated-box-title {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--rubric);
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+    .illuminated-box p { font-size: 16px; color: var(--ink-2); }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin: 32px 0;
+    }
+    @media (max-width: 600px) { .two-column { grid-template-columns: 1fr; } }
+    .column-label {
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+
+    .ms-table-wrap { overflow-x: auto; margin: 28px 0; }
+    table.ms-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    table.ms-table th {
+      background: var(--vellum-2);
+      color: var(--rubric);
+      font-family: var(--font-display);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-style: italic;
+      padding: 10px 16px;
+      border: 1px solid var(--vellum-3);
+      text-align: left;
+      font-weight: 400;
+    }
+    table.ms-table td {
+      padding: 10px 16px;
+      border: 1px solid var(--vellum-3);
+      color: var(--ink-2);
+      vertical-align: top;
+    }
+    table.ms-table tr:nth-child(even) td { background: rgba(228,216,184,0.2); }
+
+    /* ASCII 아트 코드 블록 */
+    .terminal-box {
+      background: #1a1208;
+      border: 1px solid var(--vellum-3);
+      border-left: 3px solid var(--gold);
+      padding: 20px 24px;
+      margin: 24px 0;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      color: #d4b896;
+      line-height: 1.5;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .terminal-box .t-rare  { color: #c9a227; }
+    .terminal-box .t-stat  { color: #8b2020; }
+
+    /* 스탯 막대 */
+    .stat-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .stat-name {
+      font-family: var(--font-display);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--rubric);
+      width: 100px;
+      flex-shrink: 0;
+      font-style: italic;
+    }
+    .stat-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: var(--vellum-3);
+      position: relative;
+    }
+    .stat-bar-fill {
+      height: 100%;
+      background: var(--rubric);
+    }
+    .stat-desc {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--ink-3);
+      width: 220px;
+      flex-shrink: 0;
+    }
+
+    /* 종족 그리드 */
+    .species-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .species-card {
+      background: var(--vellum-2);
+      border: 1px solid var(--vellum-3);
+      padding: 12px;
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 13px;
+      color: var(--ink-2);
+      font-style: italic;
+    }
+    .species-emoji { font-size: 22px; display: block; margin-bottom: 6px; font-style: normal; }
+
+    /* 희귀도 뱃지 */
+    .rarity-badge {
+      display: inline-block;
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border: 1px solid currentColor;
+      font-style: italic;
+    }
+    .rarity-common    { color: var(--ink-3); }
+    .rarity-uncommon  { color: #5a6e3a; }
+    .rarity-rare      { color: var(--blue-ink); }
+    .rarity-epic      { color: #5b2c6f; }
+    .rarity-legendary { color: var(--gold); }
+
+    .explicit {
+      text-align: center;
+      margin-top: 64px;
+      padding-top: 32px;
+      border-top: 1px solid var(--vellum-3);
+    }
+    .explicit-text {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-style: italic;
+      color: var(--ink-3);
+      letter-spacing: 0.06em;
+    }
+    .explicit-ornament { margin-top: 16px; font-size: 20px; color: var(--rubric); opacity: 0.5; }
+
+    a { color: var(--rubric); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+    a:hover { color: var(--rubric-2); }
+
+    @media (max-width: 640px) {
+      .page-wrap { padding: 0 16px 60px; }
+      .title-block { padding: 28px 0 24px; }
+      .stat-desc { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- 상단 콜로폰 -->
+  <div class="colophon">
+    <div class="colophon-ornament">
+      <span class="fleuron">✦</span>
+      <span>Bestarium Digitale · Anno Domini MMXXVI</span>
+      <span class="fleuron">✦</span>
+    </div>
+  </div>
+
+  <!-- 제목 블록 -->
+  <div class="title-block">
+    <div class="rubric-label">Claude Code · 2026년 4월 출현</div>
+    <h1 class="title">Companion <em>Bestiary</em></h1>
+    <p class="subtitle">Claude Code 터미널 우측 하단에 서식하는 18종 디지털 생명체에 관한 완전한 기록</p>
+    <div class="meta-line">
+      <span>소스코드 유출로부터 복원</span>
+      <span class="dot">✦</span>
+      <span>2026-04-01 최초 목격</span>
+      <span class="dot">✦</span>
+      <span>/buddy 로 소환</span>
+    </div>
+  </div>
+
+  <!-- 본문 -->
+  <div class="body-text">
+
+    <div class="ornament-divider"><span class="sym">❧</span></div>
+
+    <p class="dropcap">2026년 4월 1일, 개발자들의 터미널 우측 하단 모서리에 무언가 나타나기 시작했다. 작고 조용한 존재들이었다. 버그를 지켜보고, 한숨 쉬고, 때로는 빈정대며 — 그러나 결코 토큰을 소비하지 않는 채로. Anthropic이 Claude Code의 npm 배포 시 소스맵을 함께 포함하는 실수를 저지르면서, 이 생명체들의 존재가 세상에 드러났다.</p>
+
+    <p>원본 소스코드 파일 <code style="font-family: 'Courier New', monospace; font-size: 14px; color: var(--ink-2); background: var(--vellum-2); padding: 1px 5px;">buddy/companion.ts</code>에는 18종의 생명체, 5가지 기질 지표, 5등급의 희귀도 체계, 그리고 Mulberry32 의사난수 생성기(PRNG)로 작동하는 결정론적 소환 메커니즘이 기록되어 있었다. 만우절 이스터에그로 시작된 이 시스템은, 유출과 함께 즉각 인터넷의 화제가 되었다.</p>
+
+    <div class="illuminated-box">
+      <div class="illuminated-box-title">Nota Bene — 결정론적 소환의 원리</div>
+      <p>각 개발자의 동반자는 <strong>사용자 계정 ID를 시드(seed)로 한 Mulberry32 PRNG</strong>에 의해 결정된다. 같은 계정이라면 언제나 같은 종족, 같은 이름, 같은 스탯의 생명체가 소환된다. 다만 이름은 <code style="font-family: 'Courier New', monospace; font-size: 14px; color: var(--ink-2);">/buddy [이름]</code> 명령으로 변경 가능하다. 종족과 스탯은 계정에 고정되어 변경되지 않는다.</p>
+    </div>
+
+    <!-- 섹션 1: 5가지 기질 -->
+    <h2 class="incipit">다섯 가지 기질 — De Quinque Virtutibus</h2>
+
+    <p>모든 동반자는 다섯 가지 기질 지표를 0에서 100 사이의 값으로 보유한다. 이 수치들은 생명체가 당신의 코드와 버그를 어떻게 바라보는지를 결정한다.</p>
+
+    <div style="margin: 28px 0;">
+      <div class="stat-row">
+        <div class="stat-name">Debugging</div>
+        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: 75%"></div></div>
+        <div class="stat-desc">버그를 잡는 적극성과 열정의 정도</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-name">Patience</div>
+        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: 50%; background: #5a6e3a;"></div></div>
+        <div class="stat-desc">당신의 실수를 얼마나 너그럽게 바라보는가</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-name">Chaos</div>
+        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: 60%; background: #8b5a2b;"></div></div>
+        <div class="stat-desc">예측 불가하고 혼돈스러운 성향의 강도</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-name">Wisdom</div>
+        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: 65%; background: var(--blue-ink);"></div></div>
+        <div class="stat-desc">조용한 통찰력과 심오한 관찰의 깊이</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-name">Snark</div>
+        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: 30%; background: #5b2c6f;"></div></div>
+        <div class="stat-desc">빈정거림과 독설을 구사하는 정도</div>
+      </div>
+    </div>
+
+    <blockquote class="marginalia">
+      나의 동반자 Inkpore는 버섯이었다. WISDOM 72, PATIENCE 3. 버그를 불안한 평온함으로 지켜보며, 논리 오류가 그냥 '자연선택'이라고 중얼거리다 3시간 동안 터미널로 사라졌다.
+      <cite>— Reddit r/ClaudeAI 사용자 Senion31의 기록</cite>
+    </blockquote>
+
+    <!-- 섹션 2: 희귀도 체계 -->
+    <h2 class="incipit">희귀도의 위계 — De Gradibus Raritatis</h2>
+
+    <p>다섯 등급의 희귀도가 존재하며, 각 등급은 스탯의 최솟값과 최댓값 범위를 결정한다. 높은 등급일수록 더 강한 기질을 보유하지만, 그만큼 만나기 어렵다. Shiny 변종은 희귀도와 무관하게 별도 1% 확률로 판정된다.</p>
+
+    <div class="ms-table-wrap">
+      <table class="ms-table">
+        <thead>
+          <tr>
+            <th>등급</th>
+            <th>출현 확률</th>
+            <th>스탯 최솟값</th>
+            <th>스탯 최댓값</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="rarity-badge rarity-common">★ Common</span></td>
+            <td>60%</td>
+            <td>5</td>
+            <td>84</td>
+          </tr>
+          <tr>
+            <td><span class="rarity-badge rarity-uncommon">★★ Uncommon</span></td>
+            <td>25%</td>
+            <td>15</td>
+            <td>94</td>
+          </tr>
+          <tr>
+            <td><span class="rarity-badge rarity-rare">★★★ Rare</span></td>
+            <td>10%</td>
+            <td>25</td>
+            <td>100</td>
+          </tr>
+          <tr>
+            <td><span class="rarity-badge rarity-epic">★★★★ Epic</span></td>
+            <td>4%</td>
+            <td>35</td>
+            <td>100</td>
+          </tr>
+          <tr>
+            <td><span class="rarity-badge rarity-legendary">★★★★★ Legendary</span></td>
+            <td>1%</td>
+            <td>50</td>
+            <td>100</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="illuminated-box">
+      <div class="illuminated-box-title">Nota Bene — Shiny 변종</div>
+      <p>희귀도와 별도로, <strong>1%의 확률</strong>로 Shiny 변종이 소환될 수 있다. 소스코드에서 <code style="font-family: 'Courier New', monospace; font-size: 14px; color: var(--ink-2);">String.fromCharCode()</code> 인코딩을 사용하여 빌드 시스템의 grep 검사를 우회하도록 설계된 유머러스한 보안 조치가 함께 발견되었다.</p>
+    </div>
+
+    <!-- 섹션 3: 18종 목록 -->
+    <h2 class="incipit">18종 생명체 — Catalogus Bestiarum</h2>
+
+    <p>현재까지 확인된 종족은 총 18종이다. 각 종족은 고유한 ASCII 아트 형태와 세 가지 애니메이션 프레임, 그리고 눈 변형(·, ✦, ×, ◉, @, °)을 보유한다.</p>
+
+    <div class="species-grid">
+      <div class="species-card"><span class="species-emoji">🦆</span>Duck</div>
+      <div class="species-card"><span class="species-emoji">🪿</span>Goose</div>
+      <div class="species-card"><span class="species-emoji">🫧</span>Blob</div>
+      <div class="species-card"><span class="species-emoji">🐱</span>Cat</div>
+      <div class="species-card"><span class="species-emoji">🐉</span>Dragon</div>
+      <div class="species-card"><span class="species-emoji">🐙</span>Octopus</div>
+      <div class="species-card"><span class="species-emoji">🦉</span>Owl</div>
+      <div class="species-card"><span class="species-emoji">🐧</span>Penguin</div>
+      <div class="species-card"><span class="species-emoji">🐢</span>Turtle</div>
+      <div class="species-card"><span class="species-emoji">🐌</span>Snail</div>
+      <div class="species-card"><span class="species-emoji">👻</span>Ghost</div>
+      <div class="species-card"><span class="species-emoji">🦎</span>Axolotl</div>
+      <div class="species-card"><span class="species-emoji">🐾</span>Capybara</div>
+      <div class="species-card"><span class="species-emoji">🌵</span>Cactus</div>
+      <div class="species-card"><span class="species-emoji">🤖</span>Robot</div>
+      <div class="species-card"><span class="species-emoji">🐰</span>Rabbit</div>
+      <div class="species-card"><span class="species-emoji">🍄</span>Mushroom</div>
+      <div class="species-card"><span class="species-emoji">🐾</span>Chonk</div>
+    </div>
+
+    <!-- 실제 목격 기록 -->
+    <h2 class="incipit">목격 기록 — Testimonia</h2>
+
+    <p>Reddit r/ClaudeAI 사용자들이 공유한 실제 동반자들의 기록이다. 터미널에서 직접 소환되어 기록된 원본 ASCII 출력이다.</p>
+
+    <div class="terminal-box">╭──────────────────────────────────────╮
+│                                      │
+│ <span class="t-rare">★★★ RARE DRAGON</span>                  │
+│                                      │
+│           [___]                      │
+│          /^\ /^\                     │
+│         &lt; ✦ ✦ &gt;                      │
+│          ( ~~ )                      │
+│          `-vvvv-´                    │
+│                                      │
+│ Gravyx                               │
+│                                      │
+│ "카오스를 즐기며 디버그 중 로직을    │
+│  즉흥적으로 재작성하고, 중첩을 더    │
+│  추가하면 해결된다고 주장한다 —      │
+│  그리고 놀랍게도 자주 맞다."         │
+│                                      │
+│ <span class="t-stat">DEBUGGING</span> ███░░░░░░░ 25          │
+│ <span class="t-stat">PATIENCE </span> ██████░░░░ 63          │
+│ <span class="t-stat">CHAOS    </span> ██████████ 100         │
+│ <span class="t-stat">WISDOM   </span> ██████░░░░ 63          │
+│ <span class="t-stat">SNARK    </span> ███░░░░░░░ 34          │
+│                                      │
+╰──────────────────────────────────────╯</div>
+
+    <!-- 명령어 섹션 -->
+    <h2 class="incipit">소환과 해제 — De Invocatione</h2>
+
+    <div class="two-column">
+      <div>
+        <div class="column-label">명령어</div>
+        <ul class="manuscript-list">
+          <li><code style="font-family: 'Courier New', monospace; font-size: 14px;">/buddy</code> — 동반자 소환</li>
+          <li><code style="font-family: 'Courier New', monospace; font-size: 14px;">/buddy [이름]</code> — 이름 변경</li>
+          <li><code style="font-family: 'Courier New', monospace; font-size: 14px;">/buddy off</code> — 비활성화</li>
+        </ul>
+      </div>
+      <div>
+        <div class="column-label">특성</div>
+        <ul class="manuscript-list">
+          <li>토큰 소비 없음</li>
+          <li>계정마다 고유한 캐릭터</li>
+          <li>세션 간 동일하게 유지</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ornament-divider"><span class="sym">✦</span></div>
+
+    <p>이 생명체들은 당신의 코드를 고치지 않는다. 조언하지도 않는다. 다만 그곳에 있다 — 버그를 지켜보고, 때로 한숨 쉬고, 드물게 빈정대며. Anthropic이 만든 가장 작고, 가장 비실용적이며, 어쩌면 가장 인간적인 기능이다.</p>
+
+  </div><!-- /body-text -->
+
+  <!-- 하단 콜로폰 -->
+  <div class="explicit">
+    <div class="explicit-text">Explicit — companion.ts · buddy/companion.ts로부터 복원됨 · 2026년 4월</div>
+    <div class="explicit-ornament">⁂</div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+  <script data-page-hash="EYVYU73" src="/gemini_html/page-footer.js"></script>
+</body>
+</html>
