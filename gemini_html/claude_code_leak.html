@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code 미공개 기능 유출</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:ital,wght@0,700;0,900;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F7F8FA;
+      --surface: #FFFFFF;
+      --border: #E5E7EB;
+      --text-primary: #111827;
+      --text-secondary: #6B7280;
+      --text-muted: #9CA3AF;
+
+      /* 카테고리 색상 */
+      --cat-1: #7C3AED;   /* 에이전트 */
+      --cat-1-bg: #F5F3FF;
+      --cat-1-border: #DDD6FE;
+
+      --cat-2: #0891B2;   /* 기억·학습 */
+      --cat-2-bg: #ECFEFF;
+      --cat-2-border: #A5F3FC;
+
+      --cat-3: #C4522A;   /* 플래닝 */
+      --cat-3-bg: #FEF3ED;
+      --cat-3-border: #F9C3AD;
+
+      --cat-4: #059669;   /* 모델·기타 */
+      --cat-4-bg: #ECFDF5;
+      --cat-4-border: #A7F3D0;
+
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      word-break: keep-all;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      height: 60px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 16px; color: var(--text-primary); text-decoration: none;
+    }
+    .nav-logo-dot { width: 8px; height: 8px; border-radius: 50%; background: #C4522A; }
+    .nav-badge {
+      font-size: 11px; font-weight: 600; color: #C4522A;
+      background: #FEF3ED; border: 1px solid #F9C3AD;
+      border-radius: 99px; padding: 2px 10px; letter-spacing: 0.04em;
+    }
+
+    /* ── Hero ── */
+    .hero { max-width: 1200px; margin: 0 auto; padding: 56px 24px 36px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; color: #C4522A;
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;
+    }
+    .hero-eyebrow::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background: #C4522A; }
+    .hero h1 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(26px, 5vw, 42px); font-weight: 900;
+      line-height: 1.15; letter-spacing: -0.025em; color: var(--text-primary); margin-bottom: 14px;
+    }
+    .hero h1 em { font-style: italic; font-weight: 300; color: #C4522A; }
+    .hero-sub { font-size: 15px; color: var(--text-secondary); max-width: 580px; line-height: 1.75; margin-bottom: 24px; }
+
+    /* 유출 경위 인포 박스 */
+    .leak-info {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 20px 24px; max-width: 720px;
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .leak-info-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+    .leak-info-body { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+    .leak-info-body strong { color: var(--text-primary); }
+    .leak-flow {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .leak-chip {
+      font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 6px;
+      background: #F3F4F6; color: #374151; border: 1px solid #E5E7EB;
+    }
+    .leak-arrow { color: #C4522A; font-weight: 700; font-size: 14px; }
+    .leak-chip.highlight { background: #FEF3ED; color: #C4522A; border-color: #F9C3AD; }
+
+    /* ── Filter Tabs ── */
+    .filter-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px 28px; }
+    .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tab-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 100px; border: 1px solid var(--border);
+      background: var(--surface); font-size: 13px; font-weight: 500;
+      color: var(--text-secondary); cursor: pointer; transition: all 0.15s; line-height: 1;
+    }
+    .tab-btn:hover { border-color: #D1D5DB; color: var(--text-primary); }
+    .tab-btn.active { background: var(--text-primary); border-color: var(--text-primary); color: #fff; }
+    .tab-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Grid ── */
+    .grid-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+      display: flex; flex-direction: column;
+    }
+    .card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); border-color: #D1D5DB; }
+
+    /* 카드 이미지 영역 */
+    .card-img {
+      width: 100%; aspect-ratio: 3/4; overflow: hidden;
+      background: #F3F4F6;
+      position: relative;
+    }
+    .card-img img {
+      width: 100%; height: 100%; object-fit: cover; object-position: top;
+      display: block; transition: transform 0.3s ease;
+      cursor: zoom-in;
+    }
+    .card:hover .card-img img { transform: scale(1.02); }
+
+    /* 카드 본문 */
+    .card-body { padding: 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .cat-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; padding: 4px 10px;
+      border-radius: 100px; letter-spacing: 0.04em; flex-shrink: 0;
+    }
+    .cat-badge::before { content: ''; display: block; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .cat-1 { color: var(--cat-1); background: var(--cat-1-bg); border: 1px solid var(--cat-1-border); }
+    .cat-2 { color: var(--cat-2); background: var(--cat-2-bg); border: 1px solid var(--cat-2-border); }
+    .cat-3 { color: var(--cat-3); background: var(--cat-3-bg); border: 1px solid var(--cat-3-border); }
+    .cat-4 { color: var(--cat-4); background: var(--cat-4-bg); border: 1px solid var(--cat-4-border); }
+
+    .card-title { font-size: 16px; font-weight: 700; line-height: 1.4; color: var(--text-primary); }
+    .card-summary { font-size: 13px; color: var(--text-secondary); line-height: 1.65; flex: 1; }
+
+    /* 키 포인트 태그들 */
+    .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .ctag {
+      font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px;
+      background: var(--bg); border: 1px solid var(--border); color: var(--text-secondary);
+      font-family: 'Inter', monospace;
+    }
+
+    .card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border); }
+    .card-slide { font-size: 12px; color: var(--text-muted); }
+    .card-arrow { font-size: 13px; color: var(--text-muted); transition: transform 0.15s, color 0.15s; }
+    .card:hover .card-arrow { transform: translateX(3px); color: #C4522A; }
+
+    /* ── Summary Banner ── */
+    .summary-banner {
+      max-width: 1200px; margin: 0 auto 8px; padding: 0 24px;
+    }
+    .summary-inner {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 18px 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    }
+    .summary-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+    .summary-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .schip {
+      font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 6px;
+      border: 1px solid var(--border); color: var(--text-secondary); background: var(--bg);
+    }
+
+    /* ── Lightbox ── */
+    #lightbox {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.88); z-index: 9999;
+      align-items: center; justify-content: center; padding: 24px; cursor: zoom-out;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox-content { max-width: 90vw; max-height: 90vh; overflow: auto; }
+    #lightbox-content img { max-width: min(90vw, 560px); max-height: 90vh; border-radius: 10px; display: block; }
+    #lightbox-close {
+      position: fixed; top: 20px; right: 24px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+      color: #fff; font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Footer ── */
+    footer { border-top: 1px solid var(--border); background: var(--surface); }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto; padding: 24px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    footer p { font-size: 13px; color: var(--text-muted); }
+    footer a { color: var(--text-secondary); text-decoration: none; font-size: 13px; }
+    footer a:hover { color: var(--text-primary); }
+
+    @media (max-width: 640px) {
+      .hero { padding: 36px 16px 24px; }
+      .filter-wrap, .grid-wrap, .summary-banner { padding-left: 16px; padding-right: 16px; }
+      .card-grid { grid-template-columns: 1fr; }
+      .nav-inner { padding: 0 16px; }
+      .leak-info { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#">
+      <span class="nav-logo-dot"></span>
+      Claude Code
+    </a>
+    <span class="nav-badge">🔓 LEAK</span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-eyebrow">Claude Code · 소스코드 유출</div>
+  <h1>소스코드에서 발견된<br><em>미공개 기능 총정리</em></h1>
+  <p class="hero-sub">
+    npm 패키지 배포 시 .map(소스맵) 파일이 함께 업로드되면서 Claude Code의 원본 소스코드가 노출됐습니다.
+    아직 출시되지 않은 6가지 미공개 기능이 발견됐습니다.
+  </p>
+  <div class="leak-info">
+    <div class="leak-info-icon">🔍</div>
+    <div class="leak-info-body">
+      <strong>유출 경위</strong><br>
+      npm 패키지 배포 시 <code style="font-size:12px;background:#F3F4F6;padding:1px 5px;border-radius:3px;">.map</code> 파일이 함께 포함됐고,
+      이 파일에는 원본 TypeScript 소스코드 전체가 담겨 있었습니다.
+      <div class="leak-flow">
+        <span class="leak-chip">npm publish</span>
+        <span class="leak-arrow">→</span>
+        <span class="leak-chip">.map 파일 포함</span>
+        <span class="leak-arrow">→</span>
+        <span class="leak-chip highlight">소스 전체 노출 🔓</span>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+        <span style="font-size:11px;font-weight:700;color:var(--text-muted);margin-right:2px;">발견된 기능:</span>
+        <span class="leak-chip" style="font-size:11px;">KAIROS</span>
+        <span class="leak-chip" style="font-size:11px;">DREAM</span>
+        <span class="leak-chip" style="font-size:11px;">ULTRAPLAN</span>
+        <span class="leak-chip" style="font-size:11px;">BUDDY</span>
+        <span class="leak-chip" style="font-size:11px;">COORDINATOR</span>
+        <span class="leak-chip" style="font-size:11px;">VOICE_MODE</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- 전체 요약 바 -->
+<div class="summary-banner">
+  <div class="summary-inner">
+    <span class="summary-label">미공개 기능 7종</span>
+    <div class="summary-chips">
+      <span class="schip">👁 KAIROS</span>
+      <span class="schip">💤 Dream</span>
+      <span class="schip">⏱ ULTRAPLAN</span>
+      <span class="schip">🐾 Buddy</span>
+      <span class="schip">🐧 Penguin Mode</span>
+      <span class="schip">⭐ Capybara v2</span>
+      <span class="schip">🚀 Opus 4.7 · Sonnet 4.8</span>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="filter-wrap" style="padding-top:20px;">
+  <div class="filter-tabs">
+    <button class="tab-btn active" data-cat="all">전체 <span style="font-size:11px;opacity:0.6;margin-left:2px;">9</span></button>
+    <button class="tab-btn" data-cat="cat1">
+      <span class="tab-dot" style="background:var(--cat-1)"></span>에이전트
+    </button>
+    <button class="tab-btn" data-cat="cat2">
+      <span class="tab-dot" style="background:var(--cat-2)"></span>기억·학습
+    </button>
+    <button class="tab-btn" data-cat="cat3">
+      <span class="tab-dot" style="background:var(--cat-3)"></span>플래닝·UX
+    </button>
+    <button class="tab-btn" data-cat="cat4">
+      <span class="tab-dot" style="background:var(--cat-4)"></span>모델·기타
+    </button>
+  </div>
+</div>
+
+<main class="grid-wrap">
+  <div class="card-grid" id="card-grid"></div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <p>출처: 현수IT · @hyunsoo.it | 카드뉴스 9장</p>
+    <span style="font-size:13px;color:var(--text-muted);">2026-04-02</span>
+  </div>
+</footer>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <div id="lightbox-content" onclick="event.stopPropagation()"></div>
+</div>
+
+<script>
+  const ITEMS = [
+    {
+      id: 1,
+      category: 'cat4',
+      title: '소스코드 유출 — 커버',
+      summary: 'npm publish 시 .map 파일이 함께 업로드되어 Claude Code의 원본 소스 전체가 노출됐습니다. KAIROS, Dream, ULTRAPLAN, Buddy, Penguin, 미공개 모델이 발견됐습니다.',
+      tags: ['KAIROS', 'DREAM', 'ULTRAPLAN', 'BUDDY'],
+      img: '/gemini_html/assets/claude-mis/claude-mis_1.jpg',
+      slide: '1 / 9'
+    },
+    {
+      id: 2,
+      category: 'cat4',
+      title: '소스맵 유출 경위',
+      summary: 'npm publish → .map 파일 포함 → 소스 전체 노출. 발견된 미공개 기능: KAIROS, DREAM, ULTRAPLAN, BUDDY, COORDINATOR, VOICE_MODE.',
+      tags: ['.map 파일', 'npm publish', 'COORDINATOR', 'VOICE_MODE'],
+      img: '/gemini_html/assets/claude-mis/claude-mis_2.jpg',
+      slide: '2 / 9'
+    },
+    {
+      id: 3,
+      category: 'cat1',
+      title: 'KAIROS — 항상 켜진 자율 에이전트',
+      summary: '사용자가 명령하지 않아도 스스로 관찰(Observe) → 판단(Decide) → 로그(Log) → 행동(Act) 사이클로 작동합니다. 15초를 넘는 블로킹 작업은 자동으로 defer합니다.',
+      tags: ['Observe→Act', 'SendUserFile', 'PushNotification', 'SubscribePR'],
+      img: '/gemini_html/assets/claude-mis/claude-mis_3.jpg',
+      slide: '3 / 9'
+    },
+    {
+      id: 4,
+      category: 'cat2',
+      title: 'Dream System — 클로드가 꿈을 꿔요',
+      summary: '하루에 한 번, 24시간 경과 + 5세션 이상 + 잠금 획득 조건이 충족되면 자동으로 기억을 정리합니다. Orient → Gather → Consolidate → Prune 4단계.',
+      tags: ['24h + 5세션', 'Orient', 'Consolidate', 'Prune'],
+      img: '/gemini_html/assets/claude-mis/claude-mis_4.jpg',
+      slide: '4 / 9'
+    },
+    {
+      id: 5,
+      category: 'cat3',
+      title: 'ULTRAPLAN — 30분 원격 딥 플래닝',
+      summary: '복잡한 작업이 들어오면 클라우드 서버에서 Opus 4.6이 최대 30분간 깊이 생각합니다. 결과는 브라우저에서 승인 후 터미널로 TELEPORT됩니다.',
+      tags: ['Opus 4.6', 'Cloud CCR', '30분 플래닝', 'TELEPORT'],
+      img: '/gemini_html/assets/claude-mis/claude-mis_5.jpg',
+      slide: '5 / 9'
+    },
+    {
+      id: 6,
+      category: 'cat3',
+      title: 'BUDDY — 터미널 안의 타마고치',
+      summary: '코딩할 때 옆에서 함께하는 펫입니다. 계정마다 고유한 동물이 배정되고 말도 걸 수 있습니다. 총 18종 5등급. Shiny Legendary Nebulynx 확률 0.01%.',
+      tags: ['18종 5등급', 'Legendary 1%', 'Shiny 0.01%', 'Nebulynx'],
+      img: '/gemini_html/assets/claude-mis/claude-mis_6.jpg',
+      slide: '6 / 9'
+    },
+    {
+      id: 7,
+      category: 'cat3',
+      title: 'Penguin Mode — Fast Mode의 진짜 이름',
+      summary: 'Fast Mode의 내부 코드명은 Penguin Mode입니다. 끄는 스위치 이름은 tengu_penguins_off. 내부 코드명은 동물 이름이 전통: Fennec → Tengu → Capybara.',
+      tags: ['penguinModeOrgEnabled', 'tengu_penguins_off', 'Fennec', 'Capybara'],
+      img: '/gemini_html/assets/claude-mis/claude-mis_7.jpg',
+      slide: '7 / 9'
+    },
+    {
+      id: 8,
+      category: 'cat4',
+      title: '미공개 모델 — Capybara v2, Opus 4.7, Sonnet 4.8',
+      summary: 'Capybara v2는 Opus를 넘는 최상위 모델로 1M 토큰까지 지원합니다. Opus 4.7과 Sonnet 4.8도 코드에서 발견됐습니다.',
+      tags: ['Capybara v2', '1M context', 'Opus 4.7', 'Sonnet 4.8'],
+      img: '/gemini_html/assets/claude-mis/claude-mis_8.jpg',
+      slide: '8 / 9'
+    },
+    {
+      id: 9,
+      category: 'cat4',
+      title: '미공개 기능 한눈에 정리',
+      summary: 'KAIROS(자율 에이전트), Dream(기억 정리), ULTRAPLAN(딥 플래닝), Buddy(타마고치), Penguin Mode(Fast Mode), Capybara v2, Opus 4.7, Sonnet 4.8 총정리.',
+      tags: ['전체 요약', '7종 기능', 'Claude Code 미래'],
+      img: '/gemini_html/assets/claude-mis/claude-mis_9.jpg',
+      slide: '9 / 9'
+    }
+  ];
+
+  const CAT_LABEL = {
+    cat1: '에이전트',
+    cat2: '기억·학습',
+    cat3: '플래닝·UX',
+    cat4: '모델·기타'
+  };
+
+  let currentCat = 'all';
+
+  function getFiltered() {
+    return ITEMS.filter(a => currentCat === 'all' || a.category === currentCat);
+  }
+
+  function renderCards() {
+    const grid = document.getElementById('card-grid');
+    const items = getFiltered();
+
+    if (items.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px 24px;color:var(--text-muted)"><p style="font-size:15px;">표시할 항목이 없습니다.</p></div>';
+      return;
+    }
+
+    grid.innerHTML = items.map(a => `
+      <article class="card" data-id="${a.id}">
+        <div class="card-img">
+          <img src="${a.img}" alt="${a.title}" loading="lazy"
+               class="lightbox-trigger" onclick="openLightbox('${a.img}', '${a.title}')">
+        </div>
+        <div class="card-body">
+          <div class="card-header">
+            <span class="cat-badge cat-${a.category.replace('cat','')}">${CAT_LABEL[a.category]}</span>
+          </div>
+          <h2 class="card-title">${a.title}</h2>
+          <p class="card-summary">${a.summary}</p>
+          <div class="card-tags">
+            ${a.tags.map(t => `<span class="ctag">${t}</span>`).join('')}
+          </div>
+          <div class="card-footer">
+            <span class="card-slide">슬라이드 ${a.slide}</span>
+            <span class="card-arrow">↗</span>
+          </div>
+        </div>
+      </article>
+    `).join('');
+  }
+
+  // Filter tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCat = btn.dataset.cat;
+      renderCards();
+    });
+  });
+
+  // Lightbox
+  function openLightbox(src, alt) {
+    const lb = document.getElementById('lightbox');
+    const content = document.getElementById('lightbox-content');
+    content.innerHTML = `<img src="${src}" alt="${alt}">`;
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+
+  renderCards();
+</script>
+
+  <script data-page-hash="NVK6BV4" src="/gemini_html/page-footer.js"></script>
+</body>
+</html>
