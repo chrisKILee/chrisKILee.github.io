@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code Ultraplan — 클라우드 계획 도구 심층 분석</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:            #F7F7F4;
+      --surface:       #FFFFFF;
+      --surface2:      #F0F0EC;
+      --border:        rgba(0,0,0,0.08);
+      --border-strong: rgba(0,0,0,0.15);
+      --text-primary:  #18181C;
+      --text-secondary:#4B4B5E;
+      --text-muted:    #8B8B99;
+      --accent:        #D4450C;
+      --accent-soft:   rgba(212,69,12,0.08);
+      --accent-border: rgba(212,69,12,0.25);
+      --nav-bg:        rgba(247,247,244,0.92);
+      --code-bg:       #EEECEA;
+      --code-text:     #3B3B4E;
+      --tag-new-bg:    #FFF7ED;
+      --tag-new-text:  #C2410C;
+      --tag-prev-bg:   #EEF5FF;
+      --tag-prev-text: #2563EB;
+      --tag-note-bg:   #F0FDF4;
+      --tag-note-text: #15803D;
+      --callout-bg:    rgba(212,69,12,0.06);
+      --callout-border:rgba(212,69,12,0.3);
+      --tip-bg:        rgba(37,99,235,0.06);
+      --tip-border:    rgba(37,99,235,0.28);
+    }
+    [data-theme="dark"] {
+      --bg:            #0F0F14;
+      --surface:       #18181C;
+      --surface2:      #1E1E26;
+      --border:        rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.14);
+      --text-primary:  #F0F0F4;
+      --text-secondary:#B0B0C0;
+      --text-muted:    #6B6B7B;
+      --accent:        #F87239;
+      --accent-soft:   rgba(248,114,57,0.12);
+      --accent-border: rgba(248,114,57,0.3);
+      --nav-bg:        rgba(15,15,20,0.92);
+      --code-bg:       #23232E;
+      --code-text:     #C4C4D8;
+      --tag-new-bg:    rgba(194,65,12,0.18);
+      --tag-new-text:  #FED7AA;
+      --tag-prev-bg:   rgba(37,99,235,0.15);
+      --tag-prev-text: #93C5FD;
+      --tag-note-bg:   rgba(21,128,61,0.15);
+      --tag-note-text: #6EE7B7;
+      --callout-bg:    rgba(248,114,57,0.08);
+      --callout-border:rgba(248,114,57,0.28);
+      --tip-bg:        rgba(37,99,235,0.08);
+      --tip-border:    rgba(37,99,235,0.25);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.7;
+      font-size: 16px;
+      word-break: keep-all;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    /* ── Nav ── */
+    .top-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 52px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .nav-brand {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 15px; font-weight: 700;
+      color: var(--text-primary);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .nav-icon {
+      width: 22px; height: 22px; border-radius: 6px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: #fff; font-weight: 700;
+    }
+    .nav-spacer { flex: 1; }
+    .nav-pill {
+      font-size: 11px; font-weight: 700;
+      padding: 3px 9px; border-radius: 20px;
+      background: var(--tag-new-bg); color: var(--tag-new-text);
+      border: 1px solid var(--accent-border);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .theme-toggle {
+      width: 34px; height: 34px; border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary);
+      transition: background 0.15s, color 0.15s;
+    }
+    .theme-toggle:hover { background: var(--surface2); color: var(--accent); }
+    .icon-sun { display: none; }
+    [data-theme="dark"] .icon-moon { display: none; }
+    [data-theme="dark"] .icon-sun  { display: block; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+
+    /* ── Layout ── */
+    .page-layout {
+      display: grid;
+      grid-template-columns: 210px 1fr;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      gap: 48px;
+      align-items: start;
+    }
+    @media (max-width: 768px) {
+      .page-layout { grid-template-columns: 1fr; padding: 0 16px; }
+      .sidebar { display: none; }
+    }
+
+    /* ── Sidebar ── */
+    .sidebar { position: sticky; top: 68px; padding: 32px 0; }
+    .sidebar-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 10px;
+    }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav li { margin-bottom: 2px; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: 7px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-secondary); text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      background: var(--accent-soft); color: var(--accent);
+    }
+    .sdot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); flex-shrink: 0; opacity: 0.45;
+    }
+    .sidebar-nav a.active .sdot,
+    .sidebar-nav a:hover .sdot { opacity: 1; }
+
+    /* ── Main ── */
+    .main-content { padding: 48px 0 100px; }
+
+    /* ── Page Header ── */
+    .page-header { margin-bottom: 52px; }
+    .header-meta {
+      display: flex; align-items: center; gap: 10px;
+      flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .tag {
+      font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 5px;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .tag-new    { background: var(--tag-new-bg);  color: var(--tag-new-text);  }
+    .tag-prev   { background: var(--tag-prev-bg); color: var(--tag-prev-text); }
+    .tag-note   { background: var(--tag-note-bg); color: var(--tag-note-text); }
+
+    .page-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 700; line-height: 1.2;
+      color: var(--text-primary); margin-bottom: 14px;
+    }
+    .page-title em { color: var(--accent); font-style: normal; }
+    .page-desc {
+      font-size: 15px; color: var(--text-secondary);
+      max-width: 620px; line-height: 1.75;
+    }
+
+    /* ── Hero Summary Cards ── */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px; margin-bottom: 52px;
+    }
+    .hero-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .hero-card:hover {
+      border-color: var(--accent-border);
+      box-shadow: 0 4px 18px rgba(212,69,12,0.08);
+    }
+    .hero-icon {
+      font-size: 22px; margin-bottom: 10px; display: block;
+    }
+    .hero-title {
+      font-size: 14px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 6px;
+    }
+    .hero-desc {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+    }
+
+    /* ── Section ── */
+    .section { margin-bottom: 52px; }
+    .section-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 22px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    /* ── Content Cards ── */
+    .content-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 22px 24px;
+      margin-bottom: 14px;
+    }
+    .content-card-title {
+      font-size: 15px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 10px;
+    }
+    .content-card-body {
+      font-size: 14px; color: var(--text-secondary); line-height: 1.7;
+    }
+    .content-card-body p + p { margin-top: 8px; }
+    .content-card-body strong { color: var(--text-primary); font-weight: 600; }
+
+    /* ── Callout / Tip ── */
+    .callout {
+      background: var(--callout-bg);
+      border-left: 3px solid var(--callout-border);
+      border-radius: 0 10px 10px 0;
+      padding: 14px 16px; margin: 14px 0;
+      font-size: 14px; color: var(--text-secondary); line-height: 1.65;
+    }
+    .tip {
+      background: var(--tip-bg);
+      border-left: 3px solid var(--tip-border);
+      border-radius: 0 10px 10px 0;
+      padding: 14px 16px; margin: 14px 0;
+      font-size: 14px; color: var(--text-secondary); line-height: 1.65;
+    }
+    .c-icon { color: var(--accent); font-weight: 700; margin-right: 5px; }
+    .t-icon { color: #2563EB; font-weight: 700; margin-right: 5px; }
+
+    /* ── Code inline ── */
+    code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      background: var(--code-bg); color: var(--code-text);
+      padding: 2px 6px; border-radius: 5px;
+    }
+
+    /* ── 상태 표시 터미널 ── */
+    .terminal-block {
+      background: #0D0D12;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 20px 22px; margin: 14px 0;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 13px;
+    }
+    .terminal-line {
+      display: flex; align-items: flex-start; gap: 10px;
+      margin-bottom: 10px; line-height: 1.5;
+    }
+    .terminal-line:last-child { margin-bottom: 0; }
+    .t-diamond-empty { color: #5B5B70; flex-shrink: 0; }
+    .t-diamond-fill  { color: var(--accent); flex-shrink: 0; }
+    .t-text-muted    { color: #9898B0; }
+    .t-text-label    { color: #D4A07A; font-weight: 600; }
+    .t-text-note     { color: #7A9EC4; }
+
+    /* ── 실행 방법 스텝 ── */
+    .step-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .step-item {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px;
+    }
+    .step-num {
+      font-size: 12px; font-weight: 700;
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--accent-border);
+      border-radius: 6px; padding: 2px 8px;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .step-text {
+      font-size: 14px; color: var(--text-secondary); line-height: 1.65;
+    }
+    .step-text strong { color: var(--text-primary); font-weight: 600; }
+
+    /* ── 선택지 카드 ── */
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px; margin: 14px 0;
+    }
+    .choice-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 20px;
+    }
+    .choice-num {
+      font-size: 11px; font-weight: 700;
+      color: var(--accent); text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 8px;
+    }
+    .choice-title {
+      font-size: 15px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 8px;
+    }
+    .choice-desc {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+    }
+
+    /* ── 타임라인 분석 ── */
+    .timeline-wrap { position: relative; padding-left: 28px; }
+    .timeline-wrap::before {
+      content: ''; position: absolute; left: 7px; top: 12px; bottom: 12px;
+      width: 2px; background: var(--border-strong);
+      border-radius: 2px;
+    }
+    .timeline-item { position: relative; margin-bottom: 22px; }
+    .timeline-item:last-child { margin-bottom: 0; }
+    .timeline-dot {
+      position: absolute; left: -24px; top: 4px;
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid var(--accent); background: var(--bg);
+    }
+    .timeline-date {
+      font-size: 11px; font-weight: 700;
+      color: var(--accent); text-transform: uppercase;
+      letter-spacing: 0.07em; margin-bottom: 5px;
+    }
+    .timeline-body {
+      font-size: 14px; color: var(--text-secondary); line-height: 1.65;
+    }
+    .timeline-body strong { color: var(--text-primary); font-weight: 600; }
+
+    /* ── 비교 테이블 ── */
+    .compare-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      font-size: 14px;
+    }
+    .compare-table th {
+      background: var(--surface2);
+      padding: 12px 16px; text-align: left;
+      font-size: 13px; font-weight: 700;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary); vertical-align: top; line-height: 1.6;
+    }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { font-weight: 600; color: var(--text-primary); width: 140px; }
+
+    /* ── 조건 체크리스트 ── */
+    .req-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .req-item {
+      display: flex; gap: 10px; align-items: flex-start;
+      font-size: 14px; color: var(--text-secondary); line-height: 1.65;
+      padding: 10px 14px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+    .req-check { color: var(--accent); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+    .req-warn  { color: #D97706; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+    .req-item strong { color: var(--text-primary); font-weight: 600; }
+
+    /* ── 맨 위로 ── */
+    .back-to-top {
+      position: fixed; bottom: 80px; right: 24px;
+      width: 38px; height: 38px; border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary);
+      transition: background 0.15s, color 0.15s; z-index: 50;
+    }
+    .back-to-top:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="top-nav">
+  <div class="nav-brand">
+    <div class="nav-icon">✦</div>
+    Claude Code
+  </div>
+  <div class="nav-pill">Research Preview</div>
+  <div class="nav-spacer"></div>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="테마 전환">
+    <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <svg class="icon-sun"  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+  </button>
+</nav>
+
+<div class="page-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-label">목차</div>
+    <ul class="sidebar-nav">
+      <li><a href="#overview"><span class="sdot"></span>개요</a></li>
+      <li><a href="#how"><span class="sdot"></span>동작 방식</a></li>
+      <li><a href="#run"><span class="sdot"></span>실행 방법</a></li>
+      <li><a href="#status"><span class="sdot"></span>터미널 상태 표시</a></li>
+      <li><a href="#approve"><span class="sdot"></span>플랜 승인 후 선택지</a></li>
+      <li><a href="#vs-leak"><span class="sdot"></span>유출본과 비교</a></li>
+      <li><a href="#requirements"><span class="sdot"></span>사용 조건</a></li>
+      <li><a href="#timing"><span class="sdot"></span>타이밍 분석</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-meta">
+        <span class="tag tag-new">New</span>
+        <span class="tag tag-prev">Research Preview</span>
+        <span style="font-size:13px;color:var(--text-muted)">2026-04-05</span>
+      </div>
+      <h1 class="page-title">Claude Code <em>Ultraplan</em></h1>
+      <p class="page-desc">
+        3월 31일 소스코드 유출에서 피처 플래그로 발견됐던 Ultraplan이 정식 공개됐습니다.
+        터미널과 클라우드 브라우저를 연결하는 비동기 계획 도구로,
+        아직 체인지로그에는 없고 Research Preview 상태입니다.
+      </p>
+    </div>
+
+    <!-- 요약 카드 -->
+    <div class="hero-grid" id="overview">
+      <div class="hero-card">
+        <span class="hero-icon">🖥️</span>
+        <div class="hero-title">비동기 계획</div>
+        <div class="hero-desc">터미널에서 시작하면 클라우드 세션이 플랜을 짜는 동안 터미널은 자유롭습니다.</div>
+      </div>
+      <div class="hero-card">
+        <span class="hero-icon">💬</span>
+        <div class="hero-title">브라우저 리뷰</div>
+        <div class="hero-desc">구간 선택 → 인라인 코멘트 → 이모지 반응 → 아웃라인 사이드바로 섹션 이동.</div>
+      </div>
+      <div class="hero-card">
+        <span class="hero-icon">🔁</span>
+        <div class="hero-title">반복 개선</div>
+        <div class="hero-desc">수정 요청하면 Claude가 반영한 새 버전을 내놓습니다. 만족할 때까지 반복 가능.</div>
+      </div>
+      <div class="hero-card">
+        <span class="hero-icon">⚡</span>
+        <div class="hero-title">두 가지 실행</div>
+        <div class="hero-desc">클라우드에서 바로 구현하거나, 터미널로 플랜을 받아 로컬에서 실행 선택.</div>
+      </div>
+    </div>
+
+    <!-- 동작 방식 -->
+    <section id="how" class="section">
+      <h2 class="section-title">🔄 동작 방식</h2>
+
+      <!-- 플로우 다이어그램 -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 24px;margin-bottom:14px;overflow-x:auto;">
+        <svg viewBox="0 0 720 140" style="width:100%;min-width:480px;display:block;" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#8B8B99"/>
+            </marker>
+          </defs>
+          <!-- 로컬 터미널 -->
+          <rect x="10" y="40" width="110" height="60" rx="8" fill="none" stroke="#D4450C" stroke-width="1.8"/>
+          <text x="65" y="63" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="12" fill="#D4450C" font-weight="700">로컬 터미널</text>
+          <text x="65" y="80" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11" fill="#8B8B99">/ultraplan 실행</text>
+          <text x="65" y="95" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11" fill="#8B8B99">그 동안 자유롭게 사용</text>
+          <!-- 화살표 -->
+          <line x1="120" y1="70" x2="165" y2="70" stroke="#8B8B99" stroke-width="1.5" marker-end="url(#arr)"/>
+          <!-- 클라우드 Claude -->
+          <rect x="165" y="25" width="140" height="90" rx="8" fill="none" stroke="#4B4B5E" stroke-width="1.2"/>
+          <text x="235" y="50" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="12" fill="#18181C" font-weight="700">Claude Code on the Web</text>
+          <text x="235" y="67" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11" fill="#8B8B99">코드베이스 분석</text>
+          <text x="235" y="83" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11" fill="#8B8B99">플랜 작성</text>
+          <text x="235" y="99" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11" fill="#8B8B99">(최대 30분, Opus 사용)</text>
+          <!-- 화살표 -->
+          <line x1="305" y1="70" x2="350" y2="70" stroke="#8B8B99" stroke-width="1.5" marker-end="url(#arr)"/>
+          <!-- 브라우저 리뷰 -->
+          <rect x="350" y="25" width="130" height="90" rx="8" fill="none" stroke="#4B4B5E" stroke-width="1.2"/>
+          <text x="415" y="50" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="12" fill="#18181C" font-weight="700">브라우저 리뷰</text>
+          <text x="415" y="67" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11" fill="#8B8B99">인라인 코멘트</text>
+          <text x="415" y="83" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11" fill="#8B8B99">이모지 반응</text>
+          <text x="415" y="99" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11" fill="#8B8B99">아웃라인 사이드바</text>
+          <!-- 화살표 (클라우드 실행) -->
+          <line x1="480" y1="55" x2="535" y2="30" stroke="#059669" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4,3"/>
+          <rect x="535" y="10" width="115" height="40" rx="7" fill="none" stroke="#059669" stroke-width="1.3"/>
+          <text x="592" y="27" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11" fill="#059669" font-weight="700">클라우드 실행</text>
+          <text x="592" y="42" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="10" fill="#8B8B99">diff → PR 생성</text>
+          <!-- 화살표 (터미널로) -->
+          <line x1="480" y1="85" x2="535" y2="100" stroke="#D4450C" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4,3"/>
+          <rect x="535" y="88" width="115" height="40" rx="7" fill="none" stroke="#D4450C" stroke-width="1.3"/>
+          <text x="592" y="105" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11" fill="#D4450C" font-weight="700">터미널로 전송</text>
+          <text x="592" y="120" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="10" fill="#8B8B99">로컬에서 실행</text>
+        </svg>
+        <p style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:12px;">Ultraplan 전체 흐름</p>
+      </div>
+
+      <div class="content-card">
+        <div class="content-card-body">
+          <p>
+            터미널에서 계획을 시작하면, <strong>클라우드의 Claude Code on the web 세션</strong>이 받아서
+            플랜을 작성합니다. 그 동안 터미널은 비어 있어서 다른 작업을 할 수 있습니다.
+          </p>
+          <p>
+            플랜이 완성되면 브라우저에서 리뷰합니다. 특정 구간을 선택해서 인라인 코멘트를 달고,
+            이모지 반응을 붙이고, 아웃라인 사이드바로 섹션 간 이동하면서 검토합니다.
+            수정을 요청하면 Claude가 반영한 새 버전을 내놓습니다. 만족할 때까지 반복 가능합니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 실행 방법 -->
+    <section id="run" class="section">
+      <h2 class="section-title">▶ 실행 방법 (세 가지)</h2>
+
+      <ul class="step-list">
+        <li class="step-item">
+          <span class="step-num">방법 1</span>
+          <div class="step-text">
+            <strong>/ultraplan 명령어 + 프롬프트</strong>
+          </div>
+        </li>
+        <li class="step-item">
+          <span class="step-num">방법 2</span>
+          <div class="step-text">
+            <strong>일반 프롬프트에 "ultraplan"이라는 단어 포함</strong>
+          </div>
+        </li>
+        <li class="step-item">
+          <span class="step-num">방법 3</span>
+          <div class="step-text">
+            <strong>로컬 플랜 완료 후 "클라우드로 보내서 다듬기" 선택</strong>
+          </div>
+        </li>
+      </ul>
+
+      <div class="terminal-block" style="margin-top:16px;">
+        <div class="terminal-line">
+          <span class="t-diamond-empty">$</span>
+          <span class="t-text-label">/ultraplan</span>
+          <span class="t-text-muted">auth 서비스를 세션에서 JWT로 마이그레이션해줘</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 터미널 상태 표시 -->
+    <section id="status" class="section">
+      <h2 class="section-title">◇ 터미널 상태 표시</h2>
+
+      <div class="terminal-block">
+        <div class="terminal-line">
+          <span class="t-diamond-empty">◇</span>
+          <span class="t-text-label">ultraplan</span>
+          <span class="t-text-muted">— 코드베이스 분석하고 플랜 작성 중.</span>
+        </div>
+        <div class="terminal-line">
+          <span class="t-diamond-empty">◇</span>
+          <span class="t-text-label">ultraplan needs your input</span>
+          <span class="t-text-note">— 확인할 게 있음. 브라우저 열어서 답해야 함.</span>
+        </div>
+        <div class="terminal-line">
+          <span class="t-diamond-fill">◆</span>
+          <span class="t-text-label" style="color:#6EE7B7;">ultraplan ready</span>
+          <span class="t-text-note">— 플랜 완성. 브라우저에서 리뷰 가능.</span>
+        </div>
+      </div>
+
+      <div class="tip" style="margin-top:14px;">
+        <span class="t-icon">◆</span>
+        속이 빈 다이아몬드(◇)는 진행 중, 속이 찬 다이아몬드(◆)는 완료 상태입니다.
+        터미널 자체는 계속 사용할 수 있습니다.
+      </div>
+    </section>
+
+    <!-- 플랜 승인 후 선택지 -->
+    <section id="approve" class="section">
+      <h2 class="section-title">✅ 플랜 승인 후 선택지</h2>
+
+      <div class="choice-grid">
+        <div class="choice-card">
+          <div class="choice-num">선택 1</div>
+          <div class="choice-title">클라우드에서 바로 실행</div>
+          <div class="choice-desc">
+            "Approve Claude's plan and start coding"을 누르면 같은 클라우드 세션에서 구현이 시작됩니다.
+            끝나면 diff를 보고 PR을 만들 수 있습니다.
+          </div>
+        </div>
+        <div class="choice-card">
+          <div class="choice-num">선택 2</div>
+          <div class="choice-title">터미널로 다시 보내기</div>
+          <div class="choice-desc">
+            "Approve plan and teleport back to terminal"을 누르면 플랜이 로컬 터미널로 내려옵니다.
+            클라우드 세션은 아카이브되고, 병렬 실행은 불가능합니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="content-card" style="margin-top:14px;">
+        <div class="content-card-title">터미널로 돌아왔을 때 세 가지 옵션</div>
+        <div class="content-card-body">
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;">
+            <li style="display:flex;gap:10px;align-items:flex-start;">
+              <span style="color:var(--accent);font-weight:700;flex-shrink:0;">①</span>
+              <span>현재 대화에 플랜 주입</span>
+            </li>
+            <li style="display:flex;gap:10px;align-items:flex-start;">
+              <span style="color:var(--accent);font-weight:700;flex-shrink:0;">②</span>
+              <span>새 세션으로 시작</span>
+            </li>
+            <li style="display:flex;gap:10px;align-items:flex-start;">
+              <span style="color:var(--accent);font-weight:700;flex-shrink:0;">③</span>
+              <span>파일로 저장 후 나중에 실행</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 유출본과 비교 -->
+    <section id="vs-leak" class="section">
+      <h2 class="section-title">🔍 유출본과 정식 버전 비교</h2>
+
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th>유출 당시 (3월 31일)</th>
+            <th>정식 공개</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>기본 구조</td>
+            <td>Opus가 클라우드에서 최대 30분 사고</td>
+            <td>동일 (Opus, 클라우드 세션)</td>
+          </tr>
+          <tr>
+            <td>로컬 전송</td>
+            <td><code>__ULTRAPLAN_TELEPORT_LOCAL__</code> 센티넬 값으로 전송</td>
+            <td>동일 구조 위에 UI 추가</td>
+          </tr>
+          <tr>
+            <td>리뷰 인터페이스</td>
+            <td>언급 없음</td>
+            <td>인라인 코멘트, 이모지 반응, 아웃라인 사이드바 추가</td>
+          </tr>
+          <tr>
+            <td>구간별 피드백</td>
+            <td>없음</td>
+            <td>특정 구간 선택 → 코멘트 가능</td>
+          </tr>
+          <tr>
+            <td>체인지로그 등재</td>
+            <td>피처 플래그만 존재</td>
+            <td>아직 없음, Research Preview</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout" style="margin-top:14px;">
+        <span class="c-icon">◆</span>
+        정식 버전은 유출에서 발견된 구조 위에 <strong>브라우저 리뷰 인터페이스</strong>를 올린 것입니다.
+        터미널에서는 불가능했던 "구간별 피드백"이 핵심 추가 기능입니다.
+      </div>
+    </section>
+
+    <!-- 사용 조건 -->
+    <section id="requirements" class="section">
+      <h2 class="section-title">📋 사용 조건</h2>
+
+      <ul class="req-list">
+        <li class="req-item">
+          <span class="req-check">✓</span>
+          <span><strong>Claude Code on the web 계정</strong> 필요</span>
+        </li>
+        <li class="req-item">
+          <span class="req-check">✓</span>
+          <span><strong>GitHub 저장소 연결</strong> 필요</span>
+        </li>
+        <li class="req-item">
+          <span class="req-warn">⚠</span>
+          <span><strong>Remote Control과 동시 사용 불가</strong> — Ultraplan 시작 시 Remote Control이 자동으로 끊깁니다.
+            둘 다 claude.ai/code 인터페이스를 사용하기 때문입니다.</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- 타이밍 분석 -->
+    <section id="timing" class="section">
+      <h2 class="section-title">🕐 타이밍 분석</h2>
+
+      <div class="timeline-wrap">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">2026-03-31</div>
+          <div class="timeline-body">
+            <strong>소스코드 유출</strong> — 피처 플래그에서 "30분짜리 클라우드 계획 기능"과
+            <code>__ULTRAPLAN_TELEPORT_LOCAL__</code> 코드 발견.
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">2026-04-05</div>
+          <div class="timeline-body">
+            <strong>같은 날 두 가지 발표</strong>:
+            <br>① 타사 하네스(OpenClaw 등) 구독 사용 차단
+            <br>② Ultraplan 정식 공개 (Research Preview)
+            <br>③ 무료 크레딧 지급
+          </div>
+        </div>
+      </div>
+
+      <div class="content-card" style="margin-top:22px;">
+        <div class="content-card-title">타이밍이 보내는 메시지</div>
+        <div class="content-card-body">
+          <p>
+            "구독은 타사 도구의 사용 패턴을 위해 만들어지지 않았다"고 하면서 동시에
+            <strong>에이전틱 워크플로 전용 기능을 내놓은</strong> 것입니다.
+          </p>
+          <p>
+            에이전틱 작업은 Anthropic의 도구로 하라는 메시지가 명확합니다.
+          </p>
+          <p>
+            아직 Research Preview이고 체인지로그에도 없지만,
+            유출에서 발견된 피처 플래그가 실제 제품으로 나온 첫 사례입니다.
+            <strong>KAIROS, Coordinator Mode, Buddy</strong>도 이 순서를 따를 수 있습니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:14px;">
+        <span class="c-icon">◆</span>
+        공식 문서:
+        <a href="https://code.claude.com/docs/en/ultraplan" target="_blank" rel="noopener"
+           style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;">
+          code.claude.com/docs/en/ultraplan
+        </a>
+        &nbsp;/&nbsp;
+        <a href="https://code.claude.com/docs/en/claude-code-on-the-web" target="_blank" rel="noopener"
+           style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;">
+          claude-code-on-the-web
+        </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="맨 위로">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<script>
+  function toggleTheme() {
+    const root = document.documentElement;
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch(e) {}
+  }
+  try {
+    const saved = localStorage.getItem('theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+  } catch(e) {}
+
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.sidebar-nav a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting)
+        navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+    });
+  }, { rootMargin: '-20% 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+
+  <script data-page-hash="562JNVC" src="/gemini_html/page-footer.js"></script>
+</body>
+</html>
