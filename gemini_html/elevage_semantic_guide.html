@@ -397,6 +397,41 @@
     @media (max-width: 640px) {
       .masthead, .lead, footer { padding-left: 16px; padding-right: 16px; }
     }
+
+    /* ── Tooltip ── */
+    .tt {
+      border-bottom: 1px dashed var(--ink-4);
+      cursor: help;
+      position: relative;
+      white-space: nowrap;
+    }
+    .tt::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 9px);
+      left: 50%; transform: translateX(-50%);
+      background: var(--ink); color: #EDE9E0;
+      font-family: var(--font-b); font-size: 12.5px;
+      font-weight: 400; line-height: 1.55;
+      white-space: normal; min-width: 200px; max-width: 260px;
+      padding: 10px 14px;
+      pointer-events: none;
+      opacity: 0; transition: opacity 150ms 60ms;
+      z-index: 400; text-align: left;
+      letter-spacing: 0; text-transform: none;
+      font-style: normal;
+    }
+    .tt::before {
+      content: '';
+      position: absolute; bottom: calc(100% + 3px); left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent; border-top-color: var(--ink);
+      pointer-events: none; opacity: 0; transition: opacity 150ms 60ms; z-index: 400;
+    }
+    .tt:hover::after, .tt:hover::before { opacity: 1; }
+    /* edge cases: 왼쪽 끝 항목 */
+    .tt.tt-right::after { left: 0; transform: none; }
+    .tt.tt-right::before { left: 14px; transform: none; }
   </style>
 </head>
 <body>
@@ -429,7 +464,7 @@
   <div class="lead-elv-note">
     <div class="note-label">Élevage 포지셔닝</div>
     <p>
-      레거시를 retire하기 어려울 때 선택하는 경로. 레거시 DB 위에 Semantic Layer(Data to Semantic Mapper + Adapter)를 씌워 AI 역량을 즉시 확보. Ontology 기반 통합 API로 AI Agent 인터페이스를 제공하고 DX/AX를 구현합니다. Élevage 완료 후 조건이 갖춰지면 Vinification으로 전환 가능(브리지 패턴).
+      레거시를 retire하기 어려울 때 선택하는 경로. 레거시 DB 위에 <span class="tt" data-tip="비즈니스 의미를 데이터 위에 씌우는 추상화 층. 물리 테이블 구조를 감추고 비즈니스 개념으로 데이터에 접근 가능하게 함">Semantic Layer</span>(Data to Semantic Mapper + Adapter)를 씌워 AI 역량을 즉시 확보. Ontology 기반 통합 API로 AI Agent 인터페이스를 제공하고 <span class="tt" data-tip="Developer Experience / AI(Agent) Experience. 개발자와 AI 에이전트 모두 쉽게 데이터를 활용할 수 있는 경험">DX/AX</span>를 구현합니다. Élevage 완료 후 조건이 갖춰지면 <span class="tt" data-tip="처음부터 새로 구축하는 현대화 경로. 레거시 없이 클린 아키텍처로 출발. Élevage와 달리 완전한 재설계">Vinification</span>으로 전환 가능(<span class="tt" data-tip="두 시스템을 어댑터로 연결해 점진적 전환을 가능하게 하는 설계 패턴. 레거시를 유지하면서 새 시스템으로 라우팅">브리지 패턴</span>).
     </p>
   </div>
   <div class="lead-byline">
@@ -486,7 +521,7 @@
               <tr>
                 <td><strong>컬럼명</strong></td>
                 <td><code>price</code>라고 쓰면 끝</td>
-                <td>VAT 포함인지? 원화인지? 할인 전인지?</td>
+                <td><span class="tt" data-tip="부가가치세(Value Added Tax). 한국은 상품·서비스 가격의 10% 부과. 소비자가 최종 부담">VAT</span> 포함인지? 원화인지? 할인 전인지?</td>
               </tr>
               <tr>
                 <td><strong>코드의 if문</strong></td>
@@ -504,7 +539,7 @@
                 <td>업데이트 안 되고, 코드와 동기화 안 됨</td>
               </tr>
               <tr>
-                <td><strong>ERD의 FK</strong></td>
+                <td><strong><span class="tt tt-right" data-tip="Entity Relationship Diagram. 테이블 간 관계를 선과 기호로 표현한 DB 설계 다이어그램">ERD</span>의 <span class="tt tt-right" data-tip="Foreign Key(외래키). 다른 테이블의 기본키(PK)를 참조해 두 테이블 간 관계를 표현하는 컬럼">FK</span></strong></td>
                 <td><code>customer_id → customers.id</code></td>
                 <td>"연결"만 있고, "왜" 연결인지 없음</td>
               </tr>
@@ -622,7 +657,7 @@ WHERE customer.tier = 'VIP'
 
     <div class="compare">
       <div class="compare-box before">
-        <div class="compare-label">기존 DDL</div>
+        <div class="compare-label">기존 <span class="tt" data-tip="Data Definition Language. CREATE TABLE, ALTER, DROP 등 DB 구조(스키마)를 정의하는 SQL 명령어">DDL</span></div>
 <pre>CREATE TABLE orders (
   id          BIGINT PRIMARY KEY,
   customer_id BIGINT NOT NULL,
@@ -632,7 +667,7 @@ WHERE customer.tier = 'VIP'
 );</pre>
       </div>
       <div class="compare-box after">
-        <div class="compare-label">시멘틱 인식 DDL + 선언</div>
+        <div class="compare-label">시멘틱 인식 <span class="tt" data-tip="Data Definition Language. CREATE TABLE, ALTER, DROP 등 DB 구조(스키마)를 정의하는 SQL 명령어">DDL</span> + 선언</div>
 <pre>CREATE TABLE orders (
   id          BIGINT PRIMARY KEY,
   customer_id BIGINT NOT NULL,
@@ -683,7 +718,7 @@ properties:
     </div>
 
     <!-- Practice 2 -->
-    <h3 class="sub-heading">② FK에 "관계의 의미"를 부여하라</h3>
+    <h3 class="sub-heading">② <span class="tt" data-tip="Foreign Key(외래키). 다른 테이블의 기본키(PK)를 참조해 관계를 표현하는 컬럼. ERD에선 연결선으로 표시됨">FK</span>에 "관계의 의미"를 부여하라</h3>
 
     <div class="compare">
       <div class="compare-box before">
@@ -717,7 +752,7 @@ relationships:
       </div>
     </div>
 
-    <p class="body-text">이렇게 하면 시스템이 <code>"주문 #1234와 관련된 모든 것"</code>이라는 질의에 <span class="hl">배송, 결제, CS 티켓, 리뷰까지 자동으로 따라갈 수 있습니다</span>. ERD의 FK만으로는 "어떤 방향으로 따라가야 하는지" 모릅니다.</p>
+    <p class="body-text">이렇게 하면 시스템이 <code>"주문 #1234와 관련된 모든 것"</code>이라는 질의에 <span class="hl">배송, 결제, CS 티켓, 리뷰까지 자동으로 따라갈 수 있습니다</span>. <span class="tt" data-tip="Entity Relationship Diagram. 테이블 간 관계를 시각적으로 표현한 설계 다이어그램">ERD</span>의 <span class="tt" data-tip="Foreign Key는 '연결'만 표현하고, placed_by·fulfills 같은 관계의 방향과 의미는 표현하지 못함">FK</span>만으로는 "어떤 방향으로 따라가야 하는지" 모릅니다.</p>
 
     <!-- Practice 3 -->
     <h3 class="sub-heading">③ 이벤트 발행 시 "비즈니스 컨텍스트" 포함</h3>
@@ -828,7 +863,7 @@ terms:
             <div class="compare-label">없을 때</div>
             <p>"이 <code>amount</code>가 뭐에요?"<br>
             → 선임 찾아서 물어봄<br>
-            → "아 그건 쿠폰 빠진 거고 VAT 포함이야"<br>
+            → "아 그건 쿠폰 빠진 거고 <span class="tt" data-tip="부가가치세(Value Added Tax). 한국 10%. 가격이 VAT 포함인지 아닌지는 계산 로직에 큰 차이를 만듦">VAT</span> 포함이야"<br>
             → 위키에 있다는데 2년 전 문서<br>
             → 실제로는 코드 까봐야 확실함<br>
             → <span class="warn">온보딩 2-3주 소요</span></p>
@@ -836,7 +871,7 @@ terms:
           <div class="compare-box after">
             <div class="compare-label">있을 때</div>
             <p>"이 <code>amount</code>가 뭐에요?"<br>
-            → 스키마 레지스트리 조회<br>
+            → <span class="tt tt-right" data-tip="데이터 스키마를 중앙에서 관리·버전 관리하는 시스템. Confluent Schema Registry가 대표적이며 Kafka와 함께 많이 사용됨">스키마 레지스트리</span> 조회<br>
             → 정의, 포함/제외 항목, 계산식, 관련 엔티티 즉시 확인<br>
             → 코드와 항상 동기화<br>
             → <span class="good">온보딩 3-5일로 단축</span></p>
@@ -870,7 +905,7 @@ terms:
             <div class="query-step"><span class="step-num">2</span> "반품" → 시멘틱 레이어에서 return_rate 메트릭 자동 매핑</div>
             <div class="query-step"><span class="step-num">3</span> "CS 문의" → Ticket 엔티티 자동 연결 (Customer ← placed_by → Order ← relates_to → Ticket)</div>
             <div class="query-step"><span class="step-num">4</span> 데이터 소스 자동 라우팅 + 조인 실행</div>
-            <div class="query-step" style="color:#1A5C3A;font-weight:600;">= 총 30초, 셀프서비스</div>
+            <div class="query-step" style="color:#1A5C3A;font-weight:600;">= 총 30초, <span class="tt" data-tip="데이터팀에 요청하지 않고 비즈니스 담당자·개발자가 직접 데이터를 조회·분석하는 방식. 온톨로지가 있을 때 가능">셀프서비스</span></div>
           </div>
         </div>
       </div>
@@ -896,7 +931,7 @@ terms:
         </div>
         <div class="callout insight" style="margin-top:16px;">
           <div class="callout-title">AI 시대의 결정적 차이</div>
-          <p>온톨로지는 <span class="hl">AI 에이전트의 "업무 매뉴얼"</span>입니다. 사람에게는 구두 설명으로 충분하지만, AI에게는 기계가 읽을 수 있는 시멘틱 정보가 필수입니다. 이것이 LLM 시대에 온톨로지의 가치가 폭발적으로 증가하는 이유입니다.</p>
+          <p>온톨로지는 <span class="hl">AI 에이전트의 "업무 매뉴얼"</span>입니다. 사람에게는 구두 설명으로 충분하지만, AI에게는 기계가 읽을 수 있는 시멘틱 정보가 필수입니다. 이것이 <span class="tt" data-tip="Large Language Model. GPT, Claude 같은 대규모 언어 모델. 자연어를 이해하고 생성하는 AI. 기계가 읽을 수 있는 의미 정보(온톨로지)를 필수로 요구함">LLM</span> 시대에 온톨로지의 가치가 폭발적으로 증가하는 이유입니다.</p>
         </div>
       </div>
     </div>
@@ -957,7 +992,7 @@ terms:
         <div class="level-label">Pipeline</div>
         <div class="level-desc">
           <strong>원본 데이터 → 정제 → Object 매핑</strong><br>
-          예: EMR의 <code>encounter</code> 테이블 → 정제 → <code>Patient</code> Object의 <code>visit_history</code> property로 매핑
+          예: <span class="tt" data-tip="전자 의무 기록(Electronic Medical Record). 병원 환자의 진료·처방·검사 기록을 디지털로 관리하는 시스템">EMR</span>의 <code>encounter</code> 테이블 → 정제 → <code>Patient</code> Object의 <code>visit_history</code> property로 매핑
         </div>
       </div>
       <div class="level">
@@ -971,7 +1006,7 @@ terms:
 
     <div class="callout key">
       <div class="callout-title">Palantir의 진짜 비밀</div>
-      <p>기술적으로 특별한 것은 없습니다. <span class="hl">YAML + 그래프 DB + 데이터 파이프라인</span>의 조합입니다. Palantir의 진짜 해자는 (1) 고객 도메인에 맞는 온톨로지를 설계하는 컨설팅 역량, (2) 한번 구축하면 갈아타기 어려운 Lock-in, (3) AIP로 LLM이 온톨로지를 활용하게 만든 시너지입니다.</p>
+      <p>기술적으로 특별한 것은 없습니다. <span class="hl">YAML + <span class="tt" data-tip="노드(개체)와 엣지(관계)로 데이터를 저장하는 DB. Neo4j가 대표적. 관계 탐색이 관계형 DB보다 훨씬 빠름">그래프 DB</span> + 데이터 파이프라인</span>의 조합입니다. Palantir의 진짜 해자는 (1) 고객 도메인에 맞는 온톨로지를 설계하는 컨설팅 역량, (2) 한번 구축하면 갈아타기 어려운 <span class="tt" data-tip="특정 벤더 기술에 종속되어 대체·이탈이 어려워지는 상태. 전환 비용이 매우 높아 사실상 영구 계약이 됨">Lock-in</span>, (3) <span class="tt" data-tip="Palantir AI Platform. 온톨로지 위에서 LLM이 동작하도록 연결하는 Palantir의 AI 제품군">AIP</span>로 LLM이 온톨로지를 활용하게 만든 시너지입니다.</p>
     </div>
 
     <div class="sep"></div>
@@ -1032,7 +1067,7 @@ terms:
 
     <div class="callout insight">
       <div class="callout-title">Terroir + ADLF 연결점</div>
-      <p>이 로드맵은 Terroir 플랫폼의 Semantic Layer 전략과 정확히 일치합니다. ADLF의 Scout/Mapper 에이전트가 Phase 1-2를 자동화하고, Weaver 에이전트가 Phase 3-4를 구축하며, Phase 5는 전체 에이전트 파이프라인이 온톨로지 위에서 동작하는 것입니다.</p>
+      <p>이 로드맵은 Terroir 플랫폼의 Semantic Layer 전략과 정확히 일치합니다. <span class="tt" data-tip="이 프로젝트의 AI 에이전트 파이프라인 아키텍처. Scout(탐색)·Mapper(매핑)·Weaver(관계 구축) 에이전트로 구성">ADLF</span>의 Scout/Mapper 에이전트가 Phase 1-2를 자동화하고, Weaver 에이전트가 Phase 3-4를 구축하며, Phase 5는 전체 에이전트 파이프라인이 온톨로지 위에서 동작하는 것입니다.</p>
     </div>
 
     <div class="pullquote">
