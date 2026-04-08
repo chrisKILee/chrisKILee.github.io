@@ -63,6 +63,52 @@
       border-top: 1px solid #ede9e1;
       background: #fafaf9;
     }
+    .screenshot-item img {
+      cursor: zoom-in;
+    }
+    /* Lightbox */
+    #lightbox {
+      display: none;
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img {
+      max-width: 90vw;
+      max-height: 88vh;
+      border-radius: 10px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+      object-fit: contain;
+    }
+    #lightbox-caption {
+      position: fixed;
+      bottom: 28px;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.02em;
+    }
+    #lightbox-close {
+      position: fixed;
+      top: 20px; right: 24px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 20px;
+      line-height: 1;
+      transition: background 0.15s;
+    }
+    #lightbox-close:hover { background: rgba(255,255,255,0.28); }
   </style>
 </head>
 <body>
@@ -385,6 +431,39 @@
     </section>
 
   </main>
+
+  <!-- ━━━ Lightbox ━━━ -->
+  <div id="lightbox" role="dialog" aria-modal="true">
+    <button id="lightbox-close" aria-label="닫기">✕</button>
+    <img id="lightbox-img" src="" alt="">
+    <p id="lightbox-caption"></p>
+  </div>
+
+  <script>
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lightbox-img');
+    const lbCap = document.getElementById('lightbox-caption');
+
+    document.querySelectorAll('.screenshot-item img').forEach(img => {
+      img.addEventListener('click', () => {
+        lbImg.src = img.src;
+        lbImg.alt = img.alt;
+        const caption = img.closest('.screenshot-item')?.querySelector('.caption');
+        lbCap.textContent = caption ? caption.textContent : '';
+        lb.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    function closeLightbox() {
+      lb.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+    lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+  </script>
 
   <!-- ━━━ 푸터 ━━━ -->
   <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
