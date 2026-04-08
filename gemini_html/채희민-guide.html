@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오라클 MCP 서버 구축 — AIVE-CONTEST 2025</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    .screenshot-gallery {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 16px;
+    }
+    .screenshot-gallery img {
+      width: 100%; border-radius: 10px; border: 1px solid #d6d0c4;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 고정 헤더 -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AIVE-CONTEST 2025</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">오라클 MCP 서버 구축</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">PC2팀 · 채희민</span>
+        <span class="mono" style="font-size:14px; font-weight:500; color:#c8622a; background:#fdf0e8; padding:4px 12px; border-radius:7px; border:1px solid #e8b896;">74점</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:920px; margin:0 auto; padding:52px 28px 88px;">
+
+    <!-- 히어로 -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제</p>
+          <h1 style="font-size:38px; font-weight:800; color:#1c1917; line-height:1.15; letter-spacing:-0.02em; margin-bottom:18px;">오라클 MCP 서버 구축</h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">AI IDE(GitHub Copilot)가 사내 Oracle DB 스키마를 실시간으로 참조할 수 있는 MCP 서버를 직접 개발하여, 할루시네이션으로 인한 반복 디버깅과 컨텍스트 스위칭 낭비를 근본적으로 제거했습니다.</p>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026. 4. 7</span>
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">PC2팀</span>
+          </div>
+        </div>
+
+        <!-- 점수 패널 -->
+        <div style="background:#ede9e1; border:1px solid #d6d0c4; border-radius:16px; padding:24px; min-width:210px;">
+          <p class="eval-label" style="margin-bottom:14px;">종합 점수</p>
+          <div style="text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d6d0c4;">
+            <span class="mono" style="font-size:52px; font-weight:500; color:#c8622a; line-height:1;">74</span>
+            <span style="font-size:18px; color:#b5895a; font-weight:400;"> / 100</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">20</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">③ 효율성 /30</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">22</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">④ 아이디어 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">16</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑤ 확산성 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">16</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑥ 조직목표 /20</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- 문제 정의 -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">기존의 어려움</p>
+          <p style="font-size:15px; color:#1c1917; line-height:1.75;">GitHub Copilot 도입 후에도 사내 Oracle DB 정보가 연동되지 않아, AI가 존재하지 않는 테이블·컬럼을 생성하는 할루시네이션이 빈번하게 발생했습니다. 잘못된 SQL을 교정하기 위해 개발자가 IDE와 DB 클라이언트를 수시로 오가는 컨텍스트 스위칭 비용이 생산성 향상을 가로막았습니다.</p>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:10px; letter-spacing:0.05em;">AI로 해결한 방식</p>
+          <p style="font-size:15px; color:#1c1917; line-height:1.75;">AI 도구의 표준 컨텍스트 확장 기술인 MCP(Model Context Protocol) 기반 Oracle DB 연동 서버를 Python으로 직접 개발했습니다. AI가 코드 작성 시점에 실제 DB 스키마를 동적으로 조회하여 정확한 SQL·코드를 생성합니다. 프롬프트에 스키마를 붙여넣는 방식 대신 MCP로 필요할 때만 조회하여 토큰 효율도 높였습니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- 스크린샷 -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">시각 증빙 자료</p>
+      <div class="screenshot-gallery">
+        <div>
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px;">MCP 서버 (소스코드 구조)</p>
+          <img src="assets/MCP_서버_소스코드.png" alt="MCP 서버 소스코드 구조">
+        </div>
+        <div>
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px;">MCP 클라이언트 (사용자 화면)</p>
+          <img src="assets/MCP_클라이언트_사용자.png" alt="MCP 클라이언트 사용자 화면">
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- 체크리스트 -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">평가 체크리스트</p>
+
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge">런타임 AI</span>
+          <span class="check-badge">노코드 AI</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge">반복 보고서 취합·정리</span>
+          <span class="check-badge on">✅ 데이터 수집·분류·가공</span>
+          <span class="check-badge">내부 문의·요청 자동 처리</span>
+          <span class="check-badge">알림·모니터링 자동화</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">20<span style="font-size:12px; color:#b5895a;">/30</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">IDE ↔ DB 클라이언트 컨텍스트 스위칭이 0회로 감소하고, AI 할루시네이션 교정 시간이 실질적으로 줄어든 점이 확인됩니다. 다만 절감 시간의 구체적 수치(예: 1회당 N분 절감)가 명시되지 않아 정량적 검증이 아쉽습니다.</p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">22<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">AI 도입 후 오히려 생산성이 저하되는 역설적 문제를 MCP로 근본 해결한 아이디어가 탁월합니다. 보안(바인드 변수, SELECT 전용, RCE 방지)·실용성·기술 성장을 모두 고려한 선택 근거가 명쾌합니다.</p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">16<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">Oracle DB를 사용하는 사내 전 팀에 적용 가능하며, 비개발자도 자연어로 DB를 조회할 수 있습니다. PDF 가이드가 존재하나 MCP 클라이언트 설정 등 일정 수준의 기술 진입 장벽이 남아있어 확산 속도에 제약이 있습니다.</p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">16<span style="font-size:12px; color:#b5895a;">/20</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">AI 활용 고도화라는 조직 핵심 방향과 직접 연결되며, 개인 편의를 넘어 팀 전체 개발 인프라를 개선한 점이 돋보입니다. 현재 팀 내 실제 배포·활용 현황이 더 명확히 드러나면 평가가 더 높아질 수 있습니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- 주요 기능 -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">DB 객체 검색</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">테이블명·한글 코멘트로 Oracle 테이블을 검색합니다. "소형압연"을 입력하면 SPRF 프리픽스 테이블이 자동 매핑됩니다.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">SQL 실행</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">AI가 생성한 SELECT/WITH 쿼리를 실제 DB에서 즉시 실행합니다. DML은 차단되며 결과는 최대 1,000건으로 제한합니다.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">소스코드 검색</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">XML, Java, Python, SQL 파일에서 키워드를 검색합니다. 메모리 효율적인 Generator 방식으로 대용량 코드베이스도 처리합니다.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">DB Connection Pool</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">min=2/max=5 커넥션 풀로 안정적인 Oracle 연결을 관리합니다. 서버 종료 시 자동으로 안전하게 반환합니다.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">SSE/stdio 이중 모드</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">원격 접속(SSE, 포트 20007)과 로컬 전용(stdio) 두 가지 전송 방식을 지원합니다. Cursor, GitHub Copilot 모두 연결 가능합니다.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">보안 설계</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">모든 쿼리에 바인드 변수 적용으로 SQL Injection을 방지합니다. exec() 기반 원격 코드 실행(RCE) 기능은 삭제되어 보안이 강화됩니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- AI 활용 방식 -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:28px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:24px; margin-bottom:24px;">
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px; letter-spacing:0.05em;">MCP 프로토콜</p>
+            <p style="font-size:14px; color:#1c1917; line-height:1.6;">Model Context Protocol — AI IDE가 외부 도구(DB, 파일시스템)에 안전하게 접근하는 표준 인터페이스</p>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px; letter-spacing:0.05em;">기술 스택</p>
+            <p style="font-size:14px; color:#1c1917; line-height:1.6;">Python 3.14 · FastMCP · python-oracledb · Starlette · python-dotenv</p>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px; letter-spacing:0.05em;">AI 클라이언트</p>
+            <p style="font-size:14px; color:#1c1917; line-height:1.6;">GitHub Copilot / Cursor (MCP 클라이언트로 이 서버에 연결)</p>
+          </div>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:10px; padding:16px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">데이터 흐름</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.8; font-family:'DM Mono', monospace;">
+            개발자 자연어 질문 (IDE)<br>
+            &nbsp;&nbsp;↓ MCP 프로토콜 (SSE/stdio)<br>
+            Oracle MCP Server (FastMCP, port 20007)<br>
+            &nbsp;&nbsp;↓ python-oracledb Connection Pool<br>
+            사내 Oracle DB (user_tab_comments, 업무 테이블)<br>
+            &nbsp;&nbsp;↓ JSON 결과 반환<br>
+            AI IDE — 실제 스키마 기반 정확한 SQL/코드 생성
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- 기대 효과 -->
+    <section>
+      <p class="eval-label" style="margin-bottom:20px;">기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">0회</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">컨텍스트 스위칭</p>
+          <p style="font-size:12px; color:#78716c;">IDE 이탈 없이 DB 스키마 즉시 확인. 개발 흐름이 끊기지 않습니다.</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">↓↓</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">할루시네이션 교정 시간</p>
+          <p style="font-size:12px; color:#78716c;">실제 DB 스키마 기반으로 AI가 정확한 코드 생성. 수동 디버깅 최소화를 목표로 합니다.</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">전사</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">적용 가능 범위</p>
+          <p style="font-size:12px; color:#78716c;">Oracle DB 사용 전 팀, AI IDE 환경이라면 동일 MCP 서버로 즉시 확장 가능합니다.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 푸터 -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AIVE-CONTEST 2025 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; PC2팀
+    </p>
+  </footer>
+
+</body>
+</html>
