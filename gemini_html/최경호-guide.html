@@ -9,84 +9,72 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f3ee; color: #1c1917; line-height: 1.6; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
     .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
-    .eval-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: #b5895a; text-transform: uppercase; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
     .divider { border: none; border-top: 1px solid #d6d0c4; }
-    .eval-card { background: #fffaf6; border: 1px solid #e8d5c0; border-radius: 12px; padding: 22px; }
-    .check-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600; background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e; }
-    .check-badge.on { background: #fdf0e8; border-color: #e8b896; color: #c8622a; }
-    .feature-card { background: #ede9e1; border-radius: 10px; padding: 20px; }
-    .effect-card { background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
     section { scroll-margin-top: 64px; }
-    .screenshot-gallery img { cursor: zoom-in; transition: opacity 0.15s; }
+    .screenshot-gallery img {
+      cursor: zoom-in; transition: opacity 0.15s;
+    }
     .screenshot-gallery img:hover { opacity: 0.88; }
-    #lb-overlay { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.88); backdrop-filter: blur(4px); align-items: center; justify-content: center; flex-direction: column; cursor: zoom-out; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.82); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; cursor: zoom-out;
+    }
     #lb-overlay.open { display: flex; }
-    #lb-img { max-width: 90vw; max-height: 82vh; border-radius: 10px; box-shadow: 0 24px 64px rgba(0,0,0,0.5); object-fit: contain; }
-    #lb-close { position: fixed; top: 20px; right: 24px; color: #fff; font-size: 28px; cursor: pointer; opacity: 0.8; z-index: 10001; }
+    #lb-img {
+      max-width: 90vw; max-height: 88vh;
+      border-radius: 10px; box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      object-fit: contain;
+    }
+    #lb-close {
+      position: fixed; top: 20px; right: 24px;
+      color: #fff; font-size: 28px; font-weight: 300;
+      cursor: pointer; line-height: 1; opacity: 0.8;
+    }
     #lb-close:hover { opacity: 1; }
-    .lb-nav { position: fixed; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.15); border: none; color: #fff; font-size: 36px; padding: 12px 18px; cursor: pointer; border-radius: 8px; z-index: 10001; }
+    #lb-prev, #lb-next {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      color: #fff; font-size: 36px; cursor: pointer;
+      background: rgba(255,255,255,0.15); border: none;
+      padding: 10px 16px; border-radius: 8px;
+    }
     #lb-prev { left: 16px; }
     #lb-next { right: 16px; }
-    #lb-counter { color: #ddd; margin-top: 10px; font-size: 13px; }
   </style>
 </head>
 <body>
 
-  <div id="lb-overlay" onclick="closeLb()">
-    <span id="lb-close" onclick="closeLb()">&#x2715;</span>
-    <button class="lb-nav" id="lb-prev" onclick="event.stopPropagation();moveLb(-1)">&#x2039;</button>
-    <img id="lb-img" src="" alt="" onclick="event.stopPropagation()">
-    <div id="lb-counter"></div>
-    <button class="lb-nav" id="lb-next" onclick="event.stopPropagation();moveLb(1)">&#x203a;</button>
-  </div>
-  <script>
-    var _lbImgs=[],_lbIdx=0;
-    function openLb(imgs,idx){_lbImgs=imgs;_lbIdx=idx;_upLb();document.getElementById('lb-overlay').classList.add('open');}
-    function closeLb(){document.getElementById('lb-overlay').classList.remove('open');}
-    function moveLb(d){_lbIdx=(_lbIdx+d+_lbImgs.length)%_lbImgs.length;_upLb();}
-    function _upLb(){
-      var img=document.getElementById('lb-img');
-      img.src=_lbImgs[_lbIdx].src;img.alt=_lbImgs[_lbIdx].alt||'';
-      document.getElementById('lb-counter').textContent=(_lbIdx+1)+' / '+_lbImgs.length;
-      document.getElementById('lb-prev').style.display=_lbImgs.length>1?'':'none';
-      document.getElementById('lb-next').style.display=_lbImgs.length>1?'':'none';
-    }
-    document.addEventListener('keydown',function(e){
-      if(document.getElementById('lb-overlay').classList.contains('open')){
-        if(e.key==='Escape')closeLb();
-        if(e.key==='ArrowLeft')moveLb(-1);
-        if(e.key==='ArrowRight')moveLb(1);
-      }
-    });
-    var GA=[
-      {src:"assets/\uad00\ub9ac\uc790(1).png",alt:"\uad00\ub9ac\uc790 \ud654\uba74 1"},
-      {src:"assets/\uad00\ub9ac\uc790(2).png",alt:"\uad00\ub9ac\uc790 \ud654\uba74 2"},
-      {src:"assets/\uad00\ub9ac\uc790(3).png",alt:"\uad00\ub9ac\uc790 \ud654\uba74 3"},
-      {src:"assets/\uad00\ub9ac\uc790(4).png",alt:"\uad00\ub9ac\uc790 \ud654\uba74 4"},
-      {src:"assets/\uad00\ub9ac\uc790(5).png",alt:"\uad00\ub9ac\uc790 \ud654\uba74 5"},
-      {src:"assets/\uad00\ub9ac\uc790(6).png",alt:"\uad00\ub9ac\uc790 \ud654\uba74 6"}
-    ];
-    var GB=[
-      {src:"assets/1on1\ucf54\uce6d(1).png",alt:"1on1 \ucf54\uce6d 1"},
-      {src:"assets/1on1\ucf54\uce6d(2).png",alt:"1on1 \ucf54\uce6d 2"},
-      {src:"assets/1on1\ucf54\uce6d(3).png",alt:"1on1 \ucf54\uce6d 3"},
-      {src:"assets/1on1\ucf54\uce6d(4).png",alt:"1on1 \ucf54\uce6d 4"},
-      {src:"assets/1on1\ucf54\uce6d(5).png",alt:"1on1 \ucf54\uce6d 5"},
-      {src:"assets/1on1\ucf54\uce6d(6).png",alt:"1on1 \ucf54\uce6d 6"},
-      {src:"assets/1on1\ucf54\uce6d(7).png",alt:"1on1 \ucf54\uce6d 7"}
-    ];
-    var GC=[
-      {src:"assets/RandR\uad00\ub9ac(1).png",alt:"R&R \uad00\ub9ac 1"},
-      {src:"assets/RandR\uad00\ub9ac(2).png",alt:"R&R \uad00\ub9ac 2"},
-      {src:"assets/RandR\uad00\ub9ac(3).png",alt:"R&R \uad00\ub9ac 3"}
-    ];
-  </script>
-
-  <header style="position:sticky;top:0;z-index:50;background:rgba(245,243,238,0.94);backdrop-filter:blur(12px);border-bottom:1px solid #d6d0c4;">
-    <div style="max-width:920px;margin:0 auto;padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
-      <div style="display:flex;align-items:center;gap:10px;overflow:hidden;">
+  <!-- ━━━ 고정 헤더 ━━━ -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
           <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
           <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
@@ -94,55 +82,57 @@
           <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
           <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        <span style="font-size:11px;font-weight:800;color:#c8622a;letter-spacing:0.07em;white-space:nowrap;">AIVE-CONTEST 2025</span>
-        <span style="color:#d6d0c4;font-size:14px;">|</span>
-        <span style="font-size:14px;font-weight:600;color:#1c1917;white-space:nowrap;">V-GROW</span>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AIVE-CONTEST 2025</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">V-GROW</span>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
-        <span style="font-size:12px;color:#a8a29e;">ERP4&#xD300; &#xB7; &#xCD5C;&#xACBD;&#xD638;</span>
-        <span class="mono" style="font-size:14px;font-weight:500;color:#c8622a;background:#fdf0e8;padding:4px 12px;border-radius:7px;border:1px solid #e8b896;">85&#xC810;</span>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">ERP4팀 · 최경호</span>
+        <span class="mono" style="font-size:14px; font-weight:500; color:#c8622a; background:#fdf0e8; padding:4px 12px; border-radius:7px; border:1px solid #e8b896;">85점</span>
       </div>
     </div>
   </header>
 
-  <main style="max-width:920px;margin:0 auto;padding:52px 28px 88px;">
+  <main style="max-width:920px; margin:0 auto; padding:52px 28px 88px;">
 
+    <!-- ━━━ 히어로 ━━━ -->
     <section style="margin-bottom:52px;">
-      <div style="display:flex;align-items:flex-start;gap:28px;flex-wrap:wrap;">
-        <div style="flex:1;min-width:280px;">
-          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER &#xC778;&#xC99D; &#xACFC;&#xC81C;</p>
-          <h1 style="font-size:38px;font-weight:800;color:#1c1917;line-height:1.15;letter-spacing:-0.02em;margin-bottom:18px;">V-GROW</h1>
-          <p style="font-size:16px;color:#44403c;line-height:1.75;max-width:540px;">
-            R&amp;R(&#xC5ED;&#xD560;&#xACFC; &#xCC45;&#xC784;) &#xB370;&#xC774;&#xD130;&#xB97C; &#xAE30;&#xBC18;&#xC73C;&#xB85C; &#xB9AC;&#xB354;&#xC640; &#xD300;&#xC6D0; &#xAC04; 1on1 &#xCF54;&#xCE6D;&#xC744; AI&#xAC00; &#xC9C0;&#xC6D0;&#xD558;&#xB294; VNTG &#xC804;&#xC6A9; &#xCF54;&#xCE6D; &#xD50C;&#xB7AB;&#xD3FC;.
-            &#xBA74;&#xB2F4; &#xC804; &#xC9C8;&#xBB38; &#xCD94;&#xCC9C;&#xBD80;&#xD130; &#xBA74;&#xB2F4; &#xD6C4; &#xC790;&#xB3D9; &#xC694;&#xC57D;&#xB300;&#xD130; &#xC561;&#xC158; &#xC544;&#xC774;&#xD15C; &#xCD94;&#xCD9C;&#xAE4C;&#xC9C0; &#xC804;&#xC8FC;&#xAE30; AI &#xC790;&#xB3D9;&#xD654;.
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제</p>
+          <h1 style="font-size:38px; font-weight:800; color:#1c1917; line-height:1.15; letter-spacing:-0.02em; margin-bottom:18px;">V-GROW</h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">
+            VNTG의 R&amp;R(역할과 책임) 데이터를 기반으로 리더-팀원 간 1on1 코칭을 체계화하고, GPT-4o가 면담 전 아젠다 추천부터 면담 후 녹음 자동 분석까지 전주기를 지원하는 사내 코칭 플랫폼
           </p>
-          <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap;">
-            <span style="font-size:12px;background:#ede9e1;color:#78716c;padding:4px 12px;border-radius:6px;border:1px solid #d6d0c4;">2026-04-06</span>
-            <span class="check-badge on">&#x1F3C6; AIVE-CONTEST</span>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026. 4. 6</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">🏆 AIVE-CONTEST</span>
           </div>
         </div>
-        <div style="background:#ede9e1;border:1px solid #d6d0c4;border-radius:16px;padding:24px;min-width:210px;">
-          <p class="eval-label" style="margin-bottom:14px;">&#xC885;&#xD569; &#xC810;&#xC218;</p>
-          <div style="text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #d6d0c4;">
-            <span class="mono" style="font-size:52px;font-weight:500;color:#c8622a;line-height:1;">85</span>
-            <span style="font-size:18px;color:#b5895a;font-weight:400;"> / 100</span>
+
+        <!-- 점수 패널 -->
+        <div style="background:#ede9e1; border:1px solid #d6d0c4; border-radius:16px; padding:24px; min-width:210px;">
+          <p class="eval-label" style="margin-bottom:14px;">종합 점수</p>
+          <div style="text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d6d0c4;">
+            <span class="mono" style="font-size:52px; font-weight:500; color:#c8622a; line-height:1;">85</span>
+            <span style="font-size:18px; color:#b5895a; font-weight:400;"> / 100</span>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <div style="background:#fffaf6;border:1px solid #e8d5c0;border-radius:8px;padding:10px;text-align:center;">
-              <div class="mono" style="font-size:19px;font-weight:500;color:#c8622a;line-height:1;">25</div>
-              <div style="font-size:10px;color:#b5895a;margin-top:3px;font-weight:600;">&#x2463; &#xD6A8;&#xC728;&#xC131; /30</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">25</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">③ 효율성 /30</div>
             </div>
-            <div style="background:#fffaf6;border:1px solid #e8d5c0;border-radius:8px;padding:10px;text-align:center;">
-              <div class="mono" style="font-size:19px;font-weight:500;color:#c8622a;line-height:1;">22</div>
-              <div style="font-size:10px;color:#b5895a;margin-top:3px;font-weight:600;">&#x2464; &#xC544;&#xC774;&#xB514;&#xC5B4; /25</div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">22</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">④ 아이디어 /25</div>
             </div>
-            <div style="background:#fffaf6;border:1px solid #e8d5c0;border-radius:8px;padding:10px;text-align:center;">
-              <div class="mono" style="font-size:19px;font-weight:500;color:#c8622a;line-height:1;">20</div>
-              <div style="font-size:10px;color:#b5895a;margin-top:3px;font-weight:600;">&#x2465; &#xD655;&#xC0B0;&#xC131; /25</div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">20</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑤ 확산성 /25</div>
             </div>
-            <div style="background:#fffaf6;border:1px solid #e8d5c0;border-radius:8px;padding:10px;text-align:center;">
-              <div class="mono" style="font-size:19px;font-weight:500;color:#c8622a;line-height:1;">18</div>
-              <div style="font-size:10px;color:#b5895a;margin-top:3px;font-weight:600;">&#x2466; &#xC870;&#xC9C1;&#xBAA9;&#xD45C; /20</div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">18</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑥ 조직목표 /20</div>
             </div>
           </div>
         </div>
@@ -151,25 +141,26 @@
 
     <hr class="divider" style="margin-bottom:52px;">
 
+    <!-- ━━━ 문제 정의 ━━━ -->
     <section style="margin-bottom:52px;">
-      <p class="eval-label" style="margin-bottom:18px;">&#x1F623; &#xBB38;&#xC81C; &#xC815;&#xC758; · &#xBC30;&#xACBD;</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div style="background:#ede9e1;border-radius:12px;padding:24px;">
-          <p style="font-size:11px;font-weight:700;color:#78716c;margin-bottom:10px;letter-spacing:0.05em;">&#xAE30;&#xC874;&#xC758; &#xC5B4;&#xB824;&#xC6C0;</p>
-          <ul style="font-size:15px;color:#1c1917;line-height:1.9;list-style:none;">
-            <li style="margin-bottom:8px;">&#x1F4DD; &#xC870;&#xC9C1;&#xC7A5;&#xC774; &#xBA74;&#xB2F4; &#xB0B4;&#xC6A9;&#xC744; <strong>&#xC218;&#xAE30; &#xC791;&#xC131;</strong> &#x2014; &#xC774;&#xB825; &#xAD00;&#xB9AC; &#xC5B4;&#xB824;&#xC6C0;</li>
-            <li style="margin-bottom:8px;">&#x1F4CA; &#xC804;&#xC0AC; &#xD604;&#xD669; &#xD30C;&#xC545; &#x2014; &#xAC1C;&#xBCC4; &#xCDE8;&#xD569; &#xC694;&#xCCAD; &#xD6C4; <strong>&#xC218;&#xC77C; &#xC18C;&#xC694;</strong></li>
-            <li style="margin-bottom:8px;">&#x1F517; &#xC678;&#xBD80; SaaS&#xB85C; &#xACC4;&#xC5F4;&#xC0AC;&#xBCC4; &#xB3C5;&#xB9BD; &#xD504;&#xB85C;&#xC138;&#xC2A4; &#xCEE4;&#xBC84; &#xBD88;&#xAC00;</li>
-            <li>&#x274C; R&amp;R&#xACFC; 1on1 &#xCF54;&#xCE6D; &#xC5F0;&#xACB0; &#xCCB4;&#xACC4; &#xBD80;&#xC7AC;</li>
+      <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">기존의 어려움</p>
+          <ul style="font-size:14px; color:#44403c; line-height:1.75; list-style:none; padding:0;">
+            <li>✗ 조직장이 면담 내용 <strong>수기 작성</strong>, 이력 관리 어려움</li>
+            <li style="margin-top:8px;">✗ 전사 현황 파악은 <strong>개별 취합 요청 후 수일 소요</strong></li>
+            <li style="margin-top:8px;">✗ 범용 SaaS로 계열사별 독립 평가 프로세스 커버 <strong>구조적 한계</strong></li>
+            <li style="margin-top:8px;">✗ 미완료 액션 아이템 <strong>수동 추적</strong>, 이력 단절</li>
           </ul>
         </div>
-        <div style="background:#fffaf6;border:1px solid #e8d5c0;border-radius:12px;padding:24px;">
-          <p style="font-size:11px;font-weight:700;color:#c8622a;margin-bottom:10px;letter-spacing:0.05em;">&#x2728; AI&#xB85C; &#xD574;&#xACB0;&#xD55C; &#xBC29;&#xC2DD;</p>
-          <ul style="font-size:15px;color:#1c1917;line-height:1.9;list-style:none;">
-            <li style="margin-bottom:8px;">&#x1F916; <strong>GPT-4o</strong>&#xAC00; R&amp;R + &#xC774;&#xC804; &#xC694;&#xC57D; &#xAE30;&#xBC18; &#xC544;&#xC820;&#xB2E4; &#xC790;&#xB3D9; &#xCD94;&#xCC9C;</li>
-            <li style="margin-bottom:8px;">&#x1F399;&#xFE0F; &#xB179;&#xC74C; &#xD30C;&#xC77C; &#x2192; <strong>Whisper STT</strong> &#x2192; &#xD654;&#xC790;&#xBD84;&#xB9AC; &#x2192; &#xC694;&#xC57D; &#xC790;&#xB3D9;&#xD654;</li>
-            <li style="margin-bottom:8px;">&#x1F4CB; &#xC561;&#xC158; &#xC544;&#xC774;&#xD15C; <strong>&#xC790;&#xB3D9; &#xCD94;&#xCD9C; &#xBC0F; &#xC774;&#xC6D4;</strong></li>
-            <li>&#x1F4C8; &#xAD00;&#xB9AC;&#xC790; &#xB300;&#xC2DC;&#xBCF4;&#xB4DC;&#xC5D0;&#xC11C; &#xC804;&#xC0AC; &#xD604;&#xD669; <strong>&#xC2E4;&#xC2DC;&#xAC04; &#xC870;&#xD68C;</strong></li>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:10px; letter-spacing:0.05em;">✨ AI로 해결한 방식</p>
+          <ul style="font-size:14px; color:#44403c; line-height:1.75; list-style:none; padding:0;">
+            <li>✅ <strong>GPT-4o 아젠다 자동 추천</strong> — R&amp;R 기반 코칭 질문 생성</li>
+            <li style="margin-top:8px;">✅ <strong>오디오 AI 파이프라인</strong> — Whisper STT + 화자분리 + 요약 자동화</li>
+            <li style="margin-top:8px;">✅ <strong>관리자 대시보드</strong> — 전사 현황 실시간 조회</li>
+            <li style="margin-top:8px;">✅ <strong>TMS 연동</strong> — 마스터 데이터 이중관리 원천 차단</li>
           </ul>
         </div>
       </div>
@@ -177,192 +168,271 @@
 
     <hr class="divider" style="margin-bottom:52px;">
 
+    <!-- ━━━ 체크리스트 시각화 ━━━ -->
     <section style="margin-bottom:52px;">
-      <p class="eval-label" style="margin-bottom:20px;">&#x2705; &#xD3C9;&#xAC00; &#xCCB4;&#xD06C;&#xB9AC;&#xC2A4;&#xD2B8;</p>
+      <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
+
       <div style="margin-bottom:20px;">
-        <p style="font-size:12px;font-weight:700;color:#78716c;margin-bottom:10px;">&#x2460; AI &#xD65C;&#xC6A9; &#xC720;&#xD615;</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <span class="check-badge on">&#x2705; &#xBC14;&#xC774;&#xBE0C;&#xCF54;&#xB529;</span>
-          <span class="check-badge on">&#x2705; &#xB7F0;&#xD0C0;&#xC784; AI</span>
-          <span class="check-badge">&#xB178;&#xCF54;&#xB4DC; AI</span>
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge on">✅ 런타임 AI</span>
+          <span class="check-badge">노코드 AI</span>
         </div>
       </div>
       <div style="margin-bottom:32px;">
-        <p style="font-size:12px;font-weight:700;color:#78716c;margin-bottom:10px;">&#x2461; &#xC790;&#xB3D9;&#xD654; &#xB300;&#xC0C1;</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <span class="check-badge on">&#x2705; &#xBC18;&#xBCF5; &#xD604;&#xD669; &#xCDE8;&#xD569;</span>
-          <span class="check-badge on">&#x2705; &#xB370;&#xC774;&#xD130; &#xC218;&#xC9D1;&#xB7F0;&#xBD84;&#xB958;</span>
-          <span class="check-badge on">&#x2705; &#xC54C;&#xB9BC;&#xBAA8;&#xB2C8;&#xD130;&#xB9C1;</span>
-          <span class="check-badge on">&#x2705; &#xBA74;&#xB2F4; &#xC774;&#xB825; &#xC790;&#xB3D9;&#xD654;</span>
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 반복 보고서 취합</span>
+          <span class="check-badge on">✅ 데이터 수집·분류</span>
+          <span class="check-badge on">✅ 알림·모니터링</span>
+          <span class="check-badge on">✅ 면담 이력 관리</span>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-        <div class="eval-card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <span class="eval-label">&#x2463; &#xC5C5;&#xBB34; &#xD6A8;&#xC728;&#xC131;</span>
-            <span class="mono" style="font-size:20px;color:#c8622a;font-weight:500;line-height:1;">25<span style="font-size:12px;color:#b5895a;">/30</span></span>
-          </div>
-          <p style="font-size:14px;color:#44403c;line-height:1.7;">&#xBA74;&#xB2F4; &#xC900;&#xBE44; <strong>&#xAC74;&#xB2F9; 10~15&#xBD84; &#xC808;&#xAC10;</strong>, &#xC804;&#xC0AC; &#xD604;&#xD669; &#xD30C;&#xC545; &#xC218;&#xC77C; &#x2192; &#xC2E4;&#xC2DC;&#xAC04;. &#xC561;&#xC158; &#xC544;&#xC774;&#xD15C; &#xC774;&#xC6D4; 100% &#xC790;&#xB3D9;&#xD654;. &#xD30C;&#xC77C;&#xB7FF; &#xBC30;&#xD3EC; &#xC6B4;&#xC601; &#xC911;(&#xAC00;&#xC810; &#xC801;&#xC6A9;).</p>
-        </div>
-        <div class="eval-card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <span class="eval-label">&#x2464; &#xC544;&#xC774;&#xB514;&#xC5B4; &#xC801;&#xC808;&#xC131;</span>
-            <span class="mono" style="font-size:20px;color:#c8622a;font-weight:500;line-height:1;">22<span style="font-size:12px;color:#b5895a;">/25</span></span>
-          </div>
-          <p style="font-size:14px;color:#44403c;line-height:1.7;">TMS &#xC6B4;&#xC601; &#xACBD;&#xD5D8; &#xAE30;&#xBC18; <strong>VNTG &#xD2B9;&#xD654; &#xC124;&#xACC4;</strong>. &#xB9C8;&#xC2A4;&#xD130; &#xB370;&#xC774;&#xD130; &#xC774;&#xC911;&#xAD00;&#xB9AC; &#xCC28;&#xB2E8;, &#xC678;&#xBD80; SaaS &#xAD6C;&#xC870;&#xC801; &#xD55C;&#xACC4;&#xB97C; &#xB0B4;&#xBD80; &#xAD6C;&#xCD95;&#xC73C;&#xB85C; &#xADF9;&#xBCF5;.</p>
-        </div>
-        <div class="eval-card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <span class="eval-label">&#x2465; &#xD655;&#xC0B0; &#xAC00;&#xB2A5;&#xC131;</span>
-            <span class="mono" style="font-size:20px;color:#c8622a;font-weight:500;line-height:1;">20<span style="font-size:12px;color:#b5895a;">/25</span></span>
-          </div>
-          <p style="font-size:14px;color:#44403c;line-height:1.7;"><strong>&#xC6F9; &#xBE0C;&#xB77C;&#xC6B0;&#xC800; &#xAE30;&#xBC18;</strong>, &#xBCC4;&#xB3C4; &#xC124;&#xCE58; &#xBD88;&#xD544;&#xC694;. TMS &#xC5F0;&#xB3D9;&#xC73C;&#xB85C; &#xACC4;&#xC5F4;&#xC0AC; &#xD655;&#xC7A5; &#xCD94;&#xAC00; &#xAC1C;&#xBC1C; &#xCD5C;&#xC18C;&#xD654;. &#xD604;&#xC7AC; &#xBB34;&#xB8CC; &#xC11C;&#xBC84; &#xC6B4;&#xC601; &#xD55C;&#xACC4; &#xC874;&#xC7AC;.</p>
-        </div>
-        <div class="eval-card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <span class="eval-label">&#x2466; &#xC870;&#xC9C1; &#xBAA9;&#xD45C; &#xC5F0;&#xACB0;</span>
-            <span class="mono" style="font-size:20px;color:#c8622a;font-weight:500;line-height:1;">18<span style="font-size:12px;color:#b5895a;">/20</span></span>
-          </div>
-          <p style="font-size:14px;color:#44403c;line-height:1.7;"><strong>R&amp;R &#xAE30;&#xBC18; &#xCF54;&#xCE6D; &#xB514;&#xC9C0;&#xD138; &#xC804;&#xD658;</strong> &#xC9C1;&#xC811; &#xC5F0;&#xACB0;. AI &#xAC1C;&#xBC1C; &#xBC29;&#xBC95;&#xB860; &#xD300; &#xB0B4; 2&#xD68C; &#xACF5;&#xC720;. &#xACBD;&#xC601;&#xC9C4; &#xC758;&#xC0AC;&#xACB0;&#xC815; &#xC9C0;&#xC6D0; &#xAD6C;&#xC870; &#xAD6C;&#xCD95;.</p>
-        </div>
-      </div>
-    </section>
 
-    <hr class="divider" style="margin-bottom:52px;">
-
-    <section style="margin-bottom:52px;">
-      <p class="eval-label" style="margin-bottom:20px;">&#x26A1; &#xC8FC;&#xC694; &#xAE30;&#xB2A5;</p>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
-        <div class="feature-card">
-          <p style="font-size:13px;font-weight:700;color:#c8622a;margin-bottom:6px;">&#x1F916; AI &#xC544;&#xC820;&#xB2E4; &#xCD94;&#xCC9C;</p>
-          <p style="font-size:13px;color:#44403c;line-height:1.6;">&#xD300;&#xC6D0; R&amp;R + &#xC774;&#xC804; &#xB9CC;&#xD2F0; &#xC694;&#xC57D; &#xAE30;&#xBC18;&#xC73C;&#xB85C; <strong>GPT-4o</strong>&#xAC00; &#xCF54;&#xCE6D; &#xC9C8;&#xBB38; 3~5&#xAC1C; &#xC790;&#xB3D9; &#xC0DD;&#xC131;</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">25<span style="font-size:12px; color:#b5895a;">/30</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">면담 사전 준비 <strong>건당 10~15분 절감</strong>, 전사 현황 파악 <strong>수일 → 실시간</strong> 전환. 액션 아이템 이월 · 오디오 분석 완전 자동화 구현. 파일럿 배포 상태 가점 반영</p>
         </div>
-        <div class="feature-card">
-          <p style="font-size:13px;font-weight:700;color:#c8622a;margin-bottom:6px;">&#x1F399;&#xFE0F; &#xB179;&#xC74C; &#xC790;&#xB3D9; &#xBD84;&#xC11D;</p>
-          <p style="font-size:13px;color:#44403c;line-height:1.6;"><strong>Whisper STT</strong> &#xC74C;&#xC131; &#xC778;&#xC2DD; &#x2192; &#xD654;&#xC790; &#xBD84;&#xB9AC; &#x2192; &#xAD6C;&#xAC04;&#xC804;&#xCCB4; &#xC694;&#xC57D; &#x2192; Action Item &#xC790;&#xB3D9; &#xCD94;&#xCD9C;</p>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">22<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">TMS 운영 경험 기반 VNTG 특화 기획. 외부 SaaS 구조적 한계 인식 후 내부 개발 선택. <strong>TMS 연동으로 마스터 데이터 이중관리 차단</strong> 설계 명쾌</p>
         </div>
-        <div class="feature-card">
-          <p style="font-size:13px;font-weight:700;color:#c8622a;margin-bottom:6px;">&#x1F4CB; &#xC561;&#xC158; &#xC544;&#xC774;&#xD15C; &#xC774;&#xC6D4;</p>
-          <p style="font-size:13px;color:#44403c;line-height:1.6;">&#xBBF8;&#xC644;&#xB8CC; &#xC561;&#xC158; &#xC544;&#xC774;&#xD15C;&#xC744; &#xB2E4;&#xC74C; &#xBA74;&#xB2F4; &#xC2DC;&#xC791; &#xC2DC; <strong>100% &#xC790;&#xB3D9; &#xC774;&#xC6D4;</strong> &#x2014; &#xD6C4;&#xC18D; &#xAD00;&#xB9AC; &#xB204;&#xB77D; &#xC5C6;&#xC74C;</p>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">20<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">웹 브라우저 기반, <strong>별도 설치 불필요</strong>. 역할별 UI 분리로 비개발자 접근 가능. TMS 연동으로 계열사 확장 시 추가 개발 최소화 구조 확보. 무료서버 한계가 현재 진입 장벽</p>
         </div>
-        <div class="feature-card">
-          <p style="font-size:13px;font-weight:700;color:#c8622a;margin-bottom:6px;">&#x1F4CA; &#xB9AC;&#xB354; &#xB300;&#xC2DC;&#xBCF4;&#xB4DC;</p>
-          <p style="font-size:13px;color:#44403c;line-height:1.6;">&#xD300;&#xC6D0;&#xBCC4; &#xBA74;&#xB2F4; &#xD604;&#xD669;&#xB7F0;R&amp;R &#xC9C4;&#xD589;&#xB960; &#xD55C;&#xB208;&#xC5D0; &#xD30C;&#xC545;. &#xC0C1;&#xD0DC;(&#xC5F0;&#xCCB4;&#xC608;&#xC815;&#xC815;&#xC0C1;) &#xC790;&#xB3D9; &#xD310;&#xBCC4;</p>
-        </div>
-        <div class="feature-card">
-          <p style="font-size:13px;font-weight:700;color:#c8622a;margin-bottom:6px;">&#x1F3E2; &#xAD00;&#xB9AC;&#xC790; &#xB300;&#xC2DC;&#xBCF4;&#xB4DC;</p>
-          <p style="font-size:13px;color:#44403c;line-height:1.6;">&#xC804;&#xC0AC; 1on1 &#xC2E4;&#xC2DC;&#xC728;&#xBD80;&#xC11C;&#xBCC4; &#xD604;&#xD669; <strong>&#xC2E4;&#xC2DC;&#xAC04; &#xC870;&#xD68C;</strong>. &#xAE30;&#xC874; &#xC218;&#xC77C; &#xC18C;&#xC694; &#x2192; &#xC989;&#xC2DC; &#xD655;&#xC778;</p>
-        </div>
-        <div class="feature-card">
-          <p style="font-size:13px;font-weight:700;color:#c8622a;margin-bottom:6px;">&#x1F517; TMS &#xC5F0;&#xB3D9;</p>
-          <p style="font-size:13px;color:#44403c;line-height:1.6;">VNTG &#xC778;&#xC0AC;&#xD3C9;&#xAC00; &#xC2DC;&#xC2A4;&#xD15C;(TMS) &#xC778;&#xD130;&#xD398;&#xC774;&#xC2A4; &#xC5F0;&#xB3D9; &#x2014; &#xB9C8;&#xC2A4;&#xD130; &#xB370;&#xC774;&#xD130; <strong>&#xC774;&#xC911;&#xAD00;&#xB9AC; &#xCC28;&#xB2E8;</strong></p>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">18<span style="font-size:12px; color:#b5895a;">/20</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">R&amp;R 기반 코칭 <strong>디지털 전환</strong> 직접 연결. AI 개발 방법론 팀 내 공유(2회). 전사 실시율·진행현황 데이터 가시화로 <strong>경영진 의사결정 지원</strong> 구조</p>
         </div>
       </div>
     </section>
 
     <hr class="divider" style="margin-bottom:52px;">
 
+    <!-- ━━━ 주요 기능 ━━━ -->
     <section style="margin-bottom:52px;">
-      <p class="eval-label" style="margin-bottom:20px;">&#x1F9E0; AI &#xD65C;&#xC6A9; &#xBC29;&#xC2DD; · &#xAE30;&#xC220; &#xC2A4;&#xD0DD;</p>
-      <div style="background:#ede9e1;border-radius:14px;padding:28px;">
-        <p style="font-size:12px;font-weight:700;color:#78716c;margin-bottom:12px;letter-spacing:0.05em;">AI &#xD30C;&#xC774;&#xD504;&#xB77C;&#xC778; &#xD750;&#xB984;</p>
-        <div style="background:#fffaf6;border:1px solid #e8d5c0;border-radius:10px;padding:16px;font-size:13px;color:#44403c;line-height:2;margin-bottom:20px;">
-          &#x1F399;&#xFE0F; <strong>GCS &#xC624;&#xB514;&#xC624; &#xC5C5;&#xB85C;&#xB4DC;</strong><br>
-          &#x2192; &#x1F524; <strong>Whisper STT</strong> (25MB &#xCD08;&#xACFC; &#xC2DC; ffmpeg&#xB85C; 10&#xBD84; &#xB2E8;&#xC704; &#xBD84;&#xD560;)<br>
-          &#x2192; &#x1F465; <strong>GPT-4o &#xD654;&#xC790; &#xBD84;&#xB9AC;</strong> (LEADER / MEMBER &#xB77C;&#xBCA8;&#xB9C1;)<br>
-          &#x2192; &#x1F4DD; <strong>&#xAD6C;&#xAC04; &#xC694;&#xC57D;</strong> (&#xD0C0;&#xC784;&#xB77C;&#xC778; &#xAD6C;&#xAC04;&#xBCC4; GPT-4o &#xC694;&#xC57D;)<br>
-          &#x2192; &#x1F4CB; <strong>&#xC804;&#xCCB4; &#xC694;&#xC57D; + Action Item &#xCD94;&#xCD9C;</strong><br>
-          &#x2192; &#x1F3C6; <strong>leader_hints + &#xB9AC;&#xB354;&#xC2ED; &#xC810;&#xC218; &#xC0DD;&#xC131;</strong><br>
-          &#x2192; &#x2705; COMPLETED (PostgreSQL &#xC800;&#xC7A5;)
+      <p class="eval-label" style="margin-bottom:20px;">⚡ 주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🤖 AI 아젠다 추천</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">팀원 R&amp;R + 이전 미팅 요약 기반으로 <strong>GPT-4o가 코칭 질문 3~5개</strong>를 자동 생성. 매 면담마다 최신화된 질문 제안</p>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🎙️ 오디오 AI 파이프라인</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">녹음 업로드 → <strong>Whisper STT</strong> → 화자 분리 → 구간 요약 → 전체 요약 → Action Item 추출 → 리더십 점수까지 <strong>완전 자동화</strong></p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🔁 액션 아이템 자동 이월</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">이전 면담의 <strong>미완료 액션 아이템</strong>을 다음 세션 시작 시 자동 이월. 이력 단절 없이 연속성 있는 코칭 가능</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📊 리더 대시보드</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">팀원별 1on1 현황을 <strong>신호등 상태</strong>(정상/1개월 지남/2개월 초과)로 시각화. 미팅 추이·R&amp;R 진행률 한눈에 확인</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🏢 관리자 대시보드</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">전사 1on1 실시율, 부서별 히트맵, 리더 랭킹, R&amp;R 현황을 <strong>실시간 조회</strong>. 기존 수일 소요 취합을 즉시 대체</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🔗 TMS HR 연동</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">그룹 인사평가 시스템(TMS)과 <strong>연동 인터페이스 구현</strong>. 마스터 데이터 이중관리 원천 차단, 계열사 확장 시 추가 개발 최소화</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ AI 활용 방식 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:28px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex-wrap:wrap;">
           <div>
-            <p style="font-size:11px;font-weight:700;color:#78716c;margin-bottom:8px;">&#x1F916; AI &#xBAA8;&#xB378;</p>
-            <ul style="font-size:13px;color:#1c1917;list-style:none;line-height:1.8;">
-              <li>&#x2705; GPT-4o (&#xC544;&#xC820;&#xB2E4;&#xC694;&#xC57D;&#xBD84;&#xC11D;)</li>
-              <li>&#x2705; Whisper (STT)</li>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:12px; letter-spacing:0.05em;">🤖 AI 모델 · 활용</p>
+            <ul style="font-size:13px; color:#44403c; line-height:1.8; list-style:none;">
+              <li>🔹 <strong>OpenAI Whisper</strong> — 면담 오디오 STT 변환</li>
+              <li>🔹 <strong>GPT-4o</strong> — 화자 분리, 구간 요약, 전체 요약, Action Item 추출</li>
+              <li>🔹 <strong>GPT-4o</strong> — leader_hints, leadership_score 생성</li>
+              <li>🔹 <strong>GPT-4o</strong> — R&amp;R 초안 생성, ALIGN 체크, 구체화 제안</li>
+              <li>🔹 <strong>asyncio.gather</strong> — 병렬 처리로 파이프라인 속도 최적화</li>
             </ul>
           </div>
           <div>
-            <p style="font-size:11px;font-weight:700;color:#78716c;margin-bottom:8px;">&#x2699;&#xFE0F; &#xBC31;&#xC5D4;&#xB4DC;</p>
-            <ul style="font-size:13px;color:#1c1917;list-style:none;line-height:1.8;">
-              <li>&#x1F539; Python 3.11 + FastAPI</li>
-              <li>&#x1F539; SQLAlchemy 2.0 (async)</li>
-              <li>&#x1F539; PostgreSQL (Supabase)</li>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:12px; letter-spacing:0.05em;">🛠️ 기술 스택</p>
+            <ul style="font-size:13px; color:#44403c; line-height:1.8; list-style:none;">
+              <li>🔹 <strong>Backend</strong> — Python 3.11+, FastAPI 0.109, SQLAlchemy 2.0</li>
+              <li>🔹 <strong>Frontend</strong> — React 19, TypeScript, Vite, Tailwind CSS v4</li>
+              <li>🔹 <strong>DB</strong> — PostgreSQL (Supabase), Alembic 마이그레이션</li>
+              <li>🔹 <strong>Storage</strong> — Google Cloud Storage (오디오 파일)</li>
+              <li>🔹 <strong>배포</strong> — Vercel (현재 무료 플랜, 파일럿 단계)</li>
             </ul>
           </div>
-          <div>
-            <p style="font-size:11px;font-weight:700;color:#78716c;margin-bottom:8px;">&#x1F5A5;&#xFE0F; &#xD504;&#xB860;&#xD2B8;&#xC5D4;&#xB4DC;</p>
-            <ul style="font-size:13px;color:#1c1917;list-style:none;line-height:1.8;">
-              <li>&#x1F539; React 19 + TypeScript</li>
-              <li>&#x1F539; Tailwind CSS v4</li>
-              <li>&#x1F539; Recharts (&#xCC28;&#xD2B8;)</li>
-            </ul>
-          </div>
+        </div>
+        <div style="margin-top:20px; padding-top:16px; border-top:1px solid #d6d0c4;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">🏗️ 아키텍처 흐름</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.8;">
+            <strong>면담 전</strong>: 팀원 R&amp;R + 이전 요약 → GPT-4o → 아젠다 추천
+            <br>→ <strong>면담 중</strong>: 오디오 녹음 → GCS 업로드 → 타임라인 기록
+            <br>→ <strong>면담 후</strong>: BackgroundTask 트리거 → Whisper STT → 화자분리 → 요약·Action Item(병렬) → leader_hints·리더십점수(병렬) → COMPLETED
+            <br>→ <strong>대시보드</strong>: PostgreSQL → 리더/관리자 API → React 차트
+          </p>
         </div>
       </div>
     </section>
 
     <hr class="divider" style="margin-bottom:52px;">
 
+    <!-- ━━━ 시각 증빙 ━━━ -->
     <section style="margin-bottom:52px;">
-      <p class="eval-label" style="margin-bottom:20px;">&#x1F4F8; &#xC2DC;&#xAC01; &#xC99D;&#xBE59; &#xC790;&#xB8CC; &#x2014; &#xAD00;&#xB9AC;&#xC790; &#xD654;&#xBA74;</p>
-      <div class="screenshot-gallery" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:32px;">
-        <img src="assets/&#xAD00;&#xB9AC;&#xC790;(1).png" alt="&#xAD00;&#xB9AC;&#xC790; &#xD654;&#xBA74; 1" onclick="openLb(GA,0)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/&#xAD00;&#xB9AC;&#xC790;(2).png" alt="&#xAD00;&#xB9AC;&#xC790; &#xD654;&#xBA74; 2" onclick="openLb(GA,1)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/&#xAD00;&#xB9AC;&#xC790;(3).png" alt="&#xAD00;&#xB9AC;&#xC790; &#xD654;&#xBA74; 3" onclick="openLb(GA,2)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/&#xAD00;&#xB9AC;&#xC790;(4).png" alt="&#xAD00;&#xB9AC;&#xC790; &#xD654;&#xBA74; 4" onclick="openLb(GA,3)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/&#xAD00;&#xB9AC;&#xC790;(5).png" alt="&#xAD00;&#xB9AC;&#xC790; &#xD654;&#xBA74; 5" onclick="openLb(GA,4)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/&#xAD00;&#xB9AC;&#xC790;(6).png" alt="&#xAD00;&#xB9AC;&#xC790; &#xD654;&#xBA74; 6" onclick="openLb(GA,5)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
+      <p class="eval-label" style="margin-bottom:20px;">📸 시각 증빙 자료</p>
+
+      <!-- 카테고리 탭 스타일 라벨 -->
+      <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+        <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896; font-weight:600;">1on1 코칭 화면</span>
+        <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4; font-weight:600;">R&amp;R 관리 화면</span>
+        <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4; font-weight:600;">관리자 대시보드</span>
       </div>
 
-      <p class="eval-label" style="margin-bottom:12px;">&#x1F4F8; &#xC2DC;&#xAC01; &#xC99D;&#xBE59; &#xC790;&#xB8CC; &#x2014; 1on1 &#xCF54;&#xCE6D; &#xD654;&#xBA74;</p>
-      <div class="screenshot-gallery" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:32px;">
-        <img src="assets/1on1&#xCF54;&#xCE6D;(1).png" alt="1on1 &#xCF54;&#xCE6D; 1" onclick="openLb(GB,0)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/1on1&#xCF54;&#xCE6D;(2).png" alt="1on1 &#xCF54;&#xCE6D; 2" onclick="openLb(GB,1)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/1on1&#xCF54;&#xCE6D;(3).png" alt="1on1 &#xCF54;&#xCE6D; 3" onclick="openLb(GB,2)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/1on1&#xCF54;&#xCE6D;(4).png" alt="1on1 &#xCF54;&#xCE6D; 4" onclick="openLb(GB,3)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/1on1&#xCF54;&#xCE6D;(5).png" alt="1on1 &#xCF54;&#xCE6D; 5" onclick="openLb(GB,4)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/1on1&#xCF54;&#xCE6D;(6).png" alt="1on1 &#xCF54;&#xCE6D; 6" onclick="openLb(GB,5)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/1on1&#xCF54;&#xCE6D;(7).png" alt="1on1 &#xCF54;&#xCE6D; 7" onclick="openLb(GB,6)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
+      <!-- Arrow Lightbox -->
+      <div id="lb-overlay" onclick="closeLb()">
+        <span id="lb-close" onclick="closeLb()">✕</span>
+        <button id="lb-prev" onclick="event.stopPropagation(); moveLb(-1)">‹</button>
+        <img id="lb-img" src="" alt="" onclick="event.stopPropagation()">
+        <button id="lb-next" onclick="event.stopPropagation(); moveLb(1)">›</button>
+        <div id="lb-counter" style="position:fixed; bottom:24px; left:50%; transform:translateX(-50%); color:#ddd; font-size:13px;"></div>
       </div>
 
-      <p class="eval-label" style="margin-bottom:12px;">&#x1F4F8; &#xC2DC;&#xAC01; &#xC99D;&#xBE59; &#xC790;&#xB8CC; &#x2014; R&amp;R &#xAD00;&#xB9AC; &#xD654;&#xBA74;</p>
-      <div class="screenshot-gallery" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-        <img src="assets/RandR&#xAD00;&#xB9AC;(1).png" alt="R&amp;R &#xAD00;&#xB9AC; 1" onclick="openLb(GC,0)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/RandR&#xAD00;&#xB9AC;(2).png" alt="R&amp;R &#xAD00;&#xB9AC; 2" onclick="openLb(GC,1)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
-        <img src="assets/RandR&#xAD00;&#xB9AC;(3).png" alt="R&amp;R &#xAD00;&#xB9AC; 3" onclick="openLb(GC,2)" style="border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
+      <script>
+        var _lbImgs = [
+          {src:"assets/1on1코칭(1).png", alt:"1on1 코칭 화면 1"},
+          {src:"assets/1on1코칭(2).png", alt:"1on1 코칭 화면 2"},
+          {src:"assets/1on1코칭(3).png", alt:"1on1 코칭 화면 3"},
+          {src:"assets/1on1코칭(4).png", alt:"1on1 코칭 화면 4"},
+          {src:"assets/1on1코칭(5).png", alt:"1on1 코칭 화면 5"},
+          {src:"assets/1on1코칭(6).png", alt:"1on1 코칭 화면 6"},
+          {src:"assets/1on1코칭(7).png", alt:"1on1 코칭 화면 7"},
+          {src:"assets/R_R관리(1).png", alt:"R&R 관리 화면 1"},
+          {src:"assets/R_R관리(2).png", alt:"R&R 관리 화면 2"},
+          {src:"assets/R_R관리(3).png", alt:"R&R 관리 화면 3"},
+          {src:"assets/관리자(1).png", alt:"관리자 대시보드 1"},
+          {src:"assets/관리자(2).png", alt:"관리자 대시보드 2"},
+          {src:"assets/관리자(3).png", alt:"관리자 대시보드 3"},
+          {src:"assets/관리자(4).png", alt:"관리자 대시보드 4"},
+          {src:"assets/관리자(5).png", alt:"관리자 대시보드 5"},
+          {src:"assets/관리자(6).png", alt:"관리자 대시보드 6"}
+        ];
+        var _lbIdx = 0;
+        function openLb(idx) {
+          _lbIdx = idx;
+          _updateLb();
+          document.getElementById('lb-overlay').classList.add('open');
+        }
+        function closeLb() {
+          document.getElementById('lb-overlay').classList.remove('open');
+        }
+        function moveLb(dir) {
+          _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
+          _updateLb();
+        }
+        function _updateLb() {
+          var d = _lbImgs[_lbIdx];
+          document.getElementById('lb-img').src = d.src;
+          document.getElementById('lb-img').alt = d.alt;
+          document.getElementById('lb-counter').textContent = (_lbIdx + 1) + ' / ' + _lbImgs.length + ' — ' + d.alt;
+        }
+        document.addEventListener('keydown', function(e) {
+          var o = document.getElementById('lb-overlay');
+          if (o.classList.contains('open')) {
+            if (e.key === 'Escape') closeLb();
+            if (e.key === 'ArrowLeft') moveLb(-1);
+            if (e.key === 'ArrowRight') moveLb(1);
+          }
+        });
+      </script>
+
+      <!-- 1on1 코칭 갤러리 -->
+      <div style="margin-bottom:24px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:12px;">1on1 코칭 화면 (7장)</p>
+        <div class="screenshot-gallery" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px;">
+          <img src="assets/1on1코칭(1).png" alt="1on1 코칭 화면 1" onclick="openLb(0)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/1on1코칭(2).png" alt="1on1 코칭 화면 2" onclick="openLb(1)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/1on1코칭(3).png" alt="1on1 코칭 화면 3" onclick="openLb(2)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/1on1코칭(4).png" alt="1on1 코칭 화면 4" onclick="openLb(3)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/1on1코칭(5).png" alt="1on1 코칭 화면 5" onclick="openLb(4)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/1on1코칭(6).png" alt="1on1 코칭 화면 6" onclick="openLb(5)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/1on1코칭(7).png" alt="1on1 코칭 화면 7" onclick="openLb(6)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+        </div>
+      </div>
+
+      <!-- R&R 관리 갤러리 -->
+      <div style="margin-bottom:24px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:12px;">R&amp;R 관리 화면 (3장)</p>
+        <div class="screenshot-gallery" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
+          <img src="assets/R_R관리(1).png" alt="R&R 관리 화면 1" onclick="openLb(7)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/R_R관리(2).png" alt="R&R 관리 화면 2" onclick="openLb(8)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/R_R관리(3).png" alt="R&R 관리 화면 3" onclick="openLb(9)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+        </div>
+      </div>
+
+      <!-- 관리자 대시보드 갤러리 -->
+      <div>
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:12px;">관리자 대시보드 (6장)</p>
+        <div class="screenshot-gallery" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
+          <img src="assets/관리자(1).png" alt="관리자 대시보드 1" onclick="openLb(10)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/관리자(2).png" alt="관리자 대시보드 2" onclick="openLb(11)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/관리자(3).png" alt="관리자 대시보드 3" onclick="openLb(12)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/관리자(4).png" alt="관리자 대시보드 4" onclick="openLb(13)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/관리자(5).png" alt="관리자 대시보드 5" onclick="openLb(14)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+          <img src="assets/관리자(6).png" alt="관리자 대시보드 6" onclick="openLb(15)" style="border-radius:8px; width:100%; aspect-ratio:16/10; object-fit:cover; border:1px solid #e8d5c0;">
+        </div>
       </div>
     </section>
 
     <hr class="divider" style="margin-bottom:52px;">
 
+    <!-- ━━━ 기대 효과 ━━━ -->
     <section>
-      <p class="eval-label" style="margin-bottom:20px;">&#x1F4C8; &#xAE30;&#xB300; &#xD6A8;&#xACFC; · &#xC131;&#xACFC;</p>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
         <div class="effect-card">
-          <div class="mono" style="font-size:32px;font-weight:500;color:#c8622a;margin-bottom:6px;line-height:1;">15&#xBD84;</div>
-          <p style="font-size:12px;font-weight:600;color:#1c1917;margin-bottom:4px;">&#xBA74;&#xB2F4; &#xC900;&#xBE44; &#xC2DC;&#xAC04; &#xC808;&#xAC10;</p>
-          <p style="font-size:12px;color:#78716c;">&#xAC74;&#xB2F9; 10~15&#xBD84;&#xC758; &#xC0AC;&#xC804; &#xC900;&#xBE44; &#xC2DC;&#xAC04;&#xC744; AI &#xC544;&#xC820;&#xB2E4; &#xCD94;&#xCC9C;&#xC73C;&#xB85C; &#xC808;&#xAC10;</p>
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">15분</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">면담 준비 시간 절감</p>
+          <p style="font-size:12px; color:#78716c;">건당 10~15분 사전 준비 시간 절감 기대. AI 아젠다 자동 추천으로 즉시 시작 가능</p>
         </div>
         <div class="effect-card">
-          <div class="mono" style="font-size:32px;font-weight:500;color:#c8622a;margin-bottom:6px;line-height:1;">&#xC990;&#xC2DC;</div>
-          <p style="font-size:12px;font-weight:600;color:#1c1917;margin-bottom:4px;">&#xC804;&#xC0AC; &#xD604;&#xD669; &#xD30C;&#xC545;</p>
-          <p style="font-size:12px;color:#78716c;">&#xAC1C;&#xBCC4; &#xCDE8;&#xD569; &#xC694;&#xCCAD; &#xC218;&#xC77C; &#xC18C;&#xC694; &#x2192; &#xAD00;&#xB9AC;&#xC790; &#xB300;&#xC2DC;&#xBCF4;&#xB4DC; &#xC2E4;&#xC2DC;&#xAC04; &#xC870;&#xD68C;</p>
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">0일</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">전사 현황 파악 대기 시간</p>
+          <p style="font-size:12px; color:#78716c;">기존 취합 요청 후 수일 소요 → 관리자 대시보드 실시간 조회로 즉시 확인</p>
         </div>
         <div class="effect-card">
-          <div class="mono" style="font-size:32px;font-weight:500;color:#c8622a;margin-bottom:6px;line-height:1;">100%</div>
-          <p style="font-size:12px;font-weight:600;color:#1c1917;margin-bottom:4px;">&#xBA74;&#xB2F4; &#xC774;&#xB825; &#xC790;&#xB3D9; &#xAE30;&#xB85D;</p>
-          <p style="font-size:12px;color:#78716c;">&#xC0C1;&#xD0DC;&#xAC12;&#xB7F0;&#xD0C0;&#xC784;&#xC2A4;&#xD0EC;&#xD504;&#xB85C; &#xC804; &#xACFC;&#xC815; DB &#xC790;&#xB3D9; &#xC800;&#xC7A5;, &#xC5D1;&#xC140; &#xBC84;&#xC804; &#xAD00;&#xB9AC; &#xC81C;&#xAC70;</p>
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">100%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">면담 이력 자동 기록</p>
+          <p style="font-size:12px; color:#78716c;">수기 작성 없이 전체 미팅 과정이 상태값·타임스탬프로 DB 자동 기록. 이력 단절 없음</p>
         </div>
       </div>
     </section>
 
   </main>
 
-  <footer style="border-top:1px solid #d6d0c4;padding:22px 28px;text-align:center;background:#ede9e1;">
-    <p style="font-size:11px;color:#a8a29e;letter-spacing:0.05em;font-weight:500;">
-      AIVE-CONTEST 2025 &nbsp;&#xB7;&nbsp; AI-WORKER &#xC778;&#xC99D; &#xACFC;&#xC81C; &nbsp;&#xB7;&nbsp; ERP4&#xD300;
+  <!-- ━━━ 푸터 ━━━ -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AIVE-CONTEST 2025 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; ERP4팀
     </p>
   </footer>
 
