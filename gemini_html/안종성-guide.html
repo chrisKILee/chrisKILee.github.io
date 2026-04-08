@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 기반 로그 분석 시스템 — AIVE-CONTEST 2025</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    .screenshot-gallery img {
+      cursor: zoom-in; transition: opacity 0.15s;
+    }
+    .screenshot-gallery img:hover { opacity: 0.88; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.88); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; flex-direction: column;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-img {
+      max-width: 90vw; max-height: 82vh;
+      border-radius: 10px; box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      object-fit: contain;
+    }
+    #lb-close {
+      position: fixed; top: 20px; right: 24px;
+      color: #fff; font-size: 28px; font-weight: 300;
+      cursor: pointer; line-height: 1; opacity: 0.8; background: none; border: none;
+    }
+    #lb-close:hover { opacity: 1; }
+    #lb-prev, #lb-next {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.15); border: none; color: #fff;
+      font-size: 36px; padding: 12px 18px; cursor: pointer; border-radius: 8px;
+    }
+    #lb-prev { left: 16px; }
+    #lb-next { right: 16px; }
+    #lb-caption { color: #ddd; margin-top: 10px; font-size: 13px; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <!-- ━━━ 고정 헤더 ━━━ -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AIVE-CONTEST 2025</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">AI 기반 로그 분석 시스템</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">데이터포지팀 · 안종성</span>
+        <span class="mono" style="font-size:14px; font-weight:500; color:#c8622a; background:#fdf0e8; padding:4px 12px; border-radius:7px; border:1px solid #e8b896;">88점</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:920px; margin:0 auto; padding:52px 28px 88px;">
+
+    <!-- ━━━ 히어로 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제</p>
+          <h1 style="font-size:38px; font-weight:800; color:#1c1917; line-height:1.15; letter-spacing:-0.02em; margin-bottom:18px;">AI 기반 로그 분석 시스템</h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">Zabbix·Grafana·PostgreSQL·NiFi 로그를 통합 관제하고, Google Gemini AI가 장애 원인을 자동 분석하여 60분 걸리던 대응 시간을 5분으로 단축</p>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026. 4. 8</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">🏆 AIVE-CONTEST</span>
+          </div>
+        </div>
+
+        <!-- 점수 패널 -->
+        <div style="background:#ede9e1; border:1px solid #d6d0c4; border-radius:16px; padding:24px; min-width:210px;">
+          <p class="eval-label" style="margin-bottom:14px;">종합 점수</p>
+          <div style="text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d6d0c4;">
+            <span class="mono" style="font-size:52px; font-weight:500; color:#c8622a; line-height:1;">88</span>
+            <span style="font-size:18px; color:#b5895a; font-weight:400;"> / 100</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">28</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">③ 효율성 /30</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">22</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">④ 아이디어 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">21</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑤ 확산성 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">17</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑥ 조직목표 /20</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 문제 정의 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">기존의 어려움</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
+            <li style="margin-bottom:8px;">🔴 <strong>장애 대응 지연</strong> — 파편화된 로그를 수동으로 교차 분석, 원인 파악에 <strong>60분 이상</strong> 소요</li>
+            <li style="margin-bottom:8px;">📋 <strong>반복 행정 낭비</strong> — 매월 보고서 수작업에 엔지니어 <strong>8시간</strong> 소비</li>
+            <li>👤 <strong>숙련도 의존</strong> — 담당자 숙련도에 따라 분석 품질 편차, 부재 시 대응 공백</li>
+          </ul>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:10px; letter-spacing:0.05em;">✨ AI로 해결한 방식</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
+            <li style="margin-bottom:8px;">🤖 <strong>Gemini AI 자동 분석</strong> — 로그 선택 시 자동으로 원인 분석·조치 권고안 생성</li>
+            <li style="margin-bottom:8px;">📊 <strong>통합 대시보드</strong> — 4개 시스템 로그를 단일 화면에서 조회</li>
+            <li>📄 <strong>보고서 자동 생성</strong> — 기간 지정 후 클릭 한 번으로 PDF 완성</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 체크리스트 시각화 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
+
+      <!-- 선택형 ①② -->
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge on">✅ 런타임 AI</span>
+          <span class="check-badge">노코드 AI</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 반복 보고서</span>
+          <span class="check-badge on">✅ 데이터 수집·분류</span>
+          <span class="check-badge on">✅ 내부 문의 처리</span>
+          <span class="check-badge on">✅ 알림·모니터링</span>
+        </div>
+      </div>
+
+      <!-- 점수형 ③~⑥ -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">28<span style="font-size:12px; color:#b5895a;">/30</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">수치 명확(분석 시간 91%, 보고서 작성 98% 절감). 자동 수집 데몬 + AI 분석 + PDF 생성이 소스코드에서 모두 구현 확인. DataForge 서비스에 실제 운영 중(+3점 가점).</p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">22<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">3중 비효율 문제 명확. 기존 Zabbix 인프라 재활용(신규 에이전트 불필요)으로 현실적 접근. Few-Shot 학습 루프로 AI 품질 누적 향상 구조까지 구현.</p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">21<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">웹 브라우저만으로 사용 가능. Admin Hub에서 로그 소스 동적 추가 구조. Kubernetes 의존성이 타 팀 도입의 진입 장벽으로 작용.</p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">17<span style="font-size:12px; color:#b5895a;">/20</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">DataForge 서비스 전체 운영 인프라로 활용. 엔지니어 암묵지를 df_training_data로 자산화. 장애 대응 시간 단축 → 서비스 연속성에 직접 기여.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 주요 기능 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">⚡ 주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🤖 AI 자동 로그 분석</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">로그 선택 시 Gemini AI가 즉시 원인 분석·조치 권고안 생성. 로그 유형별 전용 프롬프트 적용</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📊 통합 대시보드</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">Zabbix·Grafana·PostgreSQL·NiFi 4개 시스템 로그를 단일 화면에서 실시간 조회. 자동 새로고침(10s/30s/1m)</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📄 보고서 자동 생성</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">기간 지정 → 이벤트 자동 집계 → PDF 보고서 생성. 월 8시간 → 1분으로 단축</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🧠 Few-Shot 학습 루프</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">우수 분석 사례 승인 → 자동 저장 → 이후 AI 분석 시 자동 참조. 사용할수록 품질 향상</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🔔 Google Chat 알림</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">AI 분석 결과를 Google Chat Cards V2 포맷으로 팀 채널 자동 발송</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">⚙️ 자동 수집 데몬</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">Zabbix 이벤트(60초), 호스트 인벤토리(300초) 백그라운드 자동 수집. 30일 보존</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ AI 활용 방식 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:28px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; flex-wrap:wrap;">
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:12px; letter-spacing:0.05em;">AI 모델 구성</p>
+            <ul style="list-style:none; padding:0; font-size:14px; color:#1c1917; line-height:2;">
+              <li>🔹 <strong>Zabbix 분석</strong> — gemini-2.5-flash</li>
+              <li>🔹 <strong>Grafana 분석</strong> — gemini-2.5-flash</li>
+              <li>🔹 <strong>PostgreSQL 분석</strong> — gemini-2.5-flash (DBA 관점)</li>
+              <li>🔹 <strong>NiFi 분석</strong> — gemini-2.5-flash (데이터 엔지니어 관점)</li>
+              <li>🔹 <strong>파일 업로드 분석</strong> — gemini-2.5-flash</li>
+            </ul>
+            <div style="margin-top:16px; padding:12px; background:#fffaf6; border-radius:8px; border:1px solid #e8d5c0;">
+              <p style="font-size:12px; color:#78716c; margin-bottom:6px; font-weight:600;">💡 Few-Shot 학습 흐름</p>
+              <p style="font-size:13px; color:#44403c;">① AI 분석 → ② 우수 사례 승인 → ③ df_training_data 저장 → ④ 다음 분석 시 프롬프트 컨텍스트 자동 주입</p>
+            </div>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:12px; letter-spacing:0.05em;">기술 스택</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:13px;">
+              <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px;">
+                <p style="font-size:10px; color:#b5895a; font-weight:700; margin-bottom:4px;">BACKEND</p>
+                <p style="color:#1c1917; font-weight:500;">FastAPI<br><span style="color:#78716c; font-size:12px;">Python 3 + Uvicorn</span></p>
+              </div>
+              <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px;">
+                <p style="font-size:10px; color:#b5895a; font-weight:700; margin-bottom:4px;">DATABASE</p>
+                <p style="color:#1c1917; font-weight:500;">PostgreSQL<br><span style="color:#78716c; font-size:12px;">Zabbix Native DB</span></p>
+              </div>
+              <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px;">
+                <p style="font-size:10px; color:#b5895a; font-weight:700; margin-bottom:4px;">FRONTEND</p>
+                <p style="color:#1c1917; font-weight:500;">Vanilla JS<br><span style="color:#78716c; font-size:12px;">Chart.js + Jinja2</span></p>
+              </div>
+              <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px;">
+                <p style="font-size:10px; color:#b5895a; font-weight:700; margin-bottom:4px;">INFRA</p>
+                <p style="color:#1c1917; font-weight:500;">Kubernetes<br><span style="color:#78716c; font-size:12px;">NodePort 30080/81</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 데이터 흐름 -->
+        <div style="margin-top:24px; padding:16px; background:#fffaf6; border-radius:10px; border:1px solid #e8d5c0;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px; letter-spacing:0.05em;">데이터 흐름</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.8; font-family:'DM Mono', monospace;">
+            [Zabbix/Grafana/PgSQL/NiFi] → Collector 데몬(60s) → [PostgreSQL]<br>
+            → FastAPI → <strong>Gemini AI</strong> → 분석 결과(HTML)<br>
+            → 브라우저 렌더링 + Google Chat 자동 발송<br>
+            → 우수 사례 승인 → df_training_data → 다음 분석 품질 향상 ♻️
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 기대 효과 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:28px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">91%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">분석 시간 단축</p>
+          <p style="font-size:12px; color:#78716c;">60분 → 5분</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:28px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">98%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">보고서 시간 절감</p>
+          <p style="font-size:12px; color:#78716c;">월 8시간 → 1분</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:28px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">80%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">화면 전환 감소</p>
+          <p style="font-size:12px; color:#78716c;">통합 대시보드</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:28px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">40%+</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">휴먼 에러 감소</p>
+          <p style="font-size:12px; color:#78716c;">자동 분석 기반</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 시각 증빙 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📸 시각 증빙 자료</p>
+      <p style="font-size:14px; color:#78716c; margin-bottom:16px;">스크린샷 20장 — 클릭 시 확대, 좌우 화살표로 이동</p>
+
+      <script>
+        var _lbImgs = [
+          {src:"assets/AI 기반 로그 분석 시스템_01.png", alt:"스크린샷 01"},
+          {src:"assets/AI 기반 로그 분석 시스템_02.png", alt:"스크린샷 02"},
+          {src:"assets/AI 기반 로그 분석 시스템_03.png", alt:"스크린샷 03"},
+          {src:"assets/AI 기반 로그 분석 시스템_04.png", alt:"스크린샷 04"},
+          {src:"assets/AI 기반 로그 분석 시스템_05.png", alt:"스크린샷 05"},
+          {src:"assets/AI 기반 로그 분석 시스템_06.png", alt:"스크린샷 06"},
+          {src:"assets/AI 기반 로그 분석 시스템_07.png", alt:"스크린샷 07"},
+          {src:"assets/AI 기반 로그 분석 시스템_08.png", alt:"스크린샷 08"},
+          {src:"assets/AI 기반 로그 분석 시스템_09.png", alt:"스크린샷 09"},
+          {src:"assets/AI 기반 로그 분석 시스템_10.png", alt:"스크린샷 10"},
+          {src:"assets/AI 기반 로그 분석 시스템_11.png", alt:"스크린샷 11"},
+          {src:"assets/AI 기반 로그 분석 시스템_12.png", alt:"스크린샷 12"},
+          {src:"assets/AI 기반 로그 분석 시스템_13.png", alt:"스크린샷 13"},
+          {src:"assets/AI 기반 로그 분석 시스템_14.png", alt:"스크린샷 14"},
+          {src:"assets/AI 기반 로그 분석 시스템_15.png", alt:"스크린샷 15"},
+          {src:"assets/AI 기반 로그 분석 시스템_16.png", alt:"스크린샷 16"},
+          {src:"assets/AI 기반 로그 분석 시스템_17.png", alt:"스크린샷 17"},
+          {src:"assets/AI 기반 로그 분석 시스템_18.png", alt:"스크린샷 18"},
+          {src:"assets/AI 기반 로그 분석 시스템_19.png", alt:"스크린샷 19"},
+          {src:"assets/AI 기반 로그 분석 시스템_20.png", alt:"스크린샷 20"}
+        ];
+        var _lbIdx = 0;
+        function openLb(idx) {
+          _lbIdx = idx;
+          _updateLb();
+          document.getElementById('lb-overlay').classList.add('open');
+        }
+        function closeLb() {
+          document.getElementById('lb-overlay').classList.remove('open');
+        }
+        function moveLb(dir) {
+          _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
+          _updateLb();
+        }
+        function _updateLb() {
+          var d = _lbImgs[_lbIdx];
+          document.getElementById('lb-img').src = d.src;
+          document.getElementById('lb-img').alt = d.alt;
+          document.getElementById('lb-caption').textContent = d.alt + ' (' + (_lbIdx+1) + ' / ' + _lbImgs.length + ')';
+        }
+        document.addEventListener('keydown', function(e) {
+          var o = document.getElementById('lb-overlay');
+          if (o.classList.contains('open')) {
+            if (e.key === 'Escape') closeLb();
+            if (e.key === 'ArrowLeft') moveLb(-1);
+            if (e.key === 'ArrowRight') moveLb(1);
+          }
+        });
+      </script>
+
+      <div class="screenshot-gallery" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:8px;">
+        <img src="assets/AI 기반 로그 분석 시스템_01.png" alt="스크린샷 01" onclick="openLb(0)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_02.png" alt="스크린샷 02" onclick="openLb(1)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_03.png" alt="스크린샷 03" onclick="openLb(2)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_04.png" alt="스크린샷 04" onclick="openLb(3)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_05.png" alt="스크린샷 05" onclick="openLb(4)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_06.png" alt="스크린샷 06" onclick="openLb(5)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_07.png" alt="스크린샷 07" onclick="openLb(6)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_08.png" alt="스크린샷 08" onclick="openLb(7)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_09.png" alt="스크린샷 09" onclick="openLb(8)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_10.png" alt="스크린샷 10" onclick="openLb(9)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_11.png" alt="스크린샷 11" onclick="openLb(10)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_12.png" alt="스크린샷 12" onclick="openLb(11)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_13.png" alt="스크린샷 13" onclick="openLb(12)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_14.png" alt="스크린샷 14" onclick="openLb(13)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_15.png" alt="스크린샷 15" onclick="openLb(14)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_16.png" alt="스크린샷 16" onclick="openLb(15)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_17.png" alt="스크린샷 17" onclick="openLb(16)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_18.png" alt="스크린샷 18" onclick="openLb(17)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_19.png" alt="스크린샷 19" onclick="openLb(18)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+        <img src="assets/AI 기반 로그 분석 시스템_20.png" alt="스크린샷 20" onclick="openLb(19)" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid #d6d0c4;">
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ━━━ 푸터 ━━━ -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AIVE-CONTEST 2025 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; 데이터포지팀
+    </p>
+  </footer>
+
+  <!-- Lightbox -->
+  <div id="lb-overlay" onclick="closeLb()">
+    <button id="lb-close" onclick="closeLb()">✕</button>
+    <button id="lb-prev" onclick="event.stopPropagation(); moveLb(-1)">‹</button>
+    <img id="lb-img" src="" alt="" onclick="event.stopPropagation()">
+    <div id="lb-caption"></div>
+    <button id="lb-next" onclick="event.stopPropagation(); moveLb(1)">›</button>
+  </div>
+
+</body>
+</html>
