@@ -3,513 +3,400 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Élevage — Semantic Layer 실전 가이드</title>
+  <title>Élevage: Semantic Ontology 실전 가이드</title>
   <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
-  <script>!function(){var t=localStorage.getItem('elv-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light')}();</script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:       #080609;
-      --bg-2:     #100D15;
-      --bg-3:     #191420;
-      --bg-4:     #231D2C;
-      --gold:     #C9A84C;
-      --gold-2:   #E2C97E;
-      --gold-3:   #F6E8B0;
-      --rule:     rgba(201,168,76,0.18);
-      --rule-2:   rgba(201,168,76,0.10);
-      --text:     #EDE4D3;
-      --text-2:   #C4B49A;
-      --text-3:   #9C8B78;
-      --text-4:   #6B5A48;
-      --nc:       #2DD98A;
-      --vin:      #A87EF0;
-      --elv:      #D9AF48;
-      --nc-dim:   rgba(45,217,138,0.07);
-      --vin-dim:  rgba(168,126,240,0.07);
-      --elv-dim:  rgba(217,175,72,0.07);
-      --nc-b:     rgba(45,217,138,0.22);
-      --vin-b:    rgba(168,126,240,0.22);
-      --elv-b:    rgba(217,175,72,0.22);
-      --font-d:   'Cormorant Garamond', Georgia, serif;
-      --font-b:   'DM Sans', system-ui, sans-serif;
-      --font-m:   'JetBrains Mono', monospace;
-      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ink:     #0E0E0B;
+      --ink-2:   #3A3A36;
+      --ink-3:   #6B6B64;
+      --ink-4:   #A8A8A0;
+      --paper:   #F7F7F4;
+      --paper-2: #EFEFEB;
+      --white:   #FFFFFF;
+      --rule:    #D8D8D0;
+      --wine:    #6B1F1F;
+      --gold:    #8A6310;
+      --elv:     #C9960A;
+      --green:   #1A5C3A;
+      --blue:    #1A3A5C;
+      --font-d:  'Playfair Display', Georgia, serif;
+      --font-b:  'Inter', system-ui, sans-serif;
+      --font-m:  'JetBrains Mono', monospace;
     }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-      .reveal { opacity: 1 !important; transform: none !important; }
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
+
     body {
-      background: var(--bg);
-      color: var(--text);
+      background: var(--paper);
+      color: var(--ink);
       font-family: var(--font-b);
       font-size: 16px;
       line-height: 1.75;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
     }
 
     /* ── Scroll progress ── */
     #scroll-prog {
       position: fixed; top: 0; left: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-2) 100%);
+      height: 2px; background: var(--elv);
       width: 0%; z-index: 1000;
       transition: width 0.08s linear;
     }
 
     /* ── Side nav ── */
     #side-nav {
-      position: fixed; right: 28px; top: 50%;
+      position: fixed; right: 24px; top: 50%;
       transform: translateY(-50%);
       z-index: 100;
-      display: flex; flex-direction: column; gap: 16px; align-items: flex-end;
+      display: flex; flex-direction: column; gap: 14px;
     }
     @media (max-width: 960px) { #side-nav { display: none; } }
     .ndot {
-      display: flex; align-items: center; gap: 10px;
-      text-decoration: none; color: inherit; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; text-decoration: none; color: inherit;
     }
     .ndot-label {
       font-family: var(--font-m); font-size: 9px;
-      letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--text-4); opacity: 0;
-      transform: translateX(8px);
-      transition: all 240ms var(--ease-out); white-space: nowrap;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink-4); opacity: 0;
+      transform: translateX(6px);
+      transition: all 200ms; white-space: nowrap;
     }
-    .ndot:hover .ndot-label,
-    .ndot.active .ndot-label { opacity: 1; transform: translateX(0); color: var(--text-3); }
+    .ndot:hover .ndot-label, .ndot.active .ndot-label { opacity: 1; transform: translateX(0); }
     .ndot.active .ndot-label { color: var(--gold); }
     .ndot-pip {
       width: 5px; height: 5px; border-radius: 50%;
-      background: var(--text-4); flex-shrink: 0;
-      transition: all 240ms var(--ease-out);
-    }
-    .ndot:hover .ndot-pip { background: var(--text-3); transform: scale(1.5); }
-    .ndot.active .ndot-pip { background: var(--gold); transform: scale(1.8); box-shadow: 0 0 8px rgba(201,168,76,0.5); }
-
-    /* ── Reveal ── */
-    .reveal {
-      opacity: 0; transform: translateY(24px);
-      transition: opacity 620ms var(--ease-out), transform 620ms var(--ease-out);
-    }
-    .reveal.v { opacity: 1; transform: translateY(0); }
-    .rd1 { transition-delay: 80ms; }
-    .rd2 { transition-delay: 160ms; }
-    .rd3 { transition-delay: 240ms; }
-    .rd4 { transition-delay: 320ms; }
-
-    /* ── Topbar ── */
-    .topbar {
-      position: sticky; top: 0; z-index: 90;
-      padding: 14px 52px;
-      display: flex; align-items: center; justify-content: space-between;
-      transition: background 300ms, backdrop-filter 300ms, border-color 300ms;
-      border-bottom: 1px solid transparent;
-    }
-    .topbar.scrolled {
-      background: rgba(8,6,9,0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom-color: var(--rule);
-    }
-    .topbar-brand { display: flex; align-items: center; gap: 10px; }
-    .topbar-gem {
-      width: 7px; height: 7px; background: var(--gold);
-      transform: rotate(45deg); flex-shrink: 0;
-      transition: box-shadow 300ms;
-    }
-    .topbar:hover .topbar-gem { box-shadow: 0 0 12px rgba(201,168,76,0.55); }
-    .topbar-name {
-      font-family: var(--font-m); font-size: 10px; font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold);
-    }
-    .topbar-meta {
-      font-family: var(--font-m); font-size: 10px;
-      color: var(--text-4); letter-spacing: 0.06em;
-    }
-    @media (max-width: 640px) { .topbar { padding: 14px 20px; } }
-
-    /* ── Hero ── */
-    .hero {
-      position: relative; min-height: 100svh;
-      padding: 0 52px;
-      display: flex; align-items: center; overflow: hidden;
-    }
-    .hero-canvas { position: absolute; inset: 0; pointer-events: none; }
-    .hero-canvas svg { width: 100%; height: 100%; }
-    .hero-wm {
-      position: absolute; right: -2%; top: 50%;
-      transform: translateY(-50%);
-      font-family: var(--font-d);
-      font-size: clamp(240px, 34vw, 440px);
-      font-weight: 700; font-style: italic;
-      color: rgba(217,175,72,0.04); line-height: 1;
-      pointer-events: none; user-select: none; letter-spacing: -0.04em;
-    }
-    .hero-inner {
-      max-width: 1120px; width: 100%; margin: 0 auto;
-      position: relative; padding: 130px 0 110px;
-    }
-    .hero-tag {
-      display: inline-flex; align-items: center; gap: 14px;
-      font-family: var(--font-m); font-size: 10px;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--gold); margin-bottom: 36px;
-    }
-    .hero-tag::before { content: ''; display: block; width: 52px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
-    .hero-tag::after  { content: ''; display: block; width: 26px; height: 1px; background: linear-gradient(90deg, var(--gold), transparent); }
-    .hero h1 {
-      font-family: var(--font-d);
-      font-size: clamp(4.8rem, 13vw, 11rem);
-      font-weight: 700; font-style: italic;
-      line-height: 0.88; letter-spacing: -0.03em;
-      color: var(--text); margin-bottom: 20px;
-    }
-    .hero h1 .hl { color: var(--gold-2); opacity: 0.85; }
-    .hero-sub {
-      font-family: var(--font-d);
-      font-size: clamp(1.5rem, 3.2vw, 2.5rem);
-      font-weight: 400; font-style: italic;
-      color: var(--text-3); margin-bottom: 44px;
-    }
-    .hero-divider { width: 120px; height: 1px; background: linear-gradient(90deg, var(--gold), transparent); margin-bottom: 36px; }
-    .hero-deck {
-      font-size: 17px; color: var(--text-2);
-      max-width: 560px; line-height: 1.85;
-      margin-bottom: 44px; font-weight: 300;
-    }
-    .hero-byline {
-      font-family: var(--font-m); font-size: 10px;
-      color: var(--text-4); display: flex; gap: 22px;
-      flex-wrap: wrap; margin-bottom: 40px; letter-spacing: 0.06em;
-    }
-    .hero-byline span::before { content: '· '; color: var(--gold); }
-    .track-chips { display: flex; gap: 10px; flex-wrap: wrap; }
-    .track-chip {
-      font-family: var(--font-m); font-size: 10px; font-weight: 500;
-      letter-spacing: 0.08em; padding: 7px 16px;
-      border-radius: 100px; border: 1px solid;
+      background: var(--rule); flex-shrink: 0;
       transition: all 200ms;
     }
-    .track-chip.nc  { color: var(--nc);  border-color: var(--nc-b);  background: var(--nc-dim); }
-    .track-chip.vin { color: var(--vin); border-color: var(--vin-b); background: var(--vin-dim); }
-    .track-chip.elv { color: var(--elv); border-color: var(--elv-b); background: var(--elv-dim); }
-    .track-chip:hover { background: rgba(255,255,255,0.06); }
-    .hero-scroll-cue {
-      position: absolute; bottom: 44px; left: 50%;
-      transform: translateX(-50%);
-      display: flex; flex-direction: column; align-items: center; gap: 10px;
-      opacity: 0.35; cursor: pointer;
-      transition: opacity 200ms;
-    }
-    .hero-scroll-cue:hover { opacity: 0.6; }
-    .hero-scroll-cue span { font-family: var(--font-m); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-4); }
-    .scroll-line { width: 1px; height: 44px; background: linear-gradient(180deg, var(--gold), transparent); animation: spulse 2.4s ease-in-out infinite; }
-    @keyframes spulse { 0%,100%{opacity:.3;transform:scaleY(.8)} 50%{opacity:1;transform:scaleY(1)} }
-    @media (max-width: 640px) { .hero { padding: 0 20px; } .hero-inner { padding: 100px 0 80px; } }
+    .ndot:hover .ndot-pip { background: var(--ink-3); transform: scale(1.5); }
+    .ndot.active .ndot-pip { background: var(--gold); transform: scale(1.8); }
 
-    /* ── Stats ── */
-    .stats-bar {
-      display: flex; justify-content: center;
-      border-top: 1px solid var(--rule);
+    /* ── Masthead ── */
+    .masthead {
+      position: sticky; top: 0; z-index: 90;
+      border-bottom: 2px solid var(--ink);
+      padding: 16px 40px;
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap;
+      background: var(--paper);
+    }
+    .masthead-name {
+      font-family: var(--font-d); font-size: 15px;
+      font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      font-style: italic; color: var(--ink);
+    }
+    .masthead-meta {
+      font-family: var(--font-m); font-size: 11px;
+      color: var(--ink-4); letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    @media (max-width: 640px) { .masthead { padding: 14px 16px; } }
+
+    /* ── Lead / Hero ── */
+    .lead {
       border-bottom: 1px solid var(--rule);
+      padding: 72px 40px 56px;
+      max-width: 1100px; margin: 0 auto;
     }
-    @media (max-width: 640px) { .stats-bar { flex-wrap: wrap; } }
-    .stat {
-      padding: 44px 56px; border-right: 1px solid var(--rule);
-      flex: 0 0 auto; position: relative; overflow: hidden;
-      transition: background 250ms;
+    .lead-eyebrow {
+      font-family: var(--font-m); font-size: 11px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--ink-3); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 12px;
     }
-    .stat:hover { background: rgba(201,168,76,0.025); }
-    .stat:last-child { border-right: none; }
-    @media (max-width: 640px) {
-      .stat { padding: 28px 28px; flex: 0 0 50%; }
-      .stat:nth-child(2) { border-right: none; }
-      .stat:nth-child(3), .stat:nth-child(4) { border-top: 1px solid var(--rule); }
-    }
-    .stat-num {
+    .lead-eyebrow::before { content: '//'; color: var(--ink-4); }
+    .lead h1 {
       font-family: var(--font-d);
-      font-size: clamp(3.5rem, 6vw, 5.5rem);
-      font-weight: 700; color: var(--gold-2); line-height: 1; margin-bottom: 10px;
-      transition: color 250ms;
+      font-size: clamp(2.6rem, 6.5vw, 5rem);
+      font-weight: 900; line-height: 1.02;
+      letter-spacing: -0.03em; color: var(--ink);
+      margin-bottom: 28px; max-width: 820px;
     }
-    .stat:hover .stat-num { color: var(--gold-3); }
-    .stat-label { font-family: var(--font-m); font-size: 10px; color: var(--text-4); letter-spacing: 0.14em; text-transform: uppercase; }
+    .lead h1 em { font-style: italic; font-weight: 400; color: var(--wine); }
+    .lead-deck {
+      font-size: 18px; color: var(--ink-2);
+      max-width: 620px; line-height: 1.7;
+      border-left: 3px solid var(--ink); padding-left: 20px;
+      margin-bottom: 16px;
+    }
+    .lead-elv-note {
+      margin-top: 20px; padding: 20px 24px;
+      background: var(--white); border: 1px solid var(--rule);
+      border-left: 4px solid var(--elv);
+      max-width: 620px;
+    }
+    .lead-elv-note .note-label {
+      font-family: var(--font-m); font-size: 10px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--elv); margin-bottom: 8px;
+    }
+    .lead-elv-note p {
+      font-size: 14px; color: var(--ink-2); line-height: 1.7; margin: 0;
+    }
+    .lead-byline {
+      margin-top: 28px; font-size: 12px;
+      color: var(--ink-4); font-family: var(--font-m);
+      display: flex; gap: 20px; flex-wrap: wrap;
+    }
+    .lead-byline span::before { content: '— '; }
+
+    /* ── Facts ── */
+    .facts {
+      display: flex; gap: 0;
+      border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+      max-width: 1100px; margin: 0 auto;
+    }
+    .fact { flex: 1; padding: 24px 28px; border-right: 1px solid var(--rule); }
+    .fact:last-child { border-right: none; }
+    .fact-num {
+      font-family: var(--font-d); font-size: clamp(2rem, 3.5vw, 2.8rem);
+      font-weight: 900; color: var(--ink); line-height: 1; margin-bottom: 6px;
+    }
+    .fact-label { font-size: 12px; color: var(--ink-4); font-family: var(--font-m); }
+    @media (max-width: 640px) {
+      .facts { flex-wrap: wrap; }
+      .fact { flex: 0 0 50%; border-bottom: 1px solid var(--rule); }
+      .fact:nth-child(even) { border-right: none; }
+      .fact:last-child, .fact:nth-last-child(2) { border-bottom: none; }
+    }
 
     /* ── Page body ── */
-    .page-body { max-width: 1120px; margin: 0 auto; padding: 0 52px; }
-    @media (max-width: 640px) { .page-body { padding: 0 20px; } }
+    .page-body { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+    @media (max-width: 640px) { .page-body { padding: 0 16px; } }
 
     /* ── Section ── */
-    .doc-section { padding: 88px 0; border-bottom: 1px solid var(--rule); }
+    .doc-section { padding: 64px 0; border-bottom: 1px solid var(--rule); }
     .doc-section:last-child { border-bottom: none; }
     .section-num {
-      font-family: var(--font-m); font-size: 10px; color: var(--gold);
-      letter-spacing: 0.2em; text-transform: uppercase;
-      margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+      font-family: var(--font-m); font-size: 11px;
+      color: var(--ink-4); letter-spacing: 0.12em;
+      text-transform: uppercase; margin-bottom: 10px;
     }
-    .section-num::before { content: ''; display: block; width: 24px; height: 1px; background: var(--gold); opacity: 0.5; }
     .section-heading {
       font-family: var(--font-d);
-      font-size: clamp(2.2rem, 4.2vw, 3.5rem);
-      font-weight: 600; letter-spacing: -0.02em;
-      line-height: 1.05; margin-bottom: 20px; color: var(--text);
+      font-size: clamp(1.8rem, 3.8vw, 2.8rem);
+      font-weight: 700; letter-spacing: -0.02em;
+      line-height: 1.1; margin-bottom: 12px; color: var(--ink);
     }
     .section-lead {
-      font-size: 15px; color: var(--text-3); max-width: 600px;
-      margin-bottom: 52px; line-height: 1.8; font-weight: 300;
-    }
-    h3 {
-      font-family: var(--font-d); font-size: 22px; font-weight: 600;
-      color: var(--text); margin: 48px 0 16px;
+      font-size: 15px; color: var(--ink-3);
+      max-width: 600px; margin-bottom: 40px; line-height: 1.75;
     }
 
-    /* ── Why grid / cards ── */
-    .why-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-    @media (max-width: 760px) { .why-grid { grid-template-columns: 1fr; } }
-    .why-card {
-      background: var(--bg-2); border: 1px solid var(--rule);
-      border-radius: 8px; padding: 36px 28px;
-      transition: background 220ms, border-color 220ms, transform 220ms var(--ease-out);
-      cursor: default;
+    h3.sub-heading {
+      font-family: var(--font-d); font-size: 1.2rem; font-weight: 700;
+      color: var(--ink); margin: 36px 0 14px; letter-spacing: -0.01em;
     }
-    .why-card:hover { background: var(--bg-3); border-color: rgba(201,168,76,0.22); transform: translateY(-3px); }
-    .why-card.nc-card  { border-top: 2px solid var(--nc); }
-    .why-card.vin-card { border-top: 2px solid var(--vin); }
-    .why-card.elv-card { border-top: 2px solid var(--elv); }
-    .why-title { font-family: var(--font-d); font-size: 22px; font-weight: 600; margin-bottom: 10px; }
-    .why-title.nc  { color: var(--nc); }
-    .why-title.vin { color: var(--vin); }
-    .why-title.elv { color: var(--elv); }
-    .why-body { font-size: 14px; color: var(--text-3); line-height: 1.75; }
 
-    /* ── Three col / track col ── */
-    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-    @media (max-width: 760px) { .three-col { grid-template-columns: 1fr; } }
-    .track-col {
-      background: var(--bg-2); border: 1px solid var(--rule);
-      border-radius: 8px; padding: 28px 26px;
-      transition: background 220ms;
+    p.body-text { font-size: 15px; color: var(--ink-2); margin-bottom: 16px; line-height: 1.8; }
+
+    /* ── Compare grid ── */
+    .compare {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+      border: 1px solid var(--rule); margin: 20px 0;
     }
-    .track-col:hover { background: var(--bg-3); }
-    .track-col.nc-col  { border-top: 2px solid var(--nc); }
-    .track-col.vin-col { border-top: 2px solid var(--vin); }
-    .track-col.elv-col { border-top: 2px solid var(--elv); }
-    .track-col-head { font-family: var(--font-d); font-size: 21px; font-weight: 600; margin-bottom: 6px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
-    .track-col-head.nc  { color: var(--nc); }
-    .track-col-head.vin { color: var(--vin); }
-    .track-col-head.elv { color: var(--elv); }
-    .track-col-sub { font-size: 10px; font-family: var(--font-m); color: var(--text-4); letter-spacing: 0.1em; text-transform: uppercase; margin: 12px 0 16px; }
-
-    /* ── Bridge box ── */
-    .bridge-box { border-left: 3px solid var(--elv); background: var(--bg-2); padding: 28px 32px; margin: 32px 0; border-radius: 0 8px 8px 0; border: 1px solid var(--rule); border-left: 3px solid var(--elv); }
-    .bridge-title { font-family: var(--font-d); font-size: 20px; font-weight: 600; color: var(--elv); margin-bottom: 12px; }
-    .bridge-body { font-size: 14px; color: var(--text-2); line-height: 1.9; }
-    .bridge-body strong { color: var(--text); }
-    .bridge-body em { color: var(--text-3); }
-
-    /* ── Phase steps ── */
-    .phase-list { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
-    .phase-step {
-      display: flex; gap: 16px; padding: 18px 20px;
-      background: var(--bg-2); border: 1px solid var(--rule-2);
-      border-radius: 6px;
-      transition: background 200ms, border-color 200ms;
-      cursor: default;
+    @media (max-width: 700px) { .compare { grid-template-columns: 1fr; } }
+    .compare-box { padding: 24px 24px; }
+    .compare-box + .compare-box { border-left: 1px solid var(--rule); }
+    @media (max-width: 700px) { .compare-box + .compare-box { border-left: none; border-top: 1px solid var(--rule); } }
+    .compare-box.before { border-top: 3px solid #C0392B; }
+    .compare-box.after  { border-top: 3px solid #1A5C3A; }
+    .compare-label {
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 14px;
     }
-    .phase-step:hover { background: var(--bg-3); border-color: var(--rule); }
-    .phase-num { font-family: var(--font-m); font-size: 10px; color: var(--gold); letter-spacing: 0.1em; padding-top: 2px; flex-shrink: 0; min-width: 44px; }
-    .phase-name { font-weight: 500; font-size: 15px; color: var(--text); margin-bottom: 4px; }
-    .phase-desc { font-size: 13px; color: var(--text-3); line-height: 1.65; }
+    .compare-box.before .compare-label { color: #C0392B; }
+    .compare-box.after  .compare-label { color: #1A5C3A; }
 
-    /* ── Decision cards ── */
-    .decision-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 24px; }
-    @media (max-width: 640px) { .decision-cards { grid-template-columns: 1fr; } }
-    .decision-card { padding: 24px; background: var(--bg-2); border: 1px solid var(--rule); border-radius: 8px; transition: background 200ms, border-color 200ms, transform 200ms var(--ease-out); cursor: default; }
-    .decision-card:hover { background: var(--bg-3); border-color: rgba(201,168,76,0.2); transform: translateY(-2px); }
-    .decision-card-label { font-size: 10px; font-family: var(--font-m); color: var(--text-4); margin-bottom: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
-    .decision-card-title { font-family: var(--font-d); font-size: 22px; font-weight: 600; margin-bottom: 6px; }
-    .decision-card-sub { font-size: 13px; color: var(--text-3); line-height: 1.65; }
-
-    /* ── Pull quote ── */
-    .pullquote { padding: 60px 0 0; margin-top: 52px; border-top: 1px solid var(--rule); position: relative; }
-    .pullquote::before {
-      content: '\201C'; font-family: var(--font-d); font-size: 160px; font-style: italic;
-      color: rgba(201,168,76,0.07); position: absolute; top: 4px; left: -8px;
-      line-height: 1; pointer-events: none;
-    }
-    .pullquote p { font-family: var(--font-d); font-size: clamp(1.6rem, 3vw, 2.4rem); font-style: italic; font-weight: 400; line-height: 1.45; color: var(--text); position: relative; padding-left: 10px; }
-    .pullquote cite { display: block; margin-top: 18px; font-size: 10px; font-family: var(--font-m); color: var(--text-4); font-style: normal; letter-spacing: 0.12em; text-transform: uppercase; padding-left: 10px; }
-
-    /* ── Table ── */
-    .table-wrap { overflow-x: auto; margin-top: 24px; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; }
-    thead { background: var(--bg-2); }
-    th { padding: 14px 18px; text-align: left; font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); font-family: var(--font-m); border-bottom: 1px solid var(--rule); }
-    td { border-bottom: 1px solid var(--rule-2); padding: 16px 18px; font-size: 14px; color: var(--text-2); vertical-align: top; }
-    td:first-child { color: var(--text); font-weight: 500; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(255,255,255,0.02); }
-    .badge { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 9px; border-radius: 100px; font-family: var(--font-m); letter-spacing: 0.04em; vertical-align: middle; }
-    .badge.full    { background: rgba(45,217,138,0.1);  color: var(--nc);  border: 1px solid var(--nc-b); }
-    .badge.partial { background: rgba(217,175,72,0.1);  color: var(--elv); border: 1px solid var(--elv-b); }
-    .badge.light   { background: rgba(168,126,240,0.1); color: var(--vin); border: 1px solid var(--vin-b); }
-
-    /* ── Summary ── */
-    .summary-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 16px; }
-    @media (max-width: 760px) { .summary-grid { grid-template-columns: 1fr; } }
-    .summary-card { background: var(--bg-2); border: 1px solid var(--rule); border-radius: 8px; padding: 28px 26px; transition: background 220ms, transform 220ms var(--ease-out); cursor: default; }
-    .summary-card:hover { background: var(--bg-3); transform: translateY(-3px); }
-    .summary-card.nc-card  { border-top: 2px solid var(--nc); }
-    .summary-card.vin-card { border-top: 2px solid var(--vin); }
-    .summary-card.elv-card { border-top: 2px solid var(--elv); }
-    .summary-card-title { font-family: var(--font-d); font-size: 20px; font-weight: 600; margin-bottom: 12px; }
-    .summary-card-title.nc  { color: var(--nc); }
-    .summary-card-title.vin { color: var(--vin); }
-    .summary-card-title.elv { color: var(--elv); }
-    .summary-card-body { font-size: 14px; color: var(--text-3); line-height: 1.75; }
-
-    /* ── Pullquote center ── */
-    .pq-center {
-      padding: 80px 52px; text-align: center;
-      border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
-      background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(217,175,72,0.035), transparent);
-    }
-    .pq-center p { font-family: var(--font-d); font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-style: italic; font-weight: 400; line-height: 1.4; color: var(--text); max-width: 700px; margin: 0 auto 20px; }
-    .pq-center cite { font-size: 10px; font-family: var(--font-m); color: var(--text-4); letter-spacing: 0.14em; text-transform: uppercase; }
-    @media (max-width: 640px) { .pq-center { padding: 60px 20px; } }
-
-    /* ── Footer ── */
-    footer { border-top: 1px solid var(--rule); padding: 32px 52px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 10px; font-family: var(--font-m); color: var(--text-4); letter-spacing: 0.08em; text-transform: uppercase; }
-    .footer-gem { display: inline-flex; align-items: center; gap: 10px; }
-    .footer-gem::before { content: ''; display: block; width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); opacity: 0.6; }
-    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
-    .footer-links a { color: var(--text-4); text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase; transition: color 200ms; }
-    .footer-links a:hover { color: var(--gold); }
-    @media (max-width: 640px) { footer { padding: 28px 20px; } }
-
-    /* ── Theme button ── */
-    #theme-btn {
-      display: flex; align-items: center; justify-content: center;
-      width: 34px; height: 34px; border-radius: 8px;
-      border: 1px solid var(--rule); background: transparent;
-      color: var(--text-3); cursor: pointer;
-      transition: background 200ms, border-color 200ms, color 200ms;
-    }
-    #theme-btn:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); color: var(--gold); }
-    #theme-btn svg { width: 16px; height: 16px; pointer-events: none; }
-    .icon-sun { display: none; }
-    .icon-moon { display: block; }
-
-    /* ── 이 페이지 전용 추가 컴포넌트 ── */
-
-    /* 비교 그리드 */
-    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
-    @media (max-width: 700px) { .compare-grid { grid-template-columns: 1fr; } }
-    .compare-box { background: var(--bg-2); border: 1px solid var(--rule); border-radius: 8px; padding: 24px; }
-    .compare-box.before { border-left: 3px solid #ef4444; }
-    .compare-box.after  { border-left: 3px solid var(--nc); }
-    .compare-label { font-family: var(--font-m); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 14px; }
-    .compare-box.before .compare-label { color: #ef4444; }
-    .compare-box.after  .compare-label { color: var(--nc); }
-
-    /* 코드 블럭 */
+    /* ── Code ── */
     pre {
-      background: #06060c; border: 1px solid var(--rule); border-radius: 8px;
-      padding: 20px 24px; font-family: var(--font-m); font-size: 12.5px;
-      color: var(--text-2); overflow-x: auto; line-height: 1.65; margin: 12px 0;
-      white-space: pre;
+      background: var(--ink); color: #E8E4DC;
+      border-radius: 0; padding: 20px;
+      overflow-x: auto; font-size: 13px;
+      line-height: 1.65; margin: 14px 0 18px;
+      font-family: var(--font-m);
+      white-space: pre; overflow-x: auto;
     }
     code {
-      font-family: var(--font-m); font-size: 12.5px;
-      background: rgba(201,168,76,0.1); padding: 2px 6px;
-      border-radius: 4px; color: var(--gold-2);
+      font-family: var(--font-m); font-size: 13px;
+      background: var(--paper-2); border: 1px solid var(--rule);
+      padding: 1px 6px; border-radius: 2px; color: var(--wine);
     }
-    p code, li code, td code { vertical-align: baseline; }
+    pre code { background: none; border: none; padding: 0; color: inherit; }
 
-    /* 시나리오 박스 */
-    .scenario {
-      background: var(--bg-2); border: 1px solid var(--rule);
-      border-radius: 8px; margin: 24px 0; overflow: hidden;
+    .hl  { color: var(--elv); font-weight: 600; }
+    .warn { color: #C0392B; font-weight: 600; }
+    .good { color: #1A5C3A; font-weight: 600; }
+
+    /* ── Callout ── */
+    .callout {
+      background: var(--white); border: 1px solid var(--rule);
+      padding: 20px 24px; margin: 20px 0;
     }
+    .callout.insight { border-left: 4px solid var(--blue); }
+    .callout.key     { border-left: 4px solid var(--elv); }
+    .callout-title {
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px;
+    }
+    .callout.insight .callout-title { color: #1A3A5C; }
+    .callout.key .callout-title { color: var(--elv); }
+    .callout p { font-size: 14px; color: var(--ink-2); line-height: 1.75; margin: 0; }
+
+    /* ── Level stack ── */
+    .level-stack { margin: 20px 0; border: 1px solid var(--rule); }
+    .level { display: flex; align-items: stretch; border-bottom: 1px solid var(--rule); }
+    .level:last-child { border-bottom: none; }
+    .level-label {
+      width: 130px; min-width: 130px; padding: 16px 14px;
+      font-family: var(--font-m); font-size: 12px; font-weight: 600;
+      display: flex; align-items: center; border-right: 1px solid var(--rule);
+    }
+    .level-desc {
+      flex: 1; padding: 16px 20px; font-size: 14px;
+      color: var(--ink-2); line-height: 1.7;
+    }
+    .level:nth-child(1) .level-label { color: #6B4FA0; background: #F5F0FC; }
+    .level:nth-child(2) .level-label { color: #1A3A5C; background: #EEF4FB; }
+    .level:nth-child(3) .level-label { color: #1A5C3A; background: #EEF8F3; }
+    .level:nth-child(4) .level-label { color: #7A4A0A; background: #FDF5E6; }
+
+    /* ── Scenario ── */
+    .scenario { border: 1px solid var(--rule); margin: 24px 0; }
     .scenario-header {
-      background: var(--bg-3); padding: 14px 20px;
-      font-family: var(--font-m); font-size: 11px; font-weight: 600;
-      color: var(--gold); border-bottom: 1px solid var(--rule);
-      letter-spacing: 0.12em; text-transform: uppercase;
+      background: var(--paper-2); border-bottom: 1px solid var(--rule);
+      padding: 12px 20px; font-family: var(--font-m); font-size: 12px;
+      font-weight: 600; letter-spacing: 0.04em; color: var(--ink-2);
     }
     .scenario-body { padding: 20px; }
+    .scenario-body p { font-size: 14px; color: var(--ink-2); }
 
-    /* 쿼리 데모 */
-    .query-demo { background: var(--bg-3); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; margin: 16px 0; }
-    .query-input { padding: 16px 20px; background: rgba(217,175,72,0.04); border-bottom: 1px solid var(--rule); }
-    .query-label { font-family: var(--font-m); font-size: 10px; color: var(--text-4); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px; }
-    .query-text { font-size: 15px; color: var(--text); font-weight: 500; }
-    .query-output { padding: 16px 20px; }
-    .qstep { padding: 10px 0; border-bottom: 1px solid var(--rule-2); font-size: 13px; color: var(--text-3); display: flex; align-items: flex-start; gap: 12px; }
-    .qstep:last-child { border-bottom: none; }
-    .qnum { width: 22px; height: 22px; background: var(--bg-2); border-radius: 50%; text-align: center; line-height: 22px; font-size: 11px; font-weight: 700; font-family: var(--font-m); color: var(--gold); flex-shrink: 0; }
-    .qresult { font-weight: 600; font-size: 13px; }
-    .qresult.bad  { color: #ef4444; }
-    .qresult.good { color: var(--nc); }
-
-    /* 인라인 강조 */
-    .hl    { color: var(--gold-2); font-weight: 500; }
-    .good  { color: var(--nc); font-weight: 500; }
-    .bad   { color: #ef4444; font-weight: 500; }
-    .warn  { color: var(--elv); font-weight: 500; }
-
-    /* SVG 아키텍처 박스 */
-    .arch-box { background: var(--bg-2); border: 1px solid var(--rule); border-radius: 8px; padding: 32px; margin: 32px 0; overflow-x: auto; }
-
-    /* 플로우 */
-    .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 24px 0; }
-    .flow-item { background: var(--bg-2); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 18px; font-size: 12px; font-weight: 500; font-family: var(--font-m); color: var(--gold); text-align: center; line-height: 1.4; }
-    .flow-item small { color: var(--text-4); font-weight: 400; display: block; margin-top: 2px; }
-    .flow-arrow { color: var(--text-4); font-size: 18px; }
-
-    /* ── Light theme ── */
-    html[data-theme="light"] {
-      --bg:      #F8F4EE;
-      --bg-2:    #EFE9E0;
-      --bg-3:    #E6DDD2;
-      --bg-4:    #D9CFC2;
-      --rule:    rgba(80,55,20,0.14);
-      --rule-2:  rgba(80,55,20,0.08);
-      --text:    #1C150C;
-      --text-2:  #3A2E1F;
-      --text-3:  #6B5840;
-      --text-4:  #9C8B78;
-      --nc:      #0F6E42;
-      --vin:     #6B3EC4;
-      --elv:     #8A6010;
-      --nc-dim:  rgba(15,110,66,0.08);
-      --vin-dim: rgba(107,62,196,0.08);
-      --elv-dim: rgba(138,96,16,0.08);
-      --nc-b:    rgba(15,110,66,0.28);
-      --vin-b:   rgba(107,62,196,0.28);
-      --elv-b:   rgba(138,96,16,0.28);
+    /* ── Query demo ── */
+    .query-demo { border: 1px solid var(--rule); margin: 16px 0; }
+    .query-input {
+      padding: 16px 20px; background: var(--paper-2);
+      border-bottom: 1px solid var(--rule);
     }
-    html[data-theme="light"] .topbar.scrolled { background: rgba(248,244,238,0.90); border-bottom-color: var(--rule); }
-    html[data-theme="light"] .hero { background: radial-gradient(ellipse 120% 80% at 80% 50%, rgba(201,168,76,0.10) 0%, transparent 60%); }
-    html[data-theme="light"] .hero-wm { color: rgba(100,70,20,0.05); }
-    html[data-theme="light"] .pullquote::before { color: rgba(100,70,20,0.08); }
-    html[data-theme="light"] .pq-center { background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(201,168,76,0.07), transparent); }
-    html[data-theme="light"] .stat:hover { background: rgba(201,168,76,0.06); }
-    html[data-theme="light"] thead { background: var(--bg-3); }
-    html[data-theme="light"] tr:hover td { background: rgba(0,0,0,0.025); }
-    html[data-theme="light"] pre { background: var(--bg-3); color: var(--text-2); }
-    html[data-theme="light"] .icon-sun { display: block; }
-    html[data-theme="light"] .icon-moon { display: none; }
-    html[data-theme="light"] .ndot-pip { background: var(--text-4); }
-    html[data-theme="light"] .ndot:hover .ndot-pip { background: var(--text-3); }
-    html[data-theme="light"] .ndot.active .ndot-pip { background: var(--gold); }
-    html[data-theme="light"] .hero h1 .hl { color: var(--gold); opacity: 1; }
+    .query-input .label {
+      font-family: var(--font-m); font-size: 10px; color: var(--ink-4);
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;
+    }
+    .query-text { font-size: 15px; color: var(--ink); font-weight: 500; }
+    .query-output { padding: 20px; }
+    .query-step {
+      padding: 10px 0; border-bottom: 1px solid var(--rule);
+      font-size: 13px; color: var(--ink-2);
+    }
+    .query-step:last-child { border-bottom: none; }
+    .step-num {
+      display: inline-block; width: 22px; height: 22px;
+      background: var(--paper-2); border: 1px solid var(--rule);
+      border-radius: 50%; text-align: center; line-height: 22px;
+      font-size: 11px; font-weight: 700; color: var(--ink-3);
+      margin-right: 10px;
+    }
+
+    /* ── Flow ── */
+    .flow {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      margin: 16px 0;
+    }
+    .flow-item {
+      border: 1px solid var(--rule); padding: 10px 16px;
+      font-family: var(--font-m); font-size: 12px; font-weight: 600;
+      color: var(--ink-2); background: var(--white); line-height: 1.4;
+      text-align: center;
+    }
+    .flow-item small { display: block; font-size: 10px; color: var(--ink-4); font-weight: 400; }
+    .flow-arrow { color: var(--ink-4); font-size: 16px; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th {
+      border-bottom: 2px solid var(--ink); padding: 10px 14px;
+      text-align: left; font-family: var(--font-m); font-size: 11px;
+      font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    td { border-bottom: 1px solid var(--rule); padding: 12px 14px; color: var(--ink-2); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--paper-2); }
+
+    /* ── Checklist ── */
+    .check-item {
+      display: flex; gap: 12px; padding: 12px 0;
+      border-bottom: 1px solid var(--rule); align-items: flex-start; font-size: 14px;
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-icon {
+      width: 22px; height: 22px; border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; flex-shrink: 0; margin-top: 2px;
+    }
+    .check-icon.do { background: #EEF8F3; color: #1A5C3A; border: 1px solid #B4DEC6; }
+    .check-icon.dont { background: #FEF0EE; color: #C0392B; border: 1px solid #F5BEBC; }
+    .check-text { color: var(--ink-2); }
+    .check-text strong { color: var(--ink); }
+
+    /* ── Sep ── */
+    .sep { height: 1px; background: var(--rule); margin: 36px 0; }
+
+    /* ── Pull quote ── */
+    .pullquote {
+      border-top: 3px solid var(--ink); border-bottom: 1px solid var(--rule);
+      padding: 32px 40px; margin: 48px -40px;
+    }
+    .pullquote p {
+      font-family: var(--font-d);
+      font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+      font-style: italic; font-weight: 400;
+      line-height: 1.4; color: var(--ink);
+    }
+    .pullquote cite {
+      display: block; margin-top: 12px; font-size: 12px;
+      font-family: var(--font-m); color: var(--ink-4);
+      font-style: normal; letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    @media (max-width: 640px) { .pullquote { margin: 36px -16px; padding: 24px 16px; } }
+
+    /* ── Related links ── */
+    .related-box {
+      display: flex; align-items: center; gap: 20px;
+      border: 1px solid var(--rule); border-left: 4px solid var(--ink);
+      padding: 20px 24px; text-decoration: none; color: inherit;
+      transition: background 0.15s; margin-top: 24px;
+    }
+    .related-box + .related-box { margin-top: 12px; }
+    .related-box:hover { background: var(--paper-2); }
+    .related-box-label {
+      font-family: var(--font-m); font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--ink-4); margin-bottom: 4px;
+    }
+    .related-box-title {
+      font-family: var(--font-d); font-size: 18px;
+      font-weight: 700; color: var(--ink); margin-bottom: 2px;
+    }
+    .related-box-sub { font-size: 13px; color: var(--ink-3); }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 2px solid var(--ink); padding: 24px 40px;
+      display: flex; justify-content: space-between;
+      align-items: center; gap: 12px; flex-wrap: wrap;
+      font-size: 11px; font-family: var(--font-m);
+      color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    @media (max-width: 640px) {
+      .masthead, .lead, footer { padding-left: 16px; padding-right: 16px; }
+    }
   </style>
 </head>
 <body>
@@ -517,284 +404,172 @@
 <div id="scroll-prog"></div>
 
 <!-- SIDE NAV -->
-<nav id="side-nav" aria-label="섹션 네비게이션">
-  <a href="#hero" class="ndot active"><span class="ndot-label">Élevage</span><div class="ndot-pip"></div></a>
-  <a href="#s00" class="ndot"><span class="ndot-label">00 경로 정의</span><div class="ndot-pip"></div></a>
-  <a href="#s01" class="ndot"><span class="ndot-label">01 핵심 통찰</span><div class="ndot-pip"></div></a>
-  <a href="#s02" class="ndot"><span class="ndot-label">02 4개 수준</span><div class="ndot-pip"></div></a>
-  <a href="#s03" class="ndot"><span class="ndot-label">03 설계 실천</span><div class="ndot-pip"></div></a>
-  <a href="#s04" class="ndot"><span class="ndot-label">04 Before/After</span><div class="ndot-pip"></div></a>
-  <a href="#s05" class="ndot"><span class="ndot-label">05 Palantir</span><div class="ndot-pip"></div></a>
+<nav id="side-nav" aria-label="페이지 내 섹션 이동">
+  <a class="ndot active" href="#s0" data-sec="s0"><span class="ndot-label">Élevage란</span><span class="ndot-pip"></span></a>
+  <a class="ndot" href="#s1" data-sec="s1"><span class="ndot-label">왜 안 와닿나</span><span class="ndot-pip"></span></a>
+  <a class="ndot" href="#s2" data-sec="s2"><span class="ndot-label">4개 수준 비교</span><span class="ndot-pip"></span></a>
+  <a class="ndot" href="#s3" data-sec="s3"><span class="ndot-label">설계 차이</span><span class="ndot-pip"></span></a>
+  <a class="ndot" href="#s4" data-sec="s4"><span class="ndot-label">있을 때 vs 없을 때</span><span class="ndot-pip"></span></a>
+  <a class="ndot" href="#s5" data-sec="s5"><span class="ndot-label">팔란티어의 비밀</span><span class="ndot-pip"></span></a>
 </nav>
 
-<!-- TOPBAR -->
-<header class="topbar" id="topbar">
-  <div class="topbar-brand">
-    <div class="topbar-gem"></div>
-    <span class="topbar-name">Élevage</span>
-  </div>
-  <div style="display:flex;align-items:center;gap:16px;">
-    <span class="topbar-meta">ELV Route &nbsp;·&nbsp; 2026</span>
-    <button id="theme-btn" aria-label="테마 전환">
-      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>
-      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="5"/>
-        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-      </svg>
-    </button>
-  </div>
+<!-- MASTHEAD -->
+<header class="masthead">
+  <span class="masthead-name">Élevage</span>
+  <span class="masthead-meta">ELV Route &nbsp;·&nbsp; Semantic Ontology &nbsp;·&nbsp; 2026</span>
 </header>
 
-<!-- HERO -->
-<section class="hero" id="hero">
-  <div class="hero-canvas">
-    <svg viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <radialGradient id="hg" cx="72%" cy="48%" r="48%">
-          <stop offset="0%" stop-color="#D9AF48" stop-opacity="0.06"/>
-          <stop offset="100%" stop-color="#D9AF48" stop-opacity="0"/>
-        </radialGradient>
-      </defs>
-      <rect width="1440" height="800" fill="url(#hg)"/>
-      <g stroke="#D9AF48" stroke-width="0.4" fill="none" opacity="0.12">
-        <line x1="0" y1="100" x2="1440" y2="100"/><line x1="0" y1="200" x2="1440" y2="200"/>
-        <line x1="0" y1="300" x2="1440" y2="300"/><line x1="0" y1="400" x2="1440" y2="400"/>
-        <line x1="0" y1="500" x2="1440" y2="500"/><line x1="0" y1="600" x2="1440" y2="600"/>
-        <line x1="0" y1="700" x2="1440" y2="700"/>
-        <line x1="180" y1="0" x2="180" y2="800"/><line x1="360" y1="0" x2="360" y2="800"/>
-        <line x1="540" y1="0" x2="540" y2="800"/><line x1="720" y1="0" x2="720" y2="800"/>
-        <line x1="900" y1="0" x2="900" y2="800"/><line x1="1080" y1="0" x2="1080" y2="800"/>
-        <line x1="1260" y1="0" x2="1260" y2="800"/>
-      </g>
-      <g fill="#D9AF48" opacity="0.3">
-        <circle cx="900" cy="200" r="2"/><circle cx="1080" cy="300" r="1.5"/>
-        <circle cx="1260" cy="100" r="1.5"/><circle cx="720" cy="400" r="2"/>
-        <circle cx="1080" cy="500" r="1.5"/><circle cx="540" cy="300" r="1.5"/>
-      </g>
-    </svg>
-  </div>
-  <div class="hero-wm">É</div>
-  <div class="hero-inner">
-    <div class="hero-tag reveal">Semantic Layer Strategy</div>
-    <h1 class="reveal rd1"><span class="hl">Élevage</span></h1>
-    <p class="hero-sub reveal rd2">레거시 위에 씌우는 시맨틱 레이어</p>
-    <div class="hero-divider reveal rd2"></div>
-    <p class="hero-deck reveal rd3">
-      레거시를 retire하기 어려울 때 선택하는 경로.<br>
-      레거시 DB 위에 Semantic Layer를 씌워 AI 역량을 즉시 확보하고,<br>
-      Ontology 기반 통합 API로 AI Agent 인터페이스를 구현합니다.
+<!-- LEAD -->
+<div class="lead" id="s0">
+  <div class="lead-eyebrow">ELV Route — Semantic Layer Strategy</div>
+  <h1>데이터 → 메타데이터 →<br>시멘틱 → <em>온톨로지</em></h1>
+  <p class="lead-deck">
+    서비스 개발자가 설계 단계에서 무엇을 다르게 하면 되는지,<br>그리고 그 결과 무엇이 달라지는지
+  </p>
+  <div class="lead-elv-note">
+    <div class="note-label">Élevage 포지셔닝</div>
+    <p>
+      레거시를 retire하기 어려울 때 선택하는 경로. 레거시 DB 위에 Semantic Layer(Data to Semantic Mapper + Adapter)를 씌워 AI 역량을 즉시 확보. Ontology 기반 통합 API로 AI Agent 인터페이스를 제공하고 DX/AX를 구현합니다. Élevage 완료 후 조건이 갖춰지면 Vinification으로 전환 가능(브리지 패턴).
     </p>
-    <div class="hero-byline reveal rd3">
-      <span>ELV Route</span>
-      <span>2026</span>
-    </div>
-    <div class="track-chips reveal rd4">
-      <span class="track-chip nc">NC · Nouvelle Cuvée</span>
-      <span class="track-chip vin">VIN · Vinification</span>
-      <span class="track-chip elv">ELV · Élevage ← 이 경로</span>
-    </div>
   </div>
-  <div class="hero-scroll-cue" onclick="document.getElementById('s00').scrollIntoView({behavior:'smooth'})">
-    <span>Scroll</span>
-    <div class="scroll-line"></div>
+  <div class="lead-byline">
+    <span>개발자를 위한 실전 가이드</span>
+    <span>5개 섹션</span>
+    <span>Semantic &amp; Ontology</span>
   </div>
-</section>
+</div>
 
-<!-- STATS -->
-<div class="stats-bar" id="stats">
-  <div class="stat">
-    <div class="stat-num">3</div>
-    <div class="stat-label">공통 경로</div>
+<!-- FACTS -->
+<div class="facts">
+  <div class="fact">
+    <div class="fact-num">5</div>
+    <div class="fact-label">핵심 섹션</div>
   </div>
-  <div class="stat">
-    <div class="stat-num">5</div>
-    <div class="stat-label">설계 실천</div>
+  <div class="fact">
+    <div class="fact-num">4</div>
+    <div class="fact-label">데이터 수준</div>
   </div>
-  <div class="stat">
-    <div class="stat-num">4</div>
-    <div class="stat-label">데이터 수준</div>
+  <div class="fact">
+    <div class="fact-num">5</div>
+    <div class="fact-label">설계 실천법</div>
   </div>
-  <div class="stat">
-    <div class="stat-num">∞</div>
-    <div class="stat-label">AI 확장성</div>
+  <div class="fact">
+    <div class="fact-num">5</div>
+    <div class="fact-label">구축 단계 (Phase)</div>
   </div>
 </div>
 
 <div class="page-body">
 
-<!-- ═══ S00: 경로 정의 ═══ -->
-<section class="doc-section" id="s00">
-  <div class="section-num reveal">00</div>
-  <h2 class="section-heading reveal">Élevage — 3개 경로 모두의 공통 기반</h2>
-  <p class="section-lead reveal">레거시를 retire하기 어려울 때 선택하는 경로. 기존 시스템을 유지한 채 Semantic Layer를 씌워 AI 역량을 즉시 확보합니다.</p>
+  <!-- S1: 왜 안 와닿나 -->
+  <section class="doc-section" id="s1">
+    <div class="section-num">Section 01</div>
+    <h2 class="section-heading">왜 시멘틱/온톨로지가 안 와닿는가</h2>
+    <p class="section-lead">개발자가 이미 하고 있지만 인식하지 못하는 이유</p>
 
-  <div class="bridge-box reveal">
-    <div class="bridge-title">브리지 패턴 (Bridge Pattern)</div>
-    <div class="bridge-body">
-      레거시 DB 위에 <strong>Data to Semantic Mapper + Adapter</strong>를 덧씌워 AI 역량을 즉시 확보합니다.<br>
-      Ontology 기반 통합 API로 AI Agent 인터페이스를 제공하고 DX/AX를 구현합니다.<br>
-      <em>Élevage 완료 후 조건이 갖춰지면 Vinification으로 전환 가능 — 이것이 브리지 패턴의 핵심입니다.</em>
+    <div class="callout insight">
+      <div class="callout-title">핵심 통찰</div>
+      <p>개발자가 체감하지 못하는 이유는 단순합니다. <span class="hl">우리는 이미 시멘틱을 하고 있지만, 그것이 코드와 머릿속에만 존재하기 때문</span>입니다. 테이블명을 <code>orders</code>로 짓고, 컬럼을 <code>status</code>로 짓는 순간 이미 시멘틱 행위를 한 것입니다. 문제는 그 "의미"가 기계가 읽을 수 없는 곳에 숨어있다는 점입니다.</p>
     </div>
-  </div>
 
-  <!-- Architecture SVG -->
-  <div class="arch-box reveal">
-    <svg viewBox="0 0 760 190" style="width:100%;max-width:760px;display:block;margin:0 auto;" aria-label="Élevage 아키텍처 다이어그램">
-      <defs>
-        <marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
-          <path d="M0,0 L0,7 L7,3.5 z" fill="#6B5A48"/>
-        </marker>
-        <marker id="arr-elv" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
-          <path d="M0,0 L0,7 L7,3.5 z" fill="#D9AF48"/>
-        </marker>
-      </defs>
-      <rect x="16" y="68" width="108" height="54" rx="6" fill="#100D15" stroke="rgba(201,168,76,0.18)" stroke-width="1" stroke-dasharray="4,3"/>
-      <text x="70" y="91" text-anchor="middle" fill="#9C8B78" font-size="11" font-family="JetBrains Mono, monospace">Legacy DB</text>
-      <text x="70" y="109" text-anchor="middle" fill="#6B5A48" font-size="10" font-family="JetBrains Mono, monospace">유지</text>
-      <line x1="124" y1="95" x2="157" y2="95" stroke="#6B5A48" stroke-width="1.5" marker-end="url(#arr)"/>
-      <rect x="157" y="50" width="162" height="90" rx="7" fill="#100D15" stroke="#D9AF48" stroke-width="1.5"/>
-      <text x="238" y="76" text-anchor="middle" fill="#D9AF48" font-size="11" font-family="JetBrains Mono, monospace" font-weight="600">Semantic Layer</text>
-      <line x1="167" y1="86" x2="309" y2="86" stroke="rgba(217,175,72,0.18)" stroke-width="1"/>
-      <text x="238" y="104" text-anchor="middle" fill="#9C8B78" font-size="10" font-family="JetBrains Mono, monospace">Data→Semantic Mapper</text>
-      <text x="238" y="122" text-anchor="middle" fill="#9C8B78" font-size="10" font-family="JetBrains Mono, monospace">Adapter</text>
-      <line x1="319" y1="95" x2="352" y2="95" stroke="#D9AF48" stroke-width="1.5" marker-end="url(#arr-elv)"/>
-      <rect x="352" y="58" width="116" height="74" rx="7" fill="#100D15" stroke="#D9AF48" stroke-width="1.5"/>
-      <text x="410" y="85" text-anchor="middle" fill="#D9AF48" font-size="11" font-family="JetBrains Mono, monospace" font-weight="600">Ontology</text>
-      <text x="410" y="101" text-anchor="middle" fill="#9C8B78" font-size="10" font-family="JetBrains Mono, monospace">Store</text>
-      <text x="410" y="117" text-anchor="middle" fill="#6B5A48" font-size="9" font-family="JetBrains Mono, monospace">Graph + YAML</text>
-      <line x1="468" y1="95" x2="501" y2="95" stroke="#D9AF48" stroke-width="1.5" marker-end="url(#arr-elv)"/>
-      <rect x="501" y="58" width="100" height="74" rx="7" fill="#100D15" stroke="#D9AF48" stroke-width="1.5"/>
-      <text x="551" y="85" text-anchor="middle" fill="#D9AF48" font-size="11" font-family="JetBrains Mono, monospace" font-weight="600">통합 API</text>
-      <text x="551" y="101" text-anchor="middle" fill="#9C8B78" font-size="10" font-family="JetBrains Mono, monospace">Ontology</text>
-      <text x="551" y="116" text-anchor="middle" fill="#9C8B78" font-size="10" font-family="JetBrains Mono, monospace">based</text>
-      <line x1="601" y1="95" x2="634" y2="95" stroke="#D9AF48" stroke-width="1.5" marker-end="url(#arr-elv)"/>
-      <rect x="634" y="58" width="108" height="74" rx="7" fill="#0f1a12" stroke="#2DD98A" stroke-width="1.5"/>
-      <text x="688" y="85" text-anchor="middle" fill="#2DD98A" font-size="11" font-family="JetBrains Mono, monospace" font-weight="600">AI Agent</text>
-      <text x="688" y="101" text-anchor="middle" fill="#9C8B78" font-size="10" font-family="JetBrains Mono, monospace">DX / AX</text>
-      <text x="70"  y="158" text-anchor="middle" fill="#6B5A48" font-size="10" font-family="JetBrains Mono, monospace">retire 불필요</text>
-      <text x="238" y="158" text-anchor="middle" fill="#D9AF48" font-size="10" font-family="JetBrains Mono, monospace">Élevage 핵심</text>
-      <text x="688" y="158" text-anchor="middle" fill="#2DD98A" font-size="10" font-family="JetBrains Mono, monospace">즉시 확보</text>
-    </svg>
-  </div>
+    <h3 class="sub-heading">"의미"가 숨어있는 장소들</h3>
 
-  <h3>3개 경로 모두에서 Élevage가 공통으로 자리잡는 이유</h3>
-  <div class="three-col">
-    <div class="track-col nc-col reveal">
-      <div class="track-col-head nc">NC · Nouvelle Cuvée</div>
-      <div class="track-col-sub">Élevage의 역할</div>
-      <p style="font-size:14px;color:var(--text-3);line-height:1.8;">
-        그린필드 신규 구축 경로에서도 Semantic Layer를 처음부터 설계에 포함합니다.<br>
-        <strong style="color:var(--text-2);">SDD Domain SPEC 작성 시 시맨틱이 자연 내장.</strong>
-      </p>
-    </div>
-    <div class="track-col vin-col reveal rd1">
-      <div class="track-col-head vin">VIN · Vinification</div>
-      <div class="track-col-sub">Élevage의 역할</div>
-      <p style="font-size:14px;color:var(--text-3);line-height:1.8;">
-        기존 시스템 재구성 경로. 재구축을 위한 수단으로 역추출 → SPEC 전환.<br>
-        <strong style="color:var(--text-2);">완료 후 레거시 데이터 retire.</strong>
-      </p>
-    </div>
-    <div class="track-col elv-col reveal rd2">
-      <div class="track-col-head elv">ELV · Élevage</div>
-      <div class="track-col-sub">Élevage의 역할</div>
-      <p style="font-size:14px;color:var(--text-3);line-height:1.8;">
-        그 자체가 목적. 영구적 시맨틱 인터페이스.<br>
-        <strong style="color:var(--text-2);">레거시 데이터 위에 영속. 조건 충족 시 VIN 전환.</strong>
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ S01: 왜 안 와닿나 ═══ -->
-<section class="doc-section" id="s01">
-  <div class="section-num reveal">01</div>
-  <h2 class="section-heading reveal">왜 시멘틱/온톨로지가 안 와닿는가</h2>
-  <p class="section-lead reveal">개발자가 체감하지 못하는 이유, 그리고 이미 하고 있다는 사실.</p>
-
-  <div class="why-grid">
-    <div class="why-card reveal">
-      <div class="why-title" style="color:var(--gold-2);">컬럼명 속 의미</div>
-      <div class="why-body">테이블명을 <code>orders</code>로, 컬럼을 <code>status</code>로 짓는 순간 이미 시맨틱 행위를 한 것입니다. 문제는 그 "의미"가 기계가 읽을 수 없는 곳에 숨어있다는 점입니다.</div>
-    </div>
-    <div class="why-card reveal rd1">
-      <div class="why-title" style="color:var(--gold-2);">코드 속 의미</div>
-      <div class="why-body"><code>if status == 'VIP'</code> — VIP 기준이 뭔지는 비즈니스 로직에 흩어져 있습니다. 신규 개발자는 코드를 뒤져야 합니다. 퇴사하면 사라집니다.</div>
-    </div>
-    <div class="why-card reveal rd2">
-      <div class="why-title" style="color:var(--gold-2);">ERD 속 의미</div>
-      <div class="why-body"><code>customer_id → customers.id</code> — "연결"만 있고 "왜" 연결인지 없습니다. 온톨로지는 그 구두 설명을 기계가 읽을 수 있게 체계화한 것입니다.</div>
-    </div>
-  </div>
-
-  <div class="pullquote reveal">
-    <p>"이 <code>amount</code> 컬럼이 정확히 뭐에요?" — 선임이 구두로 설명하는 그 모든 것이 바로 시맨틱입니다.</p>
-    <cite>시맨틱/온톨로지는 그 구두 설명을 기계가 읽을 수 있게 체계화한 것</cite>
-  </div>
-
-  <h3>의미가 숨어있는 장소</h3>
-  <div class="table-wrap reveal">
-    <table>
-      <thead>
-        <tr><th>숨어있는 곳</th><th>예시</th><th>문제</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>컬럼명</td><td><code>price</code>라고 쓰면 끝</td><td style="color:var(--text-3);">VAT 포함인지? 원화인지? 할인 전인지?</td></tr>
-        <tr><td>코드의 if문</td><td><code>if status == 'VIP'</code></td><td style="color:var(--text-3);">VIP 기준이 뭔지는 비즈니스 로직에 흩어져 있음</td></tr>
-        <tr><td>개발자의 머리</td><td>"아 그 테이블은 환불 건도 포함이에요"</td><td style="color:var(--text-3);">퇴사하면 사라짐</td></tr>
-        <tr><td>위키/노션 문서</td><td>데이터 사전 문서</td><td style="color:var(--text-3);">업데이트 안 되고, 코드와 동기화 안 됨</td></tr>
-        <tr><td>ERD의 FK</td><td><code>customer_id → customers.id</code></td><td style="color:var(--text-3);">"연결"만 있고, "왜" 연결인지 없음</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<!-- ═══ S02: 4개 수준 ═══ -->
-<section class="doc-section" id="s02">
-  <div class="section-num reveal">02</div>
-  <h2 class="section-heading reveal">같은 데이터, 4개 수준의 표현</h2>
-  <p class="section-lead reveal"><span class="hl">"고객이 상품을 주문했다"</span>는 하나의 사실을 각 수준에서 어떻게 다루는지 봅니다.</p>
-
-  <div class="phase-list reveal">
-    <div class="phase-step">
-      <div class="phase-num">① 데이터</div>
-      <div>
-        <div class="phase-name">값 그 자체</div>
-        <div class="phase-desc"><code>{ customer_id: 42, product_id: 7, amount: 35000 }</code><br>"42번이 7번을 35000에 샀다" — 숫자만 있음</div>
+    <div class="scenario">
+      <div class="scenario-header">🔍 현재 상황: 의미(Semantics)는 어디에 있는가?</div>
+      <div class="scenario-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>숨어있는 곳</th><th>예시</th><th>문제</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>컬럼명</strong></td>
+                <td><code>price</code>라고 쓰면 끝</td>
+                <td>VAT 포함인지? 원화인지? 할인 전인지?</td>
+              </tr>
+              <tr>
+                <td><strong>코드의 if문</strong></td>
+                <td><code>if status == 'VIP'</code></td>
+                <td>VIP 기준이 뭔지는 비즈니스 로직에 흩어져 있음</td>
+              </tr>
+              <tr>
+                <td><strong>개발자의 머리</strong></td>
+                <td>"아 그 테이블은 환불 건도 포함이에요"</td>
+                <td>퇴사하면 사라짐</td>
+              </tr>
+              <tr>
+                <td><strong>위키/노션 문서</strong></td>
+                <td>데이터 사전 문서</td>
+                <td>업데이트 안 되고, 코드와 동기화 안 됨</td>
+              </tr>
+              <tr>
+                <td><strong>ERD의 FK</strong></td>
+                <td><code>customer_id → customers.id</code></td>
+                <td>"연결"만 있고, "왜" 연결인지 없음</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-    <div class="phase-step">
-      <div class="phase-num">② 메타데이터</div>
-      <div>
-        <div class="phase-name">데이터에 대한 데이터</div>
-        <div class="phase-desc"><code>amount: { type: DECIMAL, nullable: false, created_at: 2024-01-15 }</code><br>"amount는 소수점 숫자고, 비어있으면 안 되고, 1월 15일에 만들어졌다"</div>
-      </div>
-    </div>
-    <div class="phase-step">
-      <div class="phase-num">③ 시멘틱</div>
-      <div>
-        <div class="phase-name">비즈니스 의미</div>
-        <div class="phase-desc"><code>amount: { meaning: "VAT포함_소비자가", currency: "KRW", includes: ["상품가","배송비"], excludes: ["쿠폰할인"] }</code><br>"이 금액이 정확히 무엇을 포함하고 무엇을 제외하는지"</div>
-      </div>
-    </div>
-    <div class="phase-step">
-      <div class="phase-num">④ 온톨로지</div>
-      <div>
-        <div class="phase-name">개념 간 관계 체계</div>
-        <div class="phase-desc"><code>주문 → (결제를_발생시킨다) → 결제 → (정산에_반영된다) → 정산</code><br>"주문이라는 개념은 결제, 정산, 배송, CS 티켓과 어떤 관계인지"</div>
-      </div>
-    </div>
-  </div>
 
-  <h3>같은 SQL, 다른 깊이</h3>
-  <div class="compare-grid">
-    <div class="compare-box before reveal">
-      <div class="compare-label">전통적 접근 — 개발자가 알아야 쿼리 가능</div>
+    <div class="callout key">
+      <div class="callout-title">개발자의 일상 vs 시멘틱/온톨로지</div>
+      <p>신규 개발자가 합류해서 "이 <code>amount</code> 컬럼이 정확히 뭐에요?"라고 물을 때, 선임이 구두로 설명하는 그 모든 것 — 그것이 바로 시멘틱입니다. <span class="hl">시멘틱/온톨로지는 그 구두 설명을 기계가 읽을 수 있게 체계화한 것</span>에 불과합니다.</p>
+    </div>
+  </section>
+
+  <!-- S2: 4개 수준 비교 -->
+  <section class="doc-section" id="s2">
+    <div class="section-num">Section 02</div>
+    <h2 class="section-heading">같은 데이터, 4개 수준의 표현</h2>
+    <p class="section-lead">"고객이 상품을 주문했다"는 사실을 각 수준에서 어떻게 다루는지</p>
+
+    <p class="body-text">하나의 구체적인 예시로 봅니다. <span class="hl">"고객이 상품을 주문했다"</span>는 사실을 각 수준에서 어떻게 다루는지:</p>
+
+    <div class="level-stack">
+      <div class="level">
+        <div class="level-label">① 데이터</div>
+        <div class="level-desc">
+          <strong>값 그 자체</strong><br>
+          <code>{ customer_id: 42, product_id: 7, amount: 35000 }</code><br>
+          → "42번이 7번을 35000에 샀다" — 숫자만 있음
+        </div>
+      </div>
+      <div class="level">
+        <div class="level-label">② 메타데이터</div>
+        <div class="level-desc">
+          <strong>데이터에 대한 데이터</strong><br>
+          <code>amount: { type: DECIMAL, nullable: false, created_at: 2024-01-15 }</code><br>
+          → "amount는 소수점 숫자고, 비어있으면 안 되고, 1월 15일에 만들어졌다"
+        </div>
+      </div>
+      <div class="level">
+        <div class="level-label">③ 시멘틱</div>
+        <div class="level-desc">
+          <strong>비즈니스 의미</strong><br>
+          <code>amount: { meaning: "VAT포함_소비자가", currency: "KRW", includes: ["상품가","배송비"], excludes: ["쿠폰할인"] }</code><br>
+          → "이 금액이 정확히 무엇을 포함하고 무엇을 제외하는지"
+        </div>
+      </div>
+      <div class="level">
+        <div class="level-label">④ 온톨로지</div>
+        <div class="level-desc">
+          <strong>개념 간 관계 체계</strong><br>
+          <code>주문 → (결제를_발생시킨다) → 결제 → (정산에_반영된다) → 정산</code><br>
+          → "주문이라는 개념은 결제, 정산, 배송, CS 티켓과 어떤 관계인지"
+        </div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <h3 class="sub-heading">같은 SQL, 다른 깊이</h3>
+
+    <div class="compare">
+      <div class="compare-box before">
+        <div class="compare-label">전통적 접근 (데이터 + 메타데이터)</div>
 <pre>-- "VIP 고객의 반품률"을 구하려면
 -- 1) VIP 기준이 뭔지? → 코드 뒤져야 함
 -- 2) 반품이 뭔지? → 취소? 교환? 환불?
@@ -807,11 +582,12 @@ FROM customers c
 JOIN orders o ON c.id = o.customer_id
 WHERE c.grade = 'VIP'  -- 이 'VIP'가 정확히 뭔데?
   AND o.status IN ('returned', 'refunded')
+  -- 이게 진짜 반품의 전부인지 누가 보장?
 GROUP BY c.id;</pre>
-    </div>
-    <div class="compare-box after reveal rd1">
-      <div class="compare-label">시맨틱 + 온톨로지 기반 — 의도만 전달</div>
-<pre>-- 시맨틱 레이어 질의 (Metric Query)
+      </div>
+      <div class="compare-box after">
+        <div class="compare-label">시멘틱 + 온톨로지 기반</div>
+<pre>-- 시멘틱 레이어 질의 (Metric Query)
 SELECT * FROM metrics.return_rate
 WHERE customer.tier = 'VIP'
   AND period = 'last_30_days';
@@ -825,20 +601,27 @@ WHERE customer.tier = 'VIP'
 --   / total_completed
 -- ✓ 데이터 소스 자동 라우팅
 --   (주문DB + CS DB + 정산DB)</pre>
+      </div>
     </div>
-  </div>
-</section>
 
-<!-- ═══ S03: 설계 실천 ═══ -->
-<section class="doc-section" id="s03">
-  <div class="section-num reveal">03</div>
-  <h2 class="section-heading reveal">서비스 설계 시 구체적으로 뭘 다르게?</h2>
-  <p class="section-lead reveal">아래 5가지를 기존 설계 과정에 추가하면, 시맨틱과 온톨로지는 <span class="hl">자연스럽게 축적</span>됩니다.</p>
+    <div class="callout insight">
+      <div class="callout-title">차이의 본질</div>
+      <p>왼쪽은 <span class="warn">개발자가 비즈니스 의미를 알아야 쿼리 가능</span>합니다. 오른쪽은 <span class="good">비즈니스 의미가 시스템에 인코딩</span>되어 있어서 의도만 전달하면 됩니다.</p>
+    </div>
+  </section>
 
-  <h3>① 컬럼 설계: 타입 + 의미 주석</h3>
-  <div class="compare-grid">
-    <div class="compare-box before reveal">
-      <div class="compare-label">기존 DDL</div>
+  <!-- S3: 설계시 뭘 다르게 -->
+  <section class="doc-section" id="s3">
+    <div class="section-num">Section 03</div>
+    <h2 class="section-heading">서비스 설계 시 구체적으로 뭘 다르게?</h2>
+    <p class="section-lead">아래 5가지를 기존 설계 과정에 추가하면, 시멘틱과 온톨로지는 자연스럽게 축적됩니다.</p>
+
+    <!-- Practice 1 -->
+    <h3 class="sub-heading">① 컬럼 설계: 타입 + "의미 주석"</h3>
+
+    <div class="compare">
+      <div class="compare-box before">
+        <div class="compare-label">기존 DDL</div>
 <pre>CREATE TABLE orders (
   id          BIGINT PRIMARY KEY,
   customer_id BIGINT NOT NULL,
@@ -846,10 +629,23 @@ WHERE customer.tier = 'VIP'
   status      VARCHAR(20),
   created_at  TIMESTAMP
 );</pre>
+      </div>
+      <div class="compare-box after">
+        <div class="compare-label">시멘틱 인식 DDL + 선언</div>
+<pre>CREATE TABLE orders (
+  id          BIGINT PRIMARY KEY,
+  customer_id BIGINT NOT NULL,
+  amount      DECIMAL(10,2),
+  status      VARCHAR(20),
+  created_at  TIMESTAMP
+);
+
+-- 📌 여기가 추가되는 부분
+-- schema-registry 또는 YAML 파일로 관리</pre>
+      </div>
     </div>
-    <div class="compare-box after reveal rd1">
-      <div class="compare-label">시맨틱 선언 추가 (YAML 병행)</div>
-<pre># order-schema.yaml (시맨틱 선언)
+
+<pre># order-schema.yaml (시멘틱 선언)
 entity: Order
 domain: commerce
 owner: order-team
@@ -869,6 +665,7 @@ properties:
       PLACED: "주문 접수 (결제 전)"
       PAID: "결제 완료"
       SHIPPED: "배송 중"
+      DELIVERED: "배송 완료"
       RETURNED: "반품 접수"
       REFUNDED: "환불 완료"
     lifecycle: PLACED → PAID → SHIPPED → DELIVERED
@@ -878,25 +675,25 @@ properties:
     references: Customer
     relationship: "placed_by"     # ← FK가 아니라 '의미'
     cardinality: "many-to-one"</pre>
+
+    <div class="callout key">
+      <div class="callout-title">핵심 변화</div>
+      <p>DDL 자체는 바뀌지 않습니다. <span class="hl">옆에 YAML 한 장이 추가</span>될 뿐입니다. 이 YAML이 시멘틱 메타데이터이고, 이것이 쌓이면 온톨로지가 됩니다.</p>
     </div>
-  </div>
 
-  <div class="bridge-box reveal" style="margin-top:16px;">
-    <div class="bridge-title">핵심 변화</div>
-    <div class="bridge-body">DDL 자체는 바뀌지 않습니다. <strong>옆에 YAML 한 장이 추가</strong>될 뿐입니다. 이 YAML이 시맨틱 메타데이터이고, 이것이 쌓이면 온톨로지가 됩니다.</div>
-  </div>
+    <!-- Practice 2 -->
+    <h3 class="sub-heading">② FK에 "관계의 의미"를 부여하라</h3>
 
-  <h3>② FK에 관계의 의미를 부여하라</h3>
-  <div class="compare-grid">
-    <div class="compare-box before reveal">
-      <div class="compare-label">기존 — 연결만 있음</div>
+    <div class="compare">
+      <div class="compare-box before">
+        <div class="compare-label">기존: 연결만 있음</div>
 <pre>-- ERD에는 선만 있음
 orders.customer_id → customers.id
 orders.product_id  → products.id
 shipments.order_id → orders.id</pre>
-    </div>
-    <div class="compare-box after reveal rd1">
-      <div class="compare-label">변경 — 관계에 의미 부여</div>
+      </div>
+      <div class="compare-box after">
+        <div class="compare-label">변경: 관계에 의미 부여</div>
 <pre># ontology/commerce-relations.yaml
 relationships:
   - from: Order
@@ -916,35 +713,32 @@ relationships:
     constraints:
       - "1 Order → N Shipments (분할배송)"
       - "Shipment.created_at > Order.paid_at"</pre>
+      </div>
     </div>
-  </div>
 
-  <h3>③ 이벤트 발행 시 비즈니스 컨텍스트 포함</h3>
-  <div class="compare-grid">
-    <div class="compare-box before reveal">
-      <div class="compare-label">기존 — 기술적 이벤트</div>
-<pre>{
+    <p class="body-text">이렇게 하면 시스템이 <code>"주문 #1234와 관련된 모든 것"</code>이라는 질의에 <span class="hl">배송, 결제, CS 티켓, 리뷰까지 자동으로 따라갈 수 있습니다</span>. ERD의 FK만으로는 "어떤 방향으로 따라가야 하는지" 모릅니다.</p>
+
+    <!-- Practice 3 -->
+    <h3 class="sub-heading">③ 이벤트 발행 시 "비즈니스 컨텍스트" 포함</h3>
+
+<pre>// ❌ 기존: 기술적 이벤트
+{
   "event": "order.status.changed",
   "order_id": 1234,
   "old_status": "PAID",
   "new_status": "SHIPPED",
   "timestamp": "2024-03-15T10:00:00Z"
-}</pre>
-    </div>
-    <div class="compare-box after reveal rd1">
-      <div class="compare-label">시맨틱 인식 이벤트</div>
-<pre>{
+}
+
+// ✅ 시멘틱 인식 이벤트
+{
   "event": "order.status.changed",
   "order_id": 1234,
   "transition": {
     "from": "PAID",
     "to": "SHIPPED",
-    "business_meaning": "fulfillment_started",
-    "triggers": [
-      "shipment_creation",
-      "inventory_deduct",
-      "customer_notification"
-    ],
+    "business_meaning": "fulfillment_started",  // ← 이것이 핵심
+    "triggers": ["shipment_creation", "inventory_deduct", "customer_notification"],
     "reversible": false
   },
   "context": {
@@ -953,24 +747,26 @@ relationships:
     "caused_by": "warehouse_scan"
   }
 }</pre>
-    </div>
-  </div>
 
-  <h3>④ API 응답에 타입 힌트 추가</h3>
-  <div class="compare-grid">
-    <div class="compare-box before reveal">
-      <div class="compare-label">기존 API 응답</div>
-<pre>{
+    <div class="callout insight">
+      <div class="callout-title">왜 이게 중요한가</div>
+      <p>다른 서비스가 이 이벤트를 받았을 때, <code>PAID→SHIPPED</code>가 무슨 뜻인지 <span class="warn">코드를 뒤져보지 않아도</span> <code>business_meaning: fulfillment_started</code>로 알 수 있습니다. AI 에이전트도 이 이벤트의 의미를 즉시 이해합니다.</p>
+    </div>
+
+    <!-- Practice 4 -->
+    <h3 class="sub-heading">④ API 응답에 "타입 힌트" 추가</h3>
+
+<pre>// ❌ 기존 API 응답
+{
   "customer_id": 42,
   "total": 150000,
   "items": [...]
-}</pre>
-    </div>
-    <div class="compare-box after reveal rd1">
-      <div class="compare-label">시맨틱 힌트 포함 (JSON-LD 스타일)</div>
-<pre>{
+}
+
+// ✅ 시멘틱 힌트 포함 응답 (JSON-LD 스타일)
+{
   "@type": "Order",
-  "@context": "https://your-co.com/ontology/commerce",
+  "@context": "https://your-company.com/ontology/commerce",
   "customer": {
     "@type": "Customer",
     "@id": "/customers/42",
@@ -984,12 +780,11 @@ relationships:
   },
   "items": [...]
 }</pre>
-    </div>
-  </div>
 
-  <h3>⑤ 용어 사전(Glossary)을 코드와 동기화</h3>
-<pre>
-# glossary/commerce.yaml — 이것이 온톨로지의 씨앗
+    <!-- Practice 5 -->
+    <h3 class="sub-heading">⑤ 용어 사전(Glossary)을 코드와 동기화</h3>
+
+<pre># glossary/commerce.yaml — 이것이 온톨로지의 씨앗
 terms:
   주문:
     english: Order
@@ -1009,306 +804,291 @@ terms:
       - entity: Product
         relation: contains
       - entity: Payment
-        relation: triggers
-</pre>
+        relation: triggers</pre>
 
-  <div class="bridge-box reveal">
-    <div class="bridge-title">5가지 실천의 공통점</div>
-    <div class="bridge-body">기존 코드를 바꾸지 않습니다. <strong>YAML 선언 파일을 "옆에 두는 것"</strong>만으로 시맨틱 레이어가 점진적으로 형성됩니다. 이 파일들이 모이면 자연스럽게 온톨로지 그래프가 됩니다. <em>Palantir가 고객사에서 하는 일의 핵심도 이것입니다.</em></div>
-  </div>
-</section>
+    <div class="callout key">
+      <div class="callout-title">5가지 실천의 공통점</div>
+      <p>기존 코드를 바꾸지 않습니다. <span class="hl">YAML 선언 파일을 "옆에 두는 것"</span>만으로 시멘틱 레이어가 점진적으로 형성됩니다. 이 파일들이 모이면 자연스럽게 온톨로지 그래프가 됩니다. Palantir가 고객사에서 하는 일의 핵심도 이것입니다.</p>
+    </div>
+  </section>
 
-<!-- ═══ S04: Before / After ═══ -->
-<section class="doc-section" id="s04">
-  <div class="section-num reveal">04</div>
-  <h2 class="section-heading reveal">시멘틱/온톨로지가 있을 때 구체적으로 뭐가 달라지나</h2>
-  <p class="section-lead reveal">4가지 실제 시나리오로 비교합니다.</p>
+  <!-- S4: 있을 때 vs 없을 때 -->
+  <section class="doc-section" id="s4">
+    <div class="section-num">Section 04</div>
+    <h2 class="section-heading">시멘틱/온톨로지가 있을 때 구체적으로 뭐가 달라지나</h2>
+    <p class="section-lead">4가지 실무 시나리오로 Before/After를 비교합니다.</p>
 
-  <!-- Scenario 1 -->
-  <div class="scenario reveal">
-    <div class="scenario-header">시나리오 1 · 신규 개발자 온보딩</div>
-    <div class="scenario-body">
-      <div class="decision-cards">
-        <div class="decision-card">
-          <div class="decision-card-label">없을 때</div>
-          <div class="decision-card-title" style="color:#ef4444;">온보딩 2-3주 소요</div>
-          <div class="decision-card-sub">"이 <code>amount</code>가 뭐에요?" → 선임 찾아서 물어봄 → "아 그건 쿠폰 빠진 거고 VAT 포함이야" → 위키에 있다는데 2년 전 문서 → 실제로는 코드 까봐야 확실함</div>
-        </div>
-        <div class="decision-card">
-          <div class="decision-card-label">있을 때</div>
-          <div class="decision-card-title" style="color:var(--nc);">온보딩 3-5일로 단축</div>
-          <div class="decision-card-sub">"이 <code>amount</code>가 뭐에요?" → 스키마 레지스트리 조회 → 정의, 포함/제외 항목, 계산식, 관련 엔티티 즉시 확인 → 코드와 항상 동기화</div>
+    <!-- Scenario 1 -->
+    <div class="scenario">
+      <div class="scenario-header">시나리오 1: 신규 개발자 온보딩</div>
+      <div class="scenario-body">
+        <div class="compare">
+          <div class="compare-box before">
+            <div class="compare-label">없을 때</div>
+            <p>"이 <code>amount</code>가 뭐에요?"<br>
+            → 선임 찾아서 물어봄<br>
+            → "아 그건 쿠폰 빠진 거고 VAT 포함이야"<br>
+            → 위키에 있다는데 2년 전 문서<br>
+            → 실제로는 코드 까봐야 확실함<br>
+            → <span class="warn">온보딩 2-3주 소요</span></p>
+          </div>
+          <div class="compare-box after">
+            <div class="compare-label">있을 때</div>
+            <p>"이 <code>amount</code>가 뭐에요?"<br>
+            → 스키마 레지스트리 조회<br>
+            → 정의, 포함/제외 항목, 계산식, 관련 엔티티 즉시 확인<br>
+            → 코드와 항상 동기화<br>
+            → <span class="good">온보딩 3-5일로 단축</span></p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Scenario 2 -->
-  <div class="scenario reveal">
-    <div class="scenario-header">시나리오 2 · 크로스 도메인 데이터 질의</div>
-    <div class="scenario-body">
-      <div class="query-demo">
-        <div class="query-input">
-          <div class="query-label">비즈니스 질문</div>
-          <div class="query-text">"반품이 잦은 VIP 고객이 CS 문의도 많은지 확인해줘"</div>
-        </div>
-        <div class="query-output">
-          <p style="font-size:13px;color:#ef4444;font-weight:600;margin-bottom:10px;">없을 때: 개발자가 해야 하는 일</p>
-          <div class="qstep"><span class="qnum">1</span>VIP 기준 확인 → 마케팅팀에 문의 (반나절)</div>
-          <div class="qstep"><span class="qnum">2</span>반품 정의 확인 → CS팀에 문의 (반나절)</div>
-          <div class="qstep"><span class="qnum">3</span>3개 DB 접속 권한 요청 (1-2일)</div>
-          <div class="qstep"><span class="qnum">4</span>각 DB 스키마 파악 + 조인 키 확인 (반나절)</div>
-          <div class="qstep"><span class="qnum">5</span>쿼리 작성 + 결과 검증 (반나절)</div>
-          <div class="qstep"><span class="qresult bad">= 총 3-4일, 3개 팀 협조 필요</span></div>
-        </div>
-        <div class="query-output" style="border-top:1px solid var(--rule);">
-          <p style="font-size:13px;color:var(--nc);font-weight:600;margin-bottom:10px;">있을 때: 시스템이 하는 일</p>
-          <div class="qstep"><span class="qnum">1</span>"VIP" → 온톨로지에서 Customer.tier = 'VIP' 정의 자동 해석</div>
-          <div class="qstep"><span class="qnum">2</span>"반품" → 시맨틱 레이어에서 return_rate 메트릭 자동 매핑</div>
-          <div class="qstep"><span class="qnum">3</span>"CS 문의" → Ticket 엔티티 자동 연결 (Customer ← placed_by → Order ← relates_to → Ticket)</div>
-          <div class="qstep"><span class="qnum">4</span>데이터 소스 자동 라우팅 + 조인 실행</div>
-          <div class="qstep"><span class="qresult good">= 총 30초, 셀프서비스</span></div>
+    <!-- Scenario 2 -->
+    <div class="scenario">
+      <div class="scenario-header">시나리오 2: 크로스 도메인 데이터 질의</div>
+      <div class="scenario-body">
+        <div class="query-demo">
+          <div class="query-input">
+            <div class="label">비즈니스 질문</div>
+            <div class="query-text">"반품이 잦은 VIP 고객이 CS 문의도 많은지 확인해줘"</div>
+          </div>
+          <div class="query-output">
+            <p style="font-size:13px; color:#C0392B; margin-bottom:10px;"><strong>없을 때: 개발자가 해야 하는 일</strong></p>
+            <div class="query-step"><span class="step-num">1</span> VIP 기준 확인 → 마케팅팀에 문의 (반나절)</div>
+            <div class="query-step"><span class="step-num">2</span> 반품 정의 확인 → CS팀에 문의 (반나절)</div>
+            <div class="query-step"><span class="step-num">3</span> 3개 DB 접속 권한 요청 (1-2일)</div>
+            <div class="query-step"><span class="step-num">4</span> 각 DB 스키마 파악 (반나절)</div>
+            <div class="query-step"><span class="step-num">5</span> 조인 키 확인 및 쿼리 작성 (반나절)</div>
+            <div class="query-step"><span class="step-num">6</span> 결과 검증 → "이거 맞아요?" (반나절)</div>
+            <div class="query-step" style="color:#C0392B;font-weight:600;">= 총 3-4일, 3개 팀 협조 필요</div>
+          </div>
+          <div class="query-output" style="border-top:1px solid var(--rule);">
+            <p style="font-size:13px; color:#1A5C3A; margin-bottom:10px;"><strong>있을 때: 시스템이 하는 일</strong></p>
+            <div class="query-step"><span class="step-num">1</span> "VIP" → 온톨로지에서 Customer.tier = 'VIP' 정의 자동 해석</div>
+            <div class="query-step"><span class="step-num">2</span> "반품" → 시멘틱 레이어에서 return_rate 메트릭 자동 매핑</div>
+            <div class="query-step"><span class="step-num">3</span> "CS 문의" → Ticket 엔티티 자동 연결 (Customer ← placed_by → Order ← relates_to → Ticket)</div>
+            <div class="query-step"><span class="step-num">4</span> 데이터 소스 자동 라우팅 + 조인 실행</div>
+            <div class="query-step" style="color:#1A5C3A;font-weight:600;">= 총 30초, 셀프서비스</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Scenario 3 -->
-  <div class="scenario reveal">
-    <div class="scenario-header">시나리오 3 · AI 에이전트 활용</div>
-    <div class="scenario-body">
-      <div class="decision-cards">
-        <div class="decision-card">
-          <div class="decision-card-label">없을 때</div>
-          <div class="decision-card-title" style="color:#ef4444;">AI가 할 수 있는 게 없음</div>
-          <div class="decision-card-sub">AI에게: "매출 분석해줘"<br><br>AI: "어떤 테이블에 매출 데이터가 있나요? amount 컬럼이 매출인가요? 환불은 빼야 하나요? 어떤 DB에 접속하면 되나요?"<br><br>컨텍스트가 없으니까.</div>
+    <!-- Scenario 3 -->
+    <div class="scenario">
+      <div class="scenario-header">시나리오 3: AI 에이전트 활용</div>
+      <div class="scenario-body">
+        <div class="compare">
+          <div class="compare-box before">
+            <div class="compare-label">없을 때</div>
+            <p>AI에게: "매출 분석해줘"<br><br>
+            AI: "어떤 테이블에 매출 데이터가 있나요? amount 컬럼이 매출인가요? 환불은 빼야 하나요? 어떤 DB에 접속하면 되나요?"<br><br>
+            → <span class="warn">AI가 할 수 있는 게 없음. 컨텍스트가 없으니까.</span></p>
+          </div>
+          <div class="compare-box after">
+            <div class="compare-label">있을 때</div>
+            <p>AI에게: "매출 분석해줘"<br><br>
+            AI: 온톨로지 조회 → "매출"은 <code>revenue</code> 메트릭 → 정의: <code>SUM(Order.amount) WHERE status IN (DELIVERED, SHIPPED)</code> → 소스: order-db → 자동 쿼리 생성 및 실행<br><br>
+            → <span class="good">AI가 즉시 정확한 분석 수행</span></p>
+          </div>
         </div>
-        <div class="decision-card">
-          <div class="decision-card-label">있을 때</div>
-          <div class="decision-card-title" style="color:var(--nc);">AI가 즉시 정확한 분석</div>
-          <div class="decision-card-sub">AI에게: "매출 분석해줘"<br><br>AI: 온톨로지 조회 → "매출"은 <code>revenue</code> 메트릭 → <code>SUM(Order.amount) WHERE status IN (DELIVERED, SHIPPED)</code> → 자동 쿼리 생성 및 실행</div>
-        </div>
-      </div>
-      <div class="bridge-box" style="margin-top:20px;">
-        <div class="bridge-title">AI 시대의 결정적 차이</div>
-        <div class="bridge-body">온톨로지는 <strong>AI 에이전트의 "업무 매뉴얼"</strong>입니다. 사람에게는 구두 설명으로 충분하지만, AI에게는 기계가 읽을 수 있는 시맨틱 정보가 필수입니다. <em>이것이 LLM 시대에 온톨로지의 가치가 폭발적으로 증가하는 이유입니다.</em></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Scenario 4 -->
-  <div class="scenario reveal">
-    <div class="scenario-header">시나리오 4 · 임팩트 분석 (변경 영향도)</div>
-    <div class="scenario-body">
-      <p style="font-size:14px;color:var(--text-3);margin-bottom:16px;"><code>orders.status</code> 컬럼에 새 상태값 <code>'PARTIALLY_RETURNED'</code>를 추가하려 합니다.</p>
-      <div class="decision-cards">
-        <div class="decision-card">
-          <div class="decision-card-label">없을 때</div>
-          <div class="decision-card-title" style="color:#ef4444;">"다 바꾼 줄 알았는데" 🔥</div>
-          <div class="decision-card-sub">이 컬럼 쓰는 서비스 찾기 (grep? 수동?) → 반품률 계산 로직 어디있지? → 대시보드에 영향? → 정산 로직에 영향? → 발견은 배포 후</div>
-        </div>
-        <div class="decision-card">
-          <div class="decision-card-label">있을 때</div>
-          <div class="decision-card-title" style="color:var(--nc);">변경 전에 전체 파악</div>
-          <div class="decision-card-sub"><code>Order.status</code> → 영향 메트릭: <code>[return_rate, completion_rate, revenue]</code><br>영향 서비스: <code>[settlement, analytics, cs-dashboard]</code><br>영향 이벤트: <code>[order.status.changed → 5개 컨슈머]</code></div>
+        <div class="callout insight" style="margin-top:16px;">
+          <div class="callout-title">AI 시대의 결정적 차이</div>
+          <p>온톨로지는 <span class="hl">AI 에이전트의 "업무 매뉴얼"</span>입니다. 사람에게는 구두 설명으로 충분하지만, AI에게는 기계가 읽을 수 있는 시멘틱 정보가 필수입니다. 이것이 LLM 시대에 온톨로지의 가치가 폭발적으로 증가하는 이유입니다.</p>
         </div>
       </div>
     </div>
-  </div>
-</section>
 
-<!-- ═══ S05: Palantir ═══ -->
-<section class="doc-section" id="s05">
-  <div class="section-num reveal">05</div>
-  <h2 class="section-heading reveal">팔란티어가 실제로 하는 일</h2>
-  <p class="section-lead reveal">Palantir의 독보적 경쟁력은 기술이 아닙니다. <span class="hl">고객사에 들어가서 수개월간 온톨로지를 구축</span>하는, 노동집약적이고 도메인 전문성이 필요한 작업을 해주는 것입니다.</p>
+    <!-- Scenario 4 -->
+    <div class="scenario">
+      <div class="scenario-header">시나리오 4: 임팩트 분석 (변경 영향도)</div>
+      <div class="scenario-body">
+        <p style="font-size:14px; margin-bottom:14px;"><code>orders.status</code> 컬럼에 새 상태값 <code>'PARTIALLY_RETURNED'</code>를 추가하려 합니다.</p>
+        <div class="compare">
+          <div class="compare-box before">
+            <div class="compare-label">없을 때</div>
+            <p>→ 이 컬럼 쓰는 서비스 찾기 (grep? 수동?)<br>
+            → 반품률 계산 로직 어디있지?<br>
+            → 대시보드에 영향?<br>
+            → 정산 로직에 영향?<br>
+            → <span class="warn">"다 바꾼 줄 알았는데 리포트에 안 잡혔어요" 🔥</span></p>
+          </div>
+          <div class="compare-box after">
+            <div class="compare-label">있을 때</div>
+            <p>→ 온톨로지 그래프 조회:<br>
+            <code>Order.status</code> → 영향받는 메트릭: <code>[return_rate, completion_rate, revenue]</code><br>
+            → 영향받는 서비스: <code>[settlement, analytics, cs-dashboard]</code><br>
+            → 영향받는 이벤트: <code>[order.status.changed → 5개 컨슈머]</code><br>
+            → <span class="good">변경 전에 전체 영향도를 즉시 파악</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <h3>Palantir Foundry의 핵심 구조</h3>
-  <div class="phase-list reveal">
-    <div class="phase-step">
-      <div class="phase-num">Ontology</div>
+  <!-- S5: 팔란티어의 비밀 -->
+  <section class="doc-section" id="s5">
+    <div class="section-num">Section 05</div>
+    <h2 class="section-heading">팔란티어가 실제로 하는 일</h2>
+    <p class="section-lead">Palantir의 독보적 경쟁력은 기술이 아닙니다.</p>
+
+    <p class="body-text">Palantir의 독보적 경쟁력은 기술이 아닙니다. <span class="hl">고객사에 들어가서 수개월간 온톨로지를 구축</span>하는, 노동집약적이고 도메인 전문성이 필요한 작업을 해주는 것입니다.</p>
+
+    <h3 class="sub-heading">Palantir Foundry의 핵심 구조</h3>
+
+    <div class="level-stack">
+      <div class="level">
+        <div class="level-label">Ontology</div>
+        <div class="level-desc">
+          <strong>Object Types + Link Types + Action Types</strong><br>
+          예: <code>Patient</code>라는 Object Type에 <code>has_diagnosis</code>라는 Link Type으로 <code>Diagnosis</code>에 연결. <code>prescribe_medication</code>이라는 Action이 정의됨.
+        </div>
+      </div>
+      <div class="level">
+        <div class="level-label">Semantic</div>
+        <div class="level-desc">
+          <strong>각 Object의 Property에 비즈니스 정의 부여</strong><br>
+          예: <code>Patient.risk_score</code>는 "지난 12개월 응급실 방문 횟수 × 만성질환 수"로 정의
+        </div>
+      </div>
+      <div class="level">
+        <div class="level-label">Pipeline</div>
+        <div class="level-desc">
+          <strong>원본 데이터 → 정제 → Object 매핑</strong><br>
+          예: EMR의 <code>encounter</code> 테이블 → 정제 → <code>Patient</code> Object의 <code>visit_history</code> property로 매핑
+        </div>
+      </div>
+      <div class="level">
+        <div class="level-label">Application</div>
+        <div class="level-desc">
+          <strong>온톨로지 위에 앱을 빌드</strong><br>
+          예: 의사가 "고위험 환자 목록"을 보면 → <code>Patient WHERE risk_score &gt; 8</code> → 자동으로 데이터 소스 연결
+        </div>
+      </div>
+    </div>
+
+    <div class="callout key">
+      <div class="callout-title">Palantir의 진짜 비밀</div>
+      <p>기술적으로 특별한 것은 없습니다. <span class="hl">YAML + 그래프 DB + 데이터 파이프라인</span>의 조합입니다. Palantir의 진짜 해자는 (1) 고객 도메인에 맞는 온톨로지를 설계하는 컨설팅 역량, (2) 한번 구축하면 갈아타기 어려운 Lock-in, (3) AIP로 LLM이 온톨로지를 활용하게 만든 시너지입니다.</p>
+    </div>
+
+    <div class="sep"></div>
+
+    <h3 class="sub-heading">자체 구축 로드맵: 점진적 접근</h3>
+
+    <div class="flow">
+      <div class="flow-item">Phase 1<small>Schema YAML</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">Phase 2<small>Glossary</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">Phase 3<small>Relation Graph</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">Phase 4<small>Semantic Layer</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">Phase 5<small>AI Integration</small></div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>단계</th><th>산출물</th><th>효과</th><th>노력</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Phase 1</strong></td>
+            <td>각 서비스의 Entity YAML</td>
+            <td>신규 개발자 온보딩 단축</td>
+            <td>서비스당 반나절</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 2</strong></td>
+            <td>비즈니스 용어사전</td>
+            <td>팀 간 "이거 뭐야" 질문 제거</td>
+            <td>도메인당 1-2일</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 3</strong></td>
+            <td>엔티티 관계 그래프</td>
+            <td>변경 영향도 자동 분석</td>
+            <td>전체 2-3주</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 4</strong></td>
+            <td>메트릭 정의 + 쿼리 추상화</td>
+            <td>셀프서비스 데이터 조회</td>
+            <td>메트릭당 2-4시간</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 5</strong></td>
+            <td>LLM이 온톨로지 참조</td>
+            <td>자연어 → 데이터 자동 접근</td>
+            <td>Phase 4 완료 시 자연스럽게</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout insight">
+      <div class="callout-title">Terroir + ADLF 연결점</div>
+      <p>이 로드맵은 Terroir 플랫폼의 Semantic Layer 전략과 정확히 일치합니다. ADLF의 Scout/Mapper 에이전트가 Phase 1-2를 자동화하고, Weaver 에이전트가 Phase 3-4를 구축하며, Phase 5는 전체 에이전트 파이프라인이 온톨로지 위에서 동작하는 것입니다.</p>
+    </div>
+
+    <div class="pullquote">
+      <p>"레거시는 retire하지 않아도 됩니다.<br>의미를 씌우면 됩니다."</p>
+      <cite>Élevage Route · 2026</cite>
+    </div>
+
+    <!-- Related links -->
+    <a class="related-box" href="/gemini_html/route_to_terroir.html">
       <div>
-        <div class="phase-name">Object Types + Link Types + Action Types</div>
-        <div class="phase-desc"><code>Patient</code>라는 Object Type에 <code>has_diagnosis</code>라는 Link Type으로 <code>Diagnosis</code>에 연결. <code>prescribe_medication</code>이라는 Action이 정의됨.</div>
+        <div class="related-box-label">관련 문서</div>
+        <div class="related-box-title">Route to Terroir</div>
+        <div class="related-box-sub">서비스 현대화 3가지 경로 — NC / Vinification / Élevage</div>
       </div>
-    </div>
-    <div class="phase-step">
-      <div class="phase-num">Semantic</div>
+      <span style="margin-left:auto; font-size:20px; color:var(--ink-4);">→</span>
+    </a>
+    <a class="related-box" href="/gemini_html/project_name_overview.html">
       <div>
-        <div class="phase-name">각 Object의 Property에 비즈니스 정의 부여</div>
-        <div class="phase-desc"><code>Patient.risk_score</code>는 "지난 12개월 응급실 방문 횟수 × 만성질환 수"로 정의</div>
+        <div class="related-box-label">관련 문서</div>
+        <div class="related-box-title">Project Name Overview</div>
+        <div class="related-box-sub">와인 철학으로 읽는 프로젝트 이름들</div>
       </div>
-    </div>
-    <div class="phase-step">
-      <div class="phase-num">Pipeline</div>
-      <div>
-        <div class="phase-name">원본 데이터 → 정제 → Object 매핑</div>
-        <div class="phase-desc">EMR의 <code>encounter</code> 테이블 → 정제 → <code>Patient</code> Object의 <code>visit_history</code> property로 매핑</div>
-      </div>
-    </div>
-    <div class="phase-step">
-      <div class="phase-num">Application</div>
-      <div>
-        <div class="phase-name">온톨로지 위에 앱을 빌드</div>
-        <div class="phase-desc">의사가 "고위험 환자 목록"을 보면 → <code>Patient WHERE risk_score > 8</code> → 자동으로 데이터 소스 연결</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="bridge-box reveal">
-    <div class="bridge-title">Palantir의 진짜 비밀</div>
-    <div class="bridge-body">기술적으로 특별한 것은 없습니다. <strong>YAML + 그래프 DB + 데이터 파이프라인</strong>의 조합입니다. Palantir의 진짜 해자는 (1) 고객 도메인에 맞는 온톨로지를 설계하는 컨설팅 역량, (2) 한번 구축하면 갈아타기 어려운 Lock-in, (3) AIP로 LLM이 온톨로지를 활용하게 만든 시너지입니다.</div>
-  </div>
-
-  <h3>자체 구축 로드맵: 점진적 접근</h3>
-  <div class="flow reveal">
-    <div class="flow-item">Phase 1<small>Schema YAML</small></div>
-    <div class="flow-arrow">→</div>
-    <div class="flow-item">Phase 2<small>Glossary</small></div>
-    <div class="flow-arrow">→</div>
-    <div class="flow-item">Phase 3<small>Relation Graph</small></div>
-    <div class="flow-arrow">→</div>
-    <div class="flow-item">Phase 4<small>Semantic Layer</small></div>
-    <div class="flow-arrow">→</div>
-    <div class="flow-item">Phase 5<small>AI Integration</small></div>
-  </div>
-
-  <div class="table-wrap reveal">
-    <table>
-      <thead>
-        <tr><th>단계</th><th>산출물</th><th>효과</th><th>노력</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Phase 1</td><td>각 서비스의 Entity YAML</td><td>신규 개발자 온보딩 단축</td><td>서비스당 반나절</td></tr>
-        <tr><td>Phase 2</td><td>비즈니스 용어사전</td><td>팀 간 "이거 뭐야" 질문 제거</td><td>도메인당 1-2일</td></tr>
-        <tr><td>Phase 3</td><td>엔티티 관계 그래프</td><td>변경 영향도 자동 분석</td><td>전체 2-3주</td></tr>
-        <tr><td>Phase 4</td><td>메트릭 정의 + 쿼리 추상화</td><td>셀프서비스 데이터 조회</td><td>메트릭당 2-4시간</td></tr>
-        <tr><td>Phase 5</td><td>LLM이 온톨로지 참조</td><td>자연어 → 데이터 자동 접근</td><td>Phase 4 완료 시 자연스럽게</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="bridge-box reveal">
-    <div class="bridge-title">Terroir + Élevage 연결점</div>
-    <div class="bridge-body">이 로드맵은 Terroir 플랫폼의 Élevage 전략과 정확히 일치합니다. ADLF의 Scout/Mapper 에이전트가 Phase 1-2를 자동화하고, Weaver 에이전트가 Phase 3-4를 구축하며, Phase 5는 전체 에이전트 파이프라인이 온톨로지 위에서 동작하는 것입니다. <em>Élevage는 이 로드맵을 레거시 시스템 위에서 즉시 시작할 수 있게 하는 경로입니다.</em></div>
-  </div>
-</section>
-
-<!-- 요약 -->
-<section class="doc-section" id="summary" style="border-bottom:none;">
-  <div class="section-num reveal">요약</div>
-  <h2 class="section-heading reveal">레거시 위에서 시작하는 AI 여정</h2>
-  <p class="section-lead reveal">출발점이 어디든 Semantic Layer는 AI 역량의 핵심 기반입니다.</p>
-
-  <div class="summary-grid">
-    <div class="summary-card nc-card reveal">
-      <div class="summary-card-title nc">NC · Nouvelle Cuvée</div>
-      <div class="summary-card-body">새로 시작하는 서비스.<br>SDD SPEC 작성 시 시맨틱이 자연 내장.</div>
-    </div>
-    <div class="summary-card vin-card reveal rd1">
-      <div class="summary-card-title vin">VIN · Vinification</div>
-      <div class="summary-card-body">레거시를 재구축하는 경로.<br>역추출 → SPEC 전환 → 레거시 retire.</div>
-    </div>
-    <div class="summary-card elv-card reveal rd2">
-      <div class="summary-card-title elv">ELV · Élevage</div>
-      <div class="summary-card-body">레거시를 유지하면서 AI 역량 확보.<br>Semantic Layer → AI Agent DX/AX.</div>
-    </div>
-  </div>
-</section>
+      <span style="margin-left:auto; font-size:20px; color:var(--ink-4);">→</span>
+    </a>
+  </section>
 
 </div><!-- /page-body -->
 
-<!-- 연계 문서 -->
-<div style="max-width:1120px;margin:0 auto;padding:48px 52px 0;">
-  <div style="font-family:var(--font-m);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-4);margin-bottom:16px;">연계 문서</div>
-  <div style="display:flex;flex-direction:column;gap:12px;">
-    <a href="/gemini_html/route_to_terroir.html"
-       style="display:flex;align-items:center;gap:20px;padding:18px 24px;background:var(--bg-2);border:1px solid var(--rule);border-left:3px solid var(--gold);border-radius:0 6px 6px 0;text-decoration:none;color:inherit;transition:background 200ms;">
-      <div>
-        <div style="font-family:var(--font-m);font-size:9px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-4);margin-bottom:4px;">전략 개요</div>
-        <div style="font-family:var(--font-d);font-size:17px;font-weight:600;color:var(--text);margin-bottom:2px;">Route to Terroir</div>
-        <div style="font-size:13px;color:var(--text-3);">서비스 현대화 3개 경로 전략 — NC · VIN · ELV</div>
-      </div>
-    </a>
-    <a href="/gemini_html/project_name_overview.html"
-       style="display:flex;align-items:center;gap:20px;padding:18px 24px;background:var(--bg-2);border:1px solid var(--rule);border-left:3px solid var(--elv);border-radius:0 6px 6px 0;text-decoration:none;color:inherit;transition:background 200ms;">
-      <div>
-        <div style="font-family:var(--font-m);font-size:9px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-4);margin-bottom:4px;">용어 사전</div>
-        <div style="font-family:var(--font-d);font-size:17px;font-weight:600;color:var(--text);margin-bottom:2px;">Project Name Overview</div>
-        <div style="font-size:13px;color:var(--text-3);">Terroir · Nouvelle Cuvée · Vinification · Élevage — 와인 용어 어원 · 발음 · 프로젝트 의미</div>
-      </div>
-    </a>
-  </div>
-</div>
-
-<div class="pq-center reveal">
-  <p>"레거시는 retire하지 않아도 됩니다.<br>의미를 씌우면 됩니다."</p>
-  <cite>Élevage Route · 2026</cite>
-</div>
-
+<!-- FOOTER -->
 <footer>
-  <span class="footer-gem">Élevage — Semantic Layer Strategy</span>
-  <div class="footer-links">
-    <a href="/gemini_html/route_to_terroir.html">Route to Terroir</a>
-    <a href="/gemini_html/project_name_overview.html">Project Overview</a>
-    <a href="/gemini_html/index.html">← Home</a>
-  </div>
+  <span>Élevage — Semantic Layer Strategy</span>
+  <span>ELV Route · 2026</span>
 </footer>
 
-  <script data-page-hash="7NBBYEX" src="/gemini_html/page-footer.js"></script>
-
+<script data-page-hash="7NBBYEX" src="/gemini_html/page-footer.js"></script>
 <script>
-(function () {
-  const prog   = document.getElementById('scroll-prog');
-  const topbar = document.getElementById('topbar');
+  // Scroll progress
+  const prog = document.getElementById('scroll-prog');
+  const updateProg = () => {
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    prog.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+  };
+  window.addEventListener('scroll', updateProg, { passive: true });
+  updateProg();
 
-  function onScroll() {
-    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-    prog.style.width = (scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0) + '%';
-    topbar.classList.toggle('scrolled', window.scrollY > 60);
-  }
+  // Side nav
+  const sections = ['s0','s1','s2','s3','s4','s5'];
+  const dots = document.querySelectorAll('.ndot');
+  const els = sections.map(id => document.getElementById(id));
+  const onScroll = () => {
+    const mid = window.scrollY + window.innerHeight * 0.4;
+    let active = 0;
+    els.forEach((el, i) => { if (el && el.offsetTop <= mid) active = i; });
+    dots.forEach((d, i) => d.classList.toggle('active', i === active));
+  };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
-
-  /* ── Reveal ── */
-  const revObs = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) { e.target.classList.add('v'); revObs.unobserve(e.target); }
-    });
-  }, { threshold: 0.07, rootMargin: '0px 0px -36px 0px' });
-  document.querySelectorAll('.reveal').forEach(el => revObs.observe(el));
-
-  /* ── Side nav active ── */
-  const navDots = document.querySelectorAll('.ndot');
-  const sectionObs = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        navDots.forEach(d => d.classList.remove('active'));
-        const a = document.querySelector(`.ndot[href="#${e.target.id}"]`);
-        if (a) a.classList.add('active');
-      }
-    });
-  }, { threshold: 0.25 });
-  ['hero','s00','s01','s02','s03','s04','s05','summary'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) sectionObs.observe(el);
-  });
-
-  /* ── Hero reveals on load ── */
-  setTimeout(() => {
-    document.querySelectorAll('.hero .reveal, .hero .rd1, .hero .rd2, .hero .rd3, .hero .rd4').forEach(el => el.classList.add('v'));
-  }, 120);
-
-  /* ── Theme toggle ── */
-  const root = document.documentElement;
-  const btn  = document.getElementById('theme-btn');
-  btn.addEventListener('click', () => {
-    const next = root.getAttribute('data-theme') === 'light' ? null : 'light';
-    if (next) root.setAttribute('data-theme', next);
-    else root.removeAttribute('data-theme');
-    localStorage.setItem('elv-theme', next || 'dark');
-  });
-})();
 </script>
 </body>
 </html>
