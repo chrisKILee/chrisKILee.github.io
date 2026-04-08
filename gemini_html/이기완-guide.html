@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>자연어 기반 데이터 분석 시각화 — AIVE-CONTEST 2025</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    .screenshot-gallery img {
+      cursor: zoom-in; transition: opacity 0.15s;
+    }
+    .screenshot-gallery img:hover { opacity: 0.88; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.82); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; cursor: zoom-out;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-img {
+      max-width: 90vw; max-height: 88vh;
+      border-radius: 10px; box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      object-fit: contain;
+    }
+    #lb-close {
+      position: fixed; top: 20px; right: 24px;
+      color: #fff; font-size: 28px; font-weight: 300;
+      cursor: pointer; line-height: 1; opacity: 0.8;
+    }
+    #lb-close:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- ━━━ 고정 헤더 ━━━ -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AIVE-CONTEST 2025</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">자연어 기반 데이터 분석 시각화</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">ERP3팀 · 이기완</span>
+        <span class="mono" style="font-size:14px; font-weight:500; color:#c8622a; background:#fdf0e8; padding:4px 12px; border-radius:7px; border:1px solid #e8b896;">72점</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:920px; margin:0 auto; padding:52px 28px 88px;">
+
+    <!-- ━━━ 히어로 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제</p>
+          <h1 style="font-size:38px; font-weight:800; color:#1c1917; line-height:1.15; letter-spacing:-0.02em; margin-bottom:18px;">자연어 기반<br>데이터 분석 시각화</h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">
+            SAP BW/4HANA 데이터를 프롬프트 한 줄로 조회·분석·시각화.<br>
+            BEx Query 없이 <strong>10초 안에 원하는 차트</strong>를 바로 얻습니다.
+          </p>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026. 4. 7</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">🏆 AIVE-CONTEST</span>
+          </div>
+        </div>
+
+        <!-- 점수 패널 -->
+        <div style="background:#ede9e1; border:1px solid #d6d0c4; border-radius:16px; padding:24px; min-width:210px;">
+          <p class="eval-label" style="margin-bottom:14px;">종합 점수</p>
+          <div style="text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d6d0c4;">
+            <span class="mono" style="font-size:52px; font-weight:500; color:#c8622a; line-height:1;">72</span>
+            <span style="font-size:18px; color:#b5895a; font-weight:400;"> / 100</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">20</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">③ 효율성 /30</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">22</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">④ 아이디어 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">16</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑤ 확산성 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">14</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑥ 조직목표 /20</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 문제 정의 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:12px; letter-spacing:0.05em;">기존의 어려움 ❗</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none; padding:0;">
+            <li>🔹 <strong>SAP BW</strong> 로그인 → BEx Query 실행 → 결과 도출 <strong>약 1분 소요</strong></li>
+            <li style="margin-top:8px;">🔹 정형화된 쿼리·대시보드 형태로만 조회 가능</li>
+            <li style="margin-top:8px;">🔹 "이 데이터에서 팀별 TOP5 보여줘" 같은 <strong>즉흥 분석 불가</strong></li>
+            <li style="margin-top:8px;">🔹 보안·라이선스 이슈로 신기술 도입 진입 장벽 높음</li>
+          </ul>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:12px; letter-spacing:0.05em;">✨ AI로 해결한 방식</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none; padding:0;">
+            <li>✅ 웹 접속 → <strong>자연어 질문 입력</strong> → 결과 <strong>10초 이내</strong></li>
+            <li style="margin-top:8px;">✅ Gemini AI가 CSV 데이터를 자동 분석·집계</li>
+            <li style="margin-top:8px;">✅ bar / line / pie <strong>차트 자동 생성</strong> (Chart.js)</li>
+            <li style="margin-top:8px;">✅ Google AppScript 서버리스 배포 — <strong>설치 불필요</strong></li>
+            <li style="margin-top:8px;">✅ Claude Code로 웹 비전문가도 <strong>직접 개발 완성</strong></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 스크린샷 ━━━ -->
+    <section class="screenshot-gallery" style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">📸 시각 증빙 자료</p>
+      <div style="border-radius:12px; overflow:hidden; border:1px solid #d6d0c4;">
+        <img src="assets/screenshot.jpg" alt="AI 데이터 분석기 — 자연어 질문 입력 및 차트 결과 화면"
+          onclick="openLb(this)"
+          style="width:100%; display:block; cursor:zoom-in;">
+      </div>
+      <p style="font-size:12px; color:#a8a29e; margin-top:8px; text-align:center;">
+        AI 데이터 분석기 실행 화면 — 좌: 질문 입력 UI / 우: 차트 분석 결과
+      </p>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 체크리스트 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
+
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge on">✅ 런타임 AI</span>
+          <span class="check-badge on">✅ 노코드 AI (AppScript)</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 반복 보고서 취합·정리</span>
+          <span class="check-badge on">✅ 데이터 수집·분류·가공</span>
+          <span class="check-badge on">✅ 내부 문의·요청 자동 처리</span>
+          <span class="check-badge">알림·모니터링</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">20<span style="font-size:12px; color:#b5895a;">/30</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            AS-IS <strong>1분</strong> → TO-BE <strong>10초 이내</strong> (약 80% 단축) 수치 제시. 단 더미 CSV 기준이며 실제 SAP BW 연동 후 재검증 필요.
+          </p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">22<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            컨설턴트 시각의 고객 페인포인트 정의 + 보안·라이선스 제약 인식 → <strong>Phase 단계 접근</strong>이 매우 실용적.
+          </p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">16<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            URL 접속만으로 사용 가능. 단 실운영 시 <strong>API Key 보안·인증·토큰 관리</strong> 선결 필요.
+          </p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">14<span style="font-size:12px; color:#b5895a;">/20</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            전사 <strong>BVC(Business Value Consultant)</strong> 방향과 직접 연결. 현재 PoC 단계로 팀 수준 영향은 Phase 2 이후 발현 예정.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 주요 기능 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">⚡ 주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🗣️ 자연어 질문 분석</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">자유로운 한국어로 질문 입력 → Gemini AI가 CSV 데이터를 자동 분석·요약</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📊 차트 자동 생성</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">AI가 데이터 특성에 맞는 <strong>bar / line / pie</strong> 차트 자동 선택 후 즉시 렌더링</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📂 Drive CSV 연동</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">Google Drive의 CSV 파일을 자동 읽기. 데이터 교체만으로 다양한 분석 가능</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">💡 예시 질문 버튼</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">6종 예시 질문 원클릭 입력. 분석 방법을 모르는 비개발자도 즉시 시작 가능</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🕐 질문 히스토리</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">최근 5개 질문 자동 저장. 클릭 한 번으로 이전 질문 재실행</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🛡️ 에러 안전 처리</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">API 실패·파싱 오류 시 화면이 멈추지 않도록 안전한 fallback 응답 제공</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ AI 활용 방식 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:28px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; flex-wrap:wrap;">
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">🤖 AI 모델</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none; padding:0;">
+              <li>🔹 <strong>Gemini 2.0 Flash</strong> — 런타임 분석 엔진</li>
+              <li style="margin-top:4px;">🔹 <strong>Claude Code</strong> — 개발 단계 AI Pair</li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">🛠️ 기술 스택</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none; padding:0;">
+              <li>🔹 <strong>Google AppScript</strong> (V8) — 서버리스 백엔드</li>
+              <li style="margin-top:4px;">🔹 <strong>Chart.js</strong> — 인터랙티브 차트</li>
+              <li style="margin-top:4px;">🔹 <strong>Google Drive</strong> — CSV 데이터 저장소</li>
+            </ul>
+          </div>
+        </div>
+        <div style="margin-top:20px; padding-top:20px; border-top:1px solid #d6d0c4;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">📡 데이터 흐름</p>
+          <p style="font-size:14px; color:#1c1917; line-height:1.8;">
+            ① 자연어 질문 입력
+            → ② Drive CSV 자동 로드 (최대 2,000행)
+            → ③ JSON 배열 변환 + 프롬프트 구성
+            → ④ <strong>Gemini API</strong> 호출
+            → ⑤ JSON 응답 파싱 (text + chartType + labels + values)
+            → ⑥ <strong>Chart.js</strong> 차트 렌더링
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 기대 효과 ━━━ -->
+    <section>
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">~80%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">조회 시간 단축</p>
+          <p style="font-size:12px; color:#78716c;">1분 → 10초 이내 (PoC 기준)</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">100%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">분석 자동화</p>
+          <p style="font-size:12px; color:#78716c;">쿼리 작성·실행·시각화 전 단계 자동</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">N+</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">고객사 확산 목표</p>
+          <p style="font-size:12px; color:#78716c;">Phase 2 이후 BW 연동 고객사 수평전개 예정</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ━━━ 푸터 ━━━ -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AIVE-CONTEST 2025 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; ERP3팀
+    </p>
+  </footer>
+
+  <!-- Lightbox -->
+  <div id="lb-overlay" onclick="closeLb()">
+    <span id="lb-close" onclick="closeLb()">✕</span>
+    <img id="lb-img" src="" alt="" onclick="event.stopPropagation()">
+  </div>
+  <script>
+    function openLb(el) {
+      document.getElementById('lb-img').src = el.src;
+      document.getElementById('lb-img').alt = el.alt;
+      document.getElementById('lb-overlay').classList.add('open');
+    }
+    function closeLb() {
+      document.getElementById('lb-overlay').classList.remove('open');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+  </script>
+</body>
+</html>
