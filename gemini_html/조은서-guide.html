@@ -109,6 +109,33 @@
       transition: background 0.15s;
     }
     #lightbox-close:hover { background: rgba(255,255,255,0.28); }
+    .lightbox-arrow {
+      position: fixed;
+      top: 50%; transform: translateY(-50%);
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 22px;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .lightbox-arrow:hover { background: rgba(255,255,255,0.28); }
+    .lightbox-arrow.hidden { opacity: 0; pointer-events: none; }
+    #lightbox-prev { left: 20px; }
+    #lightbox-next { right: 20px; }
+    #lightbox-counter {
+      position: fixed;
+      top: 22px; left: 0; right: 0;
+      text-align: center;
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
   </style>
 </head>
 <body>
@@ -435,7 +462,10 @@
   <!-- ━━━ Lightbox ━━━ -->
   <div id="lightbox" role="dialog" aria-modal="true">
     <button id="lightbox-close" aria-label="닫기">✕</button>
+    <button id="lightbox-prev" class="lightbox-arrow" aria-label="이전">‹</button>
     <img id="lightbox-img" src="" alt="">
+    <button id="lightbox-next" class="lightbox-arrow" aria-label="다음">›</button>
+    <p id="lightbox-counter"></p>
     <p id="lightbox-caption"></p>
   </div>
 
@@ -443,13 +473,28 @@
     const lb = document.getElementById('lightbox');
     const lbImg = document.getElementById('lightbox-img');
     const lbCap = document.getElementById('lightbox-caption');
+    const lbCounter = document.getElementById('lightbox-counter');
+    const lbPrev = document.getElementById('lightbox-prev');
+    const lbNext = document.getElementById('lightbox-next');
 
-    document.querySelectorAll('.screenshot-item img').forEach(img => {
+    const allImgs = Array.from(document.querySelectorAll('.screenshot-item img'));
+    let currentIdx = 0;
+
+    function showImage(idx) {
+      currentIdx = idx;
+      const img = allImgs[idx];
+      lbImg.src = img.src;
+      lbImg.alt = img.alt;
+      const caption = img.closest('.screenshot-item')?.querySelector('.caption');
+      lbCap.textContent = caption ? caption.textContent : '';
+      lbCounter.textContent = `${idx + 1} / ${allImgs.length}`;
+      lbPrev.classList.toggle('hidden', idx === 0);
+      lbNext.classList.toggle('hidden', idx === allImgs.length - 1);
+    }
+
+    allImgs.forEach((img, idx) => {
       img.addEventListener('click', () => {
-        lbImg.src = img.src;
-        lbImg.alt = img.alt;
-        const caption = img.closest('.screenshot-item')?.querySelector('.caption');
-        lbCap.textContent = caption ? caption.textContent : '';
+        showImage(idx);
         lb.classList.add('open');
         document.body.style.overflow = 'hidden';
       });
@@ -460,9 +505,16 @@
       document.body.style.overflow = '';
     }
 
+    lbPrev.addEventListener('click', e => { e.stopPropagation(); showImage(currentIdx - 1); });
+    lbNext.addEventListener('click', e => { e.stopPropagation(); showImage(currentIdx + 1); });
     document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
     lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+    document.addEventListener('keydown', e => {
+      if (!lb.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft' && currentIdx > 0) showImage(currentIdx - 1);
+      if (e.key === 'ArrowRight' && currentIdx < allImgs.length - 1) showImage(currentIdx + 1);
+    });
   </script>
 
   <!-- ━━━ 푸터 ━━━ -->
