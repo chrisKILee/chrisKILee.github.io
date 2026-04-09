@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Finder — AIVE-CONTEST 2025</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    .screenshot-gallery img {
+      cursor: zoom-in; transition: opacity 0.15s;
+    }
+    .screenshot-gallery img:hover { opacity: 0.88; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.88); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; flex-direction: column;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-img {
+      max-width: 90vw; max-height: 82vh;
+      border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,.6);
+      object-fit: contain;
+    }
+    #lb-close {
+      position: fixed; top: 16px; right: 20px;
+      background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; z-index: 10001;
+    }
+    #lb-prev, #lb-next {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,.15); border: none; color: #fff; font-size: 36px;
+      padding: 12px 18px; cursor: pointer; border-radius: 8px; z-index: 10001;
+    }
+    #lb-prev { left: 16px; }
+    #lb-next { right: 16px; }
+    .img-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;
+    }
+    .img-grid img {
+      border-radius: 6px; width: 100%; aspect-ratio: 16/9; object-fit: cover;
+      cursor: zoom-in;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Arrow Lightbox -->
+  <div id="lb-overlay">
+    <button id="lb-close" onclick="closeLb()">✕</button>
+    <button id="lb-prev" onclick="moveLb(-1)">‹</button>
+    <img id="lb-img" src="" alt="">
+    <div style="color:#ddd;margin-top:10px;font-size:13px;text-align:center;">
+      <span id="lb-alt"></span>
+      <span id="lb-counter" style="margin-left:12px;opacity:.6;"></span>
+    </div>
+    <button id="lb-next" onclick="moveLb(1)">›</button>
+  </div>
+  <script>
+    var _lbImgs=[], _lbIdx=0;
+    function openLb(idx){ _lbIdx=idx; _updateLb(); document.getElementById('lb-overlay').classList.add('open'); }
+    function closeLb(){ document.getElementById('lb-overlay').classList.remove('open'); }
+    function moveLb(dir){ _lbIdx=(_lbIdx+dir+_lbImgs.length)%_lbImgs.length; _updateLb(); }
+    function _updateLb(){
+      var d=_lbImgs[_lbIdx];
+      document.getElementById('lb-img').src=d.src;
+      document.getElementById('lb-img').alt=d.alt||'';
+      document.getElementById('lb-alt').textContent=d.alt||'';
+      document.getElementById('lb-counter').textContent=(_lbIdx+1)+' / '+_lbImgs.length;
+      document.getElementById('lb-prev').style.display=_lbImgs.length>1?'':'none';
+      document.getElementById('lb-next').style.display=_lbImgs.length>1?'':'none';
+    }
+    function initGallery(imgs){ _lbImgs=imgs; }
+    document.addEventListener('keydown',function(e){
+      if(document.getElementById('lb-overlay').classList.contains('open')){
+        if(e.key==='Escape') closeLb();
+        if(e.key==='ArrowLeft') moveLb(-1);
+        if(e.key==='ArrowRight') moveLb(1);
+      }
+    });
+    document.getElementById('lb-overlay').addEventListener('click',function(e){
+      if(e.target===this) closeLb();
+    });
+  </script>
+
+  <!-- ━━━ 고정 헤더 ━━━ -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AIVE-CONTEST 2025</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Smart Finder</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">그룹웨어서비스팀 · 김주희</span>
+        <span class="mono" style="font-size:14px; font-weight:500; color:#c8622a; background:#fdf0e8; padding:4px 12px; border-radius:7px; border:1px solid #e8b896;">90점</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:920px; margin:0 auto; padding:52px 28px 88px;">
+
+    <!-- ━━━ 히어로 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제 · 🏆 AIVE-CONTEST</p>
+          <h1 style="font-size:38px; font-weight:800; color:#1c1917; line-height:1.15; letter-spacing:-0.02em; margin-bottom:18px;">Smart Finder</h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">
+            레거시 그룹웨어 위에 AI 검색 레이어를 더해, 자연어 한 줄로 전자결재·게시판·조직도·Google Workspace까지 <strong>30개 이상 도메인을 즉시 탐색</strong>하는 통합 검색 시스템
+          </p>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026. 4. 9</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">Google Gemini API</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">Next.js + Spring Boot</span>
+          </div>
+        </div>
+        <!-- 점수 패널 -->
+        <div style="background:#ede9e1; border:1px solid #d6d0c4; border-radius:16px; padding:24px; min-width:210px;">
+          <p class="eval-label" style="margin-bottom:14px;">종합 점수</p>
+          <div style="text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d6d0c4;">
+            <span class="mono" style="font-size:52px; font-weight:500; color:#c8622a; line-height:1;">90</span>
+            <span style="font-size:18px; color:#b5895a; font-weight:400;"> / 100</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">27</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">③ 효율성 /30</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">23</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">④ 아이디어 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">23</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑤ 확산성 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">17</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑥ 조직목표 /20</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 문제 정의 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">기존의 어려움</p>
+          <ul style="font-size:15px; color:#1c1917; line-height:1.75; list-style:none; padding:0;">
+            <li style="margin-bottom:8px;">❗ <strong>정보 탐색에 5~8회 클릭</strong> 필요 — AI 기능 전무</li>
+            <li style="margin-bottom:8px;">❗ 결재함·캘린더·근태 확인에 <strong>최소 4개 메뉴</strong> 개별 방문</li>
+            <li style="margin-bottom:8px;">❗ 기존 시스템 직접 수정 시 <strong>전 계열사 안정성 위험</strong></li>
+            <li>❗ 반복적인 그룹웨어 사용법 문의로 <strong>팀 개발 리소스 소모</strong></li>
+          </ul>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:10px; letter-spacing:0.05em;">✨ AI로 해결한 방식</p>
+          <ul style="font-size:15px; color:#1c1917; line-height:1.75; list-style:none; padding:0;">
+            <li style="margin-bottom:8px;">🤖 <strong>오버레이 전략</strong> — 기존 코드 무수정, AI 레이어만 추가</li>
+            <li style="margin-bottom:8px;">🔍 <strong>자연어 한 줄</strong>로 30개 이상 도메인 즉시 탐색</li>
+            <li style="margin-bottom:8px;">📋 <strong>스마트 브리핑</strong> — 결재·일정·메일·근태 1화면 통합</li>
+            <li>💡 <strong>PiP 독립 윈도우</strong>로 기존 업무 화면 유지하며 검색</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 체크리스트 시각화 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
+
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge on">✅ 런타임 AI</span>
+          <span class="check-badge">노코드 AI</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 데이터 수집·분류</span>
+          <span class="check-badge on">✅ 내부 문의 자동 처리</span>
+          <span class="check-badge on">✅ 알림·모니터링 자동화</span>
+          <span class="check-badge">반복 보고서 취합</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">27<span style="font-size:12px; color:#b5895a;">/30</span></span>
+          </div>
+          <ul style="font-size:14px; color:#44403c; line-height:1.7; list-style:none; padding:0;">
+            <li>🔹 정보 탐색 단계 <strong>80% 단축</strong> (1회 자연어 입력)</li>
+            <li>🔹 브리핑 준비 시간 <strong>75% 절감</strong> (4메뉴 → 1화면)</li>
+            <li>🔹 AI 호출 <strong>40%만 발생</strong> (3단계 비용 최적화 설계)</li>
+          </ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">23<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <ul style="font-size:14px; color:#44403c; line-height:1.7; list-style:none; padding:0;">
+            <li>🔹 <strong>오버레이 전략</strong>으로 기존 시스템 안정성 유지</li>
+            <li>🔹 <strong>PiP 모드</strong>로 멀티태스킹 업무 환경 반영</li>
+            <li>🔹 21,000+ 라인 고완성도 구현</li>
+          </ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">23<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <ul style="font-size:14px; color:#44403c; line-height:1.7; list-style:none; padding:0;">
+            <li>🔹 독립 모듈 구조 — <strong>전 계열사 즉시 배포 가능</strong></li>
+            <li>🔹 관리자 화면에서 <strong>코드 변경 없이 운영 자립</strong></li>
+            <li>🔹 AI 가이드 태그 자동 추천으로 운영 효율 극대화</li>
+          </ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">17<span style="font-size:12px; color:#b5895a;">/20</span></span>
+          </div>
+          <ul style="font-size:14px; color:#44403c; line-height:1.7; list-style:none; padding:0;">
+            <li>🔹 <strong>세아웍스 AI Featured화</strong>와 직접 연결</li>
+            <li>🔹 BVC 프로그램의 <strong>AI 실증 기반</strong> 마련</li>
+            <li>🔹 관리자 KPI 대시보드로 <strong>AI 효과 정량 추적</strong></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 주요 기능 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">⚡ 주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🤖 AI 의도 분류 스마트 검색</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">자연어 입력 → Gemini가 30개 이상 검색 모드 중 최적 선택. 신뢰도 낮으면 후보 모드 제시</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📋 스마트 브리핑</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">결재 대기·오늘 일정·미읽은 메일·근태 현황을 1화면에 통합 요약</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">✍️ AI 기안서·게시글 초안</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">주제 입력 시 Gemini가 업무연락·기안서·게시글 HTML 초안을 자동 생성</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🔍 결재·게시글 AI 요약</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">결재문서·게시글 본문을 Gemini가 요약 + 키포인트 추출. 복수 문서 업무 동향 분석</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🌐 Google Workspace 통합 검색</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">Gmail·Calendar·Drive를 단일 인터페이스에서. AI가 자연어를 검색 연산자로 자동 변환</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">💬 가이드봇 (매뉴얼 챗봇)</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">FAQ·매뉴얼·팁을 챗봇 형태로 자동 응대. AI 태그 추천으로 비개발자 운영 자립화</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🪟 PiP 독립 윈도우</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">Picture-in-Picture 모드로 기존 업무 화면 유지하며 검색 창을 독립 윈도우로 분리</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📊 관리자 통계 대시보드</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">KPI 카드 5개 + 차트 4종. Stage별 AI 비용 절감률, 모드별 사용 빈도 실시간 추적</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">⚙️ 검색 모드 운영 관리</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">30개 이상 검색 모드를 코드 변경 없이 활성화/비활성화. 카테고리·가이드 CRUD 직접 운영</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ AI 활용 방식 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:28px;">
+        <div style="margin-bottom:24px;">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:12px;">3단계 점진적 지능화 (Progressive Intelligence)</p>
+          <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:10px; padding:16px; font-size:13px; color:#44403c; line-height:1.8;">
+            <div style="margin-bottom:6px;">① <strong>Stage 1 — 키워드 직접 매칭</strong> (~100ms, AI 비용 $0) → 전체 검색의 40% 처리</div>
+            <div style="margin-bottom:6px;">② <strong>Stage 2 — 패턴 매칭</strong> (~10ms, AI 비용 $0) → 전체 검색의 20% 처리</div>
+            <div>③ <strong>Stage 3 — Gemini AI 의도 분류</strong> (~800ms, ~$0.001~0.003/건) → 나머지 40%만 AI 호출</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px;">
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px;">🤖 AI 모델</p>
+            <p style="font-size:14px; color:#1c1917;">Google Gemini API (v1beta)</p>
+            <p style="font-size:12px; color:#78716c; margin-top:4px;">의도 분류·요약·초안 생성·검색어 최적화 등 10개 기능</p>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px;">🖥️ Frontend</p>
+            <p style="font-size:14px; color:#1c1917;">Next.js 12 · React 17 · TypeScript 5</p>
+            <p style="font-size:12px; color:#78716c; margin-top:4px;">styled-components · Recharts · Picture-in-Picture API</p>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px;">⚙️ Backend</p>
+            <p style="font-size:14px; color:#1c1917;">Spring Boot 2.5 · Java 11 · MyBatis · MS-SQL</p>
+            <p style="font-size:12px; color:#78716c; margin-top:4px;">70+ API 엔드포인트 · 150+ MyBatis 쿼리</p>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px;">🔗 외부 연동</p>
+            <p style="font-size:14px; color:#1c1917;">Google Workspace API · Konan 전문 검색</p>
+            <p style="font-size:12px; color:#78716c; margin-top:4px;">Gmail · Calendar · Drive · Cloud Search</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 기대 효과 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">80%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">정보 탐색 단계 단축</p>
+          <p style="font-size:12px; color:#78716c;">5~8회 클릭 → 자연어 1회 입력으로 즉시 결과</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">75%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">브리핑 준비 시간 절감</p>
+          <p style="font-size:12px; color:#78716c;">4개 메뉴 개별 방문 → 1화면 통합 브리핑</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">60%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">AI 호출 비용 절감</p>
+          <p style="font-size:12px; color:#78716c;">3단계 점진적 지능화 — Stage 1·2에서 60% 처리</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 시각 증빙 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📸 시각 증빙 자료</p>
+
+      <!-- 메인 화면 -->
+      <div style="margin-bottom:32px;">
+        <p style="font-size:13px; font-weight:700; color:#78716c; margin-bottom:12px;">메인 · 스마트 검색</p>
+        <script>initGallery([
+          {src:"assets/1-1._메인.png", alt:"메인 화면"},
+          {src:"assets/1-2._pip모드.png", alt:"PiP 모드"},
+          {src:"assets/1-3_스마트검색.png", alt:"스마트 검색"}
+        ]);</script>
+        <div class="img-grid screenshot-gallery">
+          <img src="assets/1-1._메인.png" alt="메인 화면" onclick="initGallery([{src:'assets/1-1._메인.png',alt:'메인 화면'},{src:'assets/1-2._pip모드.png',alt:'PiP 모드'},{src:'assets/1-3_스마트검색.png',alt:'스마트 검색'}]);openLb(0)">
+          <img src="assets/1-2._pip모드.png" alt="PiP 모드" onclick="initGallery([{src:'assets/1-1._메인.png',alt:'메인 화면'},{src:'assets/1-2._pip모드.png',alt:'PiP 모드'},{src:'assets/1-3_스마트검색.png',alt:'스마트 검색'}]);openLb(1)">
+          <img src="assets/1-3_스마트검색.png" alt="스마트 검색" onclick="initGallery([{src:'assets/1-1._메인.png',alt:'메인 화면'},{src:'assets/1-2._pip모드.png',alt:'PiP 모드'},{src:'assets/1-3_스마트검색.png',alt:'스마트 검색'}]);openLb(2)">
+        </div>
+      </div>
+
+      <!-- 스마트 요약 -->
+      <div style="margin-bottom:32px;">
+        <p style="font-size:13px; font-weight:700; color:#78716c; margin-bottom:12px;">스마트 요약 (브리핑)</p>
+        <div class="img-grid screenshot-gallery">
+          <img src="assets/2-1._스마트_요약.png" alt="스마트 요약" onclick="initGallery([{src:'assets/2-1._스마트_요약.png',alt:'스마트 요약'},{src:'assets/2-2._전자결재대기진행.png',alt:'전자결재 대기진행'},{src:'assets/2-3._근무현황.png',alt:'근무현황'},{src:'assets/2-5._오늘의_일정.png',alt:'오늘의 일정'},{src:'assets/2-6._읽지않은메일.png',alt:'읽지않은 메일'}]);openLb(0)">
+          <img src="assets/2-2._전자결재대기진행.png" alt="전자결재 대기진행" onclick="initGallery([{src:'assets/2-1._스마트_요약.png',alt:'스마트 요약'},{src:'assets/2-2._전자결재대기진행.png',alt:'전자결재 대기진행'},{src:'assets/2-3._근무현황.png',alt:'근무현황'},{src:'assets/2-5._오늘의_일정.png',alt:'오늘의 일정'},{src:'assets/2-6._읽지않은메일.png',alt:'읽지않은 메일'}]);openLb(1)">
+          <img src="assets/2-3._근무현황.png" alt="근무현황" onclick="initGallery([{src:'assets/2-1._스마트_요약.png',alt:'스마트 요약'},{src:'assets/2-2._전자결재대기진행.png',alt:'전자결재 대기진행'},{src:'assets/2-3._근무현황.png',alt:'근무현황'},{src:'assets/2-5._오늘의_일정.png',alt:'오늘의 일정'},{src:'assets/2-6._읽지않은메일.png',alt:'읽지않은 메일'}]);openLb(2)">
+          <img src="assets/2-5._오늘의_일정.png" alt="오늘의 일정" onclick="initGallery([{src:'assets/2-1._스마트_요약.png',alt:'스마트 요약'},{src:'assets/2-2._전자결재대기진행.png',alt:'전자결재 대기진행'},{src:'assets/2-3._근무현황.png',alt:'근무현황'},{src:'assets/2-5._오늘의_일정.png',alt:'오늘의 일정'},{src:'assets/2-6._읽지않은메일.png',alt:'읽지않은 메일'}]);openLb(3)">
+          <img src="assets/2-6._읽지않은메일.png" alt="읽지않은 메일" onclick="initGallery([{src:'assets/2-1._스마트_요약.png',alt:'스마트 요약'},{src:'assets/2-2._전자결재대기진행.png',alt:'전자결재 대기진행'},{src:'assets/2-3._근무현황.png',alt:'근무현황'},{src:'assets/2-5._오늘의_일정.png',alt:'오늘의 일정'},{src:'assets/2-6._읽지않은메일.png',alt:'읽지않은 메일'}]);openLb(4)">
+        </div>
+      </div>
+
+      <!-- 전자결재 AI 기능 -->
+      <div style="margin-bottom:32px;">
+        <p style="font-size:13px; font-weight:700; color:#78716c; margin-bottom:12px;">전자결재 AI 기능</p>
+        <div class="img-grid screenshot-gallery">
+          <img src="assets/4-3-1._AI_기안_작성.png" alt="AI 기안 작성" onclick="initGallery([{src:'assets/4-3-1._AI_기안_작성.png',alt:'AI 기안 작성'},{src:'assets/4-3-2_AI_기안_수정_기능.png',alt:'AI 기안 수정'},{src:'assets/4-3-3_AI_기안_초안_적용.png',alt:'AI 기안 초안 적용'},{src:'assets/4-4-4_완료함_AI_동향_분석.png',alt:'AI 동향 분석'},{src:'assets/4-4-5_완료함_AI_동향_분석_결과.png',alt:'AI 동향 분석 결과'}]);openLb(0)">
+          <img src="assets/4-3-2_AI_기안_수정_기능.png" alt="AI 기안 수정" onclick="initGallery([{src:'assets/4-3-1._AI_기안_작성.png',alt:'AI 기안 작성'},{src:'assets/4-3-2_AI_기안_수정_기능.png',alt:'AI 기안 수정'},{src:'assets/4-3-3_AI_기안_초안_적용.png',alt:'AI 기안 초안 적용'},{src:'assets/4-4-4_완료함_AI_동향_분석.png',alt:'AI 동향 분석'},{src:'assets/4-4-5_완료함_AI_동향_분석_결과.png',alt:'AI 동향 분석 결과'}]);openLb(1)">
+          <img src="assets/4-3-3_AI_기안_초안_적용.png" alt="AI 기안 초안 적용" onclick="initGallery([{src:'assets/4-3-1._AI_기안_작성.png',alt:'AI 기안 작성'},{src:'assets/4-3-2_AI_기안_수정_기능.png',alt:'AI 기안 수정'},{src:'assets/4-3-3_AI_기안_초안_적용.png',alt:'AI 기안 초안 적용'},{src:'assets/4-4-4_완료함_AI_동향_분석.png',alt:'AI 동향 분석'},{src:'assets/4-4-5_완료함_AI_동향_분석_결과.png',alt:'AI 동향 분석 결과'}]);openLb(2)">
+          <img src="assets/4-4-4_완료함_AI_동향_분석.png" alt="AI 동향 분석" onclick="initGallery([{src:'assets/4-3-1._AI_기안_작성.png',alt:'AI 기안 작성'},{src:'assets/4-3-2_AI_기안_수정_기능.png',alt:'AI 기안 수정'},{src:'assets/4-3-3_AI_기안_초안_적용.png',alt:'AI 기안 초안 적용'},{src:'assets/4-4-4_완료함_AI_동향_분석.png',alt:'AI 동향 분석'},{src:'assets/4-4-5_완료함_AI_동향_분석_결과.png',alt:'AI 동향 분석 결과'}]);openLb(3)">
+          <img src="assets/4-4-5_완료함_AI_동향_분석_결과.png" alt="AI 동향 분석 결과" onclick="initGallery([{src:'assets/4-3-1._AI_기안_작성.png',alt:'AI 기안 작성'},{src:'assets/4-3-2_AI_기안_수정_기능.png',alt:'AI 기안 수정'},{src:'assets/4-3-3_AI_기안_초안_적용.png',alt:'AI 기안 초안 적용'},{src:'assets/4-4-4_완료함_AI_동향_분석.png',alt:'AI 동향 분석'},{src:'assets/4-4-5_완료함_AI_동향_분석_결과.png',alt:'AI 동향 분석 결과'}]);openLb(4)">
+        </div>
+      </div>
+
+      <!-- 통합검색 -->
+      <div style="margin-bottom:32px;">
+        <p style="font-size:13px; font-weight:700; color:#78716c; margin-bottom:12px;">통합 검색 · AI 요약</p>
+        <div class="img-grid screenshot-gallery">
+          <img src="assets/3-1._통합검색.png" alt="통합검색" onclick="initGallery([{src:'assets/3-1._통합검색.png',alt:'통합검색'},{src:'assets/3-2._통합검색_검색_결과.png',alt:'통합검색 결과'},{src:'assets/3-4-2._전자결재_요약기능.png',alt:'전자결재 AI 요약'},{src:'assets/3-5-2._게시판_요약_기능.png',alt:'게시판 AI 요약'}]);openLb(0)">
+          <img src="assets/3-2._통합검색_검색_결과.png" alt="통합검색 결과" onclick="initGallery([{src:'assets/3-1._통합검색.png',alt:'통합검색'},{src:'assets/3-2._통합검색_검색_결과.png',alt:'통합검색 결과'},{src:'assets/3-4-2._전자결재_요약기능.png',alt:'전자결재 AI 요약'},{src:'assets/3-5-2._게시판_요약_기능.png',alt:'게시판 AI 요약'}]);openLb(1)">
+          <img src="assets/3-4-2._전자결재_요약기능.png" alt="전자결재 AI 요약" onclick="initGallery([{src:'assets/3-1._통합검색.png',alt:'통합검색'},{src:'assets/3-2._통합검색_검색_결과.png',alt:'통합검색 결과'},{src:'assets/3-4-2._전자결재_요약기능.png',alt:'전자결재 AI 요약'},{src:'assets/3-5-2._게시판_요약_기능.png',alt:'게시판 AI 요약'}]);openLb(2)">
+          <img src="assets/3-5-2._게시판_요약_기능.png" alt="게시판 AI 요약" onclick="initGallery([{src:'assets/3-1._통합검색.png',alt:'통합검색'},{src:'assets/3-2._통합검색_검색_결과.png',alt:'통합검색 결과'},{src:'assets/3-4-2._전자결재_요약기능.png',alt:'전자결재 AI 요약'},{src:'assets/3-5-2._게시판_요약_기능.png',alt:'게시판 AI 요약'}]);openLb(3)">
+        </div>
+      </div>
+
+      <!-- 구글 검색 + 가이드봇 + 관리자 -->
+      <div style="margin-bottom:32px;">
+        <p style="font-size:13px; font-weight:700; color:#78716c; margin-bottom:12px;">구글 검색 · 가이드봇 · 관리자 대시보드</p>
+        <div class="img-grid screenshot-gallery">
+          <img src="assets/8-1._구글검색_기능_UXUI_개선.png" alt="구글 검색" onclick="initGallery([{src:'assets/8-1._구글검색_기능_UXUI_개선.png',alt:'구글 검색'},{src:'assets/8-3-2_지메일_캘린더_드라이브_검색.png',alt:'Gmail·Calendar·Drive 통합검색'},{src:'assets/9-2_안내챗봇_기능기능설명_및_링크안내.png',alt:'가이드봇'},{src:'assets/10-1._관리자_사용_통계.png',alt:'관리자 통계 대시보드'},{src:'assets/10-5_검색_모드_관리.png',alt:'검색 모드 관리'}]);openLb(0)">
+          <img src="assets/8-3-2_지메일_캘린더_드라이브_검색.png" alt="Gmail·Calendar·Drive 통합검색" onclick="initGallery([{src:'assets/8-1._구글검색_기능_UXUI_개선.png',alt:'구글 검색'},{src:'assets/8-3-2_지메일_캘린더_드라이브_검색.png',alt:'Gmail·Calendar·Drive 통합검색'},{src:'assets/9-2_안내챗봇_기능기능설명_및_링크안내.png',alt:'가이드봇'},{src:'assets/10-1._관리자_사용_통계.png',alt:'관리자 통계 대시보드'},{src:'assets/10-5_검색_모드_관리.png',alt:'검색 모드 관리'}]);openLb(1)">
+          <img src="assets/9-2_안내챗봇_기능기능설명_및_링크안내.png" alt="가이드봇" onclick="initGallery([{src:'assets/8-1._구글검색_기능_UXUI_개선.png',alt:'구글 검색'},{src:'assets/8-3-2_지메일_캘린더_드라이브_검색.png',alt:'Gmail·Calendar·Drive 통합검색'},{src:'assets/9-2_안내챗봇_기능기능설명_및_링크안내.png',alt:'가이드봇'},{src:'assets/10-1._관리자_사용_통계.png',alt:'관리자 통계 대시보드'},{src:'assets/10-5_검색_모드_관리.png',alt:'검색 모드 관리'}]);openLb(2)">
+          <img src="assets/10-1._관리자_사용_통계.png" alt="관리자 통계 대시보드" onclick="initGallery([{src:'assets/8-1._구글검색_기능_UXUI_개선.png',alt:'구글 검색'},{src:'assets/8-3-2_지메일_캘린더_드라이브_검색.png',alt:'Gmail·Calendar·Drive 통합검색'},{src:'assets/9-2_안내챗봇_기능기능설명_및_링크안내.png',alt:'가이드봇'},{src:'assets/10-1._관리자_사용_통계.png',alt:'관리자 통계 대시보드'},{src:'assets/10-5_검색_모드_관리.png',alt:'검색 모드 관리'}]);openLb(3)">
+          <img src="assets/10-5_검색_모드_관리.png" alt="검색 모드 관리" onclick="initGallery([{src:'assets/8-1._구글검색_기능_UXUI_개선.png',alt:'구글 검색'},{src:'assets/8-3-2_지메일_캘린더_드라이브_검색.png',alt:'Gmail·Calendar·Drive 통합검색'},{src:'assets/9-2_안내챗봇_기능기능설명_및_링크안내.png',alt:'가이드봇'},{src:'assets/10-1._관리자_사용_통계.png',alt:'관리자 통계 대시보드'},{src:'assets/10-5_검색_모드_관리.png',alt:'검색 모드 관리'}]);openLb(4)">
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ━━━ 푸터 ━━━ -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AIVE-CONTEST 2025 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; 그룹웨어서비스팀
+    </p>
+  </footer>
+
+  <!-- Lightbox overlay (공통 — Arrow Lightbox 위에 단순 오버레이 fallback 역할 없음) -->
+</body>
+</html>
