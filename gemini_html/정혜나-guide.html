@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IT 서비스 품질지표 대시보드 — AIVE-CONTEST 2025</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    .screenshot-gallery img {
+      cursor: zoom-in; transition: opacity 0.15s;
+    }
+    .screenshot-gallery img:hover { opacity: 0.88; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.82); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; cursor: zoom-out;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-img {
+      max-width: 90vw; max-height: 88vh;
+      border-radius: 10px; box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      object-fit: contain;
+    }
+    #lb-close {
+      position: fixed; top: 20px; right: 24px;
+      color: #fff; font-size: 28px; font-weight: 300;
+      cursor: pointer; line-height: 1; opacity: 0.8;
+    }
+    #lb-close:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- 고정 헤더 -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AIVE-CONTEST 2025</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">IT 서비스 품질지표 대시보드</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">통합운영팀 · 정혜나</span>
+        <span class="mono" style="font-size:14px; font-weight:500; color:#c8622a; background:#fdf0e8; padding:4px 12px; border-radius:7px; border:1px solid #e8b896;">89점</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:920px; margin:0 auto; padding:52px 28px 88px;">
+
+    <!-- 히어로 -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제</p>
+          <h1 style="font-size:38px; font-weight:800; color:#1c1917; line-height:1.15; letter-spacing:-0.02em; margin-bottom:18px;">IT 서비스 품질지표<br>대시보드</h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">IT 서비스 품질지표를 전 계열사 통합 웹 대시보드로 전환, 월 8시간 수작업을 3분으로 단축하고 ITGC 가시성 확보에 직접 기여한 실전 과제</p>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026-04-08</span>
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">통합운영팀</span>
+          </div>
+        </div>
+
+        <!-- 점수 패널 -->
+        <div style="background:#ede9e1; border:1px solid #d6d0c4; border-radius:16px; padding:24px; min-width:210px;">
+          <p class="eval-label" style="margin-bottom:14px;">종합 점수</p>
+          <div style="text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d6d0c4;">
+            <span class="mono" style="font-size:52px; font-weight:500; color:#c8622a; line-height:1;">89</span>
+            <span style="font-size:18px; color:#b5895a; font-weight:400;"> / 100</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">33</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">③ 효율성 /35</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">22</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">④ 아이디어 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">20</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑤ 확산성 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">14</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑥ 조직목표 /15</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- 문제 정의 -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">기존의 어려움</p>
+          <p style="font-size:15px; color:#1c1917; line-height:1.75;">매월 스프레드시트에서 데이터 수기 취합 → 차트 생성 → 구글슬라이드 수기 입력의 3단계 반복. 계열사 추가 시마다 작업 공수가 선형으로 증가. 총 월 <strong>8시간</strong> 소모.</p>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:10px; letter-spacing:0.05em;">AI로 해결한 방식</p>
+          <p style="font-size:15px; color:#1c1917; line-height:1.75;">Google Apps Script 웹앱으로 전 계열사 IT 서비스 품질지표 통합 대시보드 구축. 계열사·월 선택만으로 즉시 지표 조회. <strong>3분</strong>으로 단축 (97.8% 절감).</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- 체크리스트 -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">평가 체크리스트</p>
+
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✓ 바이브코딩</span>
+          <span class="check-badge">런타임 AI</span>
+          <span class="check-badge">노코드 AI</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✓ 반복 보고서 취합·정리</span>
+          <span class="check-badge on">✓ 데이터 수집·분류·가공</span>
+          <span class="check-badge">내부 문의·요청 처리</span>
+          <span class="check-badge">알림·모니터링</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">33<span style="font-size:12px; color:#b5895a;">/35</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">월 8시간→3분(97.8% 절감) 수치 명확. 운영총괄 팀장 배포+실사용 가점. 계열사 추가 시 수기 공수 0으로 수렴하는 구조적 효율 개선.</p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">20<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">GAS 웹앱 선택의 실용성 탁월. 현실 제약(별도 서버 없음) 내 최선. 스크린샷에서 4탭 완성도 높은 UI 확인.</p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">20<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">URL 공유만으로 VNTG 전 사용자 접근 가능. 계열사 선택 드롭다운으로 멀티-테넌트 구조. 운영총괄 팀장 배포 완료.</p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">14<span style="font-size:12px; color:#b5895a;">/15</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">통합운영팀 'ITGC 기반 운영 체계 및 가시성 확보' 목표와 직결. 전 계열사 AM 체계 도입의 핵심 인프라.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- 주요 기능 -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">종합 대시보드</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">S/W·H/W 안정성, 장애 현황, 만족도, ITS 전체 서비스 요청·처리율 통합 표시</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">품질지표 KPI 추이</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">접수 리드타임·납기 준수율·SR 처리율 수치 카드 + 12개월 월별 추이 차트</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">SAP/MES 실적 요약</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">SAP/ERP-3rd, MES/MES-3rd 시스템별 접수·처리·납기율 상세 테이블</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">계열사 필터링</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">조회 계열사·월 드롭다운 선택으로 즉시 전환 — 계열사 추가 시 자동 반영</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">자동 데이터 갱신</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">Spreadsheet 원본 데이터 변경 시 대시보드 자동 반영, Last Update 타임스탬프 표시</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">공용 실적 요약</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">공용 시스템 별도 탭으로 분리하여 항목별 실적 독립 조회</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- 스크린샷 갤러리 -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">실제 화면 · 스크린샷</p>
+      <div class="screenshot-gallery" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div>
+          <img src="assets/screen1.png" alt="종합 대시보드" onclick="openLb(this)"
+               style="width:100%; border-radius:10px; border:1px solid #d6d0c4;">
+          <p style="font-size:12px; color:#78716c; margin-top:8px; text-align:center;">종합 대시보드</p>
+        </div>
+        <div>
+          <img src="assets/screen2.png" alt="품질지표 현황" onclick="openLb(this)"
+               style="width:100%; border-radius:10px; border:1px solid #d6d0c4;">
+          <p style="font-size:12px; color:#78716c; margin-top:8px; text-align:center;">품질지표 현황 (KPI 추이)</p>
+        </div>
+        <div style="grid-column:1/-1;">
+          <img src="assets/screen3.png" alt="SAP/MES 실적 요약" onclick="openLb(this)"
+               style="width:100%; border-radius:10px; border:1px solid #d6d0c4;">
+          <p style="font-size:12px; color:#78716c; margin-top:8px; text-align:center;">SAP/MES 실적 요약</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- AI 활용 방식 -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:28px;">
+        <div style="display:flex; gap:32px; flex-wrap:wrap;">
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px;">AI 활용</p>
+            <p style="font-size:14px; color:#1c1917;">바이브코딩<br><span style="font-size:12px; color:#78716c;">Claude/ChatGPT로 GAS 코드 생성</span></p>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px;">플랫폼</p>
+            <p style="font-size:14px; color:#1c1917;">Google Apps Script<br><span style="font-size:12px; color:#78716c;">V8 런타임, HTML Service</span></p>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px;">데이터</p>
+            <p style="font-size:14px; color:#1c1917;">Google Spreadsheet<br><span style="font-size:12px; color:#78716c;">전 계열사 IT 서비스 지표 원본</span></p>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px;">배포</p>
+            <p style="font-size:14px; color:#1c1917;">GAS 웹앱 URL<br><span style="font-size:12px; color:#78716c;">설치 없이 브라우저 접근</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- 기대 효과 -->
+    <section>
+      <p class="eval-label" style="margin-bottom:20px;">기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">97.8%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">업무 시간 절감</p>
+          <p style="font-size:12px; color:#78716c;">월 8시간 → 3분</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">0</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">계열사 추가 공수</p>
+          <p style="font-size:12px; color:#78716c;">데이터 추가만으로 자동 반영</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">4</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">통합 대시보드 탭</p>
+          <p style="font-size:12px; color:#78716c;">종합·품질지표·SAP/MES·공용</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 푸터 -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AIVE-CONTEST 2025 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; 통합운영팀
+    </p>
+  </footer>
+
+  <!-- Lightbox -->
+  <div id="lb-overlay" onclick="closeLb()">
+    <span id="lb-close" onclick="closeLb()">✕</span>
+    <img id="lb-img" src="" alt="" onclick="event.stopPropagation()">
+  </div>
+  <script>
+    function openLb(el) {
+      document.getElementById('lb-img').src = el.src;
+      document.getElementById('lb-img').alt = el.alt;
+      document.getElementById('lb-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLb() {
+      document.getElementById('lb-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+  </script>
+</body>
+</html>

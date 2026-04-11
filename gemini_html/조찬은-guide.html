@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 기반 MES DB 장애 사전 감지 시스템 — AIVE-CONTEST 2025</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    .screenshot-gallery img {
+      cursor: zoom-in; transition: opacity 0.15s;
+    }
+    .screenshot-gallery img:hover { opacity: 0.88; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.82); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; cursor: zoom-out;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-img {
+      max-width: 90vw; max-height: 88vh;
+      border-radius: 10px; box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      object-fit: contain;
+    }
+    #lb-close {
+      position: fixed; top: 20px; right: 24px;
+      color: #fff; font-size: 28px; font-weight: 300;
+      cursor: pointer; line-height: 1; opacity: 0.8;
+    }
+    #lb-close:hover { opacity: 1; }
+    .flow-step {
+      display: flex; align-items: center; gap: 8px;
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 8px; padding: 10px 16px;
+      font-size: 13px; font-weight: 600; color: #44403c;
+    }
+    .flow-arrow {
+      font-size: 18px; color: #c8622a; font-weight: 700; flex-shrink: 0;
+    }
+    .metric-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #fdf0e8; border: 1px solid #e8b896;
+      border-radius: 8px; padding: 6px 12px;
+      font-size: 12px; font-weight: 700; color: #c8622a;
+    }
+    .severity-badge {
+      display: inline-flex; align-items: center;
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ━━━ 고정 헤더 ━━━ -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AIVE-CONTEST 2025</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">AI 기반 MES DB 장애 사전 감지 시스템</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">MES1팀 · 조찬은</span>
+        <span class="mono" style="font-size:14px; font-weight:500; color:#c8622a; background:#fdf0e8; padding:4px 12px; border-radius:7px; border:1px solid #e8b896;">87점</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:920px; margin:0 auto; padding:52px 28px 88px;">
+
+    <!-- ━━━ 히어로 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">🏆 AIVE-CONTEST · AI-WORKER 인증 과제</p>
+          <h1 style="font-size:34px; font-weight:800; color:#1c1917; line-height:1.2; letter-spacing:-0.02em; margin-bottom:18px;">AI 기반 MES DB<br>장애 사전 감지 시스템</h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">
+            Isolation Forest 비지도 학습으로 Oracle MES DB 데드락 전조를 24시간 자동 탐지하고,
+            <strong>Gemini AI가 한국어 원인 분석 및 대응 가이드를 즉시 제공</strong>하는 웹 기반 모니터링 시스템
+          </p>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026년 4월</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">MES1팀 실운영 중</span>
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">GitHub 공개 소스</span>
+          </div>
+        </div>
+
+        <!-- 점수 패널 -->
+        <div style="background:#ede9e1; border:1px solid #d6d0c4; border-radius:16px; padding:24px; min-width:210px;">
+          <p class="eval-label" style="margin-bottom:14px;">🏆 종합 점수</p>
+          <div style="text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d6d0c4;">
+            <span class="mono" style="font-size:52px; font-weight:500; color:#c8622a; line-height:1;">87</span>
+            <span style="font-size:18px; color:#b5895a; font-weight:400;"> / 100</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">26</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">③ 효율성 /35</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">23</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">④ 아이디어 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">21</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑤ 확산성 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">18</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑥ 조직목표 /20</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 문제 정의 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:12px; letter-spacing:0.05em;">❗ 기존의 어려움</p>
+          <ul style="list-style:none; display:flex; flex-direction:column; gap:10px;">
+            <li style="font-size:14px; color:#1c1917; line-height:1.7;">
+              🔴 <strong>24시간 공장 가동</strong> 중 MES DB 데드락(ORA-00060) 발생 시 Level-2까지 연쇄 장애
+            </li>
+            <li style="font-size:14px; color:#1c1917; line-height:1.7;">
+              🔴 <strong>작업지시 불가</strong> → 생산 중단으로 직결되는 심각한 조업 리스크
+            </li>
+            <li style="font-size:14px; color:#1c1917; line-height:1.7;">
+              🔴 <strong>사전 감지 시스템 부재</strong> — 장애 발생 후에야 인지, 반복 장애 구조적 한계
+            </li>
+            <li style="font-size:14px; color:#1c1917; line-height:1.7;">
+              🔴 데드락 전조 패턴이 <strong>불규칙</strong>하여 규칙 기반 탐지도 한계
+            </li>
+          </ul>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:12px; letter-spacing:0.05em;">✨ AI로 해결한 방식</p>
+          <ul style="list-style:none; display:flex; flex-direction:column; gap:10px;">
+            <li style="font-size:14px; color:#1c1917; line-height:1.7;">
+              🤖 <strong>Isolation Forest</strong>(비지도 학습)로 정상 패턴 대비 이상 징후 자동 탐지
+            </li>
+            <li style="font-size:14px; color:#1c1917; line-height:1.7;">
+              🧠 <strong>Gemini AI + RAG</strong>로 탐지 결과 기반 원인 분석 + 한국어 대응 가이드 자동 생성
+            </li>
+            <li style="font-size:14px; color:#1c1917; line-height:1.7;">
+              📊 <strong>위험 등급 4단계</strong>(CRITICAL/WARNING/INFO/NORMAL) 시각화 대시보드
+            </li>
+            <li style="font-size:14px; color:#1c1917; line-height:1.7;">
+              📬 위험 감지 즉시 <strong>이메일 자동 알림</strong> — 전문 DBA 없이도 선제 대응 가능
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 시각 증빙 (Google Slides 임베드) ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">📸 시각 증빙 자료</p>
+      <div style="background:#ede9e1; border-radius:12px; padding:20px;">
+        <p style="font-size:12px; color:#78716c; margin-bottom:12px; font-weight:600;">📑 제출자 발표 자료 (Google Slides)</p>
+        <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px;">
+          <iframe
+            src="https://docs.google.com/presentation/d/1eGhMxw5xzQ4XgZBYvSD4zuRgS-Rfj0ZCOhKHYK5IDrU/embed?start=false&loop=false&delayms=3000"
+            style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; border-radius:8px;"
+            allowfullscreen="true"
+            mozallowfullscreen="true"
+            webkitallowfullscreen="true">
+          </iframe>
+        </div>
+        <p style="font-size:11px; color:#a8a29e; margin-top:8px;">
+          ⚠️ 슬라이드 로딩이 안 될 경우
+          <a href="https://docs.google.com/presentation/d/1eGhMxw5xzQ4XgZBYvSD4zuRgS-Rfj0ZCOhKHYK5IDrU/edit?usp=sharing" target="_blank" style="color:#c8622a;">직접 열기</a>
+        </p>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 체크리스트 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
+
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge on">✅ 런타임 AI (Gemini API)</span>
+          <span class="check-badge">노코드 AI</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge">반복 보고서 취합</span>
+          <span class="check-badge on">✅ 데이터 수집·분류·가공</span>
+          <span class="check-badge">내부 문의 자동 처리</span>
+          <span class="check-badge on">✅ 알림·모니터링 자동화</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">26<span style="font-size:12px; color:#b5895a;">/35</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            장애 감지 시스템 <strong>제로(0) → 24시간 자동 감지</strong>로 전환.
+            DB 지표 수집 → 이상 탐지 → AI 분석 → 알림까지 <strong>전 과정 자동화</strong>.
+            실제 운영 중 가점 적용. 구체적 시간 절감 수치는 미기재.
+          </p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">23<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            생산 중단 직결 문제를 <strong>명확히 정의</strong>.
+            불규칙 패턴에 <strong>비지도 학습(Isolation Forest)</strong> 채택 — 방법 선택 매우 적절.
+            Gemini RAG 조합으로 전문 DBA 없이도 현장 대응 가능한 실용적 구현.
+          </p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">21<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            <strong>웹 브라우저 접속만</strong>으로 비개발자 사용 가능.
+            Oracle DB 사용 조직이라면 <strong>설정 파일 수정만</strong>으로 ERP/SCM 확장 가능.
+            GitHub 소스 공개. Oracle Instant Client 설치 진입장벽 존재.
+          </p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">18<span style="font-size:12px; color:#b5895a;">/20</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            부서 중점과제 <strong>"AI 자동화를 통한 운영 업무 혁신"</strong>과 직접 연결.
+            "AI 기반 장애 사전 예측" 목표 달성.
+            공장 가동률 직결 — <strong>팀·조직 수준 임팩트</strong> 명확.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 주요 기능 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">⚡ 주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🔍 5개 지표 자동 수집</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">Oracle DB V$ 뷰에서 차단 세션, 트랜잭션 락, 교차 대기 등 데드락 전조 지표를 주기적으로 자동 수집</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🤖 AI 이상 탐지</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">Isolation Forest 비지도 학습으로 정상 패턴 학습 후 이상 징후 자동 탐지 — 위험 점수 0~100 산출</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🧠 Gemini AI 대응 가이드</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">탐지 결과를 Gemini API에 전달 — Oracle DBA 전문가 수준의 한국어 원인 분석 및 조치 가이드 자동 생성</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📊 실시간 대시보드</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">React + Recharts 기반 웹 UI — 위험도 차트, 메트릭 분포, AI 분석 결과를 한 화면에서 실시간 확인</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📬 이메일 자동 알림</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">위험 등급 CRITICAL/WARNING 감지 시 설정된 운영자에게 자동 이메일 발송 — 비정상만 알림 설정 가능</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">⚙️ 24시간 자동 실행</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">대시보드에서 자동 실행 주기 설정(기본 1440분) — PM2 + Nginx로 서버 재시작 후에도 상시 운영</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 동작 흐름 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🔄 동작 흐름</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:24px;">
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center;">
+          <div class="flow-step">🗄️ Oracle MES DB</div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-step">📥 지표 수집<br><span style="font-size:11px; color:#78716c; font-weight:400;">db_connector.py</span></div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-step">🤖 Isolation Forest<br><span style="font-size:11px; color:#78716c; font-weight:400;">위험 점수 0~100</span></div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-step">🧠 Gemini AI<br><span style="font-size:11px; color:#78716c; font-weight:400;">원인 분석 + 가이드</span></div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-step">📊 대시보드 + 📬 이메일</div>
+        </div>
+
+        <div style="margin-top:24px;">
+          <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:12px;">5개 모니터링 지표</p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <span class="metric-badge">🔒 차단 세션 수</span>
+            <span class="metric-badge">🔑 트랜잭션 락 수</span>
+            <span class="metric-badge">↔️ 교차 대기 여부</span>
+            <span class="metric-badge">⏱️ 최대 대기 시간</span>
+            <span class="metric-badge">💥 ORA-00060 이력</span>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:12px;">위험 등급 4단계</p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <span class="severity-badge" style="background:#fde8e8; color:#dc2626;">🔴 CRITICAL (80점+) 즉시 조치</span>
+            <span class="severity-badge" style="background:#fef3c7; color:#d97706;">🟡 WARNING (60~79) 주의 모니터링</span>
+            <span class="severity-badge" style="background:#dbeafe; color:#2563eb;">🔵 INFO (30~59) 참고</span>
+            <span class="severity-badge" style="background:#dcfce7; color:#16a34a;">🟢 NORMAL (0~29) 정상</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ AI 활용 방식 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:28px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">🤖 AI 이상 탐지 — Isolation Forest</p>
+            <ul style="list-style:none; display:flex; flex-direction:column; gap:6px;">
+              <li style="font-size:13px; color:#44403c;">🔹 <strong>비지도 학습</strong> — 레이블 없이 정상 패턴 자동 학습</li>
+              <li style="font-size:13px; color:#44403c;">🔹 오염률(contamination) 10% 기본 설정 — 이상치 민감도 조정 가능</li>
+              <li style="font-size:13px; color:#44403c;">🔹 100개 트리(n_estimators) — 안정적 탐지 성능</li>
+              <li style="font-size:13px; color:#44403c;">🔹 모델 `.pkl` 저장 — 주기적 재학습 지원</li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">🧠 AI 원인 분석 — Gemini API + RAG</p>
+            <ul style="list-style:none; display:flex; flex-direction:column; gap:6px;">
+              <li style="font-size:13px; color:#44403c;">🔹 <strong>Oracle DBA 전문가</strong> 역할 프롬프트 설계</li>
+              <li style="font-size:13px; color:#44403c;">🔹 5개 메트릭 + 위험 점수 + 등급을 컨텍스트로 주입(RAG)</li>
+              <li style="font-size:13px; color:#44403c;">🔹 한국어 마크다운 형식으로 분석 및 조치 가이드 생성</li>
+              <li style="font-size:13px; color:#44403c;">🔹 정상 상태에는 간결한 상태 안내만 제공</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid #d6d0c4; padding-top:20px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:12px; letter-spacing:0.05em;">기술 스택</p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="background:#fffaf6; border:1px solid #e8b896; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; color:#c8622a;">Python</span>
+            <span style="background:#fffaf6; border:1px solid #e8b896; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; color:#c8622a;">scikit-learn Isolation Forest</span>
+            <span style="background:#fffaf6; border:1px solid #e8b896; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; color:#c8622a;">Google Gemini API</span>
+            <span style="background:#fffaf6; border:1px solid #e8b896; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; color:#c8622a;">Node.js/Express</span>
+            <span style="background:#fffaf6; border:1px solid #e8b896; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; color:#c8622a;">React + Recharts</span>
+            <span style="background:#fffaf6; border:1px solid #e8b896; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; color:#c8622a;">Oracle DB (oracledb)</span>
+            <span style="background:#fffaf6; border:1px solid #e8b896; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; color:#c8622a;">Ubuntu + Nginx + PM2</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 기대 효과 ━━━ -->
+    <section>
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">24/7</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">연속 자동 감지</p>
+          <p style="font-size:12px; color:#78716c;">사람이 모니터링하지 않아도 데드락 전조를 자동으로 탐지 — 야간 장애 사전 예방</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">0→AI</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">사후 대응 → 사전 예방</p>
+          <p style="font-size:12px; color:#78716c;">장애 발생 후 인지하던 방식에서 전조 단계에서 선제 대응 가능한 체계로 전환</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">±cfg</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">타 시스템 이식 가능</p>
+          <p style="font-size:12px; color:#78716c;">Oracle DB 사용 ERP·SCM 등 다른 시스템에 설정 파일 수정만으로 즉시 적용 가능</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ━━━ 푸터 ━━━ -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AIVE-CONTEST 2025 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; MES1팀
+    </p>
+  </footer>
+
+  <!-- Lightbox -->
+  <div id="lb-overlay" onclick="closeLb()">
+    <span id="lb-close" onclick="closeLb()">✕</span>
+    <img id="lb-img" src="" alt="" onclick="event.stopPropagation()">
+  </div>
+  <script>
+    function openLb(el) {
+      document.getElementById('lb-img').src = el.src;
+      document.getElementById('lb-img').alt = el.alt;
+      document.getElementById('lb-overlay').classList.add('open');
+    }
+    function closeLb() {
+      document.getElementById('lb-overlay').classList.remove('open');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+  </script>
+</body>
+</html>
