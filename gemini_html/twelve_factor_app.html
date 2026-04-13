@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Twelve-Factor App</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:     #0E0E0B;
+      --ink-2:   #3A3A36;
+      --ink-3:   #6B6B64;
+      --ink-4:   #A8A8A0;
+      --paper:   #F7F7F4;
+      --paper-2: #EFEFEB;
+      --white:   #FFFFFF;
+      --rule:    #D8D8D0;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Masthead ── */
+    .masthead {
+      border-bottom: 3px solid var(--ink);
+      padding: 20px 40px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .masthead-name {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .masthead-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-4);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── Lead ── */
+    .lead {
+      border-bottom: 1px solid var(--rule);
+      padding: 80px 40px 64px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .lead-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .lead-eyebrow::before { content: '//'; color: var(--ink-4); }
+    .lead h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      margin-bottom: 28px;
+      max-width: 900px;
+    }
+    .lead h1 em { font-style: italic; font-weight: 400; }
+    .lead-deck {
+      font-size: 19px;
+      color: var(--ink-2);
+      max-width: 640px;
+      line-height: 1.65;
+      border-left: 3px solid var(--ink);
+      padding-left: 20px;
+      margin-bottom: 40px;
+    }
+    .lead-byline {
+      font-size: 13px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .lead-byline span::before { content: '— '; }
+
+    /* ── Page body ── */
+    .page-body {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    /* ── Fact strip ── */
+    .facts { display: flex; gap: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+    .fact { flex: 1; padding: 24px 28px; border-right: 1px solid var(--rule); }
+    .fact:last-child { border-right: none; }
+    .fact-num {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .fact-label { font-size: 13px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    /* ── 12-factor nav grid ── */
+    .factor-nav {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      border: 1px solid var(--rule);
+      margin: 40px 0;
+    }
+    .factor-nav-item {
+      padding: 16px 20px;
+      border-right: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    .factor-nav-item:hover { background: var(--paper-2); }
+    .factor-nav-num {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-4);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .factor-nav-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+    .factor-nav-sub {
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    /* ── Doc section ── */
+    .doc-section {
+      padding: 56px 0;
+      border-bottom: 1px solid var(--rule);
+      scroll-margin-top: 24px;
+    }
+    .doc-section:last-child { border-bottom: none; }
+
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-4);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      font-size: 15px;
+      color: var(--ink-3);
+      font-family: var(--font-mono);
+      margin-bottom: 16px;
+      letter-spacing: 0.02em;
+    }
+    .section-lead {
+      font-size: 16px;
+      color: var(--ink-2);
+      max-width: 680px;
+      margin-bottom: 32px;
+      line-height: 1.75;
+    }
+
+    /* ── Two-col ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+    .col-item { padding: 24px 28px; border: 1px solid var(--rule); }
+    .col-item + .col-item { border-left: none; }
+    @media (max-width: 680px) { .col-item + .col-item { border-left: 1px solid var(--rule); border-top: none; } }
+    .col-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--ink-4);
+      margin-bottom: 8px; font-family: var(--font-mono);
+    }
+    .col-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--ink); }
+    .col-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* ── Three-col ── */
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
+    @media (max-width: 768px) { .three-col { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .three-col { grid-template-columns: 1fr; } }
+    .three-col .col-item + .col-item { border-left: none; }
+
+    /* ── Pull quote ── */
+    .pullquote {
+      border-top: 3px solid var(--ink);
+      border-bottom: 1px solid var(--rule);
+      padding: 28px 0;
+      margin: 32px 0;
+    }
+    .pullquote p {
+      font-family: var(--font-display);
+      font-size: clamp(1.15rem, 2.2vw, 1.55rem);
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.45;
+      color: var(--ink);
+      max-width: 760px;
+    }
+    .pullquote cite {
+      display: block;
+      margin-top: 10px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--ink-4);
+      font-style: normal;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── Rule list ── */
+    .rule-list { list-style: none; padding: 0; margin: 20px 0; }
+    .rule-list li {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 10px 0; border-bottom: 1px solid var(--paper-2);
+      font-size: 15px; color: var(--ink-2); line-height: 1.65;
+    }
+    .rule-list li:last-child { border-bottom: none; }
+    .rule-list li .bullet {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--ink-4); padding-top: 4px; flex-shrink: 0;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      border-bottom: 2px solid var(--ink);
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--ink-3); font-family: var(--font-mono);
+    }
+    td { border-bottom: 1px solid var(--rule); padding: 13px 16px; font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--paper-2); }
+    td strong { color: var(--ink); }
+
+    /* ── Code ── */
+    pre.code {
+      background: var(--ink); color: #E8E8E0;
+      border-radius: 4px; padding: 18px 22px;
+      font-family: var(--font-mono); font-size: 13px;
+      line-height: 1.7; overflow-x: auto; white-space: pre;
+      margin: 20px 0;
+    }
+    code.inline {
+      background: var(--paper-2); border: 1px solid var(--rule);
+      border-radius: 3px; padding: 1px 6px;
+      font-family: var(--font-mono); font-size: 12px; color: var(--ink-2);
+    }
+
+    /* ── Build-Release-Run SVG wrapper ── */
+    .diagram-wrap { margin: 24px 0; overflow-x: auto; }
+
+    /* ── Inline highlight ── */
+    .hl { font-weight: 700; color: var(--ink); }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 3px solid var(--ink);
+      padding: 28px 40px;
+      display: flex; justify-content: space-between;
+      align-items: center; gap: 12px; flex-wrap: wrap;
+      font-size: 12px; font-family: var(--font-mono);
+      color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase;
+      max-width: 100%;
+    }
+
+    @media (max-width: 640px) {
+      .masthead, .lead, footer { padding-left: 16px; padding-right: 16px; }
+      .page-body { padding: 0 16px; }
+      .facts { flex-direction: column; }
+      .fact { border-right: none; border-bottom: 1px solid var(--rule); }
+      .fact:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <span class="masthead-name">The Twelve-Factor App</span>
+  <span class="masthead-meta">2026-04-13 &nbsp;·&nbsp; SaaS 방법론 레퍼런스</span>
+</header>
+
+<!-- LEAD -->
+<div class="lead">
+  <div class="lead-eyebrow">12factor.net/ko 공식 문서 기반 정리</div>
+  <h1>The Twelve-Factor<br><em>App</em></h1>
+  <p class="lead-deck">
+    현대 SaaS 애플리케이션을 올바르게 만들기 위한 12가지 원칙.
+    어떤 언어, 어떤 백엔드 서비스를 쓰든 적용 가능한 방법론으로,
+    Heroku 개발팀의 실무 경험에서 도출되었습니다.
+  </p>
+  <div class="lead-byline">
+    <span>출처: 12factor.net</span>
+    <span>언어 무관 적용 가능</span>
+    <span>SaaS · 클라우드 네이티브</span>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- FACT STRIP -->
+  <div class="facts" style="margin: 40px 0;">
+    <div class="fact"><div class="fact-num">12</div><div class="fact-label">핵심 원칙</div></div>
+    <div class="fact"><div class="fact-num">3</div><div class="fact-label">빌드/릴리즈/실행 단계</div></div>
+    <div class="fact"><div class="fact-num">∞</div><div class="fact-label">언어·프레임워크 적용</div></div>
+    <div class="fact"><div class="fact-num">0</div><div class="fact-label">Sticky Session 허용</div></div>
+  </div>
+
+  <!-- 12 FACTOR NAVIGATION GRID -->
+  <div class="factor-nav">
+    <a href="#f1" class="factor-nav-item">
+      <div class="factor-nav-num">I</div>
+      <div class="factor-nav-title">코드베이스</div>
+      <div class="factor-nav-sub">하나의 저장소, 다양한 배포</div>
+    </a>
+    <a href="#f2" class="factor-nav-item">
+      <div class="factor-nav-num">II</div>
+      <div class="factor-nav-title">종속성</div>
+      <div class="factor-nav-sub">명시적 선언과 분리</div>
+    </a>
+    <a href="#f3" class="factor-nav-item">
+      <div class="factor-nav-num">III</div>
+      <div class="factor-nav-title">설정</div>
+      <div class="factor-nav-sub">환경 변수에 저장</div>
+    </a>
+    <a href="#f4" class="factor-nav-item">
+      <div class="factor-nav-num">IV</div>
+      <div class="factor-nav-title">백엔드 서비스</div>
+      <div class="factor-nav-sub">연결된 리소스로 취급</div>
+    </a>
+    <a href="#f5" class="factor-nav-item">
+      <div class="factor-nav-num">V</div>
+      <div class="factor-nav-title">빌드, 릴리즈, 실행</div>
+      <div class="factor-nav-sub">단계를 철저히 분리</div>
+    </a>
+    <a href="#f6" class="factor-nav-item">
+      <div class="factor-nav-num">VI</div>
+      <div class="factor-nav-title">프로세스</div>
+      <div class="factor-nav-sub">무상태 프로세스 실행</div>
+    </a>
+    <a href="#f7" class="factor-nav-item">
+      <div class="factor-nav-num">VII</div>
+      <div class="factor-nav-title">포트 바인딩</div>
+      <div class="factor-nav-sub">포트로 서비스 공개</div>
+    </a>
+    <a href="#f8" class="factor-nav-item">
+      <div class="factor-nav-num">VIII</div>
+      <div class="factor-nav-title">동시성</div>
+      <div class="factor-nav-sub">프로세스 모델로 확장</div>
+    </a>
+    <a href="#f9" class="factor-nav-item">
+      <div class="factor-nav-num">IX</div>
+      <div class="factor-nav-title">폐기 가능</div>
+      <div class="factor-nav-sub">빠른 시작, 안정적 종료</div>
+    </a>
+    <a href="#f10" class="factor-nav-item">
+      <div class="factor-nav-num">X</div>
+      <div class="factor-nav-title">Dev/Prod 일치</div>
+      <div class="factor-nav-sub">환경 차이 최소화</div>
+    </a>
+    <a href="#f11" class="factor-nav-item">
+      <div class="factor-nav-num">XI</div>
+      <div class="factor-nav-title">로그</div>
+      <div class="factor-nav-sub">이벤트 스트림으로 취급</div>
+    </a>
+    <a href="#f12" class="factor-nav-item">
+      <div class="factor-nav-num">XII</div>
+      <div class="factor-nav-title">Admin 프로세스</div>
+      <div class="factor-nav-sub">일회성 작업 실행</div>
+    </a>
+  </div>
+
+  <!-- OVERVIEW -->
+  <section class="doc-section" id="overview">
+    <div class="section-num">개요</div>
+    <h2 class="section-heading">왜 Twelve-Factor인가</h2>
+    <p class="section-lead">
+      소프트웨어를 서비스로 제공(SaaS)하는 앱을 만들 때 반복적으로 마주치는 문제들을 해결하기 위한 방법론입니다.
+      시간이 지나면서 앱이 성장해도 유지보수 비용이 폭증하지 않도록 설계 단계부터 올바른 구조를 잡는 것이 목표입니다.
+    </p>
+
+    <div class="pullquote">
+      <p>"Twelve-Factor App은 선언적 형식으로 설정을 자동화하고, OS에 의존하지 않으며, 클라우드 플랫폼 배포에 적합하고, 개발과 운영의 차이를 최소화하며, 도구나 아키텍처 변경 없이 수평 확장할 수 있는 앱을 만들기 위한 방법론이다."</p>
+      <cite>— 12factor.net</cite>
+    </div>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">적용 대상</div>
+        <div class="col-title">모든 언어·플랫폼</div>
+        <div class="col-body">Ruby, Python, Java, Go, Node.js 등 어떤 언어로 작성된 앱에도 적용됩니다. 백엔드 서비스(DB, Queue, Cache)도 무관합니다.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">배경</div>
+        <div class="col-title">Heroku 팀의 실무 경험</div>
+        <div class="col-body">수백만 개의 앱 배포 경험에서 도출된 원칙입니다. 현대 클라우드 네이티브 아키텍처(Kubernetes, 컨테이너)의 기초이기도 합니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- I. 코드베이스 -->
+  <section class="doc-section" id="f1">
+    <div class="section-num">Factor I</div>
+    <h2 class="section-heading">코드베이스</h2>
+    <p class="section-sub">버전 관리되는 하나의 코드베이스, 다양한 배포</p>
+    <p class="section-lead">
+      앱과 코드베이스는 항상 1대1 관계입니다. 하나의 코드베이스에서 개발, 스테이징, 운영 환경으로 배포됩니다.
+    </p>
+
+    <!-- SVG: 코드베이스 → 여러 배포 -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 580 120" style="width:100%;max-width:580px;display:block;">
+        <defs>
+          <marker id="arr1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#A8A8A0"/>
+          </marker>
+        </defs>
+        <!-- 코드베이스 박스 -->
+        <rect x="10" y="40" width="140" height="40" fill="none" stroke="#0E0E0B" stroke-width="2"/>
+        <text x="80" y="56" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#6B6B64">CODEBASE</text>
+        <text x="80" y="71" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="13" font-weight="700" fill="#0E0E0B">Git Repo</text>
+        <!-- 화살표 -->
+        <line x1="150" y1="60" x2="198" y2="38" stroke="#A8A8A0" stroke-width="1.5" marker-end="url(#arr1)"/>
+        <line x1="150" y1="60" x2="198" y2="60" stroke="#A8A8A0" stroke-width="1.5" marker-end="url(#arr1)"/>
+        <line x1="150" y1="60" x2="198" y2="82" stroke="#A8A8A0" stroke-width="1.5" marker-end="url(#arr1)"/>
+        <!-- 배포 박스들 -->
+        <rect x="200" y="18" width="110" height="36" fill="var(--paper-2)" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="255" y="33" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0">DEPLOY 1</text>
+        <text x="255" y="46" text-anchor="middle" font-family="'Inter',sans-serif" font-size="12" font-weight="600" fill="#3A3A36">개발(local)</text>
+
+        <rect x="200" y="42" width="110" height="36" fill="var(--paper-2)" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="255" y="57" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0">DEPLOY 2</text>
+        <text x="255" y="70" text-anchor="middle" font-family="'Inter',sans-serif" font-size="12" font-weight="600" fill="#3A3A36">스테이징</text>
+
+        <rect x="200" y="66" width="110" height="36" fill="var(--paper-2)" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="255" y="81" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0">DEPLOY 3</text>
+        <text x="255" y="94" text-anchor="middle" font-family="'Inter',sans-serif" font-size="12" font-weight="600" fill="#3A3A36">운영(prod)</text>
+
+        <!-- 금지 케이스 -->
+        <rect x="370" y="18" width="110" height="80" fill="#fafafa" stroke="#D8D8D0" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="425" y="42" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0">금지</text>
+        <text x="425" y="58" text-anchor="middle" font-family="'Inter',sans-serif" font-size="11" fill="#6B6B64">여러 앱이</text>
+        <text x="425" y="73" text-anchor="middle" font-family="'Inter',sans-serif" font-size="11" fill="#6B6B64">하나의 저장소</text>
+        <text x="425" y="86" text-anchor="middle" font-family="'Inter',sans-serif" font-size="10" fill="#A8A8A0">→ 라이브러리로 분리</text>
+        <text x="425" y="112" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0">✗ VIOLATION</text>
+      </svg>
+    </div>
+
+    <ul class="rule-list">
+      <li><span class="bullet">01</span><span><span class="hl">앱 : 코드베이스 = 1 : 1</span> — 앱이 여러 개라면 저장소도 여러 개여야 합니다.</span></li>
+      <li><span class="bullet">02</span><span>여러 앱이 동일 코드를 공유하면 12-Factor 위반. 공유 코드는 <span class="hl">라이브러리화</span>하여 종속성 매니저로 관리합니다.</span></li>
+      <li><span class="bullet">03</span><span>하나의 코드베이스에서 <span class="hl">개발·스테이징·운영</span> 등 여러 환경으로 배포할 수 있습니다.</span></li>
+    </ul>
+  </section>
+
+  <!-- II. 종속성 -->
+  <section class="doc-section" id="f2">
+    <div class="section-num">Factor II</div>
+    <h2 class="section-heading">종속성</h2>
+    <p class="section-sub">명시적으로 선언되고 분리된 종속성</p>
+    <p class="section-lead">
+      시스템에 특정 패키지가 암묵적으로 존재한다고 가정하지 않습니다. 모든 의존 라이브러리를 manifest 파일에 명시하고, 실행 환경과 격리합니다.
+    </p>
+
+    <div class="three-col">
+      <div class="col-item">
+        <div class="col-label">Ruby</div>
+        <div class="col-title">Bundler</div>
+        <div class="col-body"><code class="inline">Gemfile</code>로 선언 + <code class="inline">bundle exec</code>로 격리 실행</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">Python</div>
+        <div class="col-title">Pip + Virtualenv</div>
+        <div class="col-body"><code class="inline">requirements.txt</code>로 선언 + virtualenv로 격리</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">Node.js</div>
+        <div class="col-title">npm / yarn</div>
+        <div class="col-body"><code class="inline">package.json</code>으로 선언 + <code class="inline">node_modules</code>로 격리</div>
+      </div>
+    </div>
+
+    <div class="pullquote">
+      <p>"Twelve-Factor App은 전체 시스템에 특정 패키지가 암묵적으로 존재하는 것에 절대 의존하지 않는다."</p>
+      <cite>— 12factor.net / II. 종속성</cite>
+    </div>
+
+    <ul class="rule-list">
+      <li><span class="bullet">01</span><span>ImageMagick, curl 같은 <span class="hl">시스템 도구도 명시적으로 선언</span>합니다. "설치돼 있겠지"는 금물.</span></li>
+      <li><span class="bullet">02</span><span>격리 덕분에 새 개발자가 팀에 합류해도 코드 체크아웃 후 빌드 명령 하나로 실행 환경을 구성할 수 있습니다.</span></li>
+    </ul>
+  </section>
+
+  <!-- III. 설정 -->
+  <section class="doc-section" id="f3">
+    <div class="section-num">Factor III</div>
+    <h2 class="section-heading">설정</h2>
+    <p class="section-sub">환경(environment)에 저장된 설정</p>
+    <p class="section-lead">
+      "설정"이란 배포마다 달라질 수 있는 모든 것입니다. DB 접속 정보, 외부 서비스 인증 키, 배포별 호스트명 등이 해당합니다. 이것들은 코드가 아닌 환경 변수에 저장해야 합니다.
+    </p>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">❌ 위반 예시</div>
+        <div class="col-title">코드나 설정 파일에 포함</div>
+        <div class="col-body">Rails의 <code class="inline">config/database.yaml</code>처럼 버전 관리 시스템에 등록된 파일에 접속 정보를 담는 것. 환경마다 별도 파일이 필요하고, 실수로 저장소에 커밋될 수 있습니다.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">✅ 올바른 방법</div>
+        <div class="col-title">환경 변수(ENV) 사용</div>
+        <div class="col-body">OS와 언어에 무관한 표준 방식. 코드 변경 없이 배포마다 다른 값 주입 가능. 저장소에 실수로 올라갈 위험 없음.</div>
+      </div>
+    </div>
+
+    <pre class="code"># ❌ 금지: 코드에 하드코딩
+DATABASE_URL = "postgres://user:pass@prod-db.example.com/mydb"
+
+# ✅ 올바른 방법: 환경 변수로 주입
+DATABASE_URL = os.environ["DATABASE_URL"]</pre>
+
+    <p style="font-size:15px;color:var(--ink-2);max-width:680px;line-height:1.75;margin-top:20px;">
+      간단한 검증 방법: <em>"지금 당장 코드베이스를 오픈 소스로 공개해도 어떤 인증 정보도 유출되지 않는가?"</em>
+      이 질문에 Yes라면 설정이 올바르게 분리된 것입니다.
+    </p>
+  </section>
+
+  <!-- IV. 백엔드 서비스 -->
+  <section class="doc-section" id="f4">
+    <div class="section-num">Factor IV</div>
+    <h2 class="section-heading">백엔드 서비스</h2>
+    <p class="section-sub">백엔드 서비스를 연결된 리소스(attached resource)로 취급</p>
+    <p class="section-lead">
+      앱이 네트워크를 통해 이용하는 모든 서비스(DB, 메시지 큐, 메일, 캐시)는 교체 가능한 리소스로 다뤄야 합니다. 코드 수정 없이 로컬 서비스를 서드파티 서비스로 바꿀 수 있어야 합니다.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>유형</th><th>로컬 예시</th><th>서드파티 예시</th><th>교체 방법</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>데이터 저장소</strong></td><td>로컬 MySQL</td><td>Amazon RDS</td><td>설정(ENV)의 URL만 변경</td></tr>
+          <tr><td><strong>메시지 큐</strong></td><td>로컬 RabbitMQ</td><td>Amazon SQS</td><td>코드 수정 없이 URL 교체</td></tr>
+          <tr><td><strong>메일</strong></td><td>로컬 Postfix</td><td>Postmark, SendGrid</td><td>SMTP 설정만 교체</td></tr>
+          <tr><td><strong>캐시</strong></td><td>로컬 Memcached</td><td>Amazon ElastiCache</td><td>접속 URL만 변경</td></tr>
+          <tr><td><strong>스토리지</strong></td><td>로컬 파일시스템</td><td>Amazon S3</td><td>설정 교체, 코드 무수정</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pullquote">
+      <p>"Twelve-Factor App의 코드는 로컬 서비스와 서드파티 서비스를 구별하지 않는다."</p>
+      <cite>— 12factor.net / IV. 백엔드 서비스</cite>
+    </div>
+  </section>
+
+  <!-- V. 빌드, 릴리즈, 실행 -->
+  <section class="doc-section" id="f5">
+    <div class="section-num">Factor V</div>
+    <h2 class="section-heading">빌드, 릴리즈, 실행</h2>
+    <p class="section-sub">철저하게 분리된 빌드와 실행 단계</p>
+    <p class="section-lead">
+      코드베이스는 3단계를 거쳐 배포로 변환됩니다. 각 단계는 엄격하게 분리되며, 실행 중인 앱에서 코드를 직접 변경하는 것은 불가능해야 합니다.
+    </p>
+
+    <!-- 3단계 다이어그램 -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 620 100" style="width:100%;max-width:620px;display:block;">
+        <defs>
+          <marker id="arr5" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#A8A8A0"/>
+          </marker>
+        </defs>
+        <!-- 코드베이스 -->
+        <rect x="10" y="30" width="100" height="40" fill="none" stroke="#0E0E0B" stroke-width="2"/>
+        <text x="60" y="47" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#6B6B64">SOURCE</text>
+        <text x="60" y="61" text-anchor="middle" font-family="'Inter',sans-serif" font-size="12" font-weight="700" fill="#0E0E0B">코드베이스</text>
+
+        <line x1="110" y1="50" x2="148" y2="50" stroke="#A8A8A0" stroke-width="1.5" marker-end="url(#arr5)"/>
+
+        <!-- 빌드 -->
+        <rect x="150" y="30" width="110" height="40" fill="var(--paper-2)" stroke="#D8D8D0" stroke-width="1.5"/>
+        <text x="205" y="47" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0">STEP 1</text>
+        <text x="205" y="62" text-anchor="middle" font-family="'Inter',sans-serif" font-size="12" font-weight="700" fill="#3A3A36">빌드(Build)</text>
+
+        <line x1="260" y1="50" x2="298" y2="50" stroke="#A8A8A0" stroke-width="1.5" marker-end="url(#arr5)"/>
+        <text x="279" y="43" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0">+ 설정</text>
+
+        <!-- 릴리즈 -->
+        <rect x="300" y="30" width="110" height="40" fill="var(--paper-2)" stroke="#D8D8D0" stroke-width="1.5"/>
+        <text x="355" y="47" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0">STEP 2</text>
+        <text x="355" y="62" text-anchor="middle" font-family="'Inter',sans-serif" font-size="12" font-weight="700" fill="#3A3A36">릴리즈(Release)</text>
+
+        <line x1="410" y1="50" x2="448" y2="50" stroke="#A8A8A0" stroke-width="1.5" marker-end="url(#arr5)"/>
+
+        <!-- 실행 -->
+        <rect x="450" y="30" width="110" height="40" fill="none" stroke="#0E0E0B" stroke-width="2"/>
+        <text x="505" y="47" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#6B6B64">STEP 3</text>
+        <text x="505" y="62" text-anchor="middle" font-family="'Inter',sans-serif" font-size="12" font-weight="700" fill="#0E0E0B">실행(Run)</text>
+
+        <!-- 빌드 설명 -->
+        <text x="205" y="88" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0">코드→번들+의존성</text>
+        <text x="355" y="88" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0">빌드+설정 결합</text>
+        <text x="505" y="88" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0">프로세스 시작</text>
+      </svg>
+    </div>
+
+    <ul class="rule-list">
+      <li><span class="bullet">빌드</span><span>코드 저장소를 실행 가능한 번들로 전환. 지정 버전의 코드, 의존성 획득, 바이너리·에셋 컴파일을 포함합니다.</span></li>
+      <li><span class="bullet">릴리즈</span><span>빌드 결과물과 현재 <span class="hl">설정(환경 변수)을 결합</span>합니다. 각 릴리즈는 고유 ID(타임스탬프 또는 증가 번호)를 가지며, <span class="hl">수정 불가능</span>합니다.</span></li>
+      <li><span class="bullet">실행</span><span>선택된 릴리즈로 애플리케이션을 기동합니다. <span class="hl">실행 중에는 코드 변경 불가</span>. 변경이 필요하면 새 빌드 → 새 릴리즈.</span></li>
+      <li><span class="bullet">롤백</span><span>이전 릴리즈 ID로 언제든지 복원 가능해야 합니다.</span></li>
+    </ul>
+  </section>
+
+  <!-- VI. 프로세스 -->
+  <section class="doc-section" id="f6">
+    <div class="section-num">Factor VI</div>
+    <h2 class="section-heading">프로세스</h2>
+    <p class="section-sub">무상태(stateless) 프로세스로 애플리케이션 실행</p>
+    <p class="section-lead">
+      앱은 하나 이상의 무상태 프로세스로 실행됩니다. 프로세스 간 상태를 공유하지 않으며, 보존이 필요한 데이터는 반드시 DB·캐시 같은 백엔드 서비스에 저장합니다.
+    </p>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">허용</div>
+        <div class="col-title">단기 캐싱</div>
+        <div class="col-body">단일 요청(트랜잭션) 안에서 메모리·파일시스템을 임시 캐시로 쓰는 것은 허용됩니다. 예: 파일 수신 후 처리.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">❌ 금지</div>
+        <div class="col-title">Sticky Session</div>
+        <div class="col-body">사용자 세션을 프로세스 메모리에 저장하는 방식은 절대 금지. 세션 데이터는 <code class="inline">Redis</code>·<code class="inline">Memcached</code> 같은 외부 저장소에 보관해야 합니다.</div>
+      </div>
+    </div>
+
+    <p style="font-size:15px;color:var(--ink-2);max-width:680px;line-height:1.75;margin-top:20px;">
+      무상태 설계 덕분에 프로세스를 자유롭게 추가·제거할 수 있습니다. 어떤 요청이 어떤 프로세스 인스턴스로 라우팅되어도 동일하게 동작해야 합니다.
+    </p>
+  </section>
+
+  <!-- VII. 포트 바인딩 -->
+  <section class="doc-section" id="f7">
+    <div class="section-num">Factor VII</div>
+    <h2 class="section-heading">포트 바인딩</h2>
+    <p class="section-sub">포트 바인딩을 사용한 서비스 공개</p>
+    <p class="section-lead">
+      앱은 Apache·Tomcat 같은 외부 웹서버 컨테이너에 의존하지 않습니다. 웹서버 라이브러리를 의존성에 포함하고, 앱 스스로 포트를 바인딩하여 HTTP 요청을 수신합니다.
+    </p>
+
+    <div class="three-col">
+      <div class="col-item">
+        <div class="col-label">Python</div>
+        <div class="col-title">Tornado / Gunicorn</div>
+        <div class="col-body">앱 코드 안에서 HTTP 서버를 직접 기동합니다.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">Ruby</div>
+        <div class="col-title">Thin / Puma</div>
+        <div class="col-body">외부 웹서버 없이 Ruby 프로세스가 직접 포트를 열어 요청을 받습니다.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">Java/JVM</div>
+        <div class="col-title">Jetty / Undertow</div>
+        <div class="col-body">WAR 배포 방식 대신 임베디드 서버로 JAR 안에 HTTP 서버를 내장합니다.</div>
+      </div>
+    </div>
+
+    <p style="font-size:15px;color:var(--ink-2);max-width:680px;line-height:1.75;margin-top:24px;">
+      개발 환경에서는 <code class="inline">http://localhost:5000</code>으로 접근하고, 운영 환경에서는 라우팅 레이어가 외부 호스트명의 요청을 포트로 전달합니다.
+      HTTP뿐 아니라 Redis 프로토콜, XMPP 등 다양한 프로토콜에도 적용됩니다.
+    </p>
+  </section>
+
+  <!-- VIII. 동시성 -->
+  <section class="doc-section" id="f8">
+    <div class="section-num">Factor VIII</div>
+    <h2 class="section-heading">동시성</h2>
+    <p class="section-sub">프로세스 모델을 사용한 확장</p>
+    <p class="section-lead">
+      확장은 수직(단일 VM 증설)이 아닌 수평(여러 머신에 프로세스 분산)으로 합니다. 서로 다른 작업 유형을 별도 프로세스 타입에 할당하는 것이 핵심입니다.
+    </p>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">프로세스 타입 예시</div>
+        <div class="col-title">Web 프로세스</div>
+        <div class="col-body">HTTP 요청 처리 담당. 트래픽에 따라 인스턴스 수를 늘립니다.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">프로세스 타입 예시</div>
+        <div class="col-title">Worker 프로세스</div>
+        <div class="col-body">백그라운드 작업, 큐 소비, 이메일 발송 등 시간이 오래 걸리는 작업 담당.</div>
+      </div>
+    </div>
+
+    <ul class="rule-list" style="margin-top:20px;">
+      <li><span class="bullet">금지</span><span>프로세스를 데몬화(daemonize)하거나 PID 파일을 직접 작성하는 것. OS의 프로세스 매니저(systemd, Foreman)에 위임합니다.</span></li>
+      <li><span class="bullet">확장</span><span>VI. 무상태 프로세스 원칙 덕분에 인스턴스를 몇 개든 추가해도 공유 상태로 인한 충돌이 없습니다.</span></li>
+    </ul>
+  </section>
+
+  <!-- IX. 폐기 가능 -->
+  <section class="doc-section" id="f9">
+    <div class="section-num">Factor IX</div>
+    <h2 class="section-heading">폐기 가능</h2>
+    <p class="section-sub">빠른 시작과 안정적 종료를 통한 안정성 극대화</p>
+    <p class="section-lead">
+      프로세스는 언제든지 시작·종료될 수 있어야 합니다. 빠른 시작(Fast Startup)과 우아한 종료(Graceful Shutdown)가 핵심입니다.
+    </p>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">빠른 시작</div>
+        <div class="col-title">수 초 내 요청 처리 준비</div>
+        <div class="col-body">짧은 시작 시간은 릴리즈 작업과 스케일 아웃을 민첩하게 만듭니다. 프로세스 매니저가 쉽게 다른 머신으로 이동할 수 있습니다.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">Graceful Shutdown</div>
+        <div class="col-title">SIGTERM 신호 처리</div>
+        <div class="col-body">웹 프로세스: 포트 수신 중지 → 진행 중인 요청 완료 후 종료. Worker: 현재 작업을 큐에 반환(<code class="inline">NACK</code>)하고 종료.</div>
+      </div>
+    </div>
+
+    <ul class="rule-list" style="margin-top:20px;">
+      <li><span class="bullet">재입력</span><span>모든 작업은 <span class="hl">멱등(idempotent)</span>하거나 트랜잭션으로 래핑되어, 중간에 종료되어도 다시 실행하면 동일한 결과가 나와야 합니다.</span></li>
+      <li><span class="bullet">설계</span><span><span class="hl">Crash-only design</span> — 예기치 않은 하드웨어 에러로 갑자기 종료되어도 견고하게 복구되는 구조를 권장합니다.</span></li>
+    </ul>
+  </section>
+
+  <!-- X. Dev/Prod 일치 -->
+  <section class="doc-section" id="f10">
+    <div class="section-num">Factor X</div>
+    <h2 class="section-heading">Dev/Prod 환경 일치</h2>
+    <p class="section-sub">개발·스테이징·운영 환경을 최대한 비슷하게 유지</p>
+    <p class="section-lead">
+      전통적으로 세 가지 격차가 존재했습니다: 시간의 차이(개발 코드가 운영에 반영되기까지 수 주), 담당자의 차이(개발자 ≠ 배포자), 도구의 차이(로컬 SQLite vs 운영 PostgreSQL). 이 모든 격차를 줄이는 것이 목표입니다.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>항목</th><th>전통적 앱</th><th>Twelve-Factor</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>배포 간격</strong></td><td>몇 주 ~ 몇 달</td><td>몇 시간 ~ 매일</td></tr>
+          <tr><td><strong>코드 작성/배포 담당</strong></td><td>다른 사람 (개발자 / 운영자)</td><td>같은 사람 (DevOps)</td></tr>
+          <tr><td><strong>개발/운영 환경 도구</strong></td><td>불일치 (SQLite / PostgreSQL)</td><td>최대한 동일하게 유지</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pullquote">
+      <p>"로컬에서는 SQLite를, 프로덕션에서는 PostgreSQL을 쓰고 싶은 충동에 저항하라."</p>
+      <cite>— 12factor.net / X. dev/prod 일치</cite>
+    </div>
+
+    <p style="font-size:15px;color:var(--ink-2);max-width:680px;line-height:1.75;">
+      Docker, Vagrant, Homebrew 등 현대적 도구로 로컬 환경에서도 운영과 동일한 종류·버전의 백엔드 서비스를 쉽게 구성할 수 있습니다.
+      어댑터(ActiveRecord, Django ORM 등) 추상화를 과신하지 마세요 — 미묘한 동작 차이가 예측 불가능한 버그를 만듭니다.
+    </p>
+  </section>
+
+  <!-- XI. 로그 -->
+  <section class="doc-section" id="f11">
+    <div class="section-num">Factor XI</div>
+    <h2 class="section-heading">로그</h2>
+    <p class="section-sub">로그를 이벤트 스트림으로 취급</p>
+    <p class="section-lead">
+      앱은 로그 파일을 직접 관리하지 않습니다. 각 프로세스는 이벤트를 버퍼링 없이 <code class="inline">stdout</code>에 출력하고, 나머지는 실행 환경이 처리합니다.
+    </p>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">앱의 역할</div>
+        <div class="col-title">stdout으로 출력만</div>
+        <div class="col-body">로그 파일 경로, 로테이션, 보관 기간을 앱이 신경 쓰지 않습니다. 그냥 표준 출력으로 내보냅니다.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">실행 환경의 역할</div>
+        <div class="col-title">수집·라우팅·저장</div>
+        <div class="col-body">Logplex, Fluentd, Logstash 같은 로그 라우터가 스트림을 수집하여 Splunk, Elasticsearch, S3 등으로 전달합니다.</div>
+      </div>
+    </div>
+
+    <ul class="rule-list" style="margin-top:20px;">
+      <li><span class="bullet">형태</span><span>가공되지 않은 텍스트, 하나의 이벤트 = 하나의 라인. 고정된 시작과 끝이 없는 연속 스트림입니다.</span></li>
+      <li><span class="bullet">활용</span><span>로그 분석 시스템(Splunk), 범용 데이터 보관소(Hadoop/Hive), 알림 시스템(오류율 임계값 초과 시 알림) 등에 활용합니다.</span></li>
+    </ul>
+  </section>
+
+  <!-- XII. Admin 프로세스 -->
+  <section class="doc-section" id="f12">
+    <div class="section-num">Factor XII</div>
+    <h2 class="section-heading">Admin 프로세스</h2>
+    <p class="section-sub">일회성 관리 작업을 일회성 프로세스로 실행</p>
+    <p class="section-lead">
+      DB 마이그레이션, 콘솔 접속, 일회성 스크립트 등 관리 작업은 일반 앱 프로세스와 동일한 환경에서 실행되어야 합니다.
+    </p>
+
+    <div class="three-col">
+      <div class="col-item">
+        <div class="col-label">마이그레이션</div>
+        <div class="col-title">DB 스키마 변경</div>
+        <div class="col-body">Rails: <code class="inline">rake db:migrate</code><br>Django: <code class="inline">manage.py migrate</code><br>릴리즈 시 자동 실행.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">콘솔(REPL)</div>
+        <div class="col-title">라이브 DB 조회</div>
+        <div class="col-body">운영 환경 모델을 직접 조회하거나 수정. Rails console, Python shell 등을 사용.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">일회성 스크립트</div>
+        <div class="col-title">데이터 수정/정리</div>
+        <div class="col-body">잘못된 레코드 수정 같은 단발성 작업. 저장소에 코드와 함께 관리하여 동기화 문제를 방지합니다.</div>
+      </div>
+    </div>
+
+    <div class="pullquote">
+      <p>"Admin 코드는 동기화 문제를 피하기 위해 애플리케이션 코드와 함께 배포되어야 한다."</p>
+      <cite>— 12factor.net / XII. Admin 프로세스</cite>
+    </div>
+
+    <ul class="rule-list">
+      <li><span class="bullet">환경</span><span>일회성 admin 프로세스도 같은 코드베이스, 같은 설정, 같은 종속성 격리 환경에서 실행합니다.</span></li>
+      <li><span class="bullet">언어</span><span>별도 설치 없이 REPL shell을 제공하는 언어를 권장합니다 (Python, Ruby, Elixir 등).</span></li>
+    </ul>
+  </section>
+
+  <!-- 요약 테이블 -->
+  <section class="doc-section" id="summary">
+    <div class="section-num">요약</div>
+    <h2 class="section-heading">12가지 요소 한눈에 보기</h2>
+    <p class="section-lead">각 요소의 핵심 원칙과 위반 시 발생하는 대표 문제를 정리했습니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>요소</th><th>핵심 원칙</th><th>위반 시 문제</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>I</strong></td><td><strong>코드베이스</strong></td><td>1앱 = 1저장소, 다양한 배포</td><td>코드 공유 혼란, 배포 추적 불가</td></tr>
+          <tr><td><strong>II</strong></td><td><strong>종속성</strong></td><td>manifest 선언 + 격리 실행</td><td>"내 PC에서는 됩니다" 문제</td></tr>
+          <tr><td><strong>III</strong></td><td><strong>설정</strong></td><td>환경 변수에 저장</td><td>인증 정보 유출, 배포별 코드 수정 필요</td></tr>
+          <tr><td><strong>IV</strong></td><td><strong>백엔드 서비스</strong></td><td>교체 가능한 연결 리소스</td><td>DB 변경 시 코드 대규모 수정</td></tr>
+          <tr><td><strong>V</strong></td><td><strong>빌드/릴리즈/실행</strong></td><td>단계 엄격 분리, 불변 릴리즈</td><td>핫픽스 직접 배포, 롤백 불가</td></tr>
+          <tr><td><strong>VI</strong></td><td><strong>프로세스</strong></td><td>무상태, Sticky Session 금지</td><td>특정 서버에만 요청 고정, 수평 확장 불가</td></tr>
+          <tr><td><strong>VII</strong></td><td><strong>포트 바인딩</strong></td><td>앱 자체가 HTTP 서버 내장</td><td>외부 WAS 의존, 환경 구성 복잡</td></tr>
+          <tr><td><strong>VIII</strong></td><td><strong>동시성</strong></td><td>프로세스 타입별 수평 확장</td><td>단일 프로세스 병목, 수직 확장만 가능</td></tr>
+          <tr><td><strong>IX</strong></td><td><strong>폐기 가능</strong></td><td>빠른 시작 + Graceful Shutdown</td><td>배포 시 요청 유실, 느린 스케일</td></tr>
+          <tr><td><strong>X</strong></td><td><strong>Dev/Prod 일치</strong></td><td>환경 차이 최소화</td><td>로컬 통과·운영 실패 버그</td></tr>
+          <tr><td><strong>XI</strong></td><td><strong>로그</strong></td><td>stdout 스트림으로 출력</td><td>로그 파일 관리 부담, 분석 어려움</td></tr>
+          <tr><td><strong>XII</strong></td><td><strong>Admin 프로세스</strong></td><td>코드와 함께 배포·동일 환경 실행</td><td>버전 불일치 스크립트로 데이터 손상</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div><!-- /page-body -->
+
+<!-- FOOTER -->
+<footer>
+  <span>The Twelve-Factor App &nbsp;·&nbsp; 12factor.net/ko 기반</span>
+  <span>2026-04-13</span>
+</footer>
+
+<script data-page-hash="9NMERUX" src="/gemini_html/page-footer.js"></script>
+</body>
+</html>
