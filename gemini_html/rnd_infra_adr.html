@@ -1530,6 +1530,61 @@
         </div>
       </div>
 
+      <!-- Global ADR-015 -->
+      <div class="adr-item">
+        <button class="adr-trigger" aria-expanded="false" aria-controls="panel-g015" onclick="toggleAdr(this)">
+          <div class="adr-num">ADR-015</div>
+          <div class="adr-trigger-body">
+            <div class="adr-title">내부 운영 도구 전용 OIDC 브로커로 dex 채택</div>
+            <div class="adr-meta">
+              <span class="badge badge-proposed"><span class="badge-dot"></span>Proposed</span>
+              <span class="badge-meta">RDDP-456 · 2026-04-07 · RND Infra Team</span>
+            </div>
+          </div>
+          <div class="adr-trigger-right">
+            <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+          </div>
+        </button>
+        <div class="adr-panel" id="panel-g015" aria-hidden="true">
+          <div class="adr-panel-inner">
+            <div class="panel-grid">
+              <div class="panel-block">
+                <div class="panel-block-label">Context — 맥락</div>
+                <div class="panel-block-body">
+                  <ul>
+                    <li>Grafana·ArgoCD 등 내부 운영 도구에 통일된 인증 체계가 없음 (Grafana는 anonymous 접근 허용 상태)</li>
+                    <li>각 서비스마다 Google OAuth Client를 개별 발급하는 분산 구조 → 관리·정책 분산</li>
+                    <li>RDDP-456(Grafana 인증 체계 도입)을 계기로 내부 운영 도구 전용 공용 OIDC 브로커 도입 검토</li>
+                    <li>GKE Autopilot→Standard 마이그레이션 임박 → 클러스터 재구축 내성이 선택 전제 조건</li>
+                    <li>회사 인증 축은 <strong>내부 운영자(축 A, 본 ADR)</strong>와 <strong>서비스 엔드유저(축 B, RDDP-343)</strong>로 완전 분리</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="panel-block">
+                <div class="panel-block-label">Decision — 결정 내용</div>
+                <div class="panel-block-body">
+                  dex(dexidp/dex)를 내부 운영 도구 전용 공용 OIDC 브로커로 채택.
+                  <code>storage: kubernetes</code> CRD 백엔드로 외부 DB 없이 stateless 운영.
+                  Google Workspace(vntgcorp.com) 연동, staticClients를 YAML로 코드화.
+                  Keycloak·Authentik 등 풀스택 IAM 5종 비교 결과 dex가 본 축 요건에 유일하게 부합.
+                  ArgoCD는 부트스트랩 독립성 확보를 위해 bundled dex를 유지하는 예외 적용.
+                </div>
+              </div>
+            </div>
+            <div class="panel-footer">
+              <a class="gh-link" href="https://github.com/VntgCorp/RND-INFRA/blob/develop/docs/adr/global/ADR-015-oidc_broker_selection-P.md" target="_blank" rel="noopener">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
+                GitHub에서 원문 보기
+              </a>
+              <a class="gh-link" href="/gemini_html/adr_015_oidc_broker_selection.html" style="margin-left:12px;">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3H7.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1z"/></svg>
+                상세 페이지 보기
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Global ADR-016 -->
       <div class="adr-item">
         <button class="adr-trigger" aria-expanded="false" aria-controls="panel-g016" onclick="toggleAdr(this)">
@@ -1579,61 +1634,6 @@
                 GitHub에서 원문 보기
               </a>
               <a class="gh-link" href="/gemini_html/adr_016_grafana_deployment_pattern.html" style="margin-left:12px;">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3H7.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1z"/></svg>
-                상세 페이지 보기
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Global ADR-015 -->
-      <div class="adr-item">
-        <button class="adr-trigger" aria-expanded="false" aria-controls="panel-g015" onclick="toggleAdr(this)">
-          <div class="adr-num">ADR-015</div>
-          <div class="adr-trigger-body">
-            <div class="adr-title">내부 운영 도구 전용 OIDC 브로커로 dex 채택</div>
-            <div class="adr-meta">
-              <span class="badge badge-proposed"><span class="badge-dot"></span>Proposed</span>
-              <span class="badge-meta">RDDP-456 · 2026-04-07 · RND Infra Team</span>
-            </div>
-          </div>
-          <div class="adr-trigger-right">
-            <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
-          </div>
-        </button>
-        <div class="adr-panel" id="panel-g015" aria-hidden="true">
-          <div class="adr-panel-inner">
-            <div class="panel-grid">
-              <div class="panel-block">
-                <div class="panel-block-label">Context — 맥락</div>
-                <div class="panel-block-body">
-                  <ul>
-                    <li>Grafana·ArgoCD 등 내부 운영 도구에 통일된 인증 체계가 없음 (Grafana는 anonymous 접근 허용 상태)</li>
-                    <li>각 서비스마다 Google OAuth Client를 개별 발급하는 분산 구조 → 관리·정책 분산</li>
-                    <li>RDDP-456(Grafana 인증 체계 도입)을 계기로 내부 운영 도구 전용 공용 OIDC 브로커 도입 검토</li>
-                    <li>GKE Autopilot→Standard 마이그레이션 임박 → 클러스터 재구축 내성이 선택 전제 조건</li>
-                    <li>회사 인증 축은 <strong>내부 운영자(축 A, 본 ADR)</strong>와 <strong>서비스 엔드유저(축 B, RDDP-343)</strong>로 완전 분리</li>
-                  </ul>
-                </div>
-              </div>
-              <div class="panel-block">
-                <div class="panel-block-label">Decision — 결정 내용</div>
-                <div class="panel-block-body">
-                  dex(dexidp/dex)를 내부 운영 도구 전용 공용 OIDC 브로커로 채택.
-                  <code>storage: kubernetes</code> CRD 백엔드로 외부 DB 없이 stateless 운영.
-                  Google Workspace(vntgcorp.com) 연동, staticClients를 YAML로 코드화.
-                  Keycloak·Authentik 등 풀스택 IAM 5종 비교 결과 dex가 본 축 요건에 유일하게 부합.
-                  ArgoCD는 부트스트랩 독립성 확보를 위해 bundled dex를 유지하는 예외 적용.
-                </div>
-              </div>
-            </div>
-            <div class="panel-footer">
-              <a class="gh-link" href="https://github.com/VntgCorp/RND-INFRA/blob/develop/docs/adr/global/ADR-015-oidc_broker_selection-P.md" target="_blank" rel="noopener">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
-                GitHub에서 원문 보기
-              </a>
-              <a class="gh-link" href="/gemini_html/adr_015_oidc_broker_selection.html" style="margin-left:12px;">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3H7.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1z"/></svg>
                 상세 페이지 보기
               </a>
