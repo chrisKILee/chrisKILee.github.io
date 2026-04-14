@@ -216,9 +216,9 @@
   <p class="lead-desc">온프레미스(IDC) 및 GCP 하이브리드 인프라 구축에 관한 중요 기술적 의사결정을 체계적으로 기록하고 추적하는 문서 모음. IDC K8s 구축부터 GCP 설계까지 인프라 전반의 ADR을 포함합니다.</p>
   <div class="lead-stats">
     <div class="stat"><span class="stat-num">8</span><span class="stat-label">IDC ADR</span></div>
-    <div class="stat"><span class="stat-num">14</span><span class="stat-label">Global ADR</span></div>
+    <div class="stat"><span class="stat-num">15</span><span class="stat-label">Global ADR</span></div>
     <div class="stat"><span class="stat-num">16</span><span class="stat-label">Accepted</span></div>
-    <div class="stat"><span class="stat-num">6</span><span class="stat-label">Proposed</span></div>
+    <div class="stat"><span class="stat-num">7</span><span class="stat-label">Proposed</span></div>
   </div>
 </section>
 
@@ -766,7 +766,7 @@
   <section class="section">
     <div class="section-header">
       <h2 class="section-title">Global ADR</h2>
-      <span class="section-count">docs/adr/global/ · 14개</span>
+      <span class="section-count">docs/adr/global/ · 15개</span>
     </div>
     <p class="section-desc">하이브리드 인프라(온프레미스 + GCP) 전체에 영향하는 전역 기술 결정. CI/CD, IaC, Observability, 클러스터 구조, DNS 자동화 등을 포함.</p>
 
@@ -1524,6 +1524,82 @@
               <a class="gh-link" href="https://github.com/VntgCorp/RND-INFRA/blob/develop/docs/adr/global/ADR-014-grafana_deployment_pattern-P.md" target="_blank" rel="noopener">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
                 GitHub에서 원문 보기
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Global ADR-017 -->
+      <div class="adr-item">
+        <button class="adr-trigger" aria-expanded="false" aria-controls="panel-g017" onclick="toggleAdr(this)">
+          <div class="adr-num">ADR-017</div>
+          <div class="adr-trigger-body">
+            <div class="adr-title">Grafana 리소스 관리 기준</div>
+            <div class="adr-meta">
+              <span class="badge badge-proposed"><span class="badge-dot"></span>Proposed</span>
+              <span class="badge-meta">RDDP-458 · 2026-04-14 · 윤종원</span>
+            </div>
+          </div>
+          <div class="adr-trigger-right">
+            <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+          </div>
+        </button>
+        <div class="adr-panel" id="panel-g017" aria-hidden="true">
+          <div class="adr-panel-inner">
+            <div class="panel-grid">
+              <div class="panel-block">
+                <div class="panel-block-label">Context — 맥락</div>
+                <div class="panel-block-body">
+                  <ul>
+                    <li>Grafana 리소스(대시보드, 알림 등) 관리 방식이 팀마다 달라 일관성 부재</li>
+                    <li>일부 리소스는 Git으로, 일부는 UI에서 직접 관리해 충돌·유실 위험 존재</li>
+                    <li>ADR-014(Grafana 운영 표준)의 후속 — 관리 계층 명세 필요</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="panel-block">
+                <div class="panel-block-label">Decision — 결정 내용</div>
+                <div class="panel-block-body">
+                  <p><strong>코드 관리(Git PR) / UI 관리(Grafana HTTP API) 이원 분류 모델</strong></p>
+                  <ul style="margin-top:8px;">
+                    <li><strong>코드 관리</strong>: ArgoCD + k8s-sidecar를 통해 Git Raw JSON → Grafana 프로비저닝</li>
+                    <li><strong>UI 관리</strong>: Grafana UI 또는 HTTP API에서 직접 조작 (strict / flexible)</li>
+                    <li>6개 분류 차원: 변경 빈도, 영향 범위, 재현 필요성, 팀 소유권, 감사 추적, 복잡도</li>
+                    <li>Day-1 베이스 대시보드 23개 지정 (코드 관리 Core 폴더)</li>
+                    <li>Notification Policies는 전용 values.yaml 관리 (예외 처리)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="panel-grid" style="margin-top:12px;">
+              <div class="panel-block" style="grid-column:1/-1;">
+                <div class="panel-block-label">설정 계층 배정 — 핵심 항목</div>
+                <div class="panel-block-body">
+                  <table class="adr-table">
+                    <thead><tr><th>리소스</th><th>관리 방식</th><th>분류 근거</th></tr></thead>
+                    <tbody>
+                      <tr><td>Dashboards (Core/베이스)</td><td><code>코드</code></td><td>팀 공용, 재현 필수, 감사 추적</td></tr>
+                      <tr><td>Dashboards (팀 전용)</td><td><code>UI-flexible</code></td><td>팀 소유권, 빠른 변경 주기</td></tr>
+                      <tr><td>Alerting Rules</td><td><code>코드</code></td><td>영향 범위 크고 감사 필수</td></tr>
+                      <tr><td>Notification Policies</td><td><code>values.yaml</code></td><td>Helm values 직접 관리 (특수 처리)</td></tr>
+                      <tr><td>Contact Points</td><td><code>UI-strict</code></td><td>운영 민감, 변경 빈도 낮음</td></tr>
+                      <tr><td>Data Sources</td><td><code>코드</code></td><td>인프라 레벨, 재현 필수</td></tr>
+                      <tr><td>Folders</td><td><code>코드</code></td><td>구조 일관성, 코드 관리 전제</td></tr>
+                      <tr><td>Playlists / Annotations</td><td><code>UI-flexible</code></td><td>팀 편의 기능, 임시성 높음</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="panel-footer">
+              <a class="gh-link" href="https://github.com/VntgCorp/RND-INFRA/blob/feature/RDDP-458-dashboard-storage-strategy/docs/adr/global/ADR-017-grafana_resource_management-P.md" target="_blank" rel="noopener">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
+                GitHub에서 원문 보기
+              </a>
+              <a class="gh-link" href="/gemini_html/adr_017_grafana_resource_management.html" style="margin-left:12px;">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3H7.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1z"/></svg>
+                상세 페이지 보기
               </a>
             </div>
           </div>
