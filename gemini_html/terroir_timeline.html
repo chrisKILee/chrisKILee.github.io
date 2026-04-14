@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEPAGE — 떼루아가 걸어온 길</title>
+<link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #09090f;
+  --bg-card: #0f0f17;
+  --bg-elevated: #13131d;
+  --bg-hover: #1a1a27;
+  --t-color: #10b981;
+  --t-light: #34d399;
+  --t-dim: rgba(16,185,129,0.12);
+  --t-border: rgba(16,185,129,0.25);
+  --v-color: #3b82f6;
+  --v-light: #60a5fa;
+  --v-dim: rgba(59,130,246,0.12);
+  --v-border: rgba(59,130,246,0.25);
+  --e-color: #f59e0b;
+  --e-light: #fbbf24;
+  --e-dim: rgba(245,158,11,0.12);
+  --e-border: rgba(245,158,11,0.25);
+  --stab-color: #6b7280;
+  --stab-dim: rgba(107,114,128,0.1);
+  --text-1: #f1f5f9;
+  --text-2: #94a3b8;
+  --text-3: #4b5563;
+  --border: rgba(255,255,255,0.07);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.page-wrap {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+/* ─── HEADER ─── */
+.page-header {
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 28px;
+}
+.page-header h1 {
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.page-header .subtitle {
+  color: var(--text-2);
+  font-size: 14px;
+}
+.header-meta {
+  display: flex;
+  gap: 20px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.meta-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.meta-chip .dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+}
+
+/* ─── PROJECT CARDS ─── */
+.project-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.proj-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.proj-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.proj-card.terroir::before { background: var(--t-color); }
+.proj-card.vinification::before { background: var(--v-color); }
+.proj-card.elevage::before { background: var(--e-color); }
+.proj-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.proj-card.terroir .proj-card-title { color: var(--t-light); }
+.proj-card.vinification .proj-card-title { color: var(--v-light); }
+.proj-card.elevage .proj-card-title { color: var(--e-light); }
+.proj-card-name {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.proj-card-desc {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+.proj-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+}
+.proj-stat-item { color: var(--text-3); }
+.proj-stat-item span { color: var(--text-2); font-weight: 500; }
+
+/* ─── GANTT CHART ─── */
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 16px;
+}
+.gantt-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 40px;
+  overflow-x: auto;
+}
+.gantt-wrap { min-width: 700px; }
+.gantt-header-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.gantt-months {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  font-size: 11px;
+  color: var(--text-3);
+  text-align: center;
+}
+.gantt-month { padding: 2px 0; }
+.gantt-month.now { color: var(--text-2); font-weight: 600; }
+.gantt-rows { display: flex; flex-direction: column; gap: 6px; }
+.gantt-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+}
+.gantt-row-label {
+  font-size: 12px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gantt-row-label.project { color: var(--text-1); font-weight: 600; font-size: 13px; }
+.gantt-row-label.chapter { color: var(--text-1); font-weight: 500; padding-left: 12px; }
+.gantt-row-label.phase { color: var(--text-2); padding-left: 24px; font-size: 12px; }
+.gantt-row-label.special { color: var(--stab-color); padding-left: 24px; font-size: 11px; font-style: italic; }
+.gantt-bar-area {
+  position: relative;
+  height: 22px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 4px;
+}
+/* Month grid lines */
+.gantt-bar-area::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent calc(100%/11 - 1px),
+    rgba(255,255,255,0.04) calc(100%/11 - 1px),
+    rgba(255,255,255,0.04) calc(100%/11)
+  );
+  border-radius: 4px;
+}
+.g-bar {
+  position: absolute;
+  height: 100%;
+  border-radius: 4px;
+  z-index: 1;
+}
+.g-bar.terroir-ch1  { background: rgba(16,185,129,0.7); }
+.g-bar.terroir-ch2  { background: rgba(16,185,129,0.5); }
+.g-bar.terroir-ch3  { background: rgba(16,185,129,0.25); border: 1px dashed rgba(16,185,129,0.4); }
+.g-bar.stab         { background: repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(107,114,128,0.3) 4px, rgba(107,114,128,0.3) 8px); }
+.g-bar.phase-1      { background: rgba(16,185,129,0.55); height: 10px; top: 6px; border-radius: 3px; }
+.g-bar.phase-2      { background: rgba(16,185,129,0.45); height: 10px; top: 6px; border-radius: 3px; }
+.g-bar.phase-3      { background: rgba(16,185,129,0.35); height: 10px; top: 6px; border-radius: 3px; }
+.g-bar.vini         { background: rgba(59,130,246,0.5); }
+.g-bar.elevage      { background: rgba(245,158,11,0.5); }
+.g-bar.vini-ph      { background: rgba(59,130,246,0.4); height: 10px; top: 6px; }
+.g-bar.ele-ph       { background: rgba(245,158,11,0.4); height: 10px; top: 6px; }
+/* Today marker */
+.gantt-today {
+  position: absolute;
+  top: -4px; bottom: -4px;
+  width: 2px;
+  background: #ef4444;
+  z-index: 3;
+  border-radius: 2px;
+}
+.gantt-today::before {
+  content: '현재';
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #ef4444;
+  white-space: nowrap;
+}
+
+/* ─── WBS TABLE ─── */
+.wbs-section { margin-bottom: 48px; }
+.wbs-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.wbs-section-title h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+.wbs-section-title .badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+.badge-terroir { background: var(--t-dim); color: var(--t-light); border: 1px solid var(--t-border); }
+.badge-vini    { background: var(--v-dim); color: var(--v-light); border: 1px solid var(--v-border); }
+.badge-ele     { background: var(--e-dim); color: var(--e-light); border: 1px solid var(--e-border); }
+.badge-ongoing { background: rgba(250,204,21,0.12); color: #facc15; border: 1px solid rgba(250,204,21,0.25); }
+.badge-done    { background: rgba(16,185,129,0.12); color: var(--t-light); border: 1px solid var(--t-border); }
+
+.wbs-table { width: 100%; border-collapse: collapse; }
+.wbs-table th {
+  background: var(--bg-elevated);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.wbs-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  font-size: 14px;
+}
+.wbs-table tr:last-child td { border-bottom: none; }
+
+/* WBS level styles */
+.row-project { background: var(--bg-elevated); }
+.row-project td { font-weight: 600; font-size: 15px; }
+.row-chapter td { font-weight: 600; background: var(--bg-card); }
+.row-phase td { background: rgba(255,255,255,0.01); }
+.row-sprint td { background: transparent; }
+.row-sprint:hover td { background: var(--bg-hover); }
+.row-stab td { background: var(--stab-dim); color: var(--stab-color); font-style: italic; font-size: 13px; }
+
+/* WBS number column */
+.wbs-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-3);
+  white-space: nowrap;
+  width: 70px;
+}
+.row-chapter .wbs-num { color: var(--text-2); }
+.row-project .wbs-num { color: var(--text-2); font-size: 13px; }
+
+/* WBS name with indent */
+.wbs-name { min-width: 220px; }
+.wbs-name .indent-1 { padding-left: 0; }
+.wbs-name .indent-2 { padding-left: 16px; display: block; }
+.wbs-name .indent-3 { padding-left: 32px; display: block; }
+.wbs-name .indent-4 { padding-left: 48px; display: block; }
+.wbs-name .tree-prefix {
+  color: var(--text-3);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  margin-right: 4px;
+}
+
+/* Chapter colors */
+.row-chapter.ch1 .wbs-name, .row-chapter.ch1 .chapter-badge { color: var(--t-light); }
+.row-chapter.ch2 .wbs-name { color: var(--t-light); }
+.row-chapter.ch3 .wbs-name { color: var(--t-dim); }
+
+/* Sprint number badge */
+.sprint-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 1px 7px;
+  border-radius: 4px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.sprint-badge.done { background: var(--t-dim); color: var(--t-light); border: 1px solid var(--t-border); }
+.sprint-badge.ongoing { background: rgba(250,204,21,0.12); color: #facc15; border: 1px solid rgba(250,204,21,0.25); }
+.sprint-badge.plan { background: rgba(107,114,128,0.1); color: var(--stab-color); border: 1px solid rgba(107,114,128,0.2); }
+.sprint-badge.blue { background: var(--v-dim); color: var(--v-light); border: 1px solid var(--v-border); }
+.sprint-badge.amber { background: var(--e-dim); color: var(--e-light); border: 1px solid var(--e-border); }
+
+/* Status column */
+.status-cell { width: 80px; white-space: nowrap; }
+.status-done    { color: var(--t-light); font-size: 13px; }
+.status-ongoing { color: #facc15; font-size: 13px; }
+.status-plan    { color: var(--stab-color); font-size: 13px; }
+
+/* Date column */
+.date-cell {
+  font-size: 12px;
+  color: var(--text-3);
+  white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
+  width: 130px;
+}
+
+/* Deliverables */
+.deliverables { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+.deliverables li { list-style: none; padding-left: 14px; position: relative; }
+.deliverables li::before {
+  content: '·';
+  position: absolute; left: 4px;
+  color: var(--text-3);
+}
+
+/* Chapter header row */
+.chapter-header-row td {
+  padding: 14px 14px 10px;
+  font-size: 15px;
+}
+.chapter-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.chapter-title { font-weight: 700; font-size: 16px; }
+.chapter-title.terroir-color { color: var(--t-light); }
+.chapter-sub { font-size: 12px; color: var(--text-3); font-weight: 400; }
+
+/* Phase header */
+.phase-row td { padding: 8px 14px; }
+.phase-title {
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.phase-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Vini/Ele colors */
+.vini-row td .phase-dot { background: var(--v-color); }
+.ele-row td .phase-dot { background: var(--e-color); }
+.terroir-row td .phase-dot { background: var(--t-color); }
+
+/* ─── BOTTOM FOOTER ─── */
+.report-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.report-footer-left { font-size: 13px; color: var(--text-3); }
+.report-footer-right { font-size: 12px; color: var(--text-3); text-align: right; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .date-cell { display: none; }
+  .wbs-table th:nth-child(3) { display: none; }
+  .project-cards { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="page-header">
+    <h1>CEPAGE — 떼루아가 걸어온 길</h1>
+    <p class="subtitle">VNTG R&amp;D실 · 개발 플랫폼 과제 진행 현황 WBS</p>
+    <div class="header-meta">
+      <div class="meta-chip">
+        <span class="dot" style="background:#10b981"></span>
+        Terroir — 개발 플랫폼 (2025.08~)
+      </div>
+      <div class="meta-chip">
+        <span class="dot" style="background:#3b82f6"></span>
+        Vinification — 레거시 재구축 분석 (2026.01~)
+      </div>
+      <div class="meta-chip">
+        <span class="dot" style="background:#f59e0b"></span>
+        Élevage — 시맨틱 강화 (2026.04~)
+      </div>
+      <div class="meta-chip">
+        <span class="dot" style="background:#ef4444"></span>
+        보고 기준일: 2026년 4월
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ PROJECT OVERVIEW CARDS ═══ -->
+  <div class="project-cards">
+    <div class="proj-card terroir">
+      <div class="proj-card-title">Terroir</div>
+      <div class="proj-card-name">개발 플랫폼 구축</div>
+      <div class="proj-card-desc">
+        모든 개발자가 일관되고 빠르게 개발할 수 있는 공통 플랫폼.
+        Chapter 1 Alpha 완료, Chapter 2 Beta 막바지 진행 중.
+      </div>
+      <div class="proj-stats">
+        <div class="proj-stat-item">기간 <span>7개월+</span></div>
+        <div class="proj-stat-item">팀원 <span>9명</span></div>
+        <div class="proj-stat-item">스프린트 <span>18회+</span></div>
+      </div>
+    </div>
+    <div class="proj-card vinification">
+      <div class="proj-card-title">Vinification</div>
+      <div class="proj-card-name">레거시 재구축 분석</div>
+      <div class="proj-card-desc">
+        레거시 시스템을 역설계·분석하여 Terroir 현대화 경로를 설계하는 과제.
+        세아방산소재 MES, 세아창원 ePro 분석 완료.
+      </div>
+      <div class="proj-stats">
+        <div class="proj-stat-item">기간 <span>3개월+</span></div>
+        <div class="proj-stat-item">담당 <span>브렛</span></div>
+        <div class="proj-stat-item">분석 대상 <span>3건</span></div>
+      </div>
+    </div>
+    <div class="proj-card elevage">
+      <div class="proj-card-title">Élevage</div>
+      <div class="proj-card-name">레거시 위 AI 역량 강화</div>
+      <div class="proj-card-desc">
+        레거시를 교체하지 않고 AI가 이해하는 Semantic Layer를 씌워
+        즉각 AI 활용 가능하게 하는 과제. 2026.04 착수.
+      </div>
+      <div class="proj-stats">
+        <div class="proj-stat-item">기간 <span>착수 중</span></div>
+        <div class="proj-stat-item">리드 <span>윤종원</span></div>
+        <div class="proj-stat-item">아키텍처 설계 <span>진행중</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ GANTT CHART ═══ -->
+  <p class="section-label">Phase 타임라인</p>
+  <div class="gantt-section">
+    <div class="gantt-wrap">
+      <div class="gantt-header-row">
+        <div style="font-size:11px;color:var(--text-3);padding-top:2px;">과제 / Chapter</div>
+        <div class="gantt-months">
+          <div class="gantt-month">8월</div>
+          <div class="gantt-month">9월</div>
+          <div class="gantt-month">10월</div>
+          <div class="gantt-month">11월</div>
+          <div class="gantt-month">12월</div>
+          <div class="gantt-month">1월</div>
+          <div class="gantt-month">2월</div>
+          <div class="gantt-month">3월</div>
+          <div class="gantt-month now">4월▼</div>
+          <div class="gantt-month">5월</div>
+          <div class="gantt-month">6월</div>
+        </div>
+      </div>
+      <div class="gantt-rows">
+
+        <!-- Terroir -->
+        <div class="gantt-row">
+          <div class="gantt-row-label project">Terroir</div>
+          <div class="gantt-bar-area">
+            <div class="g-bar terroir-ch1" style="left:0%;width:39.4%"></div>
+            <div class="g-bar stab" style="left:39.4%;width:8.3%"></div>
+            <div class="g-bar terroir-ch2" style="left:47.7%;width:34.1%"></div>
+            <div class="g-bar terroir-ch3" style="left:90.9%;width:9.1%"></div>
+            <div class="gantt-today" style="left:76.4%"></div>
+          </div>
+        </div>
+
+        <!-- Chapter 1 -->
+        <div class="gantt-row">
+          <div class="gantt-row-label chapter">Ch1 · Alpha</div>
+          <div class="gantt-bar-area">
+            <div class="g-bar phase-1" style="left:0%;width:18.2%"></div>
+            <div class="g-bar phase-2" style="left:18.2%;width:18.2%"></div>
+            <div class="g-bar phase-3" style="left:27.3%;width:12.1%"></div>
+          </div>
+        </div>
+
+        <!-- Stabilization 1 -->
+        <div class="gantt-row">
+          <div class="gantt-row-label special">안정화 4주</div>
+          <div class="gantt-bar-area">
+            <div class="g-bar stab" style="left:39.4%;width:8.3%"></div>
+          </div>
+        </div>
+
+        <!-- Chapter 2 -->
+        <div class="gantt-row">
+          <div class="gantt-row-label chapter">Ch2 · Beta</div>
+          <div class="gantt-bar-area">
+            <div class="g-bar phase-1" style="left:47.7%;width:18.2%"></div>
+            <div class="g-bar phase-2" style="left:54.5%;width:18.2%"></div>
+            <div class="g-bar phase-3" style="left:63.6%;width:18.2%"></div>
+          </div>
+        </div>
+
+        <!-- Chapter 3 -->
+        <div class="gantt-row">
+          <div class="gantt-row-label chapter">Ch3 · GA</div>
+          <div class="gantt-bar-area">
+            <div class="g-bar terroir-ch3" style="left:90.9%;width:9.1%"></div>
+          </div>
+        </div>
+
+        <!-- Separator -->
+        <div style="height:4px;border-top:1px solid var(--border);margin:4px 0 4px 160px;"></div>
+
+        <!-- Vinification -->
+        <div class="gantt-row">
+          <div class="gantt-row-label project" style="color:var(--v-light)">Vinification</div>
+          <div class="gantt-bar-area">
+            <div class="g-bar vini" style="left:45.5%;width:36.4%"></div>
+            <div class="gantt-today" style="left:76.4%"></div>
+          </div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-row-label phase">세아방산 MES</div>
+          <div class="gantt-bar-area">
+            <div class="g-bar vini-ph" style="left:45.5%;width:18.2%"></div>
+          </div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-row-label phase">세아창원 ePro</div>
+          <div class="gantt-bar-area">
+            <div class="g-bar vini-ph" style="left:54.5%;width:18.2%"></div>
+          </div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-row-label phase">VNTG ERP</div>
+          <div class="gantt-bar-area">
+            <div class="g-bar vini-ph" style="left:63.6%;width:18.2%"></div>
+          </div>
+        </div>
+
+        <div style="height:4px;border-top:1px solid var(--border);margin:4px 0 4px 160px;"></div>
+
+        <!-- Élevage -->
+        <div class="gantt-row">
+          <div class="gantt-row-label project" style="color:var(--e-light)">Élevage</div>
+          <div class="gantt-bar-area">
+            <div class="g-bar elevage" style="left:72.7%;width:27.3%"></div>
+            <div class="gantt-today" style="left:76.4%"></div>
+          </div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-row-label phase">ARD 아키텍처 설계</div>
+          <div class="gantt-bar-area">
+            <div class="g-bar ele-ph" style="left:72.7%;width:9.1%"></div>
+          </div>
+        </div>
+        <div class="gantt-row">
+          <div class="gantt-row-label phase">Semantic Layer 구축</div>
+          <div class="gantt-bar-area">
+            <div class="g-bar ele-ph" style="left:81.8%;width:9.1%;opacity:0.5;border:1px dashed rgba(245,158,11,0.4)"></div>
+          </div>
+        </div>
+
+      </div><!-- gantt-rows -->
+    </div><!-- gantt-wrap -->
+  </div><!-- gantt-section -->
+
+  <!-- ═══ WBS: TERROIR ═══ -->
+  <div class="wbs-section">
+    <div class="wbs-section-title">
+      <h2>WBS — Terroir 개발 플랫폼</h2>
+      <span class="badge badge-terroir">TERROIR</span>
+      <span class="badge badge-ongoing">진행중</span>
+    </div>
+    <table class="wbs-table">
+      <thead>
+        <tr>
+          <th style="width:70px">WBS #</th>
+          <th>업무명</th>
+          <th style="width:130px">기간</th>
+          <th style="width:70px">상태</th>
+          <th>주요 결과물 / 스프린트 내용</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- ── Project Root ── -->
+        <tr class="row-project">
+          <td class="wbs-num">1</td>
+          <td class="wbs-name">Terroir — 개발 플랫폼 구축</td>
+          <td class="date-cell">2025.08 ~ 진행중</td>
+          <td class="status-cell"><span class="status-ongoing">◐ 진행중</span></td>
+          <td class="deliverables">CEPAGE 3개 과제의 공통 개발 플랫폼 · Chapter 1 완료, Chapter 2 Beta 막바지</td>
+        </tr>
+
+        <!-- ══ CHAPTER 1 ══ -->
+        <tr class="row-chapter ch1 chapter-header-row">
+          <td class="wbs-num">1.1</td>
+          <td class="wbs-name">
+            <div class="chapter-title-wrap">
+              <span class="chapter-title terroir-color">Chapter 1 — Alpha Release</span>
+              <span class="chapter-sub">2025.08.04 ~ 2025.12.19 · 4.5개월 · 3 Phase · 9 Sprint</span>
+            </div>
+          </td>
+          <td class="date-cell">25.08~25.12</td>
+          <td class="status-cell"><span class="status-done">✅ 완료</span></td>
+          <td class="deliverables">플랫폼 첫 출시 · 5명 시작 → 9명 확대 · Alpha 릴리즈 배포</td>
+        </tr>
+
+        <!-- Phase 1 -->
+        <tr class="row-phase terroir-row">
+          <td class="wbs-num">1.1.1</td>
+          <td class="wbs-name">
+            <div class="phase-title" style="padding-left:16px">
+              <span class="phase-dot" style="background:var(--t-color)"></span>
+              Phase 1 — 기반 구축
+            </div>
+          </td>
+          <td class="date-cell">25.08 ~ 25.09</td>
+          <td class="status-cell"><span class="status-done">✅ 완료</span></td>
+          <td class="deliverables">개발 생태계 첫 번째 기초 공사 · Sprint 3개</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.1.1.1</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">1-1-1</span>
+              <span class="tree-prefix">└─</span>Sprint 1 · NX Monorepo &amp; 기술스택 확립
+            </span>
+          </td>
+          <td class="date-cell">08.04~08.17</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>NX Monorepo 통합 작업공간 구축 — 프로젝트 간 코드/설정 공유</li>
+              <li>TypeScript / NestJS / React 기술스택 전사 표준화</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.1.1.2</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">1-1-2</span>
+              <span class="tree-prefix">└─</span>Sprint 2 · IDP 1차 &amp; 로컬 환경 표준화
+            </span>
+          </td>
+          <td class="date-cell">08.18~08.31</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>Backstage IDP 1차 구축 — 새 프로젝트 생성 1~2일 → 10분</li>
+              <li>Docker Compose 표준 로컬 개발 환경 구성</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.1.1.3</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">1-1-3</span>
+              <span class="tree-prefix">└─</span>Sprint 3 · Phase 1 완성 &amp; 팀 온보딩
+            </span>
+          </td>
+          <td class="date-cell">09.01~09.14</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>Phase 1 통합 검증 및 안정화</li>
+              <li>8월 합류 팀원(조진우) 온보딩 완료</li>
+            </ul>
+          </td>
+        </tr>
+
+        <!-- Phase 2 -->
+        <tr class="row-phase terroir-row">
+          <td class="wbs-num">1.1.2</td>
+          <td class="wbs-name">
+            <div class="phase-title" style="padding-left:16px">
+              <span class="phase-dot" style="background:var(--t-color)"></span>
+              Phase 2 — 자동화 인프라 가동
+            </div>
+          </td>
+          <td class="date-cell">25.10 ~ 25.11</td>
+          <td class="status-cell"><span class="status-done">✅ 완료</span></td>
+          <td class="deliverables">생산 수준 인프라 자동화 전면 구축 · Sprint 3개</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.1.2.1</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">1-2-1</span>
+              <span class="tree-prefix">└─</span>Sprint 1 · GCP Kubernetes 클러스터 구축
+            </span>
+          </td>
+          <td class="date-cell">10.06~10.19</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>자가복구·자동확장 서버 인프라 (GCP Kubernetes)</li>
+              <li>서버 장애 시 자동 복구 — 운영 개입 최소화</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.1.2.2</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">1-2-2</span>
+              <span class="tree-prefix">└─</span>Sprint 2 · CI/CD 무인 배포 파이프라인
+            </span>
+          </td>
+          <td class="date-cell">10.20~11.02</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>GitHub Actions + ArgoCD — 코드 승인 후 ~3분 자동 배포</li>
+              <li>빌드·테스트·배포 전 과정 무인화</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.1.2.3</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">1-2-3</span>
+              <span class="tree-prefix">└─</span>Sprint 3 · LGTM 전 구간 관측성 스택
+            </span>
+          </td>
+          <td class="date-cell">11.03~11.16</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>Loki + Grafana + Tempo + Mimir — 로그/메트릭/추적/대시보드 4종 통합</li>
+              <li>어느 서비스 문제인지 즉시 파악 가능</li>
+            </ul>
+          </td>
+        </tr>
+
+        <!-- Phase 3 -->
+        <tr class="row-phase terroir-row">
+          <td class="wbs-num">1.1.3</td>
+          <td class="wbs-name">
+            <div class="phase-title" style="padding-left:16px">
+              <span class="phase-dot" style="background:var(--t-color)"></span>
+              Phase 3 — Alpha 완성 &amp; 검증
+            </div>
+          </td>
+          <td class="date-cell">25.11 ~ 25.12</td>
+          <td class="status-cell"><span class="status-done">✅ 완료</span></td>
+          <td class="deliverables">공통 라이브러리 출시 · 사용자 테스트 · Alpha v0.1 릴리즈 · Sprint 3개</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.1.3.1</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">1-3-1</span>
+              <span class="tree-prefix">└─</span>Sprint 1 · 공통 라이브러리 9종 개발
+            </span>
+          </td>
+          <td class="date-cell">11.17~11.30</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>인증·DB·메시징·실시간·API문서 등 9종 — 팀 반복 개발 제거</li>
+              <li>모든 팀이 즉시 꺼내 쓰는 공구함 완성</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.1.3.2</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">1-3-2</span>
+              <span class="tree-prefix">└─</span>Sprint 2 · Alpha 사용자 테스트 &amp; 피드백
+            </span>
+          </td>
+          <td class="date-cell">12.01~12.14</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>Alpha 테스트 실시 — 사용자 피드백 수집 및 반영</li>
+              <li>개발 플랫폼 v0.1 릴리즈</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.1.3.3</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">1-3-3</span>
+              <span class="tree-prefix">└─</span>Sprint 3 · 🎯 Alpha Release 완료
+            </span>
+          </td>
+          <td class="date-cell">12.15~12.19</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>Chapter 1 최종 안정화 및 Alpha 릴리즈 선언</li>
+              <li>문제점 분석 및 Chapter 2 과제 도출 완료</li>
+            </ul>
+          </td>
+        </tr>
+
+        <!-- Stabilization 1 -->
+        <tr class="row-stab">
+          <td class="wbs-num" style="color:var(--stab-color)">—</td>
+          <td colspan="4">
+            ≈ 안정화 기간 (4주) &nbsp;·&nbsp; 2025.12.19 ~ 2026.01.16 &nbsp;·&nbsp; Alpha 운영 점검 및 Chapter 2 준비
+          </td>
+        </tr>
+
+        <!-- ══ CHAPTER 2 ══ -->
+        <tr class="row-chapter ch2 chapter-header-row">
+          <td class="wbs-num">1.2</td>
+          <td class="wbs-name">
+            <div class="chapter-title-wrap">
+              <span class="chapter-title terroir-color">Chapter 2 — Beta Release</span>
+              <span class="chapter-sub">2026.01 ~ 2026.04+ · 3 Phase · 9 Sprint · 현재 Sprint 2-3-2 진행중</span>
+            </div>
+          </td>
+          <td class="date-cell">26.01~26.04+</td>
+          <td class="status-cell"><span class="status-ongoing">◐ 진행중</span></td>
+          <td class="deliverables">플랫폼 고도화 · 공통모듈 · Beta 릴리즈 목표</td>
+        </tr>
+
+        <!-- Phase 1 -->
+        <tr class="row-phase terroir-row">
+          <td class="wbs-num">1.2.1</td>
+          <td class="wbs-name">
+            <div class="phase-title" style="padding-left:16px">
+              <span class="phase-dot" style="background:var(--t-color)"></span>
+              Phase 1 — 플랫폼 고도화
+            </div>
+          </td>
+          <td class="date-cell">26.01 ~ 26.02</td>
+          <td class="status-cell"><span class="status-done">✅ 완료</span></td>
+          <td class="deliverables">Sommelier IDP · GCP+IDC 하이브리드 인프라 · SDD 공식화 · Sprint 3개</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.2.1.1</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">2-1-1</span>
+              <span class="tree-prefix">└─</span>Sprint 1 · Sommelier IDP &amp; 하이브리드 리서치
+            </span>
+          </td>
+          <td class="date-cell">01.06~01.17</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>Sommelier — YAML 없이 UI 클릭만으로 인프라 설정·배포</li>
+              <li>GCP + IDC 하이브리드 인프라 구성 리서치</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.2.1.2</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">2-1-2</span>
+              <span class="tree-prefix">└─</span>Sprint 2 · GCP 비용 최적화 &amp; SDD 방법론 공식화
+            </span>
+          </td>
+          <td class="date-cell">01.20~02.02</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>GCP 사용 비용 분석 및 최적화 체계 수립</li>
+              <li>SDD(스펙 주도 개발) — 코드보다 의도를 먼저, AI와 협업하는 새 개발 표준 공식화</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.2.1.3</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">2-1-3</span>
+              <span class="tree-prefix">└─</span>Sprint 3 · IDC K8s 클러스터 &amp; Phase 1 완성
+            </span>
+          </td>
+          <td class="date-cell">02.03~02.14</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>IDC K8s 클러스터 구축 — 클라우드+자사 서버 통합 운영</li>
+              <li>Backstage 운영 화면 3종 (프로젝트 생성·상태 확인·수동 배포)</li>
+              <li>Phase 1 릴리즈 결과물 검증 완료</li>
+            </ul>
+          </td>
+        </tr>
+
+        <!-- Phase 2 -->
+        <tr class="row-phase terroir-row">
+          <td class="wbs-num">1.2.2</td>
+          <td class="wbs-name">
+            <div class="phase-title" style="padding-left:16px">
+              <span class="phase-dot" style="background:var(--t-color)"></span>
+              Phase 2 — 공통모듈 &amp; 운영 고도화
+            </div>
+          </td>
+          <td class="date-cell">26.02 ~ 26.03</td>
+          <td class="status-cell"><span class="status-done">✅ 완료</span></td>
+          <td class="deliverables">Non-NX 온보딩 · SDD 고도화 · v0.2 릴리즈 · 공통모듈 리서치 · Sprint 3개</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.2.2.1</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">2-2-1</span>
+              <span class="tree-prefix">└─</span>Sprint 1 · IDC 배포환경 &amp; 외부 프로젝트 온보딩
+            </span>
+          </td>
+          <td class="date-cell">02.05~02.18</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>IDC 서비스 배포 환경 구축 완료</li>
+              <li>Non-NX 외부 프로젝트 인프라 온보딩 (Python·Vue 등 타 스택 지원)</li>
+              <li>외부 프로젝트 LGTM 옵저버빌리티 스택 연동</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.2.2.2</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">2-2-2</span>
+              <span class="tree-prefix">└─</span>Sprint 2 · SDD 플로우 고도화 &amp; v0.2 릴리즈
+            </span>
+          </td>
+          <td class="date-cell">02.19~03.04</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>Git Worktree 활용 SDD 플로우 고도화</li>
+              <li>AI 구조화 커밋·PR 생성, Pre-commit AI 셀프리뷰</li>
+              <li>개발 플랫폼 v0.2 릴리즈</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.2.2.3</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">2-2-3</span>
+              <span class="tree-prefix">└─</span>Sprint 3 · 공통모듈 리서치 4종
+            </span>
+          </td>
+          <td class="date-cell">03.05~03.18</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>인증 서비스 리서치 (RDDP-319)</li>
+              <li>권한/메뉴 관리 서비스 리서치 (RDDP-320)</li>
+              <li>Notification Hub 리서치 (RDDP-321) · 파일 서비스 리서치 (RDDP-322)</li>
+            </ul>
+          </td>
+        </tr>
+
+        <!-- Phase 3 -->
+        <tr class="row-phase terroir-row">
+          <td class="wbs-num">1.2.3</td>
+          <td class="wbs-name">
+            <div class="phase-title" style="padding-left:16px">
+              <span class="phase-dot" style="background:#facc15;box-shadow:0 0 6px rgba(250,204,21,0.4)"></span>
+              Phase 3 — Beta 완성
+            </div>
+          </td>
+          <td class="date-cell">26.03 ~ 26.04</td>
+          <td class="status-cell"><span class="status-ongoing">◐ 진행중</span></td>
+          <td class="deliverables">모노레포 분리 · DB 운영 시나리오 · 공통모듈 · 🎯 Beta 릴리즈 목표</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.2.3.1</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge done">2-3-1</span>
+              <span class="tree-prefix">└─</span>Sprint 1 · 모노레포 분리 &amp; FE 배포 플로우
+            </span>
+          </td>
+          <td class="date-cell">03.19~04.01</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>모노레포 3개 독립 저장소 분리 (RDDP-385) — R&amp;D팀·사용자팀 충돌 해소</li>
+              <li>프론트엔드 배포 플로우 재설계 (신규)</li>
+              <li>데이터베이스 운영 시나리오 정리 (신규) · merge 완료 시 서비스 URL 자동 안내</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.2.3.2</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge ongoing">2-3-2</span>
+              <span class="tree-prefix">└─</span>Sprint 2 · 인프라 완성 &amp; 공통모듈 샌드박스 ← 현재
+            </span>
+          </td>
+          <td class="date-cell">04.02~04.15</td>
+          <td class="status-cell"><span class="status-ongoing">◐</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>하이브리드 인프라 통합 운영 완성 (RDDP-327)</li>
+              <li>공통 모듈 샌드박스 구축 (RDDP-464) · DB 운영 시나리오 완성</li>
+              <li>IDP 셀프서비스 운영 재검토 (RDDP-462) · 사용자 시나리오 가이드 (RDDP-481)</li>
+            </ul>
+          </td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">1.2.3.3</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge plan">2-3-3</span>
+              <span class="tree-prefix">└─</span>Sprint 3 · 🎯 Beta Release 완성 (예정)
+            </span>
+          </td>
+          <td class="date-cell">04.16~04.29</td>
+          <td class="status-cell"><span class="status-plan">○ 예정</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>Beta 릴리즈 최종 검증 및 배포</li>
+              <li>전체 사용자 시나리오 점검 완료</li>
+            </ul>
+          </td>
+        </tr>
+
+        <!-- Stabilization 2 -->
+        <tr class="row-stab">
+          <td class="wbs-num" style="color:var(--stab-color)">—</td>
+          <td colspan="4">
+            ≈ 안정화 기간 (4주) &nbsp;·&nbsp; 2026.04말 ~ 2026.05말 (예정) &nbsp;·&nbsp; Beta 운영 점검 및 Chapter 3 준비
+          </td>
+        </tr>
+
+        <!-- ══ CHAPTER 3 ══ -->
+        <tr class="row-chapter ch3 chapter-header-row">
+          <td class="wbs-num">1.3</td>
+          <td class="wbs-name">
+            <div class="chapter-title-wrap">
+              <span class="chapter-title" style="color:var(--text-3)">Chapter 3 — GA Release</span>
+              <span class="chapter-sub">2026.06+ · 예정 · 세부 계획 수립 전</span>
+            </div>
+          </td>
+          <td class="date-cell">26.06+</td>
+          <td class="status-cell"><span class="status-plan">○ 예정</span></td>
+          <td class="deliverables" style="color:var(--text-3)">공통 모듈 전체 구현 · 통합 모니터링 대시보드 · GA 릴리즈 (세부 계획 수립 중)</td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div><!-- /wbs-section terroir -->
+
+  <!-- ═══ WBS: VINIFICATION ═══ -->
+  <div class="wbs-section">
+    <div class="wbs-section-title">
+      <h2>WBS — Vinification</h2>
+      <span class="badge badge-vini">VINIFICATION</span>
+      <span class="badge badge-ongoing">진행중</span>
+    </div>
+    <table class="wbs-table">
+      <thead>
+        <tr>
+          <th style="width:70px">WBS #</th>
+          <th>업무명</th>
+          <th style="width:130px">기간</th>
+          <th style="width:70px">상태</th>
+          <th>주요 결과물</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="row-project">
+          <td class="wbs-num">2</td>
+          <td class="wbs-name">Vinification — 레거시 시스템 재구축 분석</td>
+          <td class="date-cell">2026.01 ~ 진행중</td>
+          <td class="status-cell"><span class="status-ongoing">◐ 진행중</span></td>
+          <td class="deliverables">레거시 역설계 → SDD 스펙 전환 → Terroir 현대화 경로 설계 · 담당: 브렛</td>
+        </tr>
+
+        <!-- 세아방산 -->
+        <tr class="row-phase">
+          <td class="wbs-num">2.1</td>
+          <td class="wbs-name">
+            <div class="phase-title" style="padding-left:16px">
+              <span class="phase-dot" style="background:var(--v-color)"></span>
+              세아방산소재 — MES 생산관리 분석
+            </div>
+          </td>
+          <td class="date-cell">26.01 ~ 26.02</td>
+          <td class="status-cell"><span class="status-done">✅ 완료</span></td>
+          <td class="deliverables">10년+ 레거시 MES 역설계 · Terroir 현대화 경로 수립</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">2.1.1</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge blue">Crush</span>
+              <span class="tree-prefix">└─</span>레거시 생산관리 시스템 역추출
+            </span>
+          </td>
+          <td class="date-cell">01 ~ 02월</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">코드·DB 분석으로 비즈니스 로직 역추출 — 문서 없는 레거시 역설계(고난도)</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">2.1.2</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge blue">Harvest</span>
+              <span class="tree-prefix">└─</span>비즈니스 규칙 SDD 스펙 문서화
+            </span>
+          </td>
+          <td class="date-cell">01 ~ 02월</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">추출 로직 → SDD 스펙 재구성 · 비즈니스 규칙 현대적 재해석</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">2.1.3</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge blue">Path</span>
+              <span class="tree-prefix">└─</span>Terroir 현대화 경로 설계
+            </span>
+          </td>
+          <td class="date-cell">02 ~ 03월</td>
+          <td class="status-cell"><span class="status-done">✅</span></td>
+          <td class="deliverables">Strangler Fig 패턴으로 기존 시스템 교체 없는 점진적 전환 계획</td>
+        </tr>
+
+        <!-- 세아창원 -->
+        <tr class="row-phase">
+          <td class="wbs-num">2.2</td>
+          <td class="wbs-name">
+            <div class="phase-title" style="padding-left:16px">
+              <span class="phase-dot" style="background:var(--v-color)"></span>
+              세아창원특수강 — 구 ePro 구매영업관리 분석
+            </div>
+          </td>
+          <td class="date-cell">26.02 ~ 26.03</td>
+          <td class="status-cell"><span class="status-done">✅ 완료</span></td>
+          <td class="deliverables">레거시 구매/영업관리 역분석 · SDD 전환 · 이중 운영 계획</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">2.2.1~3</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge blue">Crush → Harvest → Path</span>
+              <span class="tree-prefix">└─</span>구 ePro 역추출 · SDD 전환 · 이중 운영 계획
+            </span>
+          </td>
+          <td class="date-cell">02 ~ 04월</td>
+          <td class="status-cell"><span class="status-ongoing">◐</span></td>
+          <td class="deliverables">도메인 역분석 → API 스펙 전환 → 신규·레거시 병행 트래픽 전환 계획 (이중 운영 진행중)</td>
+        </tr>
+
+        <!-- VNTG ERP -->
+        <tr class="row-phase">
+          <td class="wbs-num">2.3</td>
+          <td class="wbs-name">
+            <div class="phase-title" style="padding-left:16px">
+              <span class="phase-dot" style="background:#facc15"></span>
+              VNTG ERP — 전사 ERP 분석 &amp; 현대화 경로 의사결정
+            </div>
+          </td>
+          <td class="date-cell">26.03 ~ 진행중</td>
+          <td class="status-cell"><span class="status-ongoing">◐ 진행중</span></td>
+          <td class="deliverables">전사 ERP 도메인 경계 분석 · Vinification vs Élevage 경로 의사결정 보고서</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">2.3.1~2</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge ongoing">진행중</span>
+              <span class="tree-prefix">└─</span>전사 ERP Crush 분석 → 현대화 경로 의사결정
+            </span>
+          </td>
+          <td class="date-cell">03월 ~ 진행중</td>
+          <td class="status-cell"><span class="status-ongoing">◐</span></td>
+          <td class="deliverables">복잡한 기업 ERP 도메인 역설계 → 완전 재구축(Vinification) vs 시맨틱 강화(Élevage) 경로 분석 중</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ WBS: ÉLEVAGE ═══ -->
+  <div class="wbs-section">
+    <div class="wbs-section-title">
+      <h2>WBS — Élevage</h2>
+      <span class="badge badge-ele">ÉLEVAGE</span>
+      <span class="badge badge-ongoing">착수</span>
+    </div>
+    <table class="wbs-table">
+      <thead>
+        <tr>
+          <th style="width:70px">WBS #</th>
+          <th>업무명</th>
+          <th style="width:130px">기간</th>
+          <th style="width:70px">상태</th>
+          <th>주요 결과물</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="row-project">
+          <td class="wbs-num">3</td>
+          <td class="wbs-name">Élevage — 레거시 위 AI 역량 강화</td>
+          <td class="date-cell">2026.04 ~ 진행중</td>
+          <td class="status-cell"><span class="status-ongoing">◐ 착수</span></td>
+          <td class="deliverables">레거시 교체 없이 Semantic Layer를 씌워 즉각 AI 활용 가능하게 하는 과제 · 리드: 윤종원</td>
+        </tr>
+
+        <!-- ARD -->
+        <tr class="row-phase">
+          <td class="wbs-num">3.1</td>
+          <td class="wbs-name">
+            <div class="phase-title" style="padding-left:16px">
+              <span class="phase-dot" style="background:var(--e-color)"></span>
+              ARD — 아키텍처 요구사항 수립
+            </div>
+          </td>
+          <td class="date-cell">26.04 ~ 진행중</td>
+          <td class="status-cell"><span class="status-ongoing">◐ 진행중</span></td>
+          <td class="deliverables">Semantic Layer 아키텍처 전체 설계 · 요구사항 정의</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">3.1.1</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge amber">진행중</span>
+              <span class="tree-prefix">└─</span>레거시 DB 구조 전체 분석 &amp; Semantic 아키텍처 설계
+            </span>
+          </td>
+          <td class="date-cell">04월 ~ 진행중</td>
+          <td class="status-cell"><span class="status-ongoing">◐</span></td>
+          <td class="deliverables">
+            <ul>
+              <li>수십 년 레거시 DB 구조 최초 체계화 (데이터 경계·의미 파악)</li>
+              <li>Ontology 기반 Semantic Layer 아키텍처 설계</li>
+              <li>AI Agent 인터페이스 설계 (검색·분석·자동화 API 레이어)</li>
+            </ul>
+          </td>
+        </tr>
+
+        <!-- Semantic Layer 구축 -->
+        <tr class="row-phase">
+          <td class="wbs-num">3.2</td>
+          <td class="wbs-name">
+            <div class="phase-title" style="padding-left:16px">
+              <span class="phase-dot" style="background:rgba(245,158,11,0.3)"></span>
+              Semantic Layer 구축
+            </div>
+          </td>
+          <td class="date-cell">26.05+ 예정</td>
+          <td class="status-cell"><span class="status-plan">○ 예정</span></td>
+          <td class="deliverables">AI 인터페이스 실제 개발 · 레거시 연동 · ARD 완료 후 착수</td>
+        </tr>
+        <tr class="row-sprint">
+          <td class="wbs-num">3.2.1~2</td>
+          <td class="wbs-name">
+            <span class="indent-4">
+              <span class="sprint-badge plan">예정</span>
+              <span class="tree-prefix">└─</span>Data→Semantic Mapper 개발 · Semantic API 서비스 제공
+            </span>
+          </td>
+          <td class="date-cell">26.05+ 예정</td>
+          <td class="status-cell"><span class="status-plan">○</span></td>
+          <td class="deliverables">레거시 DB → Semantic 데이터 변환 엔진 · AI 기반 검색·분석·자동화 API · IDP Catalog 연동</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <div class="report-footer">
+    <div class="report-footer-left">
+      <strong>CEPAGE Project</strong> &nbsp;·&nbsp; VNTG R&amp;D Lab<br>
+      <span style="color:var(--text-3);font-size:12px;">Terroir · Vinification · Élevage</span>
+    </div>
+    <div class="report-footer-right">
+      보고 기준일: 2026년 4월<br>
+      <span style="color:var(--text-3);">홀딩스 과제 투자 검토 자료 · WBS v2</span>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<script data-page-hash="WQFU3CG" src="/gemini_html/page-footer.js"></script>
+</body>
+</html>
