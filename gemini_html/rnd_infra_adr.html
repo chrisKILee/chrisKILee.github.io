@@ -216,9 +216,9 @@
   <p class="lead-desc">온프레미스(IDC) 및 GCP 하이브리드 인프라 구축에 관한 중요 기술적 의사결정을 체계적으로 기록하고 추적하는 문서 모음. IDC K8s 구축부터 GCP 설계까지 인프라 전반의 ADR을 포함합니다.</p>
   <div class="lead-stats">
     <div class="stat"><span class="stat-num">8</span><span class="stat-label">IDC ADR</span></div>
-    <div class="stat"><span class="stat-num">15</span><span class="stat-label">Global ADR</span></div>
+    <div class="stat"><span class="stat-num">16</span><span class="stat-label">Global ADR</span></div>
     <div class="stat"><span class="stat-num">16</span><span class="stat-label">Accepted</span></div>
-    <div class="stat"><span class="stat-num">7</span><span class="stat-label">Proposed</span></div>
+    <div class="stat"><span class="stat-num">8</span><span class="stat-label">Proposed</span></div>
   </div>
 </section>
 
@@ -766,7 +766,7 @@
   <section class="section">
     <div class="section-header">
       <h2 class="section-title">Global ADR</h2>
-      <span class="section-count">docs/adr/global/ · 15개</span>
+      <span class="section-count">docs/adr/global/ · 16개</span>
     </div>
     <p class="section-desc">하이브리드 인프라(온프레미스 + GCP) 전체에 영향하는 전역 기술 결정. CI/CD, IaC, Observability, 클러스터 구조, DNS 자동화 등을 포함.</p>
 
@@ -1524,6 +1524,63 @@
               <a class="gh-link" href="https://github.com/VntgCorp/RND-INFRA/blob/develop/docs/adr/global/ADR-014-grafana_deployment_pattern-P.md" target="_blank" rel="noopener">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
                 GitHub에서 원문 보기
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Global ADR-016 -->
+      <div class="adr-item">
+        <button class="adr-trigger" aria-expanded="false" aria-controls="panel-g016" onclick="toggleAdr(this)">
+          <div class="adr-num">ADR-016</div>
+          <div class="adr-trigger-body">
+            <div class="adr-title">Grafana 운영 표준</div>
+            <div class="adr-meta">
+              <span class="badge badge-proposed"><span class="badge-dot"></span>Proposed</span>
+              <span class="badge-meta">RDDP-456 · 2026-04-09</span>
+            </div>
+          </div>
+          <div class="adr-trigger-right">
+            <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+          </div>
+        </button>
+        <div class="adr-panel" id="panel-g016" aria-hidden="true">
+          <div class="adr-panel-inner">
+            <div class="panel-grid">
+              <div class="panel-block">
+                <div class="panel-block-label">Context — 맥락</div>
+                <div class="panel-block-body">
+                  <ul>
+                    <li>GKE Autopilot→Standard 마이그레이션 (ADR-008)</li>
+                    <li>기존 <code>grafana/grafana</code> chart v8.15.0 EOL (2026-01-30 community 이관)</li>
+                    <li>dex OIDC 인증 도입 (RDDP-456) → DB 영속성이 본질 문제로 부상</li>
+                    <li>베이스/사용자 dashboard 경계 정립 필요</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="panel-block">
+                <div class="panel-block-label">Decision — 결정 내용</div>
+                <div class="panel-block-body">
+                  <p><strong>community helm chart + PVC + GitOps + 베이스/사용자 dashboard 하이브리드</strong></p>
+                  <ul style="margin-top:8px;">
+                    <li>chart: <code>grafana-community/grafana</code> (values schema 100% 호환, 학습 곡선 0)</li>
+                    <li>DB 영속성: PVC (<code>persistence.enabled=true</code>) — Cloud SQL 본 시점 과투자</li>
+                    <li>백업: 인프라 레이어(PD Snapshot) + Application 레이어(Grafana API export) 2-레이어 의무, 구체화는 후속</li>
+                    <li>Dashboard: Platform folder(코드·Git PR) / User folder(UI 자율) 분리</li>
+                    <li>operator(CRD 9개) 거부 — 현재 단일 인스턴스 시나리오에서 가치 미미</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="panel-footer">
+              <a class="gh-link" href="https://github.com/VntgCorp/RND-INFRA/blob/feature/RDDP-458-dashboard-storage-strategy/docs/adr/global/ADR-016-grafana_deployment_pattern-P.md" target="_blank" rel="noopener">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
+                GitHub에서 원문 보기
+              </a>
+              <a class="gh-link" href="/gemini_html/adr_016_grafana_deployment_pattern.html" style="margin-left:12px;">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3H7.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1z"/></svg>
+                상세 페이지 보기
               </a>
             </div>
           </div>
