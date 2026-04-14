@@ -44,21 +44,15 @@
     .screenshot-gallery img:hover { opacity: 0.88; }
     #lb-overlay {
       display: none; position: fixed; inset: 0; z-index: 9999;
-      background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
-      align-items: center; justify-content: center;
-      flex-direction: column;
+      background: rgba(0,0,0,0.88); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; flex-direction: column;
+      cursor: zoom-out;
     }
     #lb-overlay.open { display: flex; }
     #lb-img {
-      max-width: 94vw; max-height: 90vh;
-      border-radius: 6px; box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+      max-width: 90vw; max-height: 82vh;
+      border-radius: 10px; box-shadow: 0 24px 64px rgba(0,0,0,0.5);
       object-fit: contain;
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: crisp-edges;
-      transform-origin: center center;
-      transition: transform 0.15s ease;
-      cursor: zoom-in;
-      user-select: none;
     }
     #lb-close {
       position: fixed; top: 20px; right: 24px;
@@ -77,12 +71,6 @@
     #lb-caption {
       color: #ddd; margin-top: 10px; font-size: 13px; text-align: center;
     }
-    .category-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: #fdf0e8; border: 1px solid #e8b896; color: #c8622a;
-      font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 6px;
-      letter-spacing: 0.05em;
-    }
   </style>
 </head>
 <body>
@@ -92,7 +80,10 @@
     <span id="lb-close" onclick="closeLb()">✕</span>
     <button id="lb-prev" onclick="event.stopPropagation(); moveLb(-1)">‹</button>
     <img id="lb-img" src="" alt="" onclick="event.stopPropagation()">
-    <div id="lb-caption"></div>
+    <div id="lb-caption">
+      <span id="lb-alt"></span>
+      <span id="lb-counter" style="margin-left:12px; opacity:0.6;"></span>
+    </div>
     <button id="lb-next" onclick="event.stopPropagation(); moveLb(1)">›</button>
   </div>
   <script>
@@ -108,47 +99,16 @@
       _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
       _updateLb();
     }
-    var _lbZoom = 1;
-    function _resetZoom() {
-      _lbZoom = 1;
-      var img = document.getElementById('lb-img');
-      img.style.transform = 'scale(1)';
-      img.style.cursor = 'zoom-in';
-    }
     function _updateLb() {
       var d = _lbImgs[_lbIdx];
-      var img = document.getElementById('lb-img');
-      img.src = d.src;
-      img.alt = d.alt || '';
-      _resetZoom();
-      document.getElementById('lb-caption').textContent =
-        (d.alt || '') + ' (' + (_lbIdx+1) + ' / ' + _lbImgs.length + ')';
+      document.getElementById('lb-img').src = d.src;
+      document.getElementById('lb-img').alt = d.alt || '';
+      document.getElementById('lb-alt').textContent = d.alt || '';
+      document.getElementById('lb-counter').textContent = (_lbIdx+1) + ' / ' + _lbImgs.length;
       document.getElementById('lb-prev').style.display = _lbImgs.length > 1 ? '' : 'none';
       document.getElementById('lb-next').style.display = _lbImgs.length > 1 ? '' : 'none';
     }
     function initGallery(imgs) { _lbImgs = imgs; }
-
-    // 휠 줌
-    document.addEventListener('wheel', function(e) {
-      var o = document.getElementById('lb-overlay');
-      if (!o.classList.contains('open')) return;
-      e.preventDefault();
-      var img = document.getElementById('lb-img');
-      _lbZoom = Math.min(4, Math.max(1, _lbZoom - e.deltaY * 0.002));
-      img.style.transform = 'scale(' + _lbZoom + ')';
-      img.style.cursor = _lbZoom > 1 ? 'zoom-out' : 'zoom-in';
-    }, { passive: false });
-
-    // 더블클릭 줌 토글
-    document.addEventListener('DOMContentLoaded', function() {
-      document.getElementById('lb-img').addEventListener('dblclick', function(e) {
-        e.stopPropagation();
-        if (_lbZoom > 1) { _resetZoom(); return; }
-        _lbZoom = 2.2;
-        this.style.transform = 'scale(2.2)';
-        this.style.cursor = 'zoom-out';
-      });
-    });
     document.addEventListener('keydown', function(e) {
       var o = document.getElementById('lb-overlay');
       if (o.classList.contains('open')) {
@@ -187,16 +147,15 @@
     <section style="margin-bottom:52px;">
       <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
         <div style="flex:1; min-width:280px;">
-          <p class="eval-label" style="margin-bottom:10px;">AI-WORKER 인증 과제</p>
-          <span class="category-badge" style="margin-bottom:14px; display:inline-flex;">🏆 AIVE-CONTEST</span>
-          <h1 style="font-size:34px; font-weight:800; color:#1c1917; line-height:1.2; letter-spacing:-0.02em; margin-bottom:16px; margin-top:10px;">Cursor AI로 MES 개발<br>페어 프로그래밍 환경 구축</h1>
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제 · 🏆 AIVE-CONTEST</p>
+          <h1 style="font-size:36px; font-weight:800; color:#1c1917; line-height:1.15; letter-spacing:-0.02em; margin-bottom:18px;">Cursor AI 페어 프로그래밍</h1>
           <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">
-            Ask → Plan → Agent 전략과 사내 맞춤형 MCP 서버로 1인 개발 생산성을
-            <strong>60% 향상</strong>하고, MES 팀 전체의 AI 활용 표준 개발 방법론을 수립한 과제
+            MES 도메인 특화 <strong>MCP 서버를 직접 개발</strong>하고 Ask→Plan→Agent 방법론을 정립하여,
+            1인 연간 <strong>1,152시간</strong>을 절감하고 팀 전체 AI 개발 체계를 구축한 과제입니다.
           </p>
           <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
-            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026. 4. 8 제출</span>
-            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">MES2팀</span>
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026. 4. 8</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">MES2팀</span>
           </div>
         </div>
 
@@ -236,22 +195,20 @@
       <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
         <div style="background:#ede9e1; border-radius:12px; padding:24px;">
-          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">❗ 기존의 어려움</p>
-          <ul style="font-size:15px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
-            <li style="margin-bottom:8px;">🔴 SAP 도입·MES 개편으로 <strong>ITS 처리량 급증</strong></li>
-            <li style="margin-bottom:8px;">🔴 1인 개발자가 분석·설계·구현 <strong>전 과정 단독 담당</strong></li>
-            <li style="margin-bottom:8px;">🟡 시스템 이해가 <strong>개인 암묵지</strong>에만 집중</li>
-            <li style="margin-bottom:8px;">🟡 선 코딩·후 문서화로 <strong>설계 문서 확보율 10%</strong></li>
-            <li>🟡 물량 증가 시 <strong>야근·ODC 인력</strong> 불가피</li>
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">기존의 어려움</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
+            <li>🔴 <strong>개발 물량 폭증</strong> — SAP 도입·차세대 MES 준비로 대규모 시스템 개편 필요</li>
+            <li style="margin-top:8px;">🔴 <strong>암묵지 의존</strong> — 시스템 지식이 개발자 개인에게 종속, 병목 발생</li>
+            <li style="margin-top:8px;">🔴 <strong>설계 문서 부재</strong> — 선 코딩·후 문서화로 설계 문서 확보율 10%에 불과</li>
+            <li style="margin-top:8px;">🔴 <strong>야근·외부 인력 의존</strong> — 물량 급증 시 ODC 인력 불가피</li>
           </ul>
         </div>
         <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
           <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:10px; letter-spacing:0.05em;">✨ AI로 해결한 방식</p>
-          <ul style="font-size:15px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
-            <li style="margin-bottom:8px;">✅ <strong>Ask → Plan → Agent</strong> 단계적 전략으로 AI 할루시네이션 최소화</li>
-            <li style="margin-bottom:8px;">✅ <strong>MES SiS Framework MCP</strong> 서버로 AI가 사내 아키텍처 실시간 참조</li>
-            <li style="margin-bottom:8px;">✅ 개발자는 <strong>설계에 집중</strong>, 구현(코딩)은 AI에 위임</li>
-            <li>✅ <strong>13개 PDF 가이드</strong>로 팀 전체 확산 기반 마련</li>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
+            <li>✅ <strong>Ask → Plan → Agent</strong> 3단계 방법론 수립 — 개발자는 설계 집중, 구현은 AI 위임</li>
+            <li style="margin-top:8px;">✅ <strong>MES SiS Framework MCP 서버 직접 개발</strong> — AI가 도메인 규칙 실시간 참조, 환각 최소화</li>
+            <li style="margin-top:8px;">✅ <strong>PDF 13종 교육 가이드 제작</strong> — 팀 내 전파 완료, 타 팀 "따라 하기 쉽다" 피드백</li>
           </ul>
         </div>
       </div>
@@ -259,7 +216,7 @@
 
     <hr class="divider" style="margin-bottom:52px;">
 
-    <!-- ━━━ 평가 체크리스트 ━━━ -->
+    <!-- ━━━ 체크리스트 시각화 ━━━ -->
     <section style="margin-bottom:52px;">
       <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
 
@@ -267,18 +224,16 @@
         <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <span class="check-badge on">✅ 바이브코딩</span>
-          <span class="check-badge on">✅ 런타임 AI</span>
+          <span class="check-badge">런타임 AI</span>
           <span class="check-badge">노코드 AI</span>
         </div>
       </div>
       <div style="margin-bottom:32px;">
         <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <span class="check-badge">반복 보고서 취합</span>
-          <span class="check-badge">데이터 수집·가공</span>
-          <span class="check-badge">내부 문의 자동 처리</span>
-          <span class="check-badge">알림·모니터링</span>
           <span class="check-badge on">✅ 개발 프로세스 표준화·자동화</span>
+          <span class="check-badge on">✅ 설계 문서 자동 산출</span>
+          <span class="check-badge on">✅ 코드 생성 자동화</span>
         </div>
       </div>
 
@@ -288,45 +243,42 @@
             <span class="eval-label">③ 업무 효율성</span>
             <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">33<span style="font-size:12px; color:#b5895a;">/35</span></span>
           </div>
-          <ul style="font-size:14px; color:#44403c; line-height:1.7; list-style:none; padding:0;">
-            <li style="margin-bottom:6px;">📈 월 ITS 처리: <strong>15건 → 24건</strong> (60% 향상)</li>
-            <li style="margin-bottom:6px;">⏱️ 개발 시간: <strong>6시간 → 2시간</strong> (60% 단축)</li>
-            <li style="margin-bottom:6px;">📄 설계 문서: <strong>10% → 100%</strong> 확보</li>
-            <li>🚫 야근·ODC 외부 인력 의존 <strong>완전 제거</strong></li>
-          </ul>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            단위 기능 개발 <strong>6시간 → 2시간</strong>(67% 단축), 월 처리 건수 <strong>15 → 24건</strong>(60% 향상).
+            연간 절감 시간 <strong>1,152시간</strong>(4h/건 × 24건 × 12개월). 실제 26년 2~3월 운영 실적으로 검증.
+          </p>
         </div>
         <div class="eval-card">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
             <span class="eval-label">④ 아이디어 적절성</span>
             <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">23<span style="font-size:12px; color:#b5895a;">/25</span></span>
           </div>
-          <ul style="font-size:14px; color:#44403c; line-height:1.7; list-style:none; padding:0;">
-            <li style="margin-bottom:6px;">💡 1인 병목 문제를 <strong>AI 역할 분리</strong>로 해결</li>
-            <li style="margin-bottom:6px;">🔧 VS2019 AI 미지원 → <strong>Cursor 병행 현실적 해결</strong></li>
-            <li>📚 MCP로 <strong>사내 문서를 AI 컨텍스트화</strong> (RAG)</li>
-          </ul>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            AI를 막연히 "기대"하지 않고 단계별로 "활용"하는 방법론 정립. MES 도메인 MCP 서버를 직접 개발해
+            환각을 근본적으로 해결. 문제-해결 논리가 매우 명쾌하고 실용적으로 구현됨.
+          </p>
         </div>
         <div class="eval-card">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
             <span class="eval-label">⑤ 확산 가능성</span>
             <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">19<span style="font-size:12px; color:#b5895a;">/25</span></span>
           </div>
-          <ul style="font-size:14px; color:#44403c; line-height:1.7; list-style:none; padding:0;">
-            <li style="margin-bottom:6px;">👥 MES2팀 교육 완료 + <strong>타 팀 피드백 긍정</strong></li>
-            <li style="margin-bottom:6px;">📖 13개 PDF로 <strong>자기 학습 가능</strong></li>
-            <li>🔌 MCP 생태계로 <strong>무한 확장 가능</strong> 구조</li>
-          </ul>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            팀 내 교육 완료. 타 팀에서 <strong>"보고 따라 하기 쉽다"</strong> 피드백 확보.
+            Ask→Plan→Agent 방법론은 언어·도메인 무관 범용 적용 가능.
+            PDF 13종 가이드로 진입 장벽 최소화.
+          </p>
         </div>
         <div class="eval-card">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
             <span class="eval-label">⑥ 조직 목표 연결</span>
             <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">13<span style="font-size:12px; color:#b5895a;">/15</span></span>
           </div>
-          <ul style="font-size:14px; color:#44403c; line-height:1.7; list-style:none; padding:0;">
-            <li style="margin-bottom:6px;">🎯 센터 비전 <strong>"일하는 방식의 변화"</strong> 직접 실현</li>
-            <li style="margin-bottom:6px;">📊 MES2팀 KPI <strong>50% 직접 부합</strong></li>
-            <li>🏗️ 지식 자산화·시스템 안정화·역량 고도화 <strong>3가지 동시 달성</strong></li>
-          </ul>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            2026년 센터 비전 <strong>"일하는 방식의 변화"</strong> 직접 달성.
+            MES2팀 KPI 50% 직접 부합(운영 문서 자산화·시스템 안정화·역량 고도화).
+            팀 전체 AI 활용 개발 체계 정립.
+          </p>
         </div>
       </div>
     </section>
@@ -338,28 +290,49 @@
       <p class="eval-label" style="margin-bottom:20px;">⚡ 주요 기능</p>
       <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
         <div class="feature-card">
-          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🧭 Ask → Plan → Agent</p>
-          <p style="font-size:13px; color:#44403c; line-height:1.6;">무계획 AI 실행("Pray-and-Run") 방지. <strong>분석→설계→구현</strong> 3단계 강제로 의도치 않은 대규모 코드 변경 차단</p>
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🧠 Ask → Plan → Agent</p>
+          <ul style="font-size:13px; color:#44403c; line-height:1.7; padding-left:0; list-style:none;">
+            <li>🔹 <strong>Ask</strong>: 요구사항 명확화, AI에 컨텍스트 전달</li>
+            <li>🔹 <strong>Plan</strong>: AI가 설계 문서 생성 (개발자 검토)</li>
+            <li>🔹 <strong>Agent</strong>: AI가 코드 자동 생성·리팩토링</li>
+          </ul>
         </div>
         <div class="feature-card">
-          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🔌 SiS Framework MCP 서버</p>
-          <p style="font-size:13px; color:#44403c; line-height:1.6;">TypeScript로 개발한 MCP 서버. 사내 3-Tier 아키텍처·네이밍 규칙을 AI에 실시간 주입 (RAG)</p>
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🔌 SiS Framework MCP 서버</p>
+          <ul style="font-size:13px; color:#44403c; line-height:1.7; padding-left:0; list-style:none;">
+            <li>🔹 <strong>Resources</strong>: 3-Tier 아키텍처 문서 AI 실시간 제공</li>
+            <li>🔹 <strong>Tools</strong>: 화면 코드로 파일 경로 자동 조회</li>
+            <li>🔹 <strong>Prompts</strong>: 시나리오별 표준 가이드 제공</li>
+          </ul>
         </div>
         <div class="feature-card">
-          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🗂️ 화면 코드 파일 조회</p>
-          <p style="font-size:13px; color:#44403c; line-height:1.6;">화면 코드(예: SPRG700E02) 입력 시 Pop/Proc/Tds/Biz/SRD 파일 경로 자동 반환</p>
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📚 AI 페어 프로그래밍 가이드</p>
+          <ul style="font-size:13px; color:#44403c; line-height:1.7; padding-left:0; list-style:none;">
+            <li>🔹 PDF <strong>13종</strong> 교육 자료 (설치~고급 전략)</li>
+            <li>🔹 MES 아키텍처 소개 및 Cursor 연결 방법</li>
+            <li>🔹 AI 환각(Hallucination) 이해와 대응 전략</li>
+          </ul>
         </div>
         <div class="feature-card">
-          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🔄 VS2019 + Cursor 병행</p>
-          <p style="font-size:13px; color:#44403c; line-height:1.6;">AI 미지원 VS2019 환경에서 Cursor를 보조 IDE로 병행. <strong>TFS 형상관리 그대로 유지</strong></p>
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🗂️ 화면 파일 경로 자동 조회</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.7;">
+            화면 코드(예: SPRG700E02) 입력 시 UX/Biz 계층의 Pop, Proc, Tds, Biz, SRD 파일 경로를 자동 반환.
+            파일 검색 시간 제거.
+          </p>
         </div>
         <div class="feature-card">
-          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🧠 할루시네이션 대응 4종</p>
-          <p style="font-size:13px; color:#44403c; line-height:1.6;">역할 부여·근거 요청·RAG·교차 검증. AI 오답을 줄이는 <strong>구체적 프롬프트 전략</strong> 문서화</p>
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📐 신규 화면 추가 표준 가이드</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.7;">
+            조회/등록/수정 화면 유형별로 생성 순서·노드ID·서비스ID 규칙을 MCP Prompt로 표준화.
+            개발자 실수 방지.
+          </p>
         </div>
         <div class="feature-card">
-          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📚 13개 PDF 교육 자료</p>
-          <p style="font-size:13px; color:#44403c; line-height:1.6;">설치부터 MCP 심화까지 단계별 가이드. <strong>비개발자도 자기 학습</strong> 가능한 체계 구성</p>
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">💡 코드 컨벤션 자동 적용</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.7;">
+            .cursorrules 파일로 SIS Framework 코드 컨벤션을 정의하여 AI가 일관된 스타일로 코드 생성.
+            리뷰 부담 감소.
+          </p>
         </div>
       </div>
     </section>
@@ -370,35 +343,66 @@
     <section style="margin-bottom:52px;">
       <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
       <div style="background:#ede9e1; border-radius:14px; padding:28px;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px; margin-bottom:24px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
           <div>
-            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:12px; letter-spacing:0.05em;">AI 도구 · 전략</p>
-            <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none; padding:0;">
-              <li style="margin-bottom:6px;">🤖 <strong>Cursor AI</strong> — Claude/GPT 자동 선택</li>
-              <li style="margin-bottom:6px;">📡 <strong>MCP 서버</strong> — @modelcontextprotocol/sdk ^1.27.0</li>
-              <li style="margin-bottom:6px;">📋 <strong>4 Modes</strong> — Ask / Plan / Agent / Debug</li>
-              <li>🔒 <strong>Privacy Mode</strong> — 코드 학습 데이터 차단</li>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">AI/IDE 도구</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
+              <li>🔹 <strong>Cursor AI</strong> — Claude 기반 Agent Mode</li>
+              <li>🔹 <strong>MCP (Model Context Protocol)</strong></li>
+              <li>🔹 Ask → Plan → Agent 방법론</li>
             </ul>
           </div>
           <div>
-            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:12px; letter-spacing:0.05em;">개발 환경</p>
-            <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none; padding:0;">
-              <li style="margin-bottom:6px;">💻 <strong>C# / .NET 4.7.2</strong> + SiS Framework 6</li>
-              <li style="margin-bottom:6px;">🗄️ <strong>Oracle 19c</strong> + SRD SQL 리소스</li>
-              <li style="margin-bottom:6px;">🔧 <strong>TypeScript</strong> (MCP 서버 구현)</li>
-              <li>📦 <strong>TFS 2010 SP1</strong> 형상 관리</li>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">MCP 서버 기술 스택</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
+              <li>🔹 <strong>TypeScript</strong> + Node.js 18+</li>
+              <li>🔹 <strong>@modelcontextprotocol/sdk</strong> ^1.27.0</li>
+              <li>🔹 <strong>zod</strong> ^3.23.0 (유효성 검증)</li>
             </ul>
           </div>
         </div>
-
         <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:10px; padding:18px;">
-          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:12px; letter-spacing:0.05em;">아키텍처 흐름 (Ask → Plan → Agent)</p>
-          <div style="font-size:13px; color:#44403c; line-height:2; font-family:'DM Mono', monospace;">
-            <span style="color:#78716c;">① Ask</span>&nbsp;→ AI에게 현황 분석 &amp; 영향 범위 파악 요청<br>
-            <span style="color:#78716c;">② Plan</span>&nbsp;→ 수정 대상 파일·변경 범위 확정 (설계)<br>
-            <span style="color:#78716c;">③ Agent</span>&nbsp;→ 승인된 범위 내에서만 코드 자동 생성<br>
-            <span style="color:#b5895a; font-size:12px;">※ MCP 서버가 SiS 아키텍처 문서를 AI 컨텍스트에 실시간 주입</span>
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:12px;">🔄 개발 흐름 (Cursor + MCP)</p>
+          <div style="font-size:13px; color:#44403c; line-height:1.8;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span style="background:#fdf0e8; border:1px solid #e8b896; padding:4px 12px; border-radius:6px; font-weight:600; color:#c8622a;">① Ask</span>
+              <span style="color:#b5895a;">→</span>
+              <span style="background:#fdf0e8; border:1px solid #e8b896; padding:4px 12px; border-radius:6px; font-weight:600; color:#c8622a;">② Plan</span>
+              <span style="color:#b5895a;">→</span>
+              <span style="background:#fdf0e8; border:1px solid #e8b896; padding:4px 12px; border-radius:6px; font-weight:600; color:#c8622a;">③ Agent</span>
+              <span style="color:#b5895a;">→</span>
+              <span style="background:#ede9e1; border:1px solid #d6d0c4; padding:4px 12px; border-radius:6px; color:#78716c;">MCP 참조</span>
+              <span style="color:#b5895a;">→</span>
+              <span style="background:#ede9e1; border:1px solid #d6d0c4; padding:4px 12px; border-radius:6px; color:#78716c;">MES 코드 생성</span>
+            </div>
+            <p style="margin-top:12px; font-size:13px; color:#78716c;">
+              MCP 서버가 SIS 3-Tier 아키텍처·규칙을 AI에 실시간 공급 → AI 환각(Hallucination) 최소화 → 일관된 고품질 코드 생성
+            </p>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 기대 효과 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">1,152h</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">연간 절감 시간</p>
+          <p style="font-size:12px; color:#78716c;">4h/건 × 24건/월 × 12개월 = 연 1,152시간 절감</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">100%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">설계 문서 확보율</p>
+          <p style="font-size:12px; color:#78716c;">기존 10%에서 100%로 향상. Plan 단계 강제화로 자산화</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">+60%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">개발 처리 건수 향상</p>
+          <p style="font-size:12px; color:#78716c;">월 15건 → 24건 처리. 야근·ODC 인력 의존 완전 제거</p>
         </div>
       </div>
     </section>
@@ -407,54 +411,33 @@
 
     <!-- ━━━ 시각 증빙 ━━━ -->
     <section style="margin-bottom:52px;">
-      <p class="eval-label" style="margin-bottom:20px;">📸 시각 증빙 자료</p>
-      <p style="font-size:13px; color:#78716c; margin-bottom:16px;">PDF 교육 자료 스크린샷 — Cursor AI 실제 사용 화면</p>
+      <p class="eval-label" style="margin-bottom:20px;">📸 교육 자료 (PDF 13종)</p>
+      <p style="font-size:14px; color:#78716c; margin-bottom:20px;">설치부터 고급 전략까지 단계별 교육 자료를 제작하여 누구나 따라할 수 있도록 가이드화했습니다. 이미지를 클릭하면 크게 볼 수 있습니다.</p>
 
-      <script>
-        initGallery([
-          {src:"assets/3.3_예제로_배우기_p10_img1.png", alt:"예제 실습 — Ask→Plan→Agent 실제 적용 화면"},
-          {src:"assets/3.3_예제로_배우기_p10_img2.png", alt:"예제 실습 — 코드 생성 결과"},
-          {src:"assets/3.3_예제로_배우기_p7_img1.png", alt:"예제로 배우기 — 설계 단계"},
-          {src:"assets/2.3_Cursor_AI를_100___p9_img1.png", alt:"Cursor AI 채팅 모드 — Agent 실행"},
-          {src:"assets/2.3_Cursor_AI를_100___p9_img2.png", alt:"Cursor AI 채팅 모드 — Plan 결과"},
-          {src:"assets/4.1_사용자_프롬프트_p4_img2.png", alt:"사용자 프롬프트 작성 예제"},
-          {src:"assets/3.1_MES_아키텍처_소개_p1_img1.png", alt:"MES 3-Tier 아키텍처 소개"},
-          {src:"assets/3.2_Cursor_연결_p1_img1.png", alt:"Cursor + VS2019 병행 워크플로우"},
-        ]);
-      </script>
-      <div class="screenshot-gallery" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px;">
-        <img src="assets/3.3_예제로_배우기_p10_img1.png" alt="예제 실습 — Ask→Plan→Agent 실제 적용" onclick="openLb(0)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
-        <img src="assets/3.3_예제로_배우기_p10_img2.png" alt="예제 실습 — 코드 생성 결과" onclick="openLb(1)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
-        <img src="assets/3.3_예제로_배우기_p7_img1.png" alt="예제로 배우기 — 설계 단계" onclick="openLb(2)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
-        <img src="assets/2.3_Cursor_AI를_100___p9_img1.png" alt="Cursor AI 채팅 모드 — Agent 실행" onclick="openLb(3)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
-        <img src="assets/2.3_Cursor_AI를_100___p9_img2.png" alt="Cursor AI 채팅 모드 — Plan 결과" onclick="openLb(4)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
-        <img src="assets/4.1_사용자_프롬프트_p4_img2.png" alt="사용자 프롬프트 작성 예제" onclick="openLb(5)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
-        <img src="assets/3.1_MES_아키텍처_소개_p1_img1.png" alt="MES 3-Tier 아키텍처 소개" onclick="openLb(6)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
-        <img src="assets/3.2_Cursor_연결_p1_img1.png" alt="Cursor + VS2019 병행 워크플로우" onclick="openLb(7)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
-      </div>
-    </section>
+      <script>initGallery([
+        {src:"assets/0._교육자료_목차_p1.png", alt:"교육자료 목차"},
+        {src:"assets/2.1설치_및_초기_설정_p1.png", alt:"2.1 설치 및 초기 설정"},
+        {src:"assets/2.2_UI_구성_이해_p1.png", alt:"2.2 UI 구성 이해"},
+        {src:"assets/2.3_Cursor_AI를_100__활용하는_4가지_방식_p1.png", alt:"2.3 Cursor AI 100% 활용 4가지 방식"},
+        {src:"assets/3.1_MES_아키텍처_소개_p1.png", alt:"3.1 MES 아키텍처 소개"},
+        {src:"assets/3.2_Cursor_연결_p1.png", alt:"3.2 Cursor 연결"},
+        {src:"assets/3.3_예제로_배우기_p1.png", alt:"3.3 예제로 배우기"},
+        {src:"assets/3.4_Cursor_사용_전략_(Ask_→_Plan_→_Agent)_p1.png", alt:"3.4 Cursor 사용 전략 (Ask → Plan → Agent)"},
+        {src:"assets/4.1_사용자_프롬프트_p1.png", alt:"4.1 사용자 프롬프트"},
+        {src:"assets/4.2_코드_컨벤션(제약)_p1.png", alt:"4.2 코드 컨벤션(제약)"},
+        {src:"assets/4.3_MCP_등록_p1.png", alt:"4.3 MCP 등록"},
+        {src:"assets/4.5_DataBase_연동_방법_(Oracle)_p1.png", alt:"4.5 DataBase 연동 방법 (Oracle)"},
+        {src:"assets/4.6_AI_환각(Hallucination)_이해와_대응_전략_p1.png", alt:"4.6 AI 환각 이해와 대응 전략"}
+      ]);</script>
 
-    <hr class="divider" style="margin-bottom:52px;">
-
-    <!-- ━━━ 기대 효과 ━━━ -->
-    <section>
-      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
-        <div class="effect-card">
-          <div class="mono" style="font-size:36px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">60%</div>
-          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">개발 생산성 향상</p>
-          <p style="font-size:12px; color:#78716c;">월 15건 → 24건 처리<br>야근·ODC 완전 제거</p>
-        </div>
-        <div class="effect-card">
-          <div class="mono" style="font-size:36px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">60%</div>
-          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">개발 시간 단축</p>
-          <p style="font-size:12px; color:#78716c;">기능별 6시간 → 2시간<br>설계에 집중 가능</p>
-        </div>
-        <div class="effect-card">
-          <div class="mono" style="font-size:36px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">100%</div>
-          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">설계 문서 확보</p>
-          <p style="font-size:12px; color:#78716c;">기존 10% → 100%<br>Plan 단계 의무화로 달성</p>
-        </div>
+      <div class="screenshot-gallery" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px;">
+        <img src="assets/0._교육자료_목차_p1.png" alt="교육자료 목차" onclick="openLb(0)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/2.1설치_및_초기_설정_p1.png" alt="2.1 설치 및 초기 설정" onclick="openLb(1)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/2.3_Cursor_AI를_100__활용하는_4가지_방식_p1.png" alt="2.3 Cursor AI 100% 활용" onclick="openLb(3)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/3.1_MES_아키텍처_소개_p1.png" alt="3.1 MES 아키텍처 소개" onclick="openLb(4)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/3.4_Cursor_사용_전략_(Ask_→_Plan_→_Agent)_p1.png" alt="3.4 Ask → Plan → Agent 전략" onclick="openLb(7)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/4.3_MCP_등록_p1.png" alt="4.3 MCP 등록" onclick="openLb(10)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/4.6_AI_환각(Hallucination)_이해와_대응_전략_p1.png" alt="4.6 AI 환각 대응 전략" onclick="openLb(12)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
       </div>
     </section>
 
