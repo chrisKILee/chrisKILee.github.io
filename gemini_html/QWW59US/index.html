@@ -175,6 +175,41 @@
             animation: pulseBadge 2s ease-in-out infinite;
         }
 
+        /* ── 예비후보 배지 ── */
+        .finalist-badge {
+            position: absolute;
+            top: -3px;
+            left: 14px;
+            background: #000;
+            color: #FFF500;
+            font-size: 0.62rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            letter-spacing: 0.06em;
+            border: 2px solid #000;
+            border-top: none;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+
+        /* ── 점수 표시 ── */
+        .score-chip {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            letter-spacing: 0.04em;
+            background: #FFF500;
+            color: #000;
+            border: 2px solid #000;
+            box-shadow: 2px 2px 0 #000;
+        }
+        .score-chip.high {
+            background: #000;
+            color: #FFF500;
+        }
+
         /* ── 카테고리 배지 ── */
         .cat-badge {
             display: inline-block;
@@ -253,7 +288,7 @@
     </div>
 
     <script>
-        const SECRET_LIST_HASH = 'aive-contest-2025';
+        const SECRET_LIST_HASH = 'aive-contest-2026';
         const CATEGORY_HASH = 'QWW59US';
         let filesData = [];
 
@@ -263,8 +298,12 @@
                 const site = await resp.json();
                 filesData = Object.entries(site.files || {})
                     .filter(([, f]) => f.categoryHash === CATEGORY_HASH && f.visible !== false)
-                    .sort((a, b) => (a[1].order || 999) - (b[1].order || 999))
-                    .map(([hash, f]) => ({ hash, filename: f.filename, displayName: f.displayName, createdAt: f.createdAt, memo: f.memo }));
+                    .sort((a, b) => {
+                        const sa = a[1].score ?? -1, sb = b[1].score ?? -1;
+                        if (sb !== sa) return sb - sa;
+                        return (a[1].order || 999) - (b[1].order || 999);
+                    })
+                    .map(([hash, f]) => ({ hash, filename: f.filename, displayName: f.displayName, createdAt: f.createdAt, memo: f.memo, score: f.score }));
                 renderGrid(); checkHash();
             } catch (e) { showStealth404(); }
         }
@@ -280,13 +319,19 @@
                 return;
             }
 
-            container.innerHTML = list.map(file => `
+            container.innerHTML = list.map(file => {
+                const isFinalist = file.score >= 80;
+                const isNew = file.createdAt && (Date.now() - new Date(file.createdAt)) < 604800000;
+                return `
                 <div class="file-card" onclick="location.href='../${file.filename}'" style="position:relative">
-                    ${(file.createdAt && (Date.now() - new Date(file.createdAt)) < 604800000) ? '<span class="new-badge">NEW</span>' : ''}
+                    ${isFinalist ? '<span class="finalist-badge">🏅 예비후보</span>' : ''}
+                    ${isNew ? '<span class="new-badge">NEW</span>' : ''}
                     <div class="file-icon"><i class="fas fa-file-alt"></i></div>
                     <div class="file-name">${file.displayName}</div>
+                    ${file.score != null ? `<span class="score-chip${isFinalist ? ' high' : ''}">${file.score}점</span>` : ''}
                     ${file.memo ? '<span class="cat-badge">' + file.memo + '</span>' : ''}
-                </div>`).join('');
+                </div>`;
+            }).join('');
         }
 
         document.getElementById('searchInput').addEventListener('input', e => renderGrid(e.target.value));
