@@ -50,9 +50,15 @@
     }
     #lb-overlay.open { display: flex; }
     #lb-img {
-      max-width: 90vw; max-height: 82vh;
-      border-radius: 10px; box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      max-width: 94vw; max-height: 90vh;
+      border-radius: 6px; box-shadow: 0 24px 64px rgba(0,0,0,0.7);
       object-fit: contain;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+      transform-origin: center center;
+      transition: transform 0.15s ease;
+      cursor: zoom-in;
+      user-select: none;
     }
     #lb-close {
       position: fixed; top: 20px; right: 24px;
@@ -102,16 +108,47 @@
       _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
       _updateLb();
     }
+    var _lbZoom = 1;
+    function _resetZoom() {
+      _lbZoom = 1;
+      var img = document.getElementById('lb-img');
+      img.style.transform = 'scale(1)';
+      img.style.cursor = 'zoom-in';
+    }
     function _updateLb() {
       var d = _lbImgs[_lbIdx];
-      document.getElementById('lb-img').src = d.src;
-      document.getElementById('lb-img').alt = d.alt || '';
+      var img = document.getElementById('lb-img');
+      img.src = d.src;
+      img.alt = d.alt || '';
+      _resetZoom();
       document.getElementById('lb-caption').textContent =
         (d.alt || '') + ' (' + (_lbIdx+1) + ' / ' + _lbImgs.length + ')';
       document.getElementById('lb-prev').style.display = _lbImgs.length > 1 ? '' : 'none';
       document.getElementById('lb-next').style.display = _lbImgs.length > 1 ? '' : 'none';
     }
     function initGallery(imgs) { _lbImgs = imgs; }
+
+    // 휠 줌
+    document.addEventListener('wheel', function(e) {
+      var o = document.getElementById('lb-overlay');
+      if (!o.classList.contains('open')) return;
+      e.preventDefault();
+      var img = document.getElementById('lb-img');
+      _lbZoom = Math.min(4, Math.max(1, _lbZoom - e.deltaY * 0.002));
+      img.style.transform = 'scale(' + _lbZoom + ')';
+      img.style.cursor = _lbZoom > 1 ? 'zoom-out' : 'zoom-in';
+    }, { passive: false });
+
+    // 더블클릭 줌 토글
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('lb-img').addEventListener('dblclick', function(e) {
+        e.stopPropagation();
+        if (_lbZoom > 1) { _resetZoom(); return; }
+        _lbZoom = 2.2;
+        this.style.transform = 'scale(2.2)';
+        this.style.cursor = 'zoom-out';
+      });
+    });
     document.addEventListener('keydown', function(e) {
       var o = document.getElementById('lb-overlay');
       if (o.classList.contains('open')) {
