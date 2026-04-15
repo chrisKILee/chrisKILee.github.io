@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>/claude-api 스킬 가이드</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            border: 'hsl(240 3.7% 15.9%)',
+            background: 'hsl(240 10% 3.9%)',
+            foreground: 'hsl(0 0% 98%)',
+            card: 'hsl(240 10% 3.9%)',
+            muted: 'hsl(240 3.7% 15.9%)',
+            'muted-foreground': 'hsl(240 5% 64.9%)',
+            primary: 'hsl(263 70% 65%)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .card-hover { transition: border-color 0.2s, transform 0.2s; }
+    .card-hover:hover { border-color: rgba(139,92,246,0.4); transform: translateY(-2px); }
+    .code-block {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+      white-space: pre;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .tab-btn { transition: all 0.15s; }
+    .tab-btn.active { background: rgba(139,92,246,0.2); color: #c4b5fd; border-color: rgba(139,92,246,0.4); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; }
+    .flow-arrow { color: #6b7280; font-size: 18px; }
+    @media (prefers-reduced-motion: reduce) {
+      .card-hover { transition: none; }
+    }
+  </style>
+</head>
+<body class="bg-[#0f1117] text-slate-200 min-h-screen">
+
+  <!-- 헤더 -->
+  <header class="border-b border-white/8 px-6 py-4 sticky top-0 z-10 bg-[#0f1117]/90 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-400 text-lg">⚡</div>
+        <span class="font-semibold text-white">/claude-api 스킬 가이드</span>
+      </div>
+      <span class="text-xs text-slate-500 bg-white/5 px-3 py-1 rounded-full">2026-04-16</span>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-10 space-y-10">
+
+    <!-- 히어로 -->
+    <section class="text-center py-12">
+      <div class="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 text-violet-300 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
+        ✦ Claude Code 내장 스킬
+      </div>
+      <h1 class="text-5xl font-extrabold text-white mb-4 leading-tight">
+        Claude API 개발의 정석
+      </h1>
+      <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-6">
+        코드 짤 때마다 문서 뒤질 필요 없다.<br>
+        <span class="text-violet-300 font-medium">/claude-api</span> 스킬 하나로 최신 모델·캐싱·스트리밍·툴 사용 기본값이 자동 적용된다.
+      </p>
+      <!-- 아키텍처 다이어그램 -->
+      <div class="mt-8 flex justify-center">
+        <svg viewBox="0 0 680 80" style="width:100%;max-width:680px;" aria-label="/claude-api 스킬 동작 흐름">
+          <defs>
+            <marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L7,3 z" fill="#6b7280"/>
+            </marker>
+          </defs>
+          <!-- 박스들 -->
+          <rect x="10" y="20" width="120" height="40" rx="8" fill="#1e1b2e" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="70" y="38" text-anchor="middle" fill="#c4b5fd" font-size="12" font-family="monospace">/claude-api</text>
+          <text x="70" y="53" text-anchor="middle" fill="#8b5cf6" font-size="10" font-family="sans-serif">스킬 트리거</text>
+
+          <line x1="130" y1="40" x2="165" y2="40" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+          <rect x="165" y="20" width="130" height="40" rx="8" fill="#0f2235" stroke="#0ea5e9" stroke-width="1.5"/>
+          <text x="230" y="38" text-anchor="middle" fill="#7dd3fc" font-size="12" font-family="monospace">context7 MCP</text>
+          <text x="230" y="53" text-anchor="middle" fill="#38bdf8" font-size="10" font-family="sans-serif">최신 문서 자동 조회</text>
+
+          <line x1="295" y1="40" x2="330" y2="40" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+          <rect x="330" y="20" width="130" height="40" rx="8" fill="#0a2218" stroke="#10b981" stroke-width="1.5"/>
+          <text x="395" y="38" text-anchor="middle" fill="#6ee7b7" font-size="12" font-family="monospace">코드 생성</text>
+          <text x="395" y="53" text-anchor="middle" fill="#34d399" font-size="10" font-family="sans-serif">캐싱·스트리밍 기본값</text>
+
+          <line x1="460" y1="40" x2="495" y2="40" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+          <rect x="495" y="20" width="175" height="40" rx="8" fill="#1e1510" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="582" y="38" text-anchor="middle" fill="#fcd34d" font-size="12" font-family="monospace">프로덕션 품질</text>
+          <text x="582" y="53" text-anchor="middle" fill="#fbbf24" font-size="10" font-family="sans-serif">캐시 히트율 모니터링 포함</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 메트릭 카드 4개 -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="card-hover bg-white/4 border border-white/8 rounded-2xl p-5">
+        <p class="text-sm text-slate-400 mb-1">캐시 읽기 비용 절감</p>
+        <p class="text-3xl font-bold text-white">90%</p>
+        <p class="text-xs text-emerald-400 mt-1">기본 입력가의 0.1배 과금</p>
+      </div>
+      <div class="card-hover bg-white/4 border border-white/8 rounded-2xl p-5">
+        <p class="text-sm text-slate-400 mb-1">Opus 4.6 최대 출력</p>
+        <p class="text-3xl font-bold text-white">128K</p>
+        <p class="text-xs text-sky-400 mt-1">tokens (스트리밍 시)</p>
+      </div>
+      <div class="card-hover bg-white/4 border border-white/8 rounded-2xl p-5">
+        <p class="text-sm text-slate-400 mb-1">캐시 손익분기</p>
+        <p class="text-3xl font-bold text-white">2회</p>
+        <p class="text-xs text-violet-400 mt-1">5분 TTL 기준 2회 요청부터 이득</p>
+      </div>
+      <div class="card-hover bg-white/4 border border-white/8 rounded-2xl p-5">
+        <p class="text-sm text-slate-400 mb-1">배치 API 할인</p>
+        <p class="text-3xl font-bold text-white">50%</p>
+        <p class="text-xs text-amber-400 mt-1">비동기 대량 처리 시 적용</p>
+      </div>
+    </section>
+
+    <!-- /claude-api 스킬이란? -->
+    <section class="grid lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-white/4 border border-white/8 rounded-2xl p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">🔌 /claude-api 스킬이란?</h2>
+        <div class="space-y-3 text-sm text-slate-300 leading-relaxed">
+          <p>
+            Claude Code에 내장된 <span class="font-mono text-violet-300">claude-api</span> 스킬은
+            Anthropic SDK로 앱을 빌드·디버그·최적화할 때 자동으로 활성화됩니다.
+            코드에 <code class="bg-white/8 px-1.5 py-0.5 rounded text-sky-300 font-mono">import anthropic</code> 또는
+            <code class="bg-white/8 px-1.5 py-0.5 rounded text-sky-300 font-mono">from @anthropic-ai/sdk</code>가 보이면 트리거됩니다.
+          </p>
+          <p class="text-slate-400">
+            스킬이 활성화되면 <strong class="text-white">context7 MCP</strong>를 통해 Anthropic 공식 문서를 실시간 조회하고,
+            최신 모델 ID·프롬프트 캐싱·스트리밍·툴 사용 패턴을 자동으로 코드에 포함시킵니다.
+          </p>
+          <div class="mt-4 p-4 bg-violet-500/8 border border-violet-500/20 rounded-xl">
+            <p class="text-xs text-violet-300 font-semibold mb-2">자동 트리거 조건</p>
+            <div class="space-y-1 text-xs text-slate-400 font-mono">
+              <p>✓ <span class="text-slate-300">import anthropic</span> 포함 파일 수정</p>
+              <p>✓ <span class="text-slate-300">Claude API / Anthropic SDK</span>에 대한 질문</p>
+              <p>✓ <span class="text-slate-300">캐싱, 스트리밍, 툴 사용, 배치, 파일, 메모리</span> 기능 추가</p>
+              <p>✓ <span class="text-slate-300">Opus / Sonnet / Haiku</span> 모델 관련 작업</p>
+              <p class="text-rose-400 mt-1">✗ openai / 다른 제공사 SDK 파일은 SKIP</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white/4 border border-white/8 rounded-2xl p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">최신 모델 (2026-04)</h2>
+        <div class="space-y-3">
+          <div class="p-3 bg-violet-500/10 border border-violet-500/20 rounded-xl">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-semibold text-violet-300">Opus 4.6</span>
+              <span class="tag bg-violet-500/20 text-violet-300">최고 성능</span>
+            </div>
+            <p class="text-xs font-mono text-slate-400">claude-opus-4-6</p>
+            <p class="text-xs text-slate-500 mt-1">1M ctx · 128K 출력 · $5/$25</p>
+          </div>
+          <div class="p-3 bg-sky-500/10 border border-sky-500/20 rounded-xl">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-semibold text-sky-300">Sonnet 4.6</span>
+              <span class="tag bg-sky-500/20 text-sky-300">균형 추천</span>
+            </div>
+            <p class="text-xs font-mono text-slate-400">claude-sonnet-4-6</p>
+            <p class="text-xs text-slate-500 mt-1">1M ctx · 64K 출력 · $3/$15</p>
+          </div>
+          <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-semibold text-emerald-300">Haiku 4.5</span>
+              <span class="tag bg-emerald-500/20 text-emerald-300">최저 비용</span>
+            </div>
+            <p class="text-xs font-mono text-slate-400">claude-haiku-4-5</p>
+            <p class="text-xs text-slate-500 mt-1">200K ctx · 64K 출력 · $1/$5</p>
+          </div>
+          <p class="text-xs text-slate-600 mt-2">※ 가격: 입력/출력 1M 토큰 기준 USD</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 핵심 기능 탭 -->
+    <section class="bg-white/4 border border-white/8 rounded-2xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-5">⚡ 핵심 기능 상세</h2>
+      <!-- 탭 버튼 -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button class="tab-btn active px-4 py-1.5 rounded-lg border border-white/10 text-sm text-slate-300" onclick="switchTab('caching')">프롬프트 캐싱</button>
+        <button class="tab-btn px-4 py-1.5 rounded-lg border border-white/10 text-sm text-slate-300" onclick="switchTab('streaming')">스트리밍</button>
+        <button class="tab-btn px-4 py-1.5 rounded-lg border border-white/10 text-sm text-slate-300" onclick="switchTab('tools')">툴 사용</button>
+        <button class="tab-btn px-4 py-1.5 rounded-lg border border-white/10 text-sm text-slate-300" onclick="switchTab('thinking')">Adaptive Thinking</button>
+        <button class="tab-btn px-4 py-1.5 rounded-lg border border-white/10 text-sm text-slate-300" onclick="switchTab('agent')">멀티턴 에이전트</button>
+      </div>
+
+      <!-- 프롬프트 캐싱 -->
+      <div id="tab-caching" class="tab-panel active">
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-base font-semibold text-white mb-3">프롬프트 캐싱이란?</h3>
+            <p class="text-sm text-slate-400 leading-relaxed mb-4">
+              동일한 시스템 프롬프트나 대용량 문서를 반복 전송할 때,
+              Anthropic 서버가 이를 <strong class="text-white">캐시</strong>에 저장해둡니다.
+              이후 요청에서 캐시가 히트되면 입력 비용의 <span class="text-emerald-400 font-bold">10%(0.1배)</span>만 청구됩니다.
+            </p>
+            <!-- 비용 테이블 -->
+            <div class="rounded-xl overflow-hidden border border-white/8">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="bg-white/8">
+                    <th class="text-left px-3 py-2 text-slate-400 font-medium">모델</th>
+                    <th class="text-right px-3 py-2 text-slate-400 font-medium">기본 입력</th>
+                    <th class="text-right px-3 py-2 text-slate-400 font-medium">캐시 쓰기(5m)</th>
+                    <th class="text-right px-3 py-2 text-emerald-400 font-medium">캐시 읽기</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                  <tr>
+                    <td class="px-3 py-2 text-violet-300 font-mono">Opus 4.6</td>
+                    <td class="px-3 py-2 text-right text-slate-300">$5.00</td>
+                    <td class="px-3 py-2 text-right text-slate-300">$6.25</td>
+                    <td class="px-3 py-2 text-right text-emerald-400 font-bold">$0.50</td>
+                  </tr>
+                  <tr>
+                    <td class="px-3 py-2 text-sky-300 font-mono">Sonnet 4.6</td>
+                    <td class="px-3 py-2 text-right text-slate-300">$3.00</td>
+                    <td class="px-3 py-2 text-right text-slate-300">$3.75</td>
+                    <td class="px-3 py-2 text-right text-emerald-400 font-bold">$0.30</td>
+                  </tr>
+                  <tr>
+                    <td class="px-3 py-2 text-emerald-300 font-mono">Haiku 4.5</td>
+                    <td class="px-3 py-2 text-right text-slate-300">$1.00</td>
+                    <td class="px-3 py-2 text-right text-slate-300">$1.25</td>
+                    <td class="px-3 py-2 text-right text-emerald-400 font-bold">$0.10</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="px-3 py-2 text-xs text-slate-600">※ 1M 토큰 기준 USD. 1시간 TTL 쓰기: 기본가 × 2배</p>
+            </div>
+            <!-- 캐시 무효화 주의사항 -->
+            <div class="mt-4 p-3 bg-rose-500/8 border border-rose-500/20 rounded-xl">
+              <p class="text-xs text-rose-300 font-semibold mb-2">⚠️ 캐시 무효화 원인</p>
+              <ul class="text-xs text-slate-400 space-y-1">
+                <li>• datetime.now() 같은 동적 타임스탬프를 시스템 프롬프트에 삽입</li>
+                <li>• json.dumps() 에 sort_keys=True 미사용 (비결정적 직렬화)</li>
+                <li>• 요청마다 툴 셋 변경 (추가/제거/순서 변경)</li>
+                <li>• 요청 간 모델 전환</li>
+              </ul>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-white mb-3">Python 코드 예시</h3>
+            <div class="bg-[#0a0a0f] border border-white/8 rounded-xl p-4">
+              <div class="code-block text-slate-300"><span class="text-slate-500"># 자동 캐싱 (권장)</span>
+response = client.messages.create(
+    model=<span class="text-sky-300">"claude-sonnet-4-6"</span>,
+    max_tokens=<span class="text-amber-300">16000</span>,
+    <span class="text-violet-300">cache_control</span>={"type": "ephemeral"},
+    system=<span class="text-sky-300">"대용량 시스템 프롬프트..."</span>,
+    messages=[{
+        "role": "user",
+        "content": "핵심 포인트 요약"
+    }]
+)
+
+<span class="text-slate-500"># 캐시 히트 확인</span>
+usage = response.usage
+print(usage.cache_creation_input_tokens)  <span class="text-slate-500"># 쓰기</span>
+print(usage.cache_read_input_tokens)      <span class="text-slate-500"># 읽기 (90%↓)</span>
+print(usage.input_tokens)                 <span class="text-slate-500"># 미캐시</span></div>
+            </div>
+            <div class="mt-3 p-3 bg-sky-500/8 border border-sky-500/20 rounded-xl">
+              <p class="text-xs text-sky-300 font-semibold mb-1">캐싱 적용 대상</p>
+              <div class="text-xs text-slate-400 grid grid-cols-2 gap-1">
+                <span>✓ tools 정의</span>
+                <span>✓ system 프롬프트</span>
+                <span>✓ messages 히스토리</span>
+                <span>✓ 이미지 포함 블록</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-2">렌더 순서: tools → system → messages</p>
+              <p class="text-xs text-slate-500">최소 토큰: Sonnet 4.6 = 2,048 / 나머지 = 4,096</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 스트리밍 -->
+      <div id="tab-streaming" class="tab-panel">
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-base font-semibold text-white mb-3">스트리밍이란?</h3>
+            <p class="text-sm text-slate-400 leading-relaxed mb-4">
+              Server-Sent Events(SSE) 방식으로 Claude가 토큰을 생성하는 즉시 전달합니다.
+              실시간 채팅 UI, 긴 보고서 생성, Opus 4.6의 128K 출력 사용 시 필수입니다.
+            </p>
+            <!-- 이벤트 흐름 -->
+            <div class="space-y-2">
+              <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-3">SSE 이벤트 흐름</p>
+              <div class="flex items-center gap-2">
+                <span class="tag bg-violet-500/20 text-violet-300">message_start</span>
+                <span class="text-xs text-slate-500">메시지 메타데이터</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="tag bg-sky-500/20 text-sky-300">content_block_start</span>
+                <span class="text-xs text-slate-500">새 블록 시작</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="tag bg-emerald-500/20 text-emerald-300">content_block_delta</span>
+                <span class="text-xs text-slate-500 font-semibold">증분 토큰 전달 (반복)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="tag bg-amber-500/20 text-amber-300">content_block_stop</span>
+                <span class="text-xs text-slate-500">블록 완료</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="tag bg-rose-500/20 text-rose-300">message_stop</span>
+                <span class="text-xs text-slate-500">메시지 완료</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-white mb-3">Python / TypeScript 코드</h3>
+            <div class="bg-[#0a0a0f] border border-white/8 rounded-xl p-4 mb-3">
+              <p class="text-xs text-slate-500 mb-2"># Python</p>
+              <div class="code-block text-slate-300"><span class="text-slate-500"># context manager 방식</span>
+with client.messages.<span class="text-violet-300">stream</span>(
+    model=<span class="text-sky-300">"claude-opus-4-6"</span>,
+    max_tokens=<span class="text-amber-300">64000</span>,
+    messages=[...]
+) as stream:
+    for text in stream.text_stream:
+        print(text, end=<span class="text-sky-300">""</span>, flush=<span class="text-amber-300">True</span>)
+
+    final = stream.get_final_message()
+    print(final.usage.output_tokens)</div>
+            </div>
+            <div class="bg-[#0a0a0f] border border-white/8 rounded-xl p-4">
+              <p class="text-xs text-slate-500 mb-2">// TypeScript</p>
+              <div class="code-block text-slate-300">const stream = client.messages.<span class="text-violet-300">stream</span>({
+  model: <span class="text-sky-300">"claude-opus-4-6"</span>,
+  max_tokens: <span class="text-amber-300">64000</span>,
+  messages: [...]
+});
+
+stream.on(<span class="text-sky-300">"text"</span>, (delta) => {
+  process.stdout.write(delta);
+});
+
+const final = await stream.finalMessage();</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 툴 사용 -->
+      <div id="tab-tools" class="tab-panel">
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-base font-semibold text-white mb-3">툴 사용 / Function Calling</h3>
+            <p class="text-sm text-slate-400 leading-relaxed mb-4">
+              Claude가 외부 API, DB, 파일 등을 직접 호출할 수 있게 해주는 기능입니다.
+              <strong class="text-white">클라이언트 툴</strong>(개발자가 실행)과
+              <strong class="text-white">서버 툴</strong>(Anthropic 인프라 실행) 두 가지가 있습니다.
+            </p>
+            <!-- 에이전틱 루프 SVG -->
+            <div class="mb-4">
+              <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-3">에이전틱 루프 (Agentic Loop)</p>
+              <svg viewBox="0 0 400 130" style="width:100%;max-width:400px;" aria-label="에이전틱 루프 흐름">
+                <defs>
+                  <marker id="arr2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L7,3 z" fill="#6b7280"/>
+                  </marker>
+                </defs>
+                <rect x="10" y="45" width="85" height="36" rx="6" fill="#1e1b2e" stroke="#7c3aed" stroke-width="1.2"/>
+                <text x="52" y="60" text-anchor="middle" fill="#c4b5fd" font-size="10" font-family="sans-serif">사용자</text>
+                <text x="52" y="74" text-anchor="middle" fill="#c4b5fd" font-size="10" font-family="sans-serif">메시지</text>
+
+                <line x1="95" y1="63" x2="118" y2="63" stroke="#6b7280" stroke-width="1.2" marker-end="url(#arr2)"/>
+
+                <rect x="118" y="45" width="80" height="36" rx="6" fill="#0f2235" stroke="#0ea5e9" stroke-width="1.2"/>
+                <text x="158" y="60" text-anchor="middle" fill="#7dd3fc" font-size="10" font-family="sans-serif">Claude</text>
+                <text x="158" y="74" text-anchor="middle" fill="#7dd3fc" font-size="10" font-family="sans-serif">tool_use</text>
+
+                <line x1="198" y1="63" x2="221" y2="63" stroke="#6b7280" stroke-width="1.2" marker-end="url(#arr2)"/>
+
+                <rect x="221" y="45" width="80" height="36" rx="6" fill="#0a2218" stroke="#10b981" stroke-width="1.2"/>
+                <text x="261" y="60" text-anchor="middle" fill="#6ee7b7" font-size="10" font-family="sans-serif">툴 실행</text>
+                <text x="261" y="74" text-anchor="middle" fill="#6ee7b7" font-size="10" font-family="sans-serif">(개발자)</text>
+
+                <line x1="301" y1="63" x2="324" y2="63" stroke="#6b7280" stroke-width="1.2" marker-end="url(#arr2)"/>
+
+                <rect x="324" y="45" width="66" height="36" rx="6" fill="#1e1510" stroke="#f59e0b" stroke-width="1.2"/>
+                <text x="357" y="60" text-anchor="middle" fill="#fcd34d" font-size="10" font-family="sans-serif">결과</text>
+                <text x="357" y="74" text-anchor="middle" fill="#fcd34d" font-size="10" font-family="sans-serif">반환</text>
+
+                <!-- 피드백 루프 화살표 -->
+                <path d="M357 81 Q357 115 261 115 Q158 115 158 81" stroke="#6b7280" stroke-width="1.2" fill="none" marker-end="url(#arr2)"/>
+                <text x="261" y="128" text-anchor="middle" fill="#4b5563" font-size="9" font-family="sans-serif">stop_reason = "end_turn" 까지 반복</text>
+              </svg>
+            </div>
+            <!-- tool_choice -->
+            <div class="rounded-xl overflow-hidden border border-white/8">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="bg-white/8">
+                    <th class="text-left px-3 py-2 text-slate-400 font-medium">tool_choice</th>
+                    <th class="text-left px-3 py-2 text-slate-400 font-medium">동작</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                  <tr><td class="px-3 py-1.5 font-mono text-violet-300">"auto"</td><td class="px-3 py-1.5 text-slate-400">Claude가 툴 사용 여부 결정 (기본)</td></tr>
+                  <tr><td class="px-3 py-1.5 font-mono text-sky-300">"any"</td><td class="px-3 py-1.5 text-slate-400">반드시 하나 이상의 툴 사용</td></tr>
+                  <tr><td class="px-3 py-1.5 font-mono text-emerald-300">"tool"</td><td class="px-3 py-1.5 text-slate-400">특정 툴 강제 사용</td></tr>
+                  <tr><td class="px-3 py-1.5 font-mono text-rose-300">"none"</td><td class="px-3 py-1.5 text-slate-400">툴 사용 금지</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-white mb-3">서버 툴 (Anthropic 인프라)</h3>
+            <div class="space-y-2 mb-4">
+              <div class="flex items-center gap-3 p-2.5 bg-white/4 rounded-lg">
+                <span class="text-base">🌐</span>
+                <div>
+                  <p class="text-xs font-semibold text-white">web_search_20260209</p>
+                  <p class="text-xs text-slate-500">실시간 웹 검색</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-2.5 bg-white/4 rounded-lg">
+                <span class="text-base">🔗</span>
+                <div>
+                  <p class="text-xs font-semibold text-white">web_fetch_20260209</p>
+                  <p class="text-xs text-slate-500">URL 컨텐츠 조회</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-2.5 bg-white/4 rounded-lg">
+                <span class="text-base">💻</span>
+                <div>
+                  <p class="text-xs font-semibold text-white">code_execution_20260120</p>
+                  <p class="text-xs text-slate-500">샌드박스 코드 실행</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-2.5 bg-white/4 rounded-lg">
+                <span class="text-base">🖊️</span>
+                <div>
+                  <p class="text-xs font-semibold text-white">text_editor_20250728</p>
+                  <p class="text-xs text-slate-500">파일 편집</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-[#0a0a0f] border border-white/8 rounded-xl p-4">
+              <p class="text-xs text-slate-500 mb-2"># Tool Runner (아젠틱 루프 자동화)</p>
+              <div class="code-block text-slate-300">from anthropic import beta_tool
+
+@beta_tool
+def get_weather(location: str) -> str:
+    <span class="text-sky-300">"""날씨 조회 (docstring이 description)"""</span>
+    return <span class="text-sky-300">f"{location}: 맑음, 22°C"</span>
+
+runner = client.beta.messages.tool_runner(
+    model=<span class="text-sky-300">"claude-opus-4-6"</span>,
+    max_tokens=<span class="text-amber-300">16000</span>,
+    tools=[get_weather],
+    messages=[{<span class="text-sky-300">"role"</span>: <span class="text-sky-300">"user"</span>,
+               <span class="text-sky-300">"content"</span>: <span class="text-sky-300">"서울 날씨?"</span>}]
+)
+for message in runner:
+    print(message)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Adaptive Thinking -->
+      <div id="tab-thinking" class="tab-panel">
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-base font-semibold text-white mb-3">Adaptive Thinking이란?</h3>
+            <p class="text-sm text-slate-400 leading-relaxed mb-4">
+              Claude 4.6 모델부터 도입된 자동 추론 깊이 조절 기능입니다.
+              기존 Extended Thinking에서 토큰 예산을 수동으로 지정하던 방식을
+              Claude가 문제 복잡도에 따라 자동으로 결정하도록 개선했습니다.
+            </p>
+            <!-- 비교 테이블 -->
+            <div class="rounded-xl overflow-hidden border border-white/8 mb-4">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="bg-white/8">
+                    <th class="text-left px-3 py-2 text-slate-400">구분</th>
+                    <th class="text-left px-3 py-2 text-rose-400">Extended (구)</th>
+                    <th class="text-left px-3 py-2 text-emerald-400">Adaptive (신)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-xs">
+                  <tr>
+                    <td class="px-3 py-2 text-slate-400">설정</td>
+                    <td class="px-3 py-2 text-slate-400 font-mono">budget_tokens: N</td>
+                    <td class="px-3 py-2 text-emerald-300 font-mono">type: "adaptive"</td>
+                  </tr>
+                  <tr>
+                    <td class="px-3 py-2 text-slate-400">제어</td>
+                    <td class="px-3 py-2 text-slate-400">수동 지정</td>
+                    <td class="px-3 py-2 text-emerald-300">자동 결정</td>
+                  </tr>
+                  <tr>
+                    <td class="px-3 py-2 text-slate-400">지원</td>
+                    <td class="px-3 py-2 text-slate-400">모든 모델</td>
+                    <td class="px-3 py-2 text-emerald-300">Opus/Sonnet 4.6만</td>
+                  </tr>
+                  <tr>
+                    <td class="px-3 py-2 text-slate-400">권장</td>
+                    <td class="px-3 py-2 text-rose-400">Deprecated</td>
+                    <td class="px-3 py-2 text-emerald-300 font-semibold">✓ 권장</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- effort 레벨 -->
+            <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2">Effort 파라미터</p>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between p-2 bg-white/4 rounded-lg">
+                <span class="text-xs font-mono text-sky-300">"low"</span>
+                <span class="text-xs text-slate-400">빠른 응답, 서브에이전트·단순 작업</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-white/4 rounded-lg">
+                <span class="text-xs font-mono text-emerald-300">"medium"</span>
+                <span class="text-xs text-slate-400">비용-품질 균형 (일반 권장)</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-white/4 rounded-lg">
+                <span class="text-xs font-mono text-violet-300">"high"</span>
+                <span class="text-xs text-slate-400">기본값, 높은 품질</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                <span class="text-xs font-mono text-amber-300">"max"</span>
+                <span class="text-xs text-slate-400">최고 품질 (Opus 4.6 전용)</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-white mb-3">코드 예시</h3>
+            <div class="bg-[#0a0a0f] border border-white/8 rounded-xl p-4">
+              <div class="code-block text-slate-300">response = client.messages.create(
+    model=<span class="text-sky-300">"claude-opus-4-6"</span>,
+    max_tokens=<span class="text-amber-300">16000</span>,
+    thinking={"type": <span class="text-sky-300">"adaptive"</span>},
+    output_config={"effort": <span class="text-sky-300">"max"</span>},
+    messages=[{
+        "role": "user",
+        "content": "이 수학 증명을 풀어주세요..."
+    }]
+)
+
+<span class="text-slate-500"># 추론 과정 + 최종 답변 분리</span>
+for block in response.content:
+    if block.type == <span class="text-sky-300">"thinking"</span>:
+        print(f<span class="text-sky-300">"[추론] {block.thinking}"</span>)
+    elif block.type == <span class="text-sky-300">"text"</span>:
+        print(f<span class="text-sky-300">"[답변] {block.text}"</span>)</div>
+            </div>
+            <div class="mt-4 p-4 bg-violet-500/8 border border-violet-500/20 rounded-xl">
+              <p class="text-xs text-violet-300 font-semibold mb-2">활용 사례</p>
+              <ul class="text-xs text-slate-400 space-y-1">
+                <li>• 복잡한 수학·논리 문제 풀이</li>
+                <li>• 멀티스텝 코딩 에이전트</li>
+                <li>• 법률·의학 문서 심층 분석</li>
+                <li>• 연구 논문 비판적 리뷰</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 멀티턴 에이전트 -->
+      <div id="tab-agent" class="tab-panel">
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-base font-semibold text-white mb-3">멀티턴 대화 관리</h3>
+            <p class="text-sm text-slate-400 leading-relaxed mb-4">
+              Claude API는 Stateless(무상태)입니다.
+              이전 대화 내용을 <code class="bg-white/8 px-1.5 rounded font-mono">messages</code> 배열에 직접 담아 전송해야 컨텍스트가 유지됩니다.
+            </p>
+            <div class="bg-[#0a0a0f] border border-white/8 rounded-xl p-4 mb-4">
+              <div class="code-block text-slate-300">class ConversationManager:
+    def __init__(self, client, model, system=None):
+        self.client = client
+        self.model = model
+        self.system = system
+        self.messages = []
+
+    def send(self, user_message: str) -> str:
+        self.messages.append({
+            <span class="text-sky-300">"role"</span>: <span class="text-sky-300">"user"</span>,
+            <span class="text-sky-300">"content"</span>: user_message
+        })
+
+        response = self.client.messages.create(
+            model=self.model,
+            max_tokens=<span class="text-amber-300">16000</span>,
+            system=self.system,
+            messages=self.messages
+        )
+
+        answer = next(
+            b.text for b in response.content
+            if b.type == <span class="text-sky-300">"text"</span>
+        )
+        self.messages.append({
+            <span class="text-sky-300">"role"</span>: <span class="text-sky-300">"assistant"</span>,
+            <span class="text-sky-300">"content"</span>: answer
+        })
+        return answer</div>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-white mb-3">컨텍스트 압축 (Compaction Beta)</h3>
+            <p class="text-sm text-slate-400 leading-relaxed mb-3">
+              200K 컨텍스트 초과 방지. Opus 4.6 / Sonnet 4.6 지원.
+            </p>
+            <div class="bg-[#0a0a0f] border border-white/8 rounded-xl p-4 mb-4">
+              <div class="code-block text-slate-300">response = client.beta.messages.create(
+    betas=[<span class="text-sky-300">"compact-2026-01-12"</span>],
+    model=<span class="text-sky-300">"claude-opus-4-6"</span>,
+    max_tokens=<span class="text-amber-300">16000</span>,
+    messages=messages,
+    context_management={
+        "edits": [{
+            "type": <span class="text-sky-300">"compact_20260112"</span>
+        }]
+    }
+)
+
+<span class="text-slate-500"># compaction 블록 포함, 전체 content 보존 필수</span>
+messages.append({
+    <span class="text-sky-300">"role"</span>: <span class="text-sky-300">"assistant"</span>,
+    <span class="text-sky-300">"content"</span>: response.content
+})</div>
+            </div>
+            <div class="p-3 bg-amber-500/8 border border-amber-500/20 rounded-xl">
+              <p class="text-xs text-amber-300 font-semibold mb-1">⚠️ Compaction 주의사항</p>
+              <p class="text-xs text-slate-400">응답의 전체 <code class="font-mono">content</code> 배열을 messages에 보존해야 합니다. compaction 블록을 제거하면 컨텍스트가 손상됩니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 활용 가이드 & 의사결정 트리 -->
+    <section class="grid lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-white/4 border border-white/8 rounded-2xl p-6">
+        <h2 class="text-lg font-semibold text-white mb-5">🗺️ 기능 선택 가이드</h2>
+        <div class="space-y-3">
+          <div class="flex items-start gap-4 p-3 bg-white/4 rounded-xl">
+            <div class="w-32 shrink-0">
+              <span class="tag bg-violet-500/20 text-violet-300 text-xs">단순 분류/추출</span>
+            </div>
+            <div class="text-sm text-slate-300">→ Claude API 단일 호출. 캐싱/스트리밍 없이 충분.</div>
+          </div>
+          <div class="flex items-start gap-4 p-3 bg-white/4 rounded-xl">
+            <div class="w-32 shrink-0">
+              <span class="tag bg-emerald-500/20 text-emerald-300 text-xs">대용량 반복 질의</span>
+            </div>
+            <div class="text-sm text-slate-300">→ <strong class="text-emerald-400">프롬프트 캐싱 필수</strong>. 대용량 문서 기반 Q&A, 법률/의료 서비스.</div>
+          </div>
+          <div class="flex items-start gap-4 p-3 bg-white/4 rounded-xl">
+            <div class="w-32 shrink-0">
+              <span class="tag bg-sky-500/20 text-sky-300 text-xs">실시간 UI 출력</span>
+            </div>
+            <div class="text-sm text-slate-300">→ <strong class="text-sky-400">스트리밍</strong>. 채팅 앱, 실시간 번역, 코드 자동완성.</div>
+          </div>
+          <div class="flex items-start gap-4 p-3 bg-white/4 rounded-xl">
+            <div class="w-32 shrink-0">
+              <span class="tag bg-amber-500/20 text-amber-300 text-xs">외부 연동 필요</span>
+            </div>
+            <div class="text-sm text-slate-300">→ <strong class="text-amber-400">툴 사용</strong>. DB 검색, 이메일 전송, 웹 검색, 코드 실행.</div>
+          </div>
+          <div class="flex items-start gap-4 p-3 bg-white/4 rounded-xl">
+            <div class="w-32 shrink-0">
+              <span class="tag bg-rose-500/20 text-rose-300 text-xs">복잡한 추론</span>
+            </div>
+            <div class="text-sm text-slate-300">→ <strong class="text-rose-400">Adaptive Thinking</strong> (Opus 4.6). 수학 증명, 전략 분석.</div>
+          </div>
+          <div class="flex items-start gap-4 p-3 bg-white/4 rounded-xl">
+            <div class="w-32 shrink-0">
+              <span class="tag bg-slate-500/20 text-slate-300 text-xs">비용 최우선</span>
+            </div>
+            <div class="text-sm text-slate-300">→ <strong class="text-slate-200">Haiku 4.5</strong> + 프롬프트 캐싱. 또는 배치 API(50% 할인).</div>
+          </div>
+          <div class="flex items-start gap-4 p-3 bg-white/4 rounded-xl">
+            <div class="w-32 shrink-0">
+              <span class="tag bg-indigo-500/20 text-indigo-300 text-xs">대량 배치 처리</span>
+            </div>
+            <div class="text-sm text-slate-300">→ <strong class="text-indigo-400">Batch API</strong>. 비동기 처리, 표준가 대비 50% 절감.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <!-- 효과성 수치 카드 -->
+        <div class="bg-white/4 border border-white/8 rounded-2xl p-5">
+          <h3 class="text-sm font-semibold text-white mb-4">📊 효과성 수치 (공식 문서)</h3>
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-400">캐시 읽기 비용 절감</span>
+                <span class="text-emerald-400 font-bold">90%</span>
+              </div>
+              <div class="w-full bg-white/8 rounded-full h-1.5">
+                <div class="bg-emerald-400 h-1.5 rounded-full" style="width:90%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-400">배치 API 할인</span>
+                <span class="text-sky-400 font-bold">50%</span>
+              </div>
+              <div class="w-full bg-white/8 rounded-full h-1.5">
+                <div class="bg-sky-400 h-1.5 rounded-full" style="width:50%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-400">캐시 쓰기 비용 증가</span>
+                <span class="text-amber-400 font-bold">+25%</span>
+              </div>
+              <div class="w-full bg-white/8 rounded-full h-1.5">
+                <div class="bg-amber-400 h-1.5 rounded-full" style="width:25%"></div>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 mt-3">※ 5분 TTL 기준. 2회 이상 요청 시 손익분기</p>
+        </div>
+
+        <!-- 빠른 설치 -->
+        <div class="bg-violet-500/10 border border-violet-500/20 rounded-2xl p-5">
+          <div class="text-2xl mb-2">🚀</div>
+          <h3 class="font-semibold text-white mb-2">/claude-api 스킬 설치</h3>
+          <p class="text-sm text-slate-400 mb-3">Claude Code CLI에서 바로 사용 가능한 내장 스킬</p>
+          <div class="bg-[#0a0a0f] rounded-lg p-3">
+            <p class="text-xs font-mono text-violet-300">/claude-api</p>
+            <p class="text-xs text-slate-500 mt-1">Claude Code 터미널에서 입력</p>
+          </div>
+        </div>
+
+        <!-- GitHub -->
+        <div class="bg-sky-500/10 border border-sky-500/20 rounded-2xl p-5">
+          <div class="text-2xl mb-2">📦</div>
+          <h3 class="font-semibold text-white mb-2">SDK 설치</h3>
+          <div class="bg-[#0a0a0f] rounded-lg p-3 space-y-2">
+            <p class="text-xs font-mono text-slate-300">pip install anthropic</p>
+            <p class="text-xs font-mono text-slate-300">npm i @anthropic-ai/sdk</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 하단 카드 행 -->
+    <section class="grid lg:grid-cols-3 gap-4">
+      <div class="bg-violet-500/10 border border-violet-500/20 rounded-2xl p-6">
+        <div class="text-2xl mb-3">⚡</div>
+        <h3 class="font-semibold text-white mb-2">프롬프트 캐싱</h3>
+        <p class="text-sm text-slate-400">반복되는 대용량 프롬프트·문서를 서버에 캐시해 비용 90% 절감. 법률, 의료, 기술 문서 기반 서비스에 필수.</p>
+      </div>
+      <div class="bg-sky-500/10 border border-sky-500/20 rounded-2xl p-6">
+        <div class="text-2xl mb-3">🌊</div>
+        <h3 class="font-semibold text-white mb-2">스트리밍 응답</h3>
+        <p class="text-sm text-slate-400">SSE로 토큰을 즉시 전달. 실시간 채팅 UI, 긴 보고서 생성, Opus 4.6 128K 출력 사용 시 필수.</p>
+      </div>
+      <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-6">
+        <div class="text-2xl mb-3">🛠️</div>
+        <h3 class="font-semibold text-white mb-2">툴 사용 & 에이전트</h3>
+        <p class="text-sm text-slate-400">외부 API·DB·파일을 Claude가 직접 호출. Tool Runner로 에이전틱 루프를 자동화해 멀티스텝 워크플로우 구현.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-white/8 mt-16 px-6 py-6 text-center text-xs text-slate-600">
+    출처: Anthropic 공식 문서 (docs.anthropic.com) · 2026-04-16 기준 · /claude-api 스킬은 Claude Code 내장
+  </footer>
+
+  <script>
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        const tabs = ['caching', 'streaming', 'tools', 'thinking', 'agent'];
+        btn.classList.toggle('active', tabs[i] === name);
+      });
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === 'tab-' + name);
+      });
+    }
+  </script>
+</body>
+</html>
