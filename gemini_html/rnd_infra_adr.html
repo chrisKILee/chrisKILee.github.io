@@ -1664,22 +1664,24 @@
                 <div class="panel-block-label">Context — 맥락</div>
                 <div class="panel-block-body">
                   <ul>
-                    <li>Grafana 리소스(대시보드, 알림 등) 관리 방식이 팀마다 달라 일관성 부재</li>
-                    <li>일부 리소스는 Git으로, 일부는 UI에서 직접 관리해 충돌·유실 위험 존재</li>
-                    <li>ADR-014(Grafana 운영 표준)의 후속 — 관리 계층 명세 필요</li>
+                    <li>ADR-016(Grafana 배포 패턴)이 대시보드 한 종류에만 코드/UI 이원 관리 원칙을 세웠고, 나머지 17개 설정 범주의 관리 방법은 미결 상태</li>
+                    <li>Datasources 변경 권한 정책 없음 — 실수로 전체 대시보드와 알림이 깨질 위험</li>
+                    <li>Notification Policies 파일 프로비저닝 시 사용자 생성 정책까지 덮어쓰는 구조적 제약 존재</li>
+                    <li>Grafana 관리 설정 18개 전체에 대해 관리 계층 이원 분류 모델 적용 필요</li>
                   </ul>
                 </div>
               </div>
               <div class="panel-block">
                 <div class="panel-block-label">Decision — 결정 내용</div>
                 <div class="panel-block-body">
-                  <p><strong>코드 관리(Git PR) / UI 관리(Grafana HTTP API) 이원 분류 모델</strong></p>
+                  <p><strong>코드 관리 계층 / UI 관리 계층 이원 분류 모델 (결정 1~9)</strong></p>
                   <ul style="margin-top:8px;">
-                    <li><strong>코드 관리</strong>: ArgoCD + k8s-sidecar를 통해 Git Raw JSON → Grafana 프로비저닝</li>
-                    <li><strong>UI 관리</strong>: Grafana UI 또는 HTTP API에서 직접 조작 (strict / flexible)</li>
-                    <li>6개 분류 차원: 변경 빈도, 영향 범위, 재현 필요성, 팀 소유권, 감사 추적, 복잡도</li>
-                    <li>Day-1 베이스 대시보드 23개 지정 (코드 관리 Core 폴더)</li>
-                    <li>Notification Policies는 전용 values.yaml 관리 (예외 처리)</li>
+                    <li><strong>분류 기준 6차원</strong>: 관리 주체, 영향 범위, 변경 빈도, 실수 비용, 거버넌스 요구, 기술적 제약</li>
+                    <li><strong>코드 관리</strong>: Helm values · ConfigMap+sidecar · provisioning YAML — ArgoCD sync</li>
+                    <li><strong>UI 관리</strong>: Grafana UI 또는 HTTP API (파일 프로비저닝 미지원 8개 설정 포함)</li>
+                    <li>베이스 대시보드 strict(<code>allowUiUpdates: false</code>) / flexible 이원 분리, 기본값 strict</li>
+                    <li>Day-1 베이스 대시보드 23개 (kube-prometheus-stack 번들 + Node Exporter Full + kube-state-metrics v2)</li>
+                    <li>Notification Policies — 라우팅 트리 단일 리소스 제약으로 전체 UI 관리 (simplified routing 권장)</li>
                   </ul>
                 </div>
               </div>
@@ -1689,16 +1691,16 @@
                 <div class="panel-block-label">설정 계층 배정 — 핵심 항목</div>
                 <div class="panel-block-body">
                   <table class="adr-table">
-                    <thead><tr><th>리소스</th><th>관리 방식</th><th>분류 근거</th></tr></thead>
+                    <thead><tr><th>리소스</th><th>관리 계층</th><th>관리 방법</th></tr></thead>
                     <tbody>
-                      <tr><td>Dashboards (Core/베이스)</td><td><code>코드</code></td><td>팀 공용, 재현 필수, 감사 추적</td></tr>
-                      <tr><td>Dashboards (팀 전용)</td><td><code>UI-flexible</code></td><td>팀 소유권, 빠른 변경 주기</td></tr>
-                      <tr><td>Alerting Rules</td><td><code>코드</code></td><td>영향 범위 크고 감사 필수</td></tr>
-                      <tr><td>Notification Policies</td><td><code>values.yaml</code></td><td>Helm values 직접 관리 (특수 처리)</td></tr>
-                      <tr><td>Contact Points</td><td><code>UI-strict</code></td><td>운영 민감, 변경 빈도 낮음</td></tr>
-                      <tr><td>Data Sources</td><td><code>코드</code></td><td>인프라 레벨, 재현 필수</td></tr>
-                      <tr><td>Folders</td><td><code>코드</code></td><td>구조 일관성, 코드 관리 전제</td></tr>
-                      <tr><td>Playlists / Annotations</td><td><code>UI-flexible</code></td><td>팀 편의 기능, 임시성 높음</td></tr>
+                      <tr><td>grafana.ini</td><td><code>코드 관리</code></td><td>Helm values <code>grafana.ini:</code> 블록</td></tr>
+                      <tr><td>Datasources</td><td><code>코드 관리</code></td><td>Helm values <code>datasources:</code> (<code>editable: false</code>)</td></tr>
+                      <tr><td>Dashboards (베이스)</td><td><code>코드 관리</code></td><td>ConfigMap+sidecar (strict) / dashboardsConfigMaps (flexible)</td></tr>
+                      <tr><td>Dashboards (사용자)</td><td><code>UI 관리</code></td><td>Grafana UI, Grafana DB (SQLite on PVC)</td></tr>
+                      <tr><td>Alert Rules · Contact Points (베이스)</td><td><code>코드 관리</code></td><td>provisioning/alerting/*.yaml</td></tr>
+                      <tr><td>Notification Policies</td><td><code>UI 관리</code></td><td>Grafana UI 전체 관리 (구조적 공존 불가)</td></tr>
+                      <tr><td>Plugins</td><td><code>코드 관리</code></td><td>Helm values <code>plugins:</code> 리스트</td></tr>
+                      <tr><td>Orgs · Teams · Users · Permissions 등 8개</td><td><code>UI 관리 (강제)</code></td><td>파일 프로비저닝 미지원 → HTTP API / UI</td></tr>
                     </tbody>
                   </table>
                 </div>
