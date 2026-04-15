@@ -658,5 +658,36 @@ const AI_ARTICLES = [
         { date: "2026-04-16", event: "LLM Wiki × Hermes Agent 통합 구축 가이드 정리 (이 페이지)" }
       ]
     }
+  },
+  {
+    id: "claude-010",
+    category: "claude",
+    title: "Claude 용어사전 — 29개 핵심 개념 완전 정리",
+    date: "2026-04-16",
+    summary: "Anthropic 공식 문서 기반 Claude 핵심 용어 29개를 AI 개념·제품·핵심 기능·에이전트 자동화 4범주로 정리한 레퍼런스",
+    originalUrl: "/gemini_html/claude_glossary.html",
+    detail: {
+      overview: "Claude를 처음 접하거나 심화 학습 중인 개발자를 위한 공식 용어 레퍼런스. Anthropic 공식 문서 기반으로 AI 개념(Extended Context, Adaptive Thinking 등), 제품군(Claude 3.7 Sonnet, claude.ai 등), 핵심 기능(Tool Use, System Prompt 등), 에이전트 자동화(MCP, Multi-Agent, Computer Use 등) 총 29개 용어를 정의·활용법·주의사항까지 정리했다. 검색 필터와 카테고리별 탭 네비게이션을 제공한다.",
+      keyPoints: [
+        { label: "총 용어 수", value: "29개 (AI 개념 8 + 제품 8 + 핵심 기능 8 + 에이전트 자동화 7)" },
+        { label: "출처", value: "Anthropic 공식 문서 100% 기반 — 추정 내용 없음" },
+        { label: "주요 개념", value: "MCP, Computer Use, Extended Context Window(200k), Adaptive Thinking, Multi-Agent" },
+        { label: "검색 기능", value: "실시간 용어명/설명 검색 필터 내장" },
+        { label: "최신 업데이트", value: "Extended Thinking → Adaptive Thinking 명칭 변경 반영 (2026-04 기준)" }
+      ],
+      comparison: [
+        { "범주": "AI 개념", "용어 수": "8개", "대표 용어": "Extended Context, Adaptive Thinking, In-Context Learning" },
+        { "범주": "제품", "용어 수": "8개", "대표 용어": "Claude 3.7 Sonnet, claude.ai, Claude API" },
+        { "범주": "핵심 기능", "용어 수": "8개", "대표 용어": "Tool Use, System Prompt, Artifacts" },
+        { "범주": "에이전트 자동화", "용어 수": "7개", "대표 용어": "MCP, Computer Use, Multi-Agent" }
+      ],
+      timeline: [
+        { date: "2024-03", event: "Claude 3 (Haiku/Sonnet/Opus) 출시 — 현재 세대 시작" },
+        { date: "2024-10", event: "Computer Use 공개 베타 — AI가 직접 화면 조작 가능" },
+        { date: "2025-02", event: "Claude 3.7 Sonnet 출시 — Adaptive Thinking, 200k 컨텍스트 윈도우" },
+        { date: "2025-11", event: "MCP(Model Context Protocol) 정식 발표 — 외부 도구 표준 연결 규격" },
+        { date: "2026-04-16", event: "Claude 용어사전 29개 완전 정리 (이 페이지)" }
+      ]
+    }
   }
 ];
