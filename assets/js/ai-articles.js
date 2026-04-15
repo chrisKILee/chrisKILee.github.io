@@ -627,5 +627,36 @@ const AI_ARTICLES = [
         { date: "미정", event: "Anthropic 공식 수정 배포 예정 — 이후 패치 불필요" }
       ]
     }
+  },
+  {
+    id: "claude-009",
+    category: "claude",
+    title: "LLM Wiki × Hermes Agent — 복리형 AI 세컨드 브레인 구축 가이드",
+    date: "2026-04-16",
+    summary: "Obsidian + Claude Code 지식 베이스와 Hermes Agent(53.7k★) 자율 에이전트 연동으로 24/7 자동 운영 세컨드 브레인 구축",
+    originalUrl: "/gemini_html/llm_wiki_hermes_agent.html",
+    detail: {
+      overview: "Andrej Karpathy의 LLM Wiki 패턴(컴파일 방식 지식 관리)과 NousResearch Hermes Agent(자기 개선 에이전트)를 연동해 개인 복리형 AI 세컨드 브레인을 구축하는 완전 가이드. Hermes Agent는 2026년 2월 출시 후 53.7k GitHub Stars를 기록한 오픈소스 자율 에이전트로, 텔레그램/슬랙/디스코드 등 멀티플랫폼 접근과 자동 스킬 생성을 지원한다. LLM Wiki(구조화된 지식 도서관)와 Hermes(24/7 사서 겸 비서)를 결합하면 이동 중에도 URL 하나로 자동 지식 축적이 가능하다.",
+      keyPoints: [
+        { label: "핵심 효과", value: "자기 개선 스킬 사용 시 반복 작업 40% 속도 향상 (Nous Research 공식 벤치마크)" },
+        { label: "자동 생성", value: "소스 1개당 wiki 페이지 8~15개 자동 생성, 200페이지 볼트에서 94% 페이지 연결 (수동 링크 0건)" },
+        { label: "접근 방식", value: "Karpathy LLM Wiki = 컴파일 방식 (RAG 불필요). 개인 규모에서 토큰 효율 극대화" },
+        { label: "인프라 비용", value: "로컬 PC: 0원 / $5/월 VPS: 24/7 가동 / Daytona·Modal 서버리스: 유휴 시 거의 무료" },
+        { label: "모델 추천", value: "메인: anthropic/claude-sonnet-4 (OpenRouter 경유) / 보조: gemini-2.5-flash / 로컬: Hermes 4 35B A3B (Ollama)" }
+      ],
+      comparison: [
+        { "방식": "LLM Wiki (이 가이드)", "자동화": "크론 자동화", "접근성": "멀티플랫폼", "학습": "자기 개선 스킬", "비용": "~$5/월 VPS" },
+        { "방식": "RAG 기반 시스템", "자동화": "수동 업데이트", "접근성": "터미널 only", "학습": "없음", "비용": "벡터 DB 비용" },
+        { "방식": "Mem0 (SaaS)", "자동화": "대화 자동 추출", "접근성": "API", "학습": "동적 메모리", "비용": "사용량 과금" },
+        { "방식": "MemGPT", "자동화": "수동", "접근성": "로컬", "학습": "계층적 메모리", "비용": "0원 (로컬)" }
+      ],
+      timeline: [
+        { date: "2025-03", event: "Andrej Karpathy, LLM Wiki 패턴 공개 — raw/wiki/index.md 3폴더 아키텍처 제안" },
+        { date: "2026-02", event: "NousResearch, Hermes Agent 공개 출시 — 자기 개선 스킬 + 크로스 세션 메모리" },
+        { date: "2026-04-08", event: "Hermes Agent v0.7.0 '레질리언스 릴리즈' — 안정성 강화 + MiniMax AI 파트너십" },
+        { date: "2026-04-11", event: "GitHub Stars 53.7k 달성 — 빠른 개발자 채택 확인" },
+        { date: "2026-04-16", event: "LLM Wiki × Hermes Agent 통합 구축 가이드 정리 (이 페이지)" }
+      ]
+    }
   }
 ];
