@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeBurn — 토큰 사용량 대시보드 가이드</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d12;
+      --bg2: #13131a;
+      --bg3: #1a1a24;
+      --border: #2a2a38;
+      --text: #e8e8f0;
+      --text2: #9090a8;
+      --text3: #5a5a78;
+      --purple: #a78bfa;
+      --teal: #2dd4bf;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --green: #4ade80;
+      --blue: #60a5fa;
+      --orange: #fb923c;
+      --pink: #f472b6;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #0d0d12 0%, #1a0d2e 50%, #0d1a1a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 64px 24px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -80px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(167,139,250,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(167,139,250,0.12);
+      border: 1px solid rgba(167,139,250,0.3);
+      color: var(--purple);
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .header h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      line-height: 1.1;
+    }
+    .header h1 .em {
+      background: linear-gradient(135deg, #a78bfa, #2dd4bf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header p {
+      font-size: 17px;
+      color: var(--text2);
+      max-width: 560px;
+      margin: 0 auto 32px;
+      line-height: 1.65;
+    }
+    .header-meta {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .header-meta span {
+      font-size: 13px;
+      color: var(--text3);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-meta span b { color: var(--text2); }
+
+    /* ── Layout ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 60px 24px; }
+
+    /* ── Section ── */
+    .section { margin-bottom: 64px; }
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Overview Cards ── */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .overview-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .overview-card .label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 12px;
+    }
+    .overview-card .value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--purple);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .overview-card .desc {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+
+    /* ── Install Block ── */
+    .install-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 640px) {
+      .install-grid { grid-template-columns: 1fr; }
+    }
+    .install-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .install-card .card-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-green { background: #4ade80; }
+    .dot-amber { background: #fbbf24; }
+    pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      padding: 20px;
+      color: var(--teal);
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.8;
+    }
+    pre .comment { color: var(--text3); }
+    pre .cmd { color: var(--green); }
+    pre .flag { color: var(--amber); }
+    pre .str { color: var(--rose); }
+
+    /* ── Command Table ── */
+    .cmd-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .cmd-table th {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text3);
+      padding: 12px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .cmd-table td {
+      padding: 13px 20px;
+      font-size: 15px;
+      color: var(--text2);
+      border-bottom: 1px solid rgba(42,42,56,0.6);
+      vertical-align: top;
+    }
+    .cmd-table tr:last-child td { border-bottom: none; }
+    .cmd-table td:first-child {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--teal);
+      white-space: nowrap;
+    }
+    .cmd-table td .tag {
+      display: inline-block;
+      background: rgba(167,139,250,0.12);
+      color: var(--purple);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* ── Keyboard Shortcuts ── */
+    .shortcut-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .shortcut-item {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      height: 32px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-bottom: 3px solid rgba(42,42,56,0.8);
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--amber);
+      padding: 0 8px;
+    }
+    .shortcut-item .shortcut-desc {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.4;
+    }
+    .shortcut-item .shortcut-desc b { color: var(--text); font-weight: 600; }
+
+    /* ── Dashboard Mockup ── */
+    .dashboard-mockup {
+      background: #0a0a0f;
+      border: 1px solid #2a2a38;
+      border-radius: 12px;
+      overflow: hidden;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+    .mockup-titlebar {
+      background: #111118;
+      padding: 10px 16px;
+      border-bottom: 1px solid #2a2a38;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .mock-red { background: #ff5f57; }
+    .mock-yellow { background: #febc2e; }
+    .mock-green { background: #28c840; }
+    .mockup-titlebar .mock-title {
+      margin-left: 8px;
+      font-size: 12px;
+      color: #5a5a78;
+    }
+    .mockup-body { padding: 20px 24px; }
+    .mock-header { margin-bottom: 20px; }
+    .mock-header .mock-name { color: #fbbf24; font-weight: 600; }
+    .mock-header .mock-period { color: #9090a8; margin-left: 8px; }
+    .mock-header .mock-cost { color: #4ade80; font-size: 16px; font-weight: 600; }
+    .mock-header .mock-stats { color: #9090a8; font-size: 12px; }
+    .mock-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 640px) {
+      .mock-grid { grid-template-columns: 1fr; }
+    }
+    .mock-section-title { color: var(--teal); font-size: 11px; margin-bottom: 10px; font-weight: 600; }
+    .mock-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+    .mock-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: #1a1a24;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .mock-bar {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #60a5fa, #fb923c);
+    }
+    .mock-label { color: #9090a8; min-width: 80px; font-size: 11px; }
+    .mock-val { color: #e8e8f0; min-width: 50px; text-align: right; font-size: 11px; }
+    .mock-activity-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 11px;
+    }
+    .act-color { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+    .act-name { flex: 1; }
+    .act-cost { color: #e8e8f0; min-width: 52px; text-align: right; }
+    .act-1shot { color: #4ade80; min-width: 36px; text-align: right; font-size: 10px; }
+
+    /* ── Activity Cards ── */
+    .activity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .activity-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .activity-card .act-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .activity-card .act-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .act-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .badge-tool { background: rgba(96,165,250,0.15); color: #60a5fa; }
+    .badge-keyword { background: rgba(167,139,250,0.15); color: #a78bfa; }
+    .badge-default { background: rgba(90,90,120,0.3); color: #9090a8; }
+    .activity-card .act-desc {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.65;
+      margin-bottom: 12px;
+    }
+    .trigger-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .trigger-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 3px 8px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--teal);
+    }
+    .trigger-chip.tool { color: var(--amber); }
+
+    /* ── Metric Cards ── */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .metric-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .metric-card .m-name {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 8px;
+    }
+    .metric-card .m-val {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--teal);
+      margin-bottom: 6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .metric-card .m-desc {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+
+    /* ── Info Box ── */
+    .info-box {
+      background: rgba(167,139,250,0.08);
+      border: 1px solid rgba(167,139,250,0.25);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 14px;
+    }
+    .info-box .icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .info-box .content { font-size: 15px; color: var(--text2); line-height: 1.65; }
+    .info-box .content b { color: var(--text); }
+
+    .tip-box {
+      background: rgba(45,212,191,0.08);
+      border: 1px solid rgba(45,212,191,0.25);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 14px;
+    }
+    .tip-box .icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .tip-box .content { font-size: 15px; color: var(--text2); line-height: 1.65; }
+    .tip-box .content b { color: var(--teal); }
+
+    /* ── Provider Table ── */
+    .provider-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .provider-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .provider-icon {
+      width: 40px; height: 40px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .provider-info .pname { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .provider-info .ppath {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text3);
+      line-height: 1.5;
+    }
+    .provider-info .pformat {
+      display: inline-block;
+      font-size: 11px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--amber);
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-top: 6px;
+    }
+
+    /* ── Flow Diagram ── */
+    .flow-wrap {
+      overflow-x: auto;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px 24px;
+    }
+
+    /* ── footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+      color: var(--text3);
+      font-size: 13px;
+    }
+    footer a { color: var(--purple); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="badge">🔥 Claude Code Tip</div>
+  <h1>내 토큰은 어디에 쓰이고 있을까?<br><span class="em">CodeBurn</span></h1>
+  <p>Claude Code 세션 파일을 직접 읽어 토큰 사용량을 분석하는 터미널 대시보드. API 키 없이, 프록시 없이 동작한다.</p>
+  <div class="header-meta">
+    <span>📅 <b>2026-04-16</b></span>
+    <span>🔗 <b>github.com/AgentSeal/codeburn</b></span>
+    <span>📦 <b>Node.js 20+</b></span>
+    <span>⭐ <b>1.7k stars</b></span>
+  </div>
+</header>
+
+<!-- ── Main ── -->
+<main class="container">
+
+  <!-- ── 왜 쓰나 ── -->
+  <section class="section">
+    <h2 class="section-title">왜 쓰는가</h2>
+
+    <div class="info-box">
+      <div class="icon">💡</div>
+      <div class="content">
+        <b>토큰이 너무 많이 쓰인다 싶으면</b> — 무작정 절약법을 찾기 전에 먼저 어디에 얼마나 쓰이는지 파악하는 게 먼저다. 대화(63%), 코딩(16%), 탐색(15%), 디버깅(4%)처럼 활동 유형별로 비용이 쪼개져 나온다. 어디를 줄여야 할지 보인다.
+      </div>
+    </div>
+
+    <div class="overview-grid">
+      <div class="overview-card">
+        <div class="label">API 키 불필요</div>
+        <div class="value" style="color: var(--teal);">0</div>
+        <div class="desc">디스크의 세션 파일(<code>~/.claude/projects/</code>)을 직접 읽는 방식. 외부 서버로 데이터를 전송하지 않는다.</div>
+      </div>
+      <div class="overview-card">
+        <div class="label">지원 도구</div>
+        <div class="value" style="color: var(--amber);">4종</div>
+        <div class="desc">Claude Code, OpenAI Codex, Cursor, OpenCode. 복수 도구를 동시에 쓰는 경우 <code>p</code> 키로 전환.</div>
+      </div>
+      <div class="overview-card">
+        <div class="label">분석 방식</div>
+        <div class="value" style="color: var(--rose);">결정론적</div>
+        <div class="desc">LLM 호출 없이 <b>패턴 매칭</b>으로 활동 유형을 분류. 빠르고 비용 없음.</div>
+      </div>
+      <div class="overview-card">
+        <div class="label">구현 기술</div>
+        <div class="value" style="color: var(--green);">Ink</div>
+        <div class="desc">터미널용 React인 <b>Ink</b> + TypeScript 100%로 만들어진 인터랙티브 TUI 앱.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 지원 도구 ── -->
+  <section class="section">
+    <h2 class="section-title">지원 AI 코딩 도구</h2>
+    <div class="provider-grid">
+      <div class="provider-card">
+        <div class="provider-icon">🤖</div>
+        <div class="provider-info">
+          <div class="pname">Claude Code</div>
+          <div class="ppath">~/.claude/projects/</div>
+          <div class="pformat">JSONL</div>
+        </div>
+      </div>
+      <div class="provider-card">
+        <div class="provider-icon">🟢</div>
+        <div class="provider-info">
+          <div class="pname">OpenAI Codex</div>
+          <div class="ppath">~/.codex/sessions/</div>
+          <div class="pformat">JSONL</div>
+        </div>
+      </div>
+      <div class="provider-card">
+        <div class="provider-icon">⬛</div>
+        <div class="provider-info">
+          <div class="pname">Cursor</div>
+          <div class="ppath">~/Library/Application Support/Cursor/</div>
+          <div class="pformat">SQLite</div>
+        </div>
+      </div>
+      <div class="provider-card">
+        <div class="provider-icon">🟣</div>
+        <div class="provider-info">
+          <div class="pname">OpenCode</div>
+          <div class="ppath">~/.local/share/opencode/</div>
+          <div class="pformat">SQLite</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 설치 및 실행 ── -->
+  <section class="section">
+    <h2 class="section-title">설치 및 실행</h2>
+    <div class="install-grid">
+      <div class="install-card">
+        <div class="card-header"><span class="dot dot-green"></span>전역 설치 (권장)</div>
+        <pre><span class="comment"># Node.js 20 이상 필요</span>
+<span class="cmd">npm install -g codeburn</span>
+
+<span class="comment"># 대시보드 실행</span>
+<span class="cmd">codeburn</span></pre>
+      </div>
+      <div class="install-card">
+        <div class="card-header"><span class="dot dot-amber"></span>설치 없이 바로 실행</div>
+        <pre><span class="comment"># npx로 즉시 실행</span>
+<span class="cmd">npx codeburn</span>
+
+<span class="comment"># 오늘만 보기</span>
+<span class="cmd">npx codeburn today</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 명령어 목록 ── -->
+  <section class="section">
+    <h2 class="section-title">명령어 목록</h2>
+    <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--border);">
+      <table class="cmd-table" style="border: none; border-radius: 0;">
+        <thead>
+          <tr>
+            <th>명령어</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>codeburn</td>
+            <td>대시보드 실행 <span class="tag">기본: 7일 뷰</span></td>
+          </tr>
+          <tr>
+            <td>codeburn today</td>
+            <td>오늘 하루만 표시</td>
+          </tr>
+          <tr>
+            <td>codeburn month</td>
+            <td>이번 달 1일부터 오늘까지</td>
+          </tr>
+          <tr>
+            <td>codeburn report -p 30days</td>
+            <td>최근 30일 롤링 보고서</td>
+          </tr>
+          <tr>
+            <td>codeburn status</td>
+            <td>한 줄 요약 출력 (쉘 프롬프트 삽입용)</td>
+          </tr>
+          <tr>
+            <td>codeburn export</td>
+            <td>CSV 내보내기 <span class="tag">--json 플래그로 JSON도 가능</span></td>
+          </tr>
+          <tr>
+            <td>codeburn currency KRW</td>
+            <td>표시 통화 변경 (162개 ISO 4217 지원, 환율 자동 갱신)</td>
+          </tr>
+          <tr>
+            <td>codeburn install-menubar</td>
+            <td>macOS SwiftBar 메뉴바 위젯 설치 (5분마다 자동 갱신)</td>
+          </tr>
+          <tr>
+            <td>codeburn --provider claude</td>
+            <td>특정 AI 도구만 필터링 (claude / cursor / codex / opencode)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 키보드 단축키 ── -->
+  <section class="section">
+    <h2 class="section-title">대시보드 키보드 단축키</h2>
+    <div class="shortcut-grid">
+      <div class="shortcut-item">
+        <kbd>1</kbd>
+        <div class="shortcut-desc"><b>Today</b> — 오늘만</div>
+      </div>
+      <div class="shortcut-item">
+        <kbd>2</kbd>
+        <div class="shortcut-desc"><b>7 Days</b> — 최근 7일 (기본값)</div>
+      </div>
+      <div class="shortcut-item">
+        <kbd>3</kbd>
+        <div class="shortcut-desc"><b>30 Days</b> — 최근 30일</div>
+      </div>
+      <div class="shortcut-item">
+        <kbd>4</kbd>
+        <div class="shortcut-desc"><b>This Month</b> — 이번 달</div>
+      </div>
+      <div class="shortcut-item">
+        <kbd>← →</kbd>
+        <div class="shortcut-desc">기간 전환 (또는 <kbd style="font-size:11px">Tab</kbd>)</div>
+      </div>
+      <div class="shortcut-item">
+        <kbd>p</kbd>
+        <div class="shortcut-desc">제공자(Provider) 전환<br><span style="color:var(--text3);font-size:12px">복수 도구 감지 시 활성화</span></div>
+      </div>
+      <div class="shortcut-item">
+        <kbd>q</kbd>
+        <div class="shortcut-desc"><b>종료</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 대시보드 구조 ── -->
+  <section class="section">
+    <h2 class="section-title">대시보드 구조 — 각 패널 의미</h2>
+
+    <div class="tip-box">
+      <div class="icon">🖥️</div>
+      <div class="content">
+        아래는 대시보드를 구성하는 <b>6개 패널</b>의 의미다. 상단 헤더(Overview)까지 합치면 총 7개 영역이 있다.
+      </div>
+    </div>
+
+    <!-- Dashboard Mockup -->
+    <div class="dashboard-mockup" style="margin-bottom: 32px;">
+      <div class="mockup-titlebar">
+        <span class="mock-dot mock-red"></span>
+        <span class="mock-dot mock-yellow"></span>
+        <span class="mock-dot mock-green"></span>
+        <span class="mock-title">codeburn — 7 Days</span>
+      </div>
+      <div class="mockup-body">
+        <div class="mock-header">
+          <div><span class="mock-name">CodeBurn</span><span class="mock-period"> 7 Days</span></div>
+          <div><span class="mock-cost">$1,281.79</span><span class="mock-stats">  cost  11,435 calls  1829 sessions  100% cache hit</span></div>
+          <div style="color:#5a5a78;font-size:11px;">102.1K in  4.0M out  2080.1M cached  28.2M written</div>
+        </div>
+        <div class="mock-grid">
+          <div>
+            <div class="mock-section-title">Daily Activity</div>
+            <div class="mock-row"><span class="mock-label">04-12</span><div class="mock-bar-bg"><div class="mock-bar" style="width:34%"></div></div><span class="mock-val">$97</span></div>
+            <div class="mock-row"><span class="mock-label">04-13</span><div class="mock-bar-bg"><div class="mock-bar" style="width:52%"></div></div><span class="mock-val">$149</span></div>
+            <div class="mock-row"><span class="mock-label">04-14</span><div class="mock-bar-bg"><div class="mock-bar" style="width:7%"></div></div><span class="mock-val">$20</span></div>
+          </div>
+          <div>
+            <div class="mock-section-title">By Activity</div>
+            <div class="mock-activity-row"><span class="act-color" style="background:#60a5fa"></span><span class="act-name" style="color:#60a5fa">Coding</span><span class="act-cost">$529</span><span class="act-1shot">90%</span></div>
+            <div class="mock-activity-row"><span class="act-color" style="background:#4ade80"></span><span class="act-name" style="color:#4ade80">Exploration</span><span class="act-cost">$230</span><span class="act-1shot">—</span></div>
+            <div class="mock-activity-row"><span class="act-color" style="background:#fb7185"></span><span class="act-name" style="color:#fb7185">Debugging</span><span class="act-cost">$115</span><span class="act-1shot">88%</span></div>
+            <div class="mock-activity-row"><span class="act-color" style="background:#fbbf24"></span><span class="act-name" style="color:#fbbf24">Delegation</span><span class="act-cost">$114</span><span class="act-1shot">89%</span></div>
+            <div class="mock-activity-row"><span class="act-color" style="background:#9090a8"></span><span class="act-name" style="color:#9090a8">Conversation</span><span class="act-cost">$95</span><span class="act-1shot">—</span></div>
+          </div>
+          <div>
+            <div class="mock-section-title">By Model</div>
+            <div class="mock-row"><span class="mock-label">Opus 4.6</span><div class="mock-bar-bg"><div class="mock-bar" style="width:98%"></div></div><span class="mock-val">$1249</span></div>
+            <div class="mock-row"><span class="mock-label">Sonnet 4.6</span><div class="mock-bar-bg"><div class="mock-bar" style="width:2%"></div></div><span class="mock-val">$25</span></div>
+          </div>
+          <div>
+            <div class="mock-section-title">Core Tools</div>
+            <div class="mock-row"><span class="mock-label">Bash</span><div class="mock-bar-bg"><div class="mock-bar" style="width:100%"></div></div><span class="mock-val">1511</span></div>
+            <div class="mock-row"><span class="mock-label">Read</span><div class="mock-bar-bg"><div class="mock-bar" style="width:50%"></div></div><span class="mock-val">757</span></div>
+            <div class="mock-row"><span class="mock-label">Edit</span><div class="mock-bar-bg"><div class="mock-bar" style="width:39%"></div></div><span class="mock-val">596</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metric Grid -->
+    <div class="metric-grid" style="margin-bottom: 32px;">
+      <div class="metric-card">
+        <div class="m-name">cost</div>
+        <div class="m-val" style="color:var(--green);">$X.XX</div>
+        <div class="m-desc">선택 기간 내 AI 토큰 총 비용. 통화는 <code>codeburn currency KRW</code>로 변경 가능.</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-name">calls</div>
+        <div class="m-val" style="color:var(--blue);">N,NNN</div>
+        <div class="m-desc">API 호출 횟수. 사용자 메시지마다 1회 카운트. 턴(turn) 수와 같다.</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-name">sessions</div>
+        <div class="m-val" style="color:var(--amber);">NNN</div>
+        <div class="m-desc">독립 대화 세션 수. 한 세션은 하나의 Claude Code 실행 인스턴스.</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-name">cache hit</div>
+        <div class="m-val" style="color:var(--rose);">NN%</div>
+        <div class="m-desc">프롬프트 캐싱으로 절감된 비율. 높을수록 토큰 비용이 줄어든 것.</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-name">in tokens</div>
+        <div class="m-val" style="color:var(--purple);">NN.NK</div>
+        <div class="m-desc">입력 토큰 수. 사용자 메시지 + 컨텍스트(파일 내용, 도구 결과 등) 포함.</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-name">out tokens</div>
+        <div class="m-val" style="color:var(--teal);">N.NM</div>
+        <div class="m-desc">출력 토큰 수. AI가 생성한 응답의 토큰. 비용의 주요 변수.</div>
+      </div>
+    </div>
+
+    <div class="overview-grid" style="margin-bottom: 0;">
+      <div class="overview-card">
+        <div class="label">Daily Activity</div>
+        <div class="desc" style="margin-top: 8px;">일별 비용과 호출 수를 <b>가로 막대 그래프</b>로 표시. 색상 그래디언트(파랑→주황)가 비용 비율을 시각화. 사용량 패턴을 한눈에 파악.</div>
+      </div>
+      <div class="overview-card">
+        <div class="label">By Project</div>
+        <div class="desc" style="margin-top: 8px;">상위 8개 프로젝트별 <b>총 비용과 세션 수</b>. 어떤 프로젝트가 AI 예산을 가장 많이 소모하는지 파악.</div>
+      </div>
+      <div class="overview-card">
+        <div class="label">By Model</div>
+        <div class="desc" style="margin-top: 8px;">사용된 <b>모델별 비용과 호출 횟수</b>. Opus vs. Sonnet vs. Haiku 등 모델 선택에 따른 비용 차이 비교.</div>
+      </div>
+      <div class="overview-card">
+        <div class="label">Core Tools</div>
+        <div class="desc" style="margin-top: 8px;">Claude Code 내장 도구별 <b>사용 횟수</b>. Read, Edit, Bash, Grep, Write, Agent 등이 각각 몇 번 호출되었는지.</div>
+      </div>
+      <div class="overview-card">
+        <div class="label">MCP Servers</div>
+        <div class="desc" style="margin-top: 8px;">MCP(Model Context Protocol) 서버별 <b>호출 횟수</b>. playwright, sequential-thinking 등 어떤 MCP를 얼마나 썼는지.</div>
+      </div>
+      <div class="overview-card" style="border-color: rgba(167,139,250,0.3);">
+        <div class="label" style="color: var(--purple);">By Activity ★</div>
+        <div class="desc" style="margin-top: 8px;">13가지 활동 유형별 비용, 턴 수, 원샷 성공률. <b>핵심 패널</b>. 아래에 상세 설명.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── By Activity 상세 ── -->
+  <section class="section">
+    <h2 class="section-title">By Activity — 13가지 분류 상세</h2>
+
+    <div class="info-box" style="margin-bottom: 24px;">
+      <div class="icon">⚙️</div>
+      <div class="content">
+        <b>분류 방식</b> — LLM 없이 <b>결정론적 패턴 매칭</b>으로 동작. 2단계 결정 트리를 거친다.<br>
+        1단계: 어떤 <b>도구(Tool)</b>가 사용되었는가<br>
+        2단계: 사용자 메시지에 어떤 <b>키워드</b>가 있는가
+      </div>
+    </div>
+
+    <!-- Flow Diagram -->
+    <div class="flow-wrap" style="margin-bottom: 32px;">
+      <svg viewBox="0 0 860 320" style="width:100%;max-width:860px;display:block;margin:0 auto;" aria-label="Activity 분류 흐름">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#5a5a78"/>
+          </marker>
+          <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#a78bfa"/>
+          </marker>
+        </defs>
+
+        <!-- 시작 -->
+        <rect x="10" y="130" width="100" height="44" rx="8" fill="#1a1a24" stroke="#5a5a78" stroke-width="1.2"/>
+        <text x="60" y="157" text-anchor="middle" fill="#9090a8" font-size="12" font-family="Pretendard">하나의 턴</text>
+
+        <!-- 화살표 1 -->
+        <line x1="110" y1="152" x2="148" y2="152" stroke="#5a5a78" stroke-width="1.2" marker-end="url(#arr)"/>
+
+        <!-- 1단계 박스 -->
+        <rect x="150" y="118" width="130" height="68" rx="8" fill="#1a1a24" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="215" y="145" text-anchor="middle" fill="#a78bfa" font-size="12" font-weight="600" font-family="Pretendard">1단계: 도구 패턴</text>
+        <text x="215" y="162" text-anchor="middle" fill="#9090a8" font-size="11" font-family="Pretendard">어떤 Tool이</text>
+        <text x="215" y="177" text-anchor="middle" fill="#9090a8" font-size="11" font-family="Pretendard">사용되었나?</text>
+
+        <!-- 직접 분류 -->
+        <line x1="215" y1="118" x2="215" y2="82" stroke="#5a5a78" stroke-width="1.2" marker-end="url(#arr)"/>
+        <rect x="150" y="40" width="130" height="40" rx="6" fill="#0d2010" stroke="#4ade80" stroke-width="1"/>
+        <text x="215" y="65" text-anchor="middle" fill="#4ade80" font-size="11" font-family="Pretendard">Planning / Testing</text>
+
+        <!-- 화살표 오른쪽 -->
+        <line x1="280" y1="152" x2="318" y2="152" stroke="#5a5a78" stroke-width="1.2" marker-end="url(#arr)"/>
+
+        <!-- 2단계 박스 -->
+        <rect x="320" y="118" width="130" height="68" rx="8" fill="#1a1a24" stroke="#2dd4bf" stroke-width="1.5"/>
+        <text x="385" y="145" text-anchor="middle" fill="#2dd4bf" font-size="12" font-weight="600" font-family="Pretendard">2단계: 키워드</text>
+        <text x="385" y="162" text-anchor="middle" fill="#9090a8" font-size="11" font-family="Pretendard">메시지에 어떤</text>
+        <text x="385" y="177" text-anchor="middle" fill="#9090a8" font-size="11" font-family="Pretendard">키워드 있나?</text>
+
+        <!-- 2단계 결과들 -->
+        <line x1="385" y1="186" x2="385" y2="218" stroke="#5a5a78" stroke-width="1.2" marker-end="url(#arr)"/>
+        <rect x="300" y="220" width="170" height="36" rx="6" fill="#0f0f20" stroke="#60a5fa" stroke-width="1"/>
+        <text x="385" y="243" text-anchor="middle" fill="#60a5fa" font-size="11" font-family="Pretendard">Coding / Debugging / Feature Dev</text>
+
+        <!-- 도구 없는 경우 -->
+        <line x1="450" y1="152" x2="530" y2="152" stroke="#5a5a78" stroke-width="1.2" marker-end="url(#arr)"/>
+        <text x="490" y="146" text-anchor="middle" fill="#5a5a78" font-size="10" font-family="Pretendard">도구 없음</text>
+
+        <!-- 3단계 -->
+        <rect x="532" y="118" width="130" height="68" rx="8" fill="#1a1a24" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="597" y="145" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="600" font-family="Pretendard">3단계: 메시지만</text>
+        <text x="597" y="162" text-anchor="middle" fill="#9090a8" font-size="11" font-family="Pretendard">순수 텍스트</text>
+        <text x="597" y="177" text-anchor="middle" fill="#9090a8" font-size="11" font-family="Pretendard">대화 분류</text>
+
+        <!-- 3단계 결과 -->
+        <line x1="597" y1="186" x2="597" y2="218" stroke="#5a5a78" stroke-width="1.2" marker-end="url(#arr)"/>
+        <rect x="520" y="220" width="154" height="36" rx="6" fill="#100a08" stroke="#fb923c" stroke-width="1"/>
+        <text x="597" y="243" text-anchor="middle" fill="#fb923c" font-size="11" font-family="Pretendard">Conversation / Brainstorming</text>
+
+        <!-- Delegation -->
+        <line x1="385" y1="118" x2="385" y2="82" stroke="#5a5a78" stroke-width="1.2" marker-end="url(#arr)"/>
+        <rect x="320" y="40" width="130" height="40" rx="6" fill="#1a1208" stroke="#fbbf24" stroke-width="1"/>
+        <text x="385" y="65" text-anchor="middle" fill="#fbbf24" font-size="11" font-family="Pretendard">Delegation (Agent 도구)</text>
+
+        <!-- Git Ops -->
+        <line x1="597" y1="118" x2="597" y2="82" stroke="#5a5a78" stroke-width="1.2" marker-end="url(#arr)"/>
+        <rect x="532" y="40" width="130" height="40" rx="6" fill="#0d0d20" stroke="#a78bfa" stroke-width="1"/>
+        <text x="597" y="65" text-anchor="middle" fill="#a78bfa" font-size="11" font-family="Pretendard">Build/Deploy / Git Ops</text>
+      </svg>
+    </div>
+
+    <div class="activity-grid">
+      <!-- Coding -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--blue);">●</span> Coding
+          </div>
+          <span class="act-badge badge-tool">도구 기반</span>
+        </div>
+        <p class="act-desc"><code>Edit</code> 또는 <code>Write</code> 도구가 사용된 턴. 실제 파일 수정이 발생한 코딩 작업. 메시지 키워드가 없으면 일반 Coding으로 분류.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip tool">Edit 도구</span>
+          <span class="trigger-chip tool">Write 도구</span>
+        </div>
+      </div>
+
+      <!-- Feature Dev -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--green);">●</span> Feature Dev
+          </div>
+          <span class="act-badge badge-keyword">키워드 기반</span>
+        </div>
+        <p class="act-desc">Coding 분류 이후 2단계에서 기능 추가 키워드가 감지된 경우. 새 기능 구현, 컴포넌트 추가 등이 해당.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip">add</span>
+          <span class="trigger-chip">create</span>
+          <span class="trigger-chip">implement</span>
+          <span class="trigger-chip">new</span>
+          <span class="trigger-chip">build</span>
+        </div>
+      </div>
+
+      <!-- Debugging -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--rose);">●</span> Debugging
+          </div>
+          <span class="act-badge badge-keyword">키워드 기반</span>
+        </div>
+        <p class="act-desc">Coding/Exploration 분류 이후 오류 관련 키워드가 감지된 경우. 에러 수정, 버그 추적 등이 해당. <b>원샷 성공률</b>도 함께 표시됨.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip">fix</span>
+          <span class="trigger-chip">bug</span>
+          <span class="trigger-chip">error</span>
+          <span class="trigger-chip">crash</span>
+          <span class="trigger-chip">500</span>
+          <span class="trigger-chip">exception</span>
+        </div>
+      </div>
+
+      <!-- Refactoring -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--teal);">●</span> Refactoring
+          </div>
+          <span class="act-badge badge-keyword">키워드 기반</span>
+        </div>
+        <p class="act-desc">코드 구조 개선 키워드가 감지된 경우. 기능 변경 없이 코드 품질을 높이는 작업.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip">refactor</span>
+          <span class="trigger-chip">cleanup</span>
+          <span class="trigger-chip">rename</span>
+          <span class="trigger-chip">extract</span>
+          <span class="trigger-chip">reorganize</span>
+        </div>
+      </div>
+
+      <!-- Exploration -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--green);">●</span> Exploration
+          </div>
+          <span class="act-badge badge-tool">도구 기반</span>
+        </div>
+        <p class="act-desc">Bash + 읽기 도구 사용, 또는 웹 검색/MCP 도구 사용, 또는 읽기 전용 턴. 코드베이스 탐색, 파일 조회, 외부 정보 수집 등.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip tool">Read 도구</span>
+          <span class="trigger-chip tool">Grep 도구</span>
+          <span class="trigger-chip tool">WebFetch</span>
+          <span class="trigger-chip tool">WebSearch</span>
+          <span class="trigger-chip">research</span>
+          <span class="trigger-chip">analyze</span>
+        </div>
+      </div>
+
+      <!-- Delegation -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--amber);">●</span> Delegation
+          </div>
+          <span class="act-badge badge-tool">도구 기반</span>
+        </div>
+        <p class="act-desc"><code>Agent</code> 도구가 실행된 턴. 서브에이전트를 스폰(spawn)하여 복잡한 작업을 위임한 경우. 원샷 성공률이 표시됨.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip tool">Agent 도구</span>
+        </div>
+      </div>
+
+      <!-- Conversation -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--text3);">●</span> Conversation
+          </div>
+          <span class="act-badge badge-default">기본값</span>
+        </div>
+        <p class="act-desc">도구 미사용 + 키워드 미매칭인 순수 텍스트 대화. 질문·답변·설명 요청 등이 모두 여기에 해당. 비율이 높다면 대화가 많다는 의미.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip" style="color:var(--text3);">도구 없음</span>
+          <span class="trigger-chip" style="color:var(--text3);">키워드 없음</span>
+        </div>
+      </div>
+
+      <!-- Brainstorming -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--pink);">●</span> Brainstorming
+          </div>
+          <span class="act-badge badge-keyword">키워드 기반</span>
+        </div>
+        <p class="act-desc">도구 미사용 턴에서 아이디어 탐색 키워드가 감지된 경우. 전략 논의, 설계 방향 탐색 등.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip">brainstorm</span>
+          <span class="trigger-chip">idea</span>
+          <span class="trigger-chip">strategy</span>
+          <span class="trigger-chip">how should</span>
+          <span class="trigger-chip">what if</span>
+        </div>
+      </div>
+
+      <!-- Planning -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--purple);">●</span> Planning
+          </div>
+          <span class="act-badge badge-tool">도구 기반</span>
+        </div>
+        <p class="act-desc"><code>EnterPlanMode</code>, <code>TaskCreate</code> 등 계획 도구가 사용된 턴. Claude Code의 Plan 모드나 Task 관리 작업이 해당.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip tool">EnterPlanMode</span>
+          <span class="trigger-chip tool">TaskCreate</span>
+          <span class="trigger-chip tool">TaskUpdate</span>
+        </div>
+      </div>
+
+      <!-- Testing -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--teal);">●</span> Testing
+          </div>
+          <span class="act-badge badge-tool">도구 기반</span>
+        </div>
+        <p class="act-desc">Bash만 사용한 턴에서 테스트 실행 키워드가 감지된 경우. 테스트 프레임워크를 CLI로 직접 실행하는 경우.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip tool">Bash 도구</span>
+          <span class="trigger-chip">pytest</span>
+          <span class="trigger-chip">jest</span>
+          <span class="trigger-chip">vitest</span>
+          <span class="trigger-chip">test</span>
+        </div>
+      </div>
+
+      <!-- Build/Deploy -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--orange);">●</span> Build/Deploy
+          </div>
+          <span class="act-badge badge-tool">도구 기반</span>
+        </div>
+        <p class="act-desc">Bash만 사용한 턴에서 빌드·배포 키워드가 감지된 경우. npm 빌드, Docker, 서버 배포 등.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip">npm build</span>
+          <span class="trigger-chip">docker</span>
+          <span class="trigger-chip">deploy</span>
+          <span class="trigger-chip">pm2</span>
+        </div>
+      </div>
+
+      <!-- Git Ops -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--purple);">●</span> Git Ops
+          </div>
+          <span class="act-badge badge-tool">도구 기반</span>
+        </div>
+        <p class="act-desc">Bash만 사용한 턴에서 Git 동기화 명령이 감지된 경우. push, pull, commit, merge 등 Git 협업 작업.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip">git push</span>
+          <span class="trigger-chip">git pull</span>
+          <span class="trigger-chip">git commit</span>
+          <span class="trigger-chip">git merge</span>
+        </div>
+      </div>
+
+      <!-- General -->
+      <div class="activity-card">
+        <div class="act-header">
+          <div class="act-name">
+            <span style="color: var(--text3);">●</span> General
+          </div>
+          <span class="act-badge badge-default">기타</span>
+        </div>
+        <p class="act-desc"><code>Skill</code> 도구가 사용되었거나, 위 분류 중 어디에도 해당하지 않는 기타 턴.</p>
+        <div class="trigger-list">
+          <span class="trigger-chip tool">Skill 도구</span>
+          <span class="trigger-chip" style="color:var(--text3);">미분류 나머지</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── One-Shot Rate ── -->
+  <section class="section">
+    <h2 class="section-title">원샷 성공률 (One-Shot Rate)</h2>
+
+    <div class="tip-box">
+      <div class="icon">🎯</div>
+      <div class="content">
+        <b>원샷 성공률</b>이란 — AI가 처음 시도에서 바로 작동 가능한 코드를 만들어낸 비율이다. Coding 90%라면 10번 중 9번은 수정 없이 통과했다는 의미.
+      </div>
+    </div>
+
+    <div class="overview-grid">
+      <div class="overview-card" style="border-color: rgba(96,165,250,0.3);">
+        <div class="label">측정 방식</div>
+        <div class="desc" style="margin-top: 10px;"><code>Edit → Bash → Edit</code> 패턴 감지. 수정 후 실행했는데 다시 수정이 필요했다면 원샷 실패로 카운트.</div>
+      </div>
+      <div class="overview-card" style="border-color: rgba(74,222,128,0.3);">
+        <div class="label">표시 대상</div>
+        <div class="desc" style="margin-top: 10px;">Coding, Debugging, Delegation, Refactoring 등 코드 수정이 포함된 활동에만 표시. Conversation에는 표시 안 됨(—).</div>
+      </div>
+      <div class="overview-card" style="border-color: rgba(251,191,36,0.3);">
+        <div class="label">활용법</div>
+        <div class="desc" style="margin-top: 10px;">원샷 성공률이 낮다면 프롬프트가 불명확하거나 컨텍스트가 부족한 것. 높으면 AI가 효과적으로 동작 중.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 설정 ── -->
+  <section class="section">
+    <h2 class="section-title">설정</h2>
+
+    <div class="install-grid">
+      <div class="install-card">
+        <div class="card-header"><span class="dot dot-green"></span>설정 파일 위치</div>
+        <pre><span class="comment">~/.config/codeburn/config.json</span>
+
+<span class="comment"># 통화 설정 예시</span>
+{
+  "currency": {
+    "code": <span class="str">"KRW"</span>,
+    "symbol": <span class="str">"₩"</span>
+  }
+}</pre>
+      </div>
+      <div class="install-card">
+        <div class="card-header"><span class="dot dot-amber"></span>유용한 설정 명령</div>
+        <pre><span class="comment"># 한국 원화로 표시</span>
+<span class="cmd">codeburn currency KRW</span>
+
+<span class="comment"># macOS 메뉴바 위젯 설치</span>
+<span class="cmd">codeburn install-menubar</span>
+
+<span class="comment"># CSV로 내보내기</span>
+<span class="cmd">codeburn export</span>
+
+<span class="comment"># JSON으로 내보내기</span>
+<span class="cmd">codeburn export <span class="flag">--json</span></span></pre>
+      </div>
+    </div>
+
+    <div class="info-box" style="margin-top: 24px; margin-bottom: 0;">
+      <div class="icon">💱</div>
+      <div class="content">
+        <b>환율 자동 갱신</b> — Frankfurter API(유럽중앙은행 데이터)를 사용해 162개 ISO 4217 통화를 지원. 24시간 캐싱. 가격 데이터는 LiteLLM DB에서 자동 가져옴.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>📊 CodeBurn — <a href="https://github.com/AgentSeal/codeburn" target="_blank" rel="noopener">github.com/AgentSeal/codeburn</a> · MIT License · ⭐ 1.7k</p>
+  <p style="margin-top: 8px; color: #3a3a58;">정보 출처: CodeBurn 공식 README 및 소스코드 기반 · 2026-04-16</p>
+</footer>
+
+</body>
+</html>
