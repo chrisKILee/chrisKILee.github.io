@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code 5계층 아키텍처</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* TOP BAR */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .topbar-meta {
+      font-size: 12px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+    }
+
+    /* HERO */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 28px 60px;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-bdr);
+      color: var(--accent);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      max-width: 740px;
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--accent);
+    }
+    .hero-desc {
+      font-size: 17px;
+      color: var(--ink-3);
+      max-width: 600px;
+      line-height: 1.75;
+      margin-bottom: 36px;
+    }
+    .hero-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-2);
+    }
+
+    /* SECTION */
+    .section {
+      padding: 56px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      max-width: 80px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .section-desc {
+      font-size: 15px;
+      color: var(--ink-3);
+      max-width: 620px;
+      margin-bottom: 36px;
+      line-height: 1.7;
+    }
+
+    /* LAYER CARDS */
+    .layer-cards { display: flex; flex-direction: column; gap: 12px; }
+    .layer-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 64px 1fr auto;
+      align-items: stretch;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .layer-card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+    .layer-num {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: var(--bg-2);
+      border-right: 1px solid var(--border);
+      padding: 20px 12px;
+    }
+    .layer-num-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+    }
+    .layer-num-val {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .layer-body {
+      padding: 20px 24px;
+    }
+    .layer-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .layer-subtitle {
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .layer-desc {
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.65;
+    }
+
+    .layer-badge {
+      display: flex;
+      align-items: center;
+      padding: 20px 20px;
+      border-left: 1px solid var(--border);
+    }
+    .layer-badge span {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+      font-family: var(--font-mono);
+    }
+    .badge-memory   { background: #EDE9FE; color: #5B21B6; }
+    .badge-knowledge{ background: #DBEAFE; color: #1E40AF; }
+    .badge-guardrail{ background: #FEF3C7; color: #92400E; }
+    .badge-delegate { background: #D1FAE5; color: #065F46; }
+    .badge-dist     { background: #FCE7F3; color: #9D174D; }
+
+    /* SVG DIAGRAM */
+    .diagram-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 32px;
+      overflow-x: auto;
+      margin-top: 32px;
+    }
+    .diagram-wrap svg { min-width: 560px; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:hover td { background: var(--bg); }
+
+    /* CALLOUT */
+    .callout {
+      border-left: 3px solid;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip  { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+    /* CODE BLOCK */
+    .code-wrap {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+    .code-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-2);
+    }
+    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body {
+      padding: 18px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink-2);
+    }
+
+    /* FLOW PIPELINE */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin-top: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .pipeline-step {
+      flex: 1;
+      min-width: 140px;
+      padding: 20px 16px;
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
+    .pipeline-step:last-child { border-right: none; }
+    .pipeline-step-num {
+      font-size: 10px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--ink-4);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .pipeline-step-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .pipeline-step-action {
+      font-size: 12px;
+      color: var(--ink-3);
+    }
+
+    /* TAG */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .tag.green  { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray   { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+    .tag.purple { background: #EDE9FE; color: #5B21B6; }
+    .tag.blue   { background: #DBEAFE; color: #1E40AF; }
+
+    /* FOOTER */
+    footer {
+      padding: 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--ink-4);
+    }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+      .layer-card { grid-template-columns: 52px 1fr; }
+      .layer-badge { display: none; }
+      .pipeline { flex-direction: column; }
+      .pipeline-step { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">Claude Code 5계층 아키텍처</span>
+  <span class="topbar-meta">2026-04-17</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">Agent Development Kit</div>
+    <h1>Claude Code는<br><em>완전한 에이전트 개발 키트</em></h1>
+    <p class="hero-desc">
+      대부분의 개발자는 Layer 1(CLAUDE.md)만 사용합니다. 하지만 Claude Code는 5계층 아키텍처로 구성된 완전한 에이전트 개발 프레임워크입니다. 각 계층이 역할을 나눠 런타임에 프롬프트 엔지니어링이 필요 없는 구조를 만듭니다.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🧠 CLAUDE.md</span>
+      <span class="chip">📚 Skills</span>
+      <span class="chip">🔒 Hooks</span>
+      <span class="chip">🤖 Subagents</span>
+      <span class="chip">📦 Plugins</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: 5계층 개요 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 Architecture</div>
+    <h2 class="section-title">5계층 구조</h2>
+    <p class="section-desc">각 계층은 독립적인 역할을 가지며, 아래로 내려갈수록 더 넓은 팀과 공유할 수 있는 기능을 담당합니다.</p>
+
+    <div class="layer-cards">
+
+      <div class="layer-card">
+        <div class="layer-num">
+          <span class="layer-num-label">Layer</span>
+          <span class="layer-num-val">1</span>
+        </div>
+        <div class="layer-body">
+          <div class="layer-subtitle">CLAUDE.md — Memory</div>
+          <div class="layer-title">에이전트의 헌법 (Constitution)</div>
+          <div class="layer-desc">항상 로드되며 항상 활성화됩니다. 아키텍처 규칙, 네이밍 컨벤션, 테스트 기대치를 정의합니다. 프롬프트를 입력하기 전에 이미 모든 규칙이 적용된 상태입니다. <code style="font-family:var(--font-mono);font-size:12px;background:var(--code-bg);padding:2px 6px;border-radius:4px;">~/.claude/CLAUDE.md</code>(전역)와 <code style="font-family:var(--font-mono);font-size:12px;background:var(--code-bg);padding:2px 6px;border-radius:4px;">.claude/CLAUDE.md</code>(프로젝트) 두 레벨로 관리합니다.</div>
+        </div>
+        <div class="layer-badge"><span class="badge-memory">Memory</span></div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-num">
+          <span class="layer-num-label">Layer</span>
+          <span class="layer-num-val">2</span>
+        </div>
+        <div class="layer-body">
+          <div class="layer-subtitle">SKILLS — Knowledge</div>
+          <div class="layer-title">온디맨드 컨텍스트</div>
+          <div class="layer-desc">각 SKILL.md는 참조 문서, 스크립트, 템플릿을 하나로 묶습니다. 항상 켜져 있지 않고, 작업이 일치할 때만 자동으로 호출됩니다. 분리된 서브에이전트에서 실행되어 메인 컨텍스트를 깨끗하게 유지합니다.</div>
+        </div>
+        <div class="layer-badge"><span class="badge-knowledge">Knowledge</span></div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-num">
+          <span class="layer-num-label">Layer</span>
+          <span class="layer-num-val">3</span>
+        </div>
+        <div class="layer-body">
+          <div class="layer-subtitle">HOOKS — Guardrails</div>
+          <div class="layer-title">결정론적 가드레일</div>
+          <div class="layer-desc">AI가 아닙니다. 에이전트를 위한 Git 훅이라고 생각하세요. PreToolUse, PostToolUse, SessionStart, Stop, SubagentStop 이벤트에 반응합니다. 파일 저장 시 자동 린트, 위험 명령 차단, Slack 알림 발송 — 루프에 LLM이 없습니다.</div>
+        </div>
+        <div class="layer-badge"><span class="badge-guardrail">Guardrails</span></div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-num">
+          <span class="layer-num-label">Layer</span>
+          <span class="layer-num-val">4</span>
+        </div>
+        <div class="layer-body">
+          <div class="layer-subtitle">SUBAGENTS — Delegation</div>
+          <div class="layer-title">독립 에이전트 위임</div>
+          <div class="layer-desc">코드 리뷰어, 테스트 러너, 탐색기 등 각자의 컨텍스트 창, 커스텀 도구, 커스텀 권한을 가진 서브에이전트를 생성합니다. 서브에이전트는 서브에이전트를 생성할 수 없습니다 — 무한 재귀가 없습니다. 메인 컨텍스트를 깨끗하게 유지하며 병렬 실행이 가능합니다.</div>
+        </div>
+        <div class="layer-badge"><span class="badge-delegate">Delegation</span></div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-num">
+          <span class="layer-num-label">Layer</span>
+          <span class="layer-num-val">5</span>
+        </div>
+        <div class="layer-body">
+          <div class="layer-subtitle">PLUGINS — Distribution</div>
+          <div class="layer-title">팀 배포 패키지</div>
+          <div class="layer-desc">모든 것(skills/, agents/, hooks/, commands/)을 설치 가능한 패키지로 묶습니다. 에이전트 역량을 위한 npm 패키지라고 생각하세요. 팀 전체에 한 번에 설치할 수 있는 마켓플레이스 구조입니다.</div>
+        </div>
+        <div class="layer-badge"><span class="badge-dist">Distribution</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: 아키텍처 다이어그램 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 Diagram</div>
+    <h2 class="section-title">계층 아키텍처 다이어그램</h2>
+    <p class="section-desc">5개 계층이 어떻게 연결되는지 시각적으로 확인합니다.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 800 520" style="width:100%;max-width:800px;" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#A8A8A3"/>
+          </marker>
+        </defs>
+
+        <!-- Layer 1: CLAUDE.md -->
+        <rect x="200" y="20" width="400" height="64" rx="8" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="400" y="44" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#C4522A" letter-spacing="1">LAYER 1 — CLAUDE.md</text>
+        <text x="400" y="62" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#3D3D3A">Memory · 항상 로드됨 · 아키텍처 규칙 · 헌법</text>
+
+        <!-- Arrow 1→2 -->
+        <line x1="400" y1="84" x2="400" y2="108" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Layer 2: SKILLS -->
+        <rect x="200" y="110" width="400" height="64" rx="8" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5"/>
+        <text x="400" y="134" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#1E40AF" letter-spacing="1">LAYER 2 — SKILLS</text>
+        <text x="400" y="152" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#3D3D3A">Knowledge · 온디맨드 · SKILL.md · 서브에이전트 실행</text>
+
+        <!-- MCP Servers (Left) -->
+        <rect x="20" y="110" width="140" height="64" rx="6" fill="#F4F4F1" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="90" y="136" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#6B6B66">MCP Servers</text>
+        <text x="90" y="152" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#A8A8A3">외부 도구 · API</text>
+        <line x1="160" y1="142" x2="198" y2="142" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Agent Teams (Right) -->
+        <rect x="640" y="110" width="140" height="64" rx="6" fill="#F4F4F1" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="710" y="136" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#6B6B66">Agent Teams</text>
+        <text x="710" y="152" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#A8A8A3">병렬 실행 · 공유</text>
+        <line x1="602" y1="142" x2="638" y2="142" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Arrow 2→3 -->
+        <line x1="400" y1="174" x2="400" y2="198" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Layer 3: HOOKS -->
+        <rect x="200" y="200" width="400" height="64" rx="8" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1.5"/>
+        <text x="400" y="224" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#92400E" letter-spacing="1">LAYER 3 — HOOKS</text>
+        <text x="400" y="242" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#3D3D3A">Guardrails · 결정론적 · LLM 없음 · 이벤트 기반</text>
+
+        <!-- Arrow 3→4 -->
+        <line x1="400" y1="264" x2="400" y2="288" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Layer 4: SUBAGENTS -->
+        <rect x="200" y="290" width="400" height="64" rx="8" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1.5"/>
+        <text x="400" y="314" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#065F46" letter-spacing="1">LAYER 4 — SUBAGENTS</text>
+        <text x="400" y="332" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#3D3D3A">Delegation · 독립 컨텍스트 · 권한 분리 · 병렬</text>
+
+        <!-- Arrow 4→5 -->
+        <line x1="400" y1="354" x2="400" y2="378" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Layer 5: PLUGINS -->
+        <rect x="200" y="380" width="400" height="64" rx="8" fill="#FDF2F8" stroke="#F9A8D4" stroke-width="1.5"/>
+        <text x="400" y="404" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#9D174D" letter-spacing="1">LAYER 5 — PLUGINS</text>
+        <text x="400" y="422" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#3D3D3A">Distribution · 패키지화 · 팀 공유 · 마켓플레이스</text>
+
+        <!-- Bottom summary -->
+        <rect x="60" y="468" width="680" height="36" rx="6" fill="#1C1C1A"/>
+        <text x="400" y="491" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#FAFAF8">CLAUDE.md sets rules → Skills provide expertise → Hooks enforce quality → Subagents delegate → Plugins distribute</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: 계층별 상세 비교 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 Comparison</div>
+    <h2 class="section-title">계층별 상세 비교</h2>
+    <p class="section-desc">각 계층의 역할, 작동 방식, 적용 범위를 한눈에 비교합니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>계층</th>
+            <th>역할</th>
+            <th>작동 방식</th>
+            <th>적용 범위</th>
+            <th>핵심 특징</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Layer 1</strong><br><span class="tag purple" style="margin-top:4px;display:inline-flex;">CLAUDE.md</span></td>
+            <td>Memory</td>
+            <td>항상 로드됨</td>
+            <td>전역 / 프로젝트</td>
+            <td>에이전트 헌법. 프롬프트 입력 전 규칙 적용</td>
+          </tr>
+          <tr>
+            <td><strong>Layer 2</strong><br><span class="tag blue" style="margin-top:4px;display:inline-flex;">Skills</span></td>
+            <td>Knowledge</td>
+            <td>온디맨드 자동 호출</td>
+            <td>작업별</td>
+            <td>분리된 서브에이전트 실행. 컨텍스트 모듈화</td>
+          </tr>
+          <tr>
+            <td><strong>Layer 3</strong><br><span class="tag orange" style="margin-top:4px;display:inline-flex;">Hooks</span></td>
+            <td>Guardrails</td>
+            <td>이벤트 기반 결정론적</td>
+            <td>세션 전체</td>
+            <td>LLM 없음. Git 훅처럼 동작. 자동 린트·차단</td>
+          </tr>
+          <tr>
+            <td><strong>Layer 4</strong><br><span class="tag green" style="margin-top:4px;display:inline-flex;">Subagents</span></td>
+            <td>Delegation</td>
+            <td>스폰(spawn) 후 결과 반환</td>
+            <td>작업별</td>
+            <td>독립 컨텍스트. 서브에이전트→서브에이전트 불가</td>
+          </tr>
+          <tr>
+            <td><strong>Layer 5</strong><br><span class="tag gray" style="margin-top:4px;display:inline-flex;">Plugins</span></td>
+            <td>Distribution</td>
+            <td>패키지 설치</td>
+            <td>팀 전체</td>
+            <td>skills+agents+hooks+commands 번들. npm 유사</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: 실행 파이프라인 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 Pipeline</div>
+    <h2 class="section-title">실행 파이프라인</h2>
+    <p class="section-desc">사용자가 명령을 입력하면 5계층이 순서대로 역할을 수행합니다.</p>
+
+    <div class="callout accent">
+      <div class="callout-title">핵심 원칙</div>
+      Five layers. One architecture. Zero prompt engineering at runtime. — Brij Kishore Pandey
+    </div>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">Layer 1</div>
+        <div class="pipeline-step-title">규칙 적용</div>
+        <div class="pipeline-step-action">CLAUDE.md가 컨텍스트에 로드되어 기본 동작 규정</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">Layer 2</div>
+        <div class="pipeline-step-title">전문성 제공</div>
+        <div class="pipeline-step-action">작업에 맞는 Skill이 자동 호출되어 도메인 지식 주입</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">Layer 3</div>
+        <div class="pipeline-step-title">품질 보증</div>
+        <div class="pipeline-step-action">Hooks가 이벤트를 감지해 린트·차단·알림을 결정론적으로 실행</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">Layer 4</div>
+        <div class="pipeline-step-title">작업 위임</div>
+        <div class="pipeline-step-action">복잡한 작업을 Subagents에 분산하여 병렬 처리</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">Layer 5</div>
+        <div class="pipeline-step-title">팀 배포</div>
+        <div class="pipeline-step-action">Plugins으로 전체 역량을 팀에 한 번에 배포</div>
+      </div>
+    </div>
+
+    <div class="callout tip" style="margin-top:24px;">
+      <div class="callout-title">대부분의 개발자는 Layer 1만 사용합니다</div>
+      CLAUDE.md 작성 → Skills 추가 → Hooks 설정 → Subagents 활용 → Plugins 배포 순서로 점진적으로 확장하세요.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: Hooks 이벤트 상세 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 Hooks Events</div>
+    <h2 class="section-title">Hooks 이벤트 종류</h2>
+    <p class="section-desc">Layer 3 Hooks는 5가지 이벤트 시점에 반응하여 결정론적으로 동작합니다.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar">
+        <div class="code-dot" style="background:#ef4444;"></div>
+        <div class="code-dot" style="background:#f59e0b;"></div>
+        <div class="code-dot" style="background:#22c55e;"></div>
+        <span class="code-lang">hooks event types</span>
+      </div>
+      <pre class="code-body">PreToolUse    → 도구 호출 전   (예: rm -rf 차단)
+PostToolUse   → 도구 호출 후   (예: 파일 저장 후 자동 린트)
+SessionStart  → 세션 시작 시   (예: 환경 초기화)
+Stop          → 세션 종료 시   (예: Slack 알림 발송)
+SubagentStop  → 서브에이전트 종료 시 (예: 결과 로깅)</pre>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">Hooks vs CLAUDE.md 차이</div>
+      CLAUDE.md는 AI에게 "이렇게 행동하라"고 가르치는 것이고, Hooks는 AI의 행동과 무관하게 <strong>강제로</strong> 실행되는 결정론적 명령입니다. LLM이 무시할 수 없습니다.
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>Claude Code 5계층 아키텍처 — Brij Kishore Pandey</span>
+  <span>2026-04-17</span>
+</footer>
+
+</body>
+</html>
