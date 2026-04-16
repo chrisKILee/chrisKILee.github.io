@@ -7,8 +7,10 @@
   <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
   <!-- Wanted Sans (Wanted Lab CDN) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSans.min.css">
+  <!-- No-flicker: 저장된 테마를 렌더링 전에 즉시 적용 -->
+  <script>(function(){var t=localStorage.getItem('montage-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}());</script>
   <style>
-    /* ── Montage Design System Tokens ── */
+    /* ── Montage Design System Tokens — Light (default) ── */
     :root {
       /* Background */
       --bg:          #F7F8FA;
@@ -52,6 +54,9 @@
       --chip-bg:     #EEF0F4;
       --chip-text:   #3F4754;
 
+      /* Nav glass */
+      --nav-bg:      rgba(255,255,255,0.92);
+
       /* Typography */
       --font-sans:   'Wanted Sans', -apple-system, 'Apple SD Gothic Neo', sans-serif;
       --font-mono:   'SFMono-Regular', Consolas, 'Courier New', monospace;
@@ -71,6 +76,45 @@
 
       /* Transition */
       --t: 160ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Dark Mode Tokens ── */
+    html[data-theme="dark"] {
+      --bg:          #141517;
+      --bg-elevated: #1E2028;
+      --bg-overlay:  #23262F;
+
+      --surface:     #1E2028;
+      --surface-2:   #23262F;
+      --surface-3:   #2A2D3A;
+
+      --border:      #2A2D3A;
+      --border-2:    #373B4D;
+
+      --ink:         #F0F2F5;
+      --ink-2:       #C2C7D0;
+      --ink-3:       #848B98;
+      --ink-4:       #555D6B;
+      --ink-inv:     #FFFFFF;
+
+      --primary:        #4D7CFF;
+      --primary-hover:  #3366FF;
+      --primary-light:  #1A2547;
+      --primary-border: #2A3D7A;
+
+      --success-bg:  #0D2B24;
+      --warn-bg:     #2B1F0A;
+      --error-bg:    #2B1018;
+      --info-bg:     #1A2547;
+
+      --chip-bg:     #23262F;
+      --chip-text:   #C2C7D0;
+
+      --nav-bg:      rgba(20,21,23,0.92);
+
+      --shadow-sm:  0 1px 3px rgba(0,0,0,.3),  0 1px 2px rgba(0,0,0,.2);
+      --shadow-md:  0 4px 12px rgba(0,0,0,.4), 0 2px 4px rgba(0,0,0,.2);
+      --shadow-lg:  0 12px 32px rgba(0,0,0,.5), 0 4px 8px rgba(0,0,0,.3);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -94,10 +138,11 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(255,255,255,0.92);
+      background: var(--nav-bg);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
+      transition: background var(--t), border-color var(--t);
     }
     .topnav .container {
       display: flex;
@@ -438,6 +483,34 @@
     .alert-success { background: var(--success-bg); border-color: var(--success); color: #00735A; }
     .alert-warn    { background: var(--warn-bg);    border-color: var(--warn);    color: #8C5000; }
     .alert-error   { background: var(--error-bg);   border-color: var(--error);   color: #A02030; }
+    html[data-theme="dark"] .alert-info    { color: #7B9FFF; }
+    html[data-theme="dark"] .alert-success { color: #00C897; }
+    html[data-theme="dark"] .alert-warn    { color: #FFB340; }
+    html[data-theme="dark"] .alert-error   { color: #FF6B7A; }
+    html[data-theme="dark"] .badge-green   { color: #00C897; }
+    html[data-theme="dark"] .badge-yellow  { color: #FFB340; }
+    html[data-theme="dark"] .badge-red     { color: #FF6B7A; }
+
+    /* ── Theme Toggle Button ── */
+    .theme-toggle {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--r-sm);
+      border: 1.5px solid var(--border-2);
+      background: var(--surface);
+      color: var(--ink-3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--t), border-color var(--t), color var(--t);
+      flex-shrink: 0;
+    }
+    .theme-toggle:hover { background: var(--surface-3); color: var(--ink); border-color: var(--border-2); }
+    .theme-toggle .icon-sun  { display: none; }
+    .theme-toggle .icon-moon { display: block; }
+    html[data-theme="dark"] .theme-toggle .icon-sun  { display: block; }
+    html[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 
     /* ── Table ── */
     .table-wrap {
@@ -707,10 +780,18 @@
       <a class="nav-link" href="#">가이드</a>
       <a class="nav-link" href="#">FAQ</a>
     </div>
-    <a class="nav-cta" href="#">
-      시작하기
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    </a>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="theme-toggle" id="theme-toggle" aria-label="테마 전환">
+        <!-- 달 (라이트 모드에서 표시) -->
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <!-- 해 (다크 모드에서 표시) -->
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <a class="nav-cta" href="#">
+        시작하기
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
   </div>
 </nav>
 
@@ -1024,6 +1105,24 @@
 
 <script>
 (function () {
+  /* ── Theme Toggle ── */
+  var toggleBtn = document.getElementById('theme-toggle');
+  function applyTheme(isDark) {
+    if (isDark) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('montage-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('montage-theme', 'light');
+    }
+  }
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', function () {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      applyTheme(!isDark);
+    });
+  }
+
   /* ── Tab 전환 ── */
   const tabs = document.querySelectorAll('.tab');
   const panels = document.querySelectorAll('.tab-panel');
