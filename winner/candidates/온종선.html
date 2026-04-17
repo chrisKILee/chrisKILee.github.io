@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 기반 회의실 예약 시스템 — 최종후보</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.88); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; flex-direction: column;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-img {
+      max-width: 90vw; max-height: 82vh;
+      border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,.6);
+      object-fit: contain;
+    }
+    .lb-nav-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,.15); border: none; color: #fff;
+      font-size: 36px; padding: 12px 18px; cursor: pointer;
+      border-radius: 8px; z-index: 10001;
+    }
+    .lb-nav-btn:hover { background: rgba(255,255,255,.25); }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .gallery-grid img {
+      width: 100%; aspect-ratio: 16/9; object-fit: cover;
+      border-radius: 8px; cursor: zoom-in;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .gallery-grid img:hover { opacity: 0.88; transform: scale(1.01); }
+    .gallery-label {
+      font-size: 11px; color: #78716c; margin-top: 4px; text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Arrow Lightbox -->
+  <div id="lb-overlay" onclick="closeLb()">
+    <button onclick="closeLb(); event.stopPropagation();"
+      style="position:absolute;top:16px;right:20px;background:none;border:none;
+             color:#fff;font-size:28px;cursor:pointer;z-index:10001;">✕</button>
+    <button class="lb-nav-btn" id="lb-prev" onclick="moveLb(-1); event.stopPropagation();" style="left:16px;">‹</button>
+    <img id="lb-img" src="" alt="" onclick="event.stopPropagation()">
+    <div style="color:#ddd;margin-top:10px;font-size:13px;text-align:center;" onclick="event.stopPropagation()">
+      <span id="lb-alt"></span>
+      <span id="lb-counter" style="margin-left:12px;opacity:.6;"></span>
+    </div>
+    <button class="lb-nav-btn" id="lb-next" onclick="moveLb(1); event.stopPropagation();" style="right:16px;">›</button>
+  </div>
+  <script>
+    var _lbImgs = [], _lbIdx = 0;
+    function openLb(idx) {
+      _lbIdx = idx; _updateLb();
+      document.getElementById('lb-overlay').classList.add('open');
+    }
+    function closeLb() {
+      document.getElementById('lb-overlay').classList.remove('open');
+    }
+    function moveLb(dir) {
+      _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
+      _updateLb();
+    }
+    function _updateLb() {
+      var d = _lbImgs[_lbIdx];
+      document.getElementById('lb-img').src = d.src;
+      document.getElementById('lb-img').alt = d.alt || '';
+      document.getElementById('lb-alt').textContent = d.alt || '';
+      document.getElementById('lb-counter').textContent = (_lbIdx+1) + ' / ' + _lbImgs.length;
+      document.getElementById('lb-prev').style.display = _lbImgs.length > 1 ? '' : 'none';
+      document.getElementById('lb-next').style.display = _lbImgs.length > 1 ? '' : 'none';
+    }
+    document.addEventListener('keydown', function(e) {
+      if (document.getElementById('lb-overlay').classList.contains('open')) {
+        if (e.key === 'Escape') closeLb();
+        if (e.key === 'ArrowLeft') moveLb(-1);
+        if (e.key === 'ArrowRight') moveLb(1);
+      }
+    });
+    function initGallery(imgs) { _lbImgs = imgs; }
+  </script>
+
+  <!-- ━━━ 고정 헤더 ━━━ -->
+  <header style="position:sticky;top:0;z-index:50;background:rgba(245,243,238,0.94);backdrop-filter:blur(12px);border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px;margin:0 auto;padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+      <div style="display:flex;align-items:center;gap:10px;overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px;font-weight:800;color:#c8622a;letter-spacing:0.07em;white-space:nowrap;">AI-WORKER 최종후보</span>
+        <span style="color:#d6d0c4;font-size:14px;">|</span>
+        <span style="font-size:14px;font-weight:600;color:#1c1917;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">AI 기반 회의실 예약 시스템</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+        <span style="font-size:12px;color:#a8a29e;">DX 서비스팀 · 온종선</span>
+        
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:920px;margin:0 auto;padding:52px 28px 88px;">
+
+    <!-- ━━━ 히어로 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex;align-items:flex-start;gap:28px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제 · DX 서비스팀</p>
+          <h1 style="font-size:38px;font-weight:800;color:#1c1917;line-height:1.15;letter-spacing:-0.02em;margin-bottom:18px;">AI 기반<br>회의실 예약 시스템</h1>
+          <p style="font-size:16px;color:#44403c;line-height:1.75;max-width:540px;">
+            "6인실 찾아줘" 한 마디로 검색부터 예약·초대장 발송까지 — 매번 어디가 비었는지 찾던 불편을 AI 대화 한 줄로 해결합니다.
+          </p>
+          <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:12px;background:#ede9e1;color:#78716c;padding:4px 12px;border-radius:6px;border:1px solid #d6d0c4;">2026. 4. 8</span>
+            <span style="font-size:12px;background:#fdf0e8;color:#c8622a;padding:4px 12px;border-radius:6px;border:1px solid #e8b896;">🏅 최종후보</span>
+            <span style="font-size:12px;background:#ede9e1;color:#78716c;padding:4px 12px;border-radius:6px;border:1px solid #d6d0c4;">전사 운영 중</span>
+          </div>
+        </div>
+        <div style="min-width:280px; max-width:420px; flex:0 0 auto;">
+          <div style="border-radius:16px; overflow:hidden; border:1px solid #e8d5c0; box-shadow:0 18px 40px -18px rgba(0,0,0,0.25);">
+            <img src="/gemini_html/assets/main.png" alt="온종선 대표 이미지" loading="lazy" style="width:100%; height:auto; display:block;" />
+          </div>
+          <p style="margin-top:10px; font-size:11px; color:#a8a29e; letter-spacing:0.06em; text-align:center; font-weight:600; text-transform:uppercase;">Representative Screen</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 문제 정의 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div style="background:#ede9e1;border-radius:12px;padding:24px;">
+          <p style="font-size:11px;font-weight:700;color:#78716c;margin-bottom:10px;letter-spacing:0.05em;">기존의 어려움</p>
+          <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:8px;">
+            <li style="font-size:14px;color:#1c1917;line-height:1.65;">
+              🔍 <strong>회의실 찾기</strong> — 필터 설정 + 스크롤 탐색에 <strong>약 45초</strong> 소요
+            </li>
+            <li style="font-size:14px;color:#1c1917;line-height:1.65;">
+              📅 <strong>일정 조율</strong> — 참석자 각각의 캘린더를 개별 조회·비교, 건당 <strong>약 3분</strong>
+            </li>
+            <li style="font-size:14px;color:#1c1917;line-height:1.65;">
+              ✏️ <strong>예약 변경</strong> — 시스템 접속 → 상세 조회 → 수정·저장에 <strong>약 1분</strong>
+            </li>
+          </ul>
+        </div>
+        <div style="background:#fffaf6;border:1px solid #e8d5c0;border-radius:12px;padding:24px;">
+          <p style="font-size:11px;font-weight:700;color:#c8622a;margin-bottom:10px;letter-spacing:0.05em;">✨ AI로 해결한 방식</p>
+          <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:8px;">
+            <li style="font-size:14px;color:#1c1917;line-height:1.65;">
+              🤖 <strong>"6인실 찾아줘"</strong> → AI가 실시간 가용성 확인 후 추천 (<strong>5초</strong>)
+            </li>
+            <li style="font-size:14px;color:#1c1917;line-height:1.65;">
+              🗓️ <strong>"공통 시간 찾아줘"</strong> → 참석자 캘린더 자동 교차 분석 (<strong>10초</strong>)
+            </li>
+            <li style="font-size:14px;color:#1c1917;line-height:1.65;">
+              🔄 <strong>"1시간 미뤄줘"</strong> → 예약 수정 완료 (<strong>5초</strong>) + 초대장 자동 발송
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 체크리스트 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
+
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px;font-weight:700;color:#78716c;margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge on">✅ 런타임 AI</span>
+          <span class="check-badge">노코드 AI</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px;font-weight:700;color:#78716c;margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="check-badge on">✅ 내부 문의·요청 자동 처리</span>
+          <span class="check-badge on">✅ 데이터 수집·분류·가공</span>
+          <span class="check-badge on">✅ 알림·모니터링 자동화</span>
+          <span class="check-badge on">✅ 회의실 예약 프로세스 자동화</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            
+          </div>
+          <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:6px;">
+            <li style="font-size:13px;color:#44403c;">🔹 <strong>회의실 검색</strong> 45초 → 5초 (<strong>89% 단축</strong>)</li>
+            <li style="font-size:13px;color:#44403c;">🔹 <strong>일정 조율</strong> 3분 → 10초 (<strong>94% 단축</strong>)</li>
+            <li style="font-size:13px;color:#44403c;">🔹 <strong>예약 변경</strong> 1분 → 5초 (<strong>91% 단축</strong>)</li>
+            <li style="font-size:13px;color:#44403c;">✅ DX팀 전원 + 타 팀 실운영 중</li>
+          </ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;"><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">🎯</span><span>복잡한 UI 탐색·다중 캘린더 비교 문제를 Google ADK Multi-turn Tool Chaining으로 정확히 해결.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">💡</span><span>기존 Google Workspace 인증 재활용으로 실용적 접근.</span></li></ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            
+          </div>
+          <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:5px;">
+            <li style="font-size:13px;color:#44403c;">✅ 전사 <strong>11개 회의실</strong> 통합 이미 완료</li>
+            <li style="font-size:13px;color:#44403c;">✅ 텍스트 채팅 + 음성 인식 — 비개발자도 즉시 사용</li>
+            <li style="font-size:13px;color:#44403c;">✅ 타 팀 구성원(Brett, Gyro 등) 실사용 확인</li>
+          </ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;"><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">🎯</span><span>사내 비효율 업무 DX·AI 자동화 방향 직결.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">💡</span><span>재사용 가능한 AI 에이전트 아키텍처 자산화로 타 AI 프로젝트 기반 제공.</span></li></ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 주요 기능 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">⚡ 주요 기능</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px;font-weight:700;color:#c8622a;margin-bottom:6px;">🗣️ 자연어 예약</p>
+          <p style="font-size:13px;color:#44403c;line-height:1.6;">"내일 오후 3시 10명 회의실 예약해줘" — AI가 조건 파악 후 가용 회의실 검색·예약·초대장 발송 자동 처리</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px;font-weight:700;color:#c8622a;margin-bottom:6px;">🤝 공통 시간 탐색</p>
+          <p style="font-size:13px;color:#44403c;line-height:1.6;">참석자 이름 입력 → 이메일 자동 검색 → Google Calendar FreeBusy API로 모두 가능한 시간대 자동 도출</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px;font-weight:700;color:#c8622a;margin-bottom:6px;">🎙️ 음성 인식</p>
+          <p style="font-size:13px;color:#44403c;line-height:1.6;">Web Speech API 기반 음성 명령 지원. 모바일에서도 말 한 마디로 예약 가능</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px;font-weight:700;color:#c8622a;margin-bottom:6px;">🔄 예약 수정·취소</p>
+          <p style="font-size:13px;color:#44403c;line-height:1.6;">"1시간 미뤄줘", "오늘 3시 예약 취소해줘" — 자연어로 기존 예약 즉시 변경</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px;font-weight:700;color:#c8622a;margin-bottom:6px;">📊 대시보드 통계</p>
+          <p style="font-size:13px;color:#44403c;line-height:1.6;">위치별 주간 예약 건수·사용 시간 통계. 선호 지역 설정으로 자주 쓰는 곳 우선 추천</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px;font-weight:700;color:#c8622a;margin-bottom:6px;">📧 초대장 자동 발송</p>
+          <p style="font-size:13px;color:#44403c;line-height:1.6;">예약·변경·취소 시 참석자 전원에게 Google Calendar 초대장 및 Google Meet 링크 자동 발송</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ AI 활용 방식 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1;border-radius:14px;padding:28px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:24px;">
+          <div>
+            <p style="font-size:11px;font-weight:700;color:#78716c;margin-bottom:10px;letter-spacing:0.05em;">AI 모델 · 프레임워크</p>
+            <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:6px;">
+              <li style="font-size:13px;color:#1c1917;">🔹 <strong>Google ADK</strong> (LlmAgent + Runner)</li>
+              <li style="font-size:13px;color:#1c1917;">🔹 <strong>Gemini 3.1 Flash Lite Preview</strong></li>
+              <li style="font-size:13px;color:#1c1917;">🔹 9종 FunctionTool (Zod 스키마 검증)</li>
+              <li style="font-size:13px;color:#1c1917;">🔹 InMemorySessionService (Multi-turn 대화)</li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:11px;font-weight:700;color:#78716c;margin-bottom:10px;letter-spacing:0.05em;">기술 스택</p>
+            <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:6px;">
+              <li style="font-size:13px;color:#1c1917;">🔹 <strong>Next.js 14.2</strong> + TypeScript 5.0+</li>
+              <li style="font-size:13px;color:#1c1917;">🔹 Google Calendar API v3</li>
+              <li style="font-size:13px;color:#1c1917;">🔹 Google OAuth 2.0 (Cookie 기반)</li>
+              <li style="font-size:13px;color:#1c1917;">🔹 Tailwind CSS 4.1 · Docker</li>
+            </ul>
+          </div>
+        </div>
+        <div style="background:#fffaf6;border:1px solid #e8d5c0;border-radius:10px;padding:18px;">
+          <p style="font-size:11px;font-weight:700;color:#78716c;margin-bottom:10px;letter-spacing:0.05em;">예약 처리 흐름 (Multi-turn Tool Chain)</p>
+          <p style="font-size:13px;color:#44403c;font-family:'DM Mono',monospace;line-height:2;">
+            자연어 입력<br>
+            → ① searchContacts (이름 → 이메일)<br>
+            → ② findCommonSlots (FreeBusy API 교차 분석)<br>
+            → ③ searchRooms (가용 회의실 탐색)<br>
+            → ④ createBooking (예약 생성 + Meet 링크)<br>
+            → ⑤ 참석자 초대장 자동 발송 (sendUpdates: all)
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 기대 효과 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px;font-weight:500;color:#c8622a;margin-bottom:6px;line-height:1;">94%</div>
+          <p style="font-size:12px;font-weight:600;color:#1c1917;margin-bottom:4px;">일정 조율 시간 단축</p>
+          <p style="font-size:12px;color:#78716c;">3분 → 10초, 다중 캘린더 자동 교차 분석</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px;font-weight:500;color:#c8622a;margin-bottom:6px;line-height:1;">11개</div>
+          <p style="font-size:12px;font-weight:600;color:#1c1917;margin-bottom:4px;">전사 통합 회의실</p>
+          <p style="font-size:12px;color:#78716c;">세아타워·군산·창원·포항 4개 사업장 통합 관리</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px;font-weight:500;color:#c8622a;margin-bottom:6px;line-height:1;">82%</div>
+          <p style="font-size:12px;font-weight:600;color:#1c1917;margin-bottom:4px;">개발 기간 단축</p>
+          <p style="font-size:12px;color:#78716c;">바이브코딩으로 6주 분량을 1주 만에 완성</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 시각 증빙 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📸 시각 증빙 자료</p>
+
+      <!-- 메인 화면 -->
+      <p style="font-size:12px;font-weight:700;color:#78716c;margin-bottom:10px;">메인 화면 · 로그인</p>
+      <script>
+        initGallery([
+          {src:"assets/main.png", alt:"메인화면"},
+          {src:"assets/login1.png", alt:"로그인 화면 1"},
+          {src:"assets/login2.png", alt:"로그인 화면 2"},
+          {src:"assets/dashboard-main.png", alt:"대시보드 메인"},
+          {src:"assets/dashboard-pref.png", alt:"대시보드 - 선호 지역 설정"},
+          {src:"assets/dashboard-weekly-seatower.png", alt:"대시보드 - 주간 현황(세아타워)"},
+          {src:"assets/dashboard-weekly-gunsan.png", alt:"대시보드 - 주간 현황(군산)"},
+          {src:"assets/rooms-all.png", alt:"회의실 목록 - 전체"},
+          {src:"assets/rooms-filter.png", alt:"회의실 목록 - 필터링"},
+          {src:"assets/chat-status.png", alt:"채팅 - 회의실 현황"},
+          {src:"assets/chat-recommend.png", alt:"채팅 - 회의실 추천"},
+          {src:"assets/chat-schedule.png", alt:"채팅 - 참석자 일정 조율 및 연락처 검색"},
+          {src:"assets/chat-booking.png", alt:"채팅 - 회의실 예약 및 캘린더 선택"},
+          {src:"assets/chat-weekly.png", alt:"채팅 - 주간 회의실 예약 가능 현황"},
+          {src:"assets/chat-modify.png", alt:"채팅 - 예약 변경"},
+          {src:"assets/chat-cancel.png", alt:"채팅 - 예약 취소"},
+          {src:"assets/invite-mail.png", alt:"회의 초대장 메일 발송"}
+        ]);
+      </script>
+      <div class="gallery-grid">
+        <div>
+          <img src="/gemini_html/assets/main.png" alt="메인화면" onclick="openLb(0)">
+          <p class="gallery-label">메인화면</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/login1.png" alt="로그인 1" onclick="openLb(1)">
+          <p class="gallery-label">로그인 화면 1</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/login2.png" alt="로그인 2" onclick="openLb(2)">
+          <p class="gallery-label">로그인 화면 2</p>
+        </div>
+      </div>
+
+      <p style="font-size:12px;font-weight:700;color:#78716c;margin-top:24px;margin-bottom:10px;">대시보드</p>
+      <div class="gallery-grid">
+        <div>
+          <img src="/gemini_html/assets/dashboard-main.png" alt="대시보드 메인" onclick="openLb(3)">
+          <p class="gallery-label">대시보드 메인</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/dashboard-pref.png" alt="선호 지역 설정" onclick="openLb(4)">
+          <p class="gallery-label">선호 지역 설정</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/dashboard-weekly-seatower.png" alt="주간 현황(세아타워)" onclick="openLb(5)">
+          <p class="gallery-label">주간 현황 (세아타워)</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/dashboard-weekly-gunsan.png" alt="주간 현황(군산)" onclick="openLb(6)">
+          <p class="gallery-label">주간 현황 (군산)</p>
+        </div>
+      </div>
+
+      <p style="font-size:12px;font-weight:700;color:#78716c;margin-top:24px;margin-bottom:10px;">회의실 목록</p>
+      <div class="gallery-grid">
+        <div>
+          <img src="/gemini_html/assets/rooms-all.png" alt="회의실 목록 전체" onclick="openLb(7)">
+          <p class="gallery-label">회의실 목록 전체</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/rooms-filter.png" alt="회의실 필터링" onclick="openLb(8)">
+          <p class="gallery-label">회의실 필터링</p>
+        </div>
+      </div>
+
+      <p style="font-size:12px;font-weight:700;color:#78716c;margin-top:24px;margin-bottom:10px;">AI 채팅 — 예약 처리</p>
+      <div class="gallery-grid">
+        <div>
+          <img src="/gemini_html/assets/chat-status.png" alt="회의실 현황" onclick="openLb(9)">
+          <p class="gallery-label">회의실 현황 조회</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/chat-recommend.png" alt="회의실 추천" onclick="openLb(10)">
+          <p class="gallery-label">회의실 추천</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/chat-schedule.png" alt="참석자 일정 조율" onclick="openLb(11)">
+          <p class="gallery-label">참석자 일정 조율</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/chat-booking.png" alt="예약 및 캘린더 선택" onclick="openLb(12)">
+          <p class="gallery-label">예약 및 캘린더 선택</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/chat-weekly.png" alt="주간 예약 가능 현황" onclick="openLb(13)">
+          <p class="gallery-label">주간 예약 가능 현황</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/chat-modify.png" alt="예약 변경" onclick="openLb(14)">
+          <p class="gallery-label">예약 변경</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/chat-cancel.png" alt="예약 취소" onclick="openLb(15)">
+          <p class="gallery-label">예약 취소</p>
+        </div>
+        <div>
+          <img src="/gemini_html/assets/invite-mail.png" alt="초대장 메일 발송" onclick="openLb(16)">
+          <p class="gallery-label">회의 초대장 메일 발송</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ━━━ 푸터 ━━━ -->
+  <footer style="border-top:1px solid #d6d0c4;padding:22px 28px;text-align:center;background:#ede9e1;">
+    <p style="font-size:11px;color:#a8a29e;letter-spacing:0.05em;font-weight:500;">
+      AI-WORKER 최종후보 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; DX 서비스팀
+    </p>
+  </footer>
+
+</body>
+</html>

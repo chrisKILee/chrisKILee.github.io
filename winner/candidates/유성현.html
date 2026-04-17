@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AOD/LT 합금철 실적 자동 집계 및 AI 오차 분석 — 최종후보</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    .screenshot-gallery img {
+      cursor: zoom-in; transition: opacity 0.15s;
+    }
+    .screenshot-gallery img:hover { opacity: 0.88; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.82); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; cursor: zoom-out;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-img {
+      max-width: 90vw; max-height: 88vh;
+      border-radius: 10px; box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      object-fit: contain;
+    }
+    #lb-close {
+      position: fixed; top: 20px; right: 24px;
+      color: #fff; font-size: 28px; font-weight: 300;
+      cursor: pointer; line-height: 1; opacity: 0.8;
+    }
+    #lb-close:hover { opacity: 1; }
+    #lb-prev, #lb-next {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.15); border: none; color: #fff;
+      font-size: 36px; padding: 12px 18px; cursor: pointer;
+      border-radius: 8px; z-index: 10001;
+    }
+    #lb-prev { left: 16px; }
+    #lb-next { right: 16px; }
+  </style>
+</head>
+<body>
+
+  <!-- ━━━ 고정 헤더 ━━━ -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AI-WORKER 최종후보</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">AOD/LT 합금철 실적 자동 집계</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">PC1팀 · 유성현</span>
+        
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:920px; margin:0 auto; padding:52px 28px 88px;">
+
+    <!-- ━━━ 히어로 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제</p>
+          <h1 style="font-size:32px; font-weight:800; color:#1c1917; line-height:1.2; letter-spacing:-0.02em; margin-bottom:18px;">AOD / LT 합금철 실적<br>자동 집계 및 AI 오차 분석</h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">매월 수작업으로 20~30분이 걸리던 제강 공정 합금철 투입 실적 보고를 완전 자동화하고, <strong>Gemini AI</strong>가 수백 건의 이상치를 1분 만에 탐지합니다.</p>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026. 4. 7 제출</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">🏅 최종후보</span>
+          </div>
+        </div>
+
+        <div style="min-width:280px; max-width:420px; flex:0 0 auto;">
+          <div style="border-radius:16px; overflow:hidden; border:1px solid #e8d5c0; box-shadow:0 18px 40px -18px rgba(0,0,0,0.25);">
+            <img src="/gemini_html/assets/실행결과1.png" alt="유성현 대표 이미지" loading="lazy" style="width:100%; height:auto; display:block;" />
+          </div>
+          <p style="margin-top:10px; font-size:11px; color:#a8a29e; letter-spacing:0.06em; text-align:center; font-weight:600; text-transform:uppercase;">Representative Screen</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 문제 정의 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">기존의 어려움</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.85; list-style:none;">
+            <li>🔸 매월 1일 담당자가 직접 <strong>Oracle DB</strong> 접속</li>
+            <li>🔸 날짜 쿼리 수동 수정 → 데이터 추출 → 메일 발송</li>
+            <li>🔸 <strong>월 20~30분</strong> 단순 반복 수작업 소요</li>
+            <li>🔸 수백~수천 건 이상치 탐지는 <strong>육안으로 사실상 불가능</strong></li>
+            <li>🔸 단순 IF문으로는 유동적인 공정 특성 반영 한계</li>
+          </ul>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:10px; letter-spacing:0.05em;">✨ AI로 해결한 방식</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.85; list-style:none;">
+            <li>✅ <strong>매월 1일 07:00</strong> 자동 감지 및 실행</li>
+            <li>✅ Oracle DB → 엑셀 생성 → AI 분석 → 메일 발송 전 파이프라인 자동화</li>
+            <li>✅ <strong>Gemini 2.0 Flash</strong>가 공정 특성 고려한 이상치 탐지</li>
+            <li>✅ 담당자 개입 없이 <strong>완전 무인화</strong> (0분)</li>
+            <li>✅ 로그 파일로 실행 이력 자동 기록</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 체크리스트 시각화 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
+
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge on">✅ 런타임 AI</span>
+          <span class="check-badge">노코드 AI</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 반복 보고서 취합·정리</span>
+          <span class="check-badge on">✅ 데이터 수집·분류·가공</span>
+          <span class="check-badge">내부 문의·요청 처리</span>
+          <span class="check-badge on">✅ 알림·모니터링 자동화</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;"><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">🎯</span><span>월 20~30분 수작업을 <strong>100% 무인화</strong>.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">💡</span><span>로그 파일에서 2026-04-01 실제 자동 실행 이력 확인.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">📊</span><span>AI가 기존 불가능했던 이상치 탐지까지 자동 수행.</span></li></ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;"><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">🎯</span><span>공정 유동성을 반영하지 못하는 IF문 한계를 LLM 문맥 이해로 극복.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">💡</span><span>소스코드에서 도메인 특화 프롬프트 구현 확인.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">📊</span><span>Oracle 직접 연결로 실용적 접근.</span></li></ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;"><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">🎯</span><span>.exe 실행 파일로 배포 가능.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">💡</span><span>DB 쿼리·프롬프트가 소스 코드에 내장되어 타 부서 적용 시 재컴파일 필요.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">📊</span><span>범용 설정 파일 분리 예정.</span></li></ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;"><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">🎯</span><span>단순 반복 업무 자동화 + 운영자 역할 재정의.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">💡</span><span>도메인 지식 시스템화.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">📊</span><span>팀 KPI 직접 달성 및 AI-Worker 전환 모범 사례.</span></li></ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 주요 기능 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">⚡ 주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🕐 월간 자동 스케줄러</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">매월 1일 07:00 자동 감지 및 실행. 중복 발송 방지 로직 내장. 수동 재전송 버튼도 지원.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🗄️ Oracle DB 자동 쿼리</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">AOD, LT, LT2 3개 테이블에서 전월 합금철 투입 실적을 자동으로 기간 계산하여 조회.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📊 엑셀 보고서 자동 생성</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">ClosedXML로 AOD/LT 데이터를 각각 XLSX 파일로 저장. 열 너비 자동 조정 포함.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🤖 Gemini AI 이상치 분석</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">요구량 vs 실제 투입량 오차를 AI가 공정 특성 고려하여 유연하게 탐지. 원인 추론까지 자동 생성.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📧 Gmail 자동 발송</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">AI 분석 결과를 본문에, 엑셀 2개를 첨부하여 담당자에게 자동 발송. SMTP SSL 443.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📝 운영 로그 자동 기록</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">일자별 로그 파일 자동 생성. DB 접속 성공/실패, 실행 단계별 이력 추적 가능.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 스크린샷 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📸 시각 증빙 자료</p>
+      <div class="screenshot-gallery" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <img src="/gemini_html/assets/실행결과1.png" alt="실행 결과 1 — 자동 집계 및 AI 분석 화면"
+          onclick="openLb(0)"
+          style="width:100%; border-radius:8px; border:1px solid #d6d0c4;">
+        <img src="/gemini_html/assets/실행결과2.png" alt="실행 결과 2 — 메일 발송 완료 화면"
+          onclick="openLb(1)"
+          style="width:100%; border-radius:8px; border:1px solid #d6d0c4;">
+      </div>
+      <p style="font-size:12px; color:#a8a29e; margin-top:8px;">이미지를 클릭하면 확대 보기가 가능합니다.</p>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ AI 활용 방식 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:28px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; flex-wrap:wrap;">
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px; letter-spacing:0.05em;">🤖 AI 모델</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.85; list-style:none;">
+              <li>🔹 <strong>Google Gemini 2.0 Flash</strong></li>
+              <li>🔹 런타임 직접 API 호출 (HTTP POST)</li>
+              <li>🔹 도메인 특화 시스템 프롬프트</li>
+              <li>🔹 최대 150건 샘플링 → 토큰 최적화</li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px; letter-spacing:0.05em;">🛠️ 기술 스택</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.85; list-style:none;">
+              <li>🔹 <strong>C# .NET Framework</strong> WinForms</li>
+              <li>🔹 <strong>Oracle 9i</strong> DB 직접 연결</li>
+              <li>🔹 <strong>ClosedXML</strong> 엑셀 생성</li>
+              <li>🔹 <strong>config.ini</strong> 설정 관리 (no-server)</li>
+            </ul>
+          </div>
+        </div>
+        <hr style="border:none; border-top:1px solid #d6d0c4; margin:20px 0;">
+        <div>
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px; letter-spacing:0.05em;">📐 AI 프롬프트 전략</p>
+          <p style="font-size:14px; color:#1c1917; line-height:1.75;">
+            <strong>"제철소 AOD/LT 합금철 공정 전문 AI 데이터 사이언티스트"</strong>로 역할을 부여합니다.
+            고정 임계값 없이 데이터 전반의 분포와 공정 특성을 고려한 유연한 이상치 판단을 지시하며,
+            담당자가 메일 본문에서 바로 읽을 수 있는 간결한 텍스트 리스트 형태로 출력합니다.
+          </p>
+        </div>
+        <hr style="border:none; border-top:1px solid #d6d0c4; margin:20px 0;">
+        <div>
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:12px; letter-spacing:0.05em;">⓪→①→②→③→④→⑤ 자동화 파이프라인</p>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:13px; font-weight:600;">
+            <span style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:6px; padding:6px 12px; color:#1c1917;">① Oracle DB 쿼리</span>
+            <span style="color:#b5895a;">→</span>
+            <span style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:6px; padding:6px 12px; color:#1c1917;">② 엑셀 파일 생성</span>
+            <span style="color:#b5895a;">→</span>
+            <span style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:6px; padding:6px 12px; color:#1c1917;">③ Gemini AI 분석</span>
+            <span style="color:#b5895a;">→</span>
+            <span style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:6px; padding:6px 12px; color:#1c1917;">④ Gmail 자동 발송</span>
+            <span style="color:#b5895a;">→</span>
+            <span style="background:#fdf0e8; border:1px solid #e8b896; border-radius:6px; padding:6px 12px; color:#c8622a;">⑤ 이력 갱신</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 기대 효과 ━━━ -->
+    <section>
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">100%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">수작업 제거</p>
+          <p style="font-size:12px; color:#78716c;">월 20~30분 → 0분. 완전 무인화 달성 (로그 실행 이력 확인)</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">&lt;1분</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">AI 이상치 분석</p>
+          <p style="font-size:12px; color:#78716c;">수백~수천 건 분석. 기존 수 시간 → 1분 이내 자동 완료</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">N+1</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">확산 가능 부서</p>
+          <p style="font-size:12px; color:#78716c;">압연·연주·설비·품질 등 월간 DB 집계 부서 즉각 적용 가능</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ━━━ 푸터 ━━━ -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AI-WORKER 최종후보 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; PC1팀
+    </p>
+  </footer>
+
+  <!-- Lightbox -->
+  <div id="lb-overlay" onclick="closeLb()">
+    <span id="lb-close" onclick="closeLb()">✕</span>
+    <button id="lb-prev" onclick="event.stopPropagation(); moveLb(-1)">‹</button>
+    <img id="lb-img" src="" alt="" onclick="event.stopPropagation()">
+    <button id="lb-next" onclick="event.stopPropagation(); moveLb(1)">›</button>
+  </div>
+  <script>
+    var _lbImgs = [
+      {src: "assets/실행결과1.png", alt: "실행 결과 1 — 자동 집계 및 AI 분석 화면"},
+      {src: "assets/실행결과2.png", alt: "실행 결과 2 — 메일 발송 완료 화면"}
+    ];
+    var _lbIdx = 0;
+    function openLb(idx) {
+      _lbIdx = idx;
+      _updateLb();
+      document.getElementById('lb-overlay').classList.add('open');
+    }
+    function closeLb() {
+      document.getElementById('lb-overlay').classList.remove('open');
+    }
+    function moveLb(dir) {
+      _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
+      _updateLb();
+    }
+    function _updateLb() {
+      var img = document.getElementById('lb-img');
+      img.src = _lbImgs[_lbIdx].src;
+      img.alt = _lbImgs[_lbIdx].alt;
+    }
+    document.addEventListener('keydown', function(e) {
+      var o = document.getElementById('lb-overlay');
+      if (o.classList.contains('open')) {
+        if (e.key === 'Escape') closeLb();
+        if (e.key === 'ArrowLeft') moveLb(-1);
+        if (e.key === 'ArrowRight') moveLb(1);
+      }
+    });
+  </script>
+</body>
+</html>

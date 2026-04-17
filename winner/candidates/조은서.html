@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VNTG 전산장비 견적 자동화 시스템 — 최종후보</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.88); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; flex-direction: column;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-img {
+      max-width: 90vw; max-height: 82vh;
+      border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,.6);
+      object-fit: contain;
+    }
+    #lb-prev, #lb-next {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,.15); border: none; color: #fff;
+      font-size: 36px; padding: 12px 18px; cursor: pointer;
+      border-radius: 8px; z-index: 10001; line-height: 1;
+    }
+    #lb-prev { left: 16px; }
+    #lb-next { right: 16px; }
+    #lb-close {
+      position: absolute; top: 16px; right: 20px;
+      background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; z-index: 10001;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px;
+    }
+    .gallery-grid img {
+      width: 100%; aspect-ratio: 16/9; object-fit: cover;
+      border-radius: 6px; cursor: zoom-in;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .gallery-grid img:hover { opacity: 0.88; transform: scale(1.01); }
+    .gallery-section-title {
+      font-size: 12px; font-weight: 700; color: #78716c;
+      margin: 20px 0 10px; letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ━━━ Arrow Lightbox ━━━ -->
+  <div id="lb-overlay">
+    <button id="lb-close" onclick="closeLb()">✕</button>
+    <button id="lb-prev" onclick="moveLb(-1)">‹</button>
+    <img id="lb-img" src="" alt="">
+    <div style="color:#ddd; margin-top:10px; font-size:13px; text-align:center;">
+      <span id="lb-alt"></span>
+      <span id="lb-counter" style="margin-left:12px; opacity:.6;"></span>
+    </div>
+    <button id="lb-next" onclick="moveLb(1)">›</button>
+  </div>
+  <script>
+    var _lbImgs = [], _lbIdx = 0;
+    function openLb(idx) {
+      _lbIdx = idx;
+      _updateLb();
+      document.getElementById('lb-overlay').classList.add('open');
+    }
+    function closeLb() {
+      document.getElementById('lb-overlay').classList.remove('open');
+    }
+    function moveLb(dir) {
+      _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
+      _updateLb();
+    }
+    function _updateLb() {
+      var d = _lbImgs[_lbIdx];
+      var img = document.getElementById('lb-img');
+      img.src = d.src; img.alt = d.alt || '';
+      document.getElementById('lb-alt').textContent = d.alt || '';
+      document.getElementById('lb-counter').textContent = (_lbIdx + 1) + ' / ' + _lbImgs.length;
+      document.getElementById('lb-prev').style.display = _lbImgs.length > 1 ? '' : 'none';
+      document.getElementById('lb-next').style.display = _lbImgs.length > 1 ? '' : 'none';
+    }
+    document.addEventListener('keydown', function(e) {
+      var o = document.getElementById('lb-overlay');
+      if (o.classList.contains('open')) {
+        if (e.key === 'Escape') closeLb();
+        if (e.key === 'ArrowLeft') moveLb(-1);
+        if (e.key === 'ArrowRight') moveLb(1);
+      }
+    });
+    document.getElementById('lb-overlay').addEventListener('click', function(e) {
+      if (e.target === this) closeLb();
+    });
+    var allImgs = [
+      {src:"assets/00_main.jpg", alt:"VNTG 전산관리 시스템 메인 화면"},
+      {src:"assets/01_client_start.jpg", alt:"고객용 시작 화면"},
+      {src:"assets/02_client_register.jpg", alt:"담당자 등록 화면"},
+      {src:"assets/03_client_quote.jpg", alt:"견적 요청 화면"},
+      {src:"assets/04_client_history.jpg", alt:"견적 이력 확인 화면"},
+      {src:"assets/05_supplier_start.jpg", alt:"업체용 시작 화면"},
+      {src:"assets/06_supplier_products.jpg", alt:"업체 제품 관리 화면"},
+      {src:"assets/07_admin_start.jpg", alt:"관리자 시작 화면"},
+      {src:"assets/08_admin_products.jpg", alt:"전체 제품 관리 화면"},
+      {src:"assets/1._\uace0\uac1d\uc6a9_\uc11c\ube44\uc2a4_-_\uc2dc\uc791_\ud654\uba74.jpg", alt:"\uace0\uac1d\uc6a9 \uc11c\ube44\uc2a4 \uc2dc\uc791"},
+      {src:"assets/2-0._\uace0\uac1d\uc6a9_\uc11c\ube44\uc2a4_-_\ub2f4\ub2f9\uc790_\ub4f1\ub85d_\ud398\uc774\uc9c0.jpg", alt:"\ub2f4\ub2f9\uc790 \ub4f1\ub85d \ud398\uc774\uc9c0"},
+      {src:"assets/2-1._\uace0\uac1d\uc6a9_\uc11c\ube44\uc2a4_-_\ub2f4\ub2f9\uc790_\ub4f1\ub85d_\uc815\ubcf4_\uad00\ub9ac_\uc2a4\ud504\ub808\ub4dc\uc2dc\ud2b8.jpg", alt:"\ub2f4\ub2f9\uc790 \uc815\ubcf4 \uc2a4\ud504\ub808\ub4dc\uc2dc\ud2b8 \uc5f0\ub3d9"},
+      {src:"assets/3-0._\uace0\uac1d\uc6a9_\uc11c\ube44\uc2a4_-_\uacac\uc801_\uc694\uccad_\ud654\uba74.jpg", alt:"\uacac\uc801 \uc694\uccad \ud654\uba74 \uc0c1\uc138"},
+      {src:"assets/3-1._\uace0\uac1d\uc6a9_\uc11c\ube44\uc2a4_-_\uacac\uc801_\uc694\uccad_\ubc0f_\uacac\uc801_\ubc1c\uc1a1_\uc774\ub825_\uad00\ub9ac_\uc2a4\ud2b8\ub808\ub4dc\uc2dc\ud2b8.jpg", alt:"\uacac\uc801 \uc774\ub825 \uc2a4\ud504\ub808\ub4dc\uc2dc\ud2b8"},
+      {src:"assets/3-1._\uace0\uac1d\uc6a9_\uc11c\ube44\uc2a4_-_\uacac\uc801_\uc694\uccad_\uc774\ub825_\ud655\uc778_\ubc0f_\uc218\uc815_\uacac\uc801_\uc694\uccad_\ud654\uba74.jpg", alt:"\uc218\uc815 \uacac\uc801 \uc694\uccad \ud654\uba74"},
+      {src:"assets/1._\uc5c5\uccb4\uc6a9(\uacf5\uae09_\uc5c5\uccb4)_\uc11c\ube44\uc2a4_-_\uc2dc\uc791_\ud654\uba74.jpg", alt:"\uc5c5\uccb4\uc6a9 \uc2dc\uc791 \ud654\uba74 \uc0c1\uc138"},
+      {src:"assets/2-0._\uc5c5\uccb4\uc6a9(\uacf5\uae09_\uc5c5\uccb4)_\uc11c\ube44\uc2a4_-_\uc5c5\uccb4_\ub2f4\ub2f9\uc790_\ub4f1\ub85d_\uc694\uccad_\ud654\uba74.jpg", alt:"\uc5c5\uccb4 \ub2f4\ub2f9\uc790 \ub4f1\ub85d \uc694\uccad"},
+      {src:"assets/2-1._\uc5c5\uccb4\uc6a9(\uacf5\uae09_\uc5c5\uccb4)_\uc11c\ube44\uc2a4_-_\uc5c5\uccb4_\ub2f4\ub2f9\uc790_\uc815\ubcf4_\uad00\ub9ac_\uc2a4\ud504\ub808\ub4dc\uc2dc\ud2b8.jpg", alt:"\uc5c5\uccb4 \ub2f4\ub2f9\uc790 \uc2a4\ud504\ub808\ub4dc\uc2dc\ud2b8"},
+      {src:"assets/3-0._\uc5c5\uccb4\uc6a9(\uacf5\uae09_\uc5c5\uccb4)_\uc11c\ube44\uc2a4_-_\uc5c5\uccb4\ubcc4_\uc81c\ud488_\ub0b4\uc5ed_\uad00\ub9ac_\ud654\uba74.jpg", alt:"\uc81c\ud488 \uad00\ub9ac \ud654\uba74"},
+      {src:"assets/3-1._\uc5c5\uccb4\uc6a9(\uacf5\uae09_\uc5c5\uccb4)_\uc11c\ube44\uc2a4_-_\uc5c5\uccb4\ubcc4_\uc81c\ud488_\ub0b4\uc5ed_\uad00\ub9ac_\uc2a4\ud2b8\ub808\ub4dc\uc2dc\ud2b8(\uc6f9\uc0ac\uc774\ud2b8_\uc790\ub3d9_\uc5f0\ub3d9).jpg", alt:"\uc81c\ud488 \uc2a4\ud504\ub808\ub4dc\uc2dc\ud2b8 \uc790\ub3d9 \uc5f0\ub3d9"},
+      {src:"assets/1._\uad00\ub9ac\uc790_\ub85c\uadf8\uc778_\ud398\uc774\uc9c0_-_\uc2dc\uc791_\ud654\uba74.jpg", alt:"\uad00\ub9ac\uc790 \ub85c\uadf8\uc778 \ud398\uc774\uc9c0"},
+      {src:"assets/2._\uad00\ub9ac\uc790_\ub85c\uadf8\uc778_\ud398\uc774\uc9c0_-_\uad00\ub9ac\uc790_\ub4f1\ub85d_\uc815\ubcf4_\uc2a4\ud504\ub808\ub4dc\uc2dc\ud2b8(\uc6f9\uc0ac\uc774\ud2b8_\uc5f0\ub3d9).jpg", alt:"\uad00\ub9ac\uc790 \ub4f1\ub85d \uc2a4\ud504\ub808\ub4dc\uc2dc\ud2b8"},
+      {src:"assets/3._\uad00\ub9ac\uc790_\ub85c\uadf8\uc778_\ud398\uc774\uc9c0_-_\uc804\uccb4_\uacf5\uae09_\uc5c5\uccb4_\ud488\ubaa9_\uad00\ub9ac_\ud654\uba74_.jpg", alt:"\uc804\uccb4 \uacf5\uae09\uc5c5\uccb4 \ud488\ubaa9 \uad00\ub9ac"},
+      {src:"assets/00._VNTG_\uc804\uc0b0\uad00\ub9ac_\uc2dc\uc2a4\ud15c_\uc2dc\uc791_\ud398\uc774\uc9c0.jpg", alt:"VNTG \uc804\uc0b0\uad00\ub9ac \uc2dc\uc2a4\ud15c \uc2dc\uc791 \ud398\uc774\uc9c0"}
+    ];
+    _lbImgs = allImgs;
+  </script>
+
+  <!-- ━━━ 고정 헤더 ━━━ -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:960px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AI-WORKER 최종후보</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">VNTG 전산장비 견적 자동화 시스템</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">경영지원 · 조은서</span>
+        
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:960px; margin:0 auto; padding:52px 28px 88px;">
+
+    <!-- ━━━ ① 히어로 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">🏆 AI-WORKER 인증 과제</p>
+          <h1 style="font-size:36px; font-weight:800; color:#1c1917; line-height:1.15; letter-spacing:-0.02em; margin-bottom:18px;">
+            VNTG 전산장비<br>견적 자동화 시스템
+          </h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">
+            이메일+엑셀 수작업 견적 업무를 웹 시스템으로 완전 대체 —<br>
+            고객사·공급업체·관리자 3-역할을 하나의 URL로 연결하여<br>
+            <strong>월 3시간 견적 업무를 30분으로 단축(83% 절감)</strong>합니다.
+          </p>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026-04-08</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">Google Apps Script</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">바이브코딩</span>
+          </div>
+        </div>
+
+        <div style="min-width:280px; max-width:420px; flex:0 0 auto;">
+          <div style="border-radius:16px; overflow:hidden; border:1px solid #e8d5c0; box-shadow:0 18px 40px -18px rgba(0,0,0,0.25);">
+            <img src="/gemini_html/assets/00_main.jpg" alt="조은서 대표 이미지" loading="lazy" style="width:100%; height:auto; display:block;" />
+          </div>
+          <p style="margin-top:10px; font-size:11px; color:#a8a29e; letter-spacing:0.06em; text-align:center; font-weight:600; text-transform:uppercase;">Representative Screen</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ ② 시스템 전체 미리보기 (스크린샷 갤러리) ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:8px;">📸 시각 증빙 자료</p>
+      <p style="font-size:13px; color:#78716c; margin-bottom:16px;">이미지를 클릭하면 원본 크기로 확인 · 좌우 화살표 또는 키보드 방향키로 이동</p>
+
+      <!-- 메인 대표 이미지 -->
+      <div style="margin-bottom:16px;">
+        <img src="/gemini_html/assets/00_main.jpg" alt="VNTG 전산관리 시스템 메인 화면"
+          onclick="openLb(0)"
+          style="width:100%; border-radius:10px; cursor:zoom-in; box-shadow:0 2px 12px rgba(0,0,0,0.1);">
+      </div>
+
+      <!-- 고객용 서비스 -->
+      <p class="gallery-section-title">👤 고객사 담당자 화면</p>
+      <div class="gallery-grid">
+        <img src="/gemini_html/assets/01_client_start.jpg" alt="고객용 시작 화면" onclick="openLb(1)">
+        <img src="/gemini_html/assets/02_client_register.jpg" alt="담당자 등록 화면" onclick="openLb(2)">
+        <img src="/gemini_html/assets/03_client_quote.jpg" alt="견적 요청 화면" onclick="openLb(3)">
+        <img src="/gemini_html/assets/04_client_history.jpg" alt="견적 이력 확인 화면" onclick="openLb(4)">
+      </div>
+
+      <!-- 공급업체 서비스 -->
+      <p class="gallery-section-title">🏭 공급업체 담당자 화면</p>
+      <div class="gallery-grid">
+        <img src="/gemini_html/assets/05_supplier_start.jpg" alt="업체용 시작 화면" onclick="openLb(5)">
+        <img src="/gemini_html/assets/06_supplier_products.jpg" alt="업체 제품 관리 화면" onclick="openLb(6)">
+      </div>
+
+      <!-- 관리자 서비스 -->
+      <p class="gallery-section-title">🔑 관리자 화면</p>
+      <div class="gallery-grid">
+        <img src="/gemini_html/assets/07_admin_start.jpg" alt="관리자 시작 화면" onclick="openLb(7)">
+        <img src="/gemini_html/assets/08_admin_products.jpg" alt="전체 제품 관리 화면" onclick="openLb(8)">
+      </div>
+
+      <!-- 상세 스크린샷 -->
+      <p class="gallery-section-title">📋 상세 화면 · Google Sheets 연동</p>
+      <div class="gallery-grid">
+        <img src="/gemini_html/assets/1._고객용_서비스_-_시작_화면.jpg" alt="고객용 서비스 시작" onclick="openLb(9)">
+        <img src="/gemini_html/assets/2-0._고객용_서비스_-_담당자_등록_페이지.jpg" alt="담당자 등록 페이지" onclick="openLb(10)">
+        <img src="/gemini_html/assets/2-1._고객용_서비스_-_담당자_등록_정보_관리_스프레드시트.jpg" alt="담당자 정보 스프레드시트 연동" onclick="openLb(11)">
+        <img src="/gemini_html/assets/3-0._고객용_서비스_-_견적_요청_화면.jpg" alt="견적 요청 화면 상세" onclick="openLb(12)">
+        <img src="/gemini_html/assets/3-1._고객용_서비스_-_견적_요청_및_견적_발송_이력_관리_스트레드시트.jpg" alt="견적 이력 스프레드시트" onclick="openLb(13)">
+        <img src="/gemini_html/assets/3-1._고객용_서비스_-_견적_요청_이력_확인_및_수정_견적_요청_화면.jpg" alt="수정 견적 요청 화면" onclick="openLb(14)">
+        <img src="/gemini_html/assets/1._업체용(공급_업체)_서비스_-_시작_화면.jpg" alt="업체용 시작 화면 상세" onclick="openLb(15)">
+        <img src="/gemini_html/assets/2-0._업체용(공급_업체)_서비스_-_업체_담당자_등록_요청_화면.jpg" alt="업체 담당자 등록 요청" onclick="openLb(16)">
+        <img src="/gemini_html/assets/2-1._업체용(공급_업체)_서비스_-_업체_담당자_정보_관리_스프레드시트.jpg" alt="업체 담당자 스프레드시트" onclick="openLb(17)">
+        <img src="/gemini_html/assets/3-0._업체용(공급_업체)_서비스_-_업체별_제품_내역_관리_화면.jpg" alt="제품 관리 화면" onclick="openLb(18)">
+        <img src="/gemini_html/assets/3-1._업체용(공급_업체)_서비스_-_업체별_제품_내역_관리_스트레드시트(웹사이트_자동_연동).jpg" alt="제품 스프레드시트 자동 연동" onclick="openLb(19)">
+        <img src="/gemini_html/assets/1._관리자_로그인_페이지_-_시작_화면.jpg" alt="관리자 로그인 페이지" onclick="openLb(20)">
+        <img src="/gemini_html/assets/2._관리자_로그인_페이지_-_관리자_등록_정보_스프레드시트(웹사이트_연동).jpg" alt="관리자 등록 스프레드시트" onclick="openLb(21)">
+        <img src="/gemini_html/assets/3._관리자_로그인_페이지_-_전체_공급_업체_품목_관리_화면_.jpg" alt="전체 공급업체 품목 관리" onclick="openLb(22)">
+        <img src="/gemini_html/assets/00._VNTG_전산관리_시스템_시작_페이지.jpg" alt="VNTG 전산관리 시스템 시작 페이지" onclick="openLb(23)">
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ ③ 문제 정의 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:12px; letter-spacing:0.05em;">❗ 기존의 어려움</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none; display:flex; flex-direction:column; gap:8px;">
+            <li>🔹 <strong>이메일로 견적 요청</strong> → 업체별 개별 연락으로 단가 확인</li>
+            <li>🔹 <strong>엑셀 수작업</strong>으로 견적서 작성 → 이메일 수동 발송</li>
+            <li>🔹 월 <strong>약 3시간</strong> 소요, 오류·누락 빈번하게 발생</li>
+            <li>🔹 4개 공급업체 단가 확인에 <strong>수시간 지연</strong></li>
+          </ul>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:12px; letter-spacing:0.05em;">✨ AI로 해결한 방식</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none; display:flex; flex-direction:column; gap:8px;">
+            <li>✅ 고객사가 <strong>웹 UI에서 직접</strong> 제품 선택 · 견적 요청</li>
+            <li>✅ 시스템이 <strong>자동으로 견적서 생성</strong> → Gmail 자동 발송</li>
+            <li>✅ <strong>4개 업체 단가 실시간 통합</strong> — 별도 연락 불필요</li>
+            <li>✅ 월 <strong>30분으로 단축</strong> (83% 시간 절감)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ ④ 평가 체크리스트 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
+
+      <!-- 선택형 ①② -->
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge">런타임 AI</span>
+          <span class="check-badge on">✅ 노코드 AI (GAS)</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 반복 보고서 취합·정리</span>
+          <span class="check-badge on">✅ 데이터 수집·분류·가공</span>
+          <span class="check-badge on">✅ 내부 문의·요청 자동 처리</span>
+          <span class="check-badge on">✅ 알림·모니터링 자동화</span>
+        </div>
+      </div>
+
+      <!-- 점수형 ③~⑥ -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;"><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">🎯</span><span>월 3시간 → 30분(<strong>83% 절감</strong>) 수치 명확.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">💡</span><span>견적 요청~이메일 발송 전 과정이 코드로 구현되어 수작업 단계 사실상 제거됨.</span></li></ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;"><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">🎯</span><span>문제-방법 연결 명쾌.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">💡</span><span>GAS 선택의 실용성 탁월(서버 비용 0).</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">📊</span><span><strong>3-역할 분리 구조</strong> 우수, 실무 디테일 풍부.</span></li></ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;"><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">🎯</span><span><strong>URL만으로 접근</strong>, 비개발자 즉시 사용 가능.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">💡</span><span>타 사업부·계열사 확장 구조 명확.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">📊</span><span>고객사·업체 외부 이해관계자 포괄.</span></li></ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            
+          </div>
+          <ul style="list-style:none; padding:0; margin:0;"><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">🎯</span><span>팀 KPI <em>"전산장비 구매 신청 사이트 및 견적서 자동 메일 발송 시스템 구축"</em>을 직접 달성.</span></li><li style="display:flex; gap:10px; align-items:flex-start; font-size:14px; color:#44403c; line-height:1.7; padding:4px 0;"><span style="flex-shrink:0;">💡</span><span>비즈니스 프로세스 전환.</span></li></ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ ⑤ 주요 기능 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">⚡ 주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🔑 3-역할 로그인</p>
+          <ul style="font-size:13px; color:#44403c; line-height:1.7; list-style:none; display:flex; flex-direction:column; gap:4px;">
+            <li>🔹 고객사 담당자</li>
+            <li>🔹 공급 업체 담당자</li>
+            <li>🔹 VNTG 관리자</li>
+          </ul>
+          <p style="font-size:12px; color:#78716c; margin-top:8px;">하나의 URL, 역할별 전용 화면 자동 전환</p>
+        </div>
+
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📦 제품 목록 통합 조회</p>
+          <ul style="font-size:13px; color:#44403c; line-height:1.7; list-style:none; display:flex; flex-direction:column; gap:4px;">
+            <li>🔹 <strong>4개 공급업체</strong> Sheets 실시간 통합</li>
+            <li>🔹 카테고리·브랜드·단가·재고 포함</li>
+            <li>🔹 갱신도래 품목 특수 처리</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📄 견적서 자동 생성·발송</p>
+          <ul style="font-size:13px; color:#44403c; line-height:1.7; list-style:none; display:flex; flex-direction:column; gap:4px;">
+            <li>🔹 Google Sheets 견적서 <strong>자동 생성</strong></li>
+            <li>🔹 Drive 저장 + Gmail <strong>자동 발송</strong></li>
+            <li>🔹 고객사·관리자 동시 수신</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🔄 수정 견적 처리</p>
+          <ul style="font-size:13px; color:#44403c; line-height:1.7; list-style:none; display:flex; flex-direction:column; gap:4px;">
+            <li>🔹 계층 견적번호 체계</li>
+            <li>🔹 YYYYMMDD-NN-NN 형식</li>
+            <li>🔹 이력 추적 가능</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">💰 업체 단가·재고 관리</p>
+          <ul style="font-size:13px; color:#44403c; line-height:1.7; list-style:none; display:flex; flex-direction:column; gap:4px;">
+            <li>🔹 업체 담당자 <strong>직접 갱신</strong></li>
+            <li>🔹 다음 조회 시 즉시 반영</li>
+            <li>🔹 4개 업체 독립 관리</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🔔 알림·이력 자동화</p>
+          <ul style="font-size:13px; color:#44403c; line-height:1.7; list-style:none; display:flex; flex-direction:column; gap:4px;">
+            <li>🔹 업체 등록 요청 시 관리자 이메일 알림</li>
+            <li>🔹 REQUEST_LOG <strong>자동 기록</strong></li>
+            <li>🔹 견적 이력 조회 기능</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ ⑥ AI 활용 방식 · 기술 스택 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
+
+      <!-- 데이터 흐름 -->
+      <div style="background:#ede9e1; border-radius:14px; padding:28px; margin-bottom:16px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:16px; letter-spacing:0.05em;">데이터 흐름 — 고객 견적 요청</p>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:13px; color:#44403c;">
+          <span style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:6px; padding:6px 12px; font-weight:600;">👤 고객 로그인</span>
+          <span style="color:#c8622a; font-weight:700;">→</span>
+          <span style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:6px; padding:6px 12px; font-weight:600;">📦 제품 선택</span>
+          <span style="color:#c8622a; font-weight:700;">→</span>
+          <span style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:6px; padding:6px 12px; font-weight:600;">📄 견적서 자동 생성</span>
+          <span style="color:#c8622a; font-weight:700;">→</span>
+          <span style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:6px; padding:6px 12px; font-weight:600;">📧 Gmail 자동 발송</span>
+          <span style="color:#c8622a; font-weight:700;">→</span>
+          <span style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:6px; padding:6px 12px; font-weight:600;">📊 이력 자동 기록</span>
+        </div>
+      </div>
+
+      <!-- 기술 스택 카드 -->
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div style="background:#ede9e1; border-radius:10px; padding:18px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">🛠 AI 개발 도구</p>
+          <ul style="font-size:13px; color:#1c1917; line-height:1.7; list-style:none; display:flex; flex-direction:column; gap:4px;">
+            <li>💡 Claude AI (바이브코딩)</li>
+            <li>💡 Google AI Studio</li>
+            <li style="font-size:11px; color:#78716c; margin-top:4px;">코드 설계·작성·디버깅</li>
+          </ul>
+        </div>
+        <div style="background:#ede9e1; border-radius:10px; padding:18px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">⚙️ 플랫폼 · 백엔드</p>
+          <ul style="font-size:13px; color:#1c1917; line-height:1.7; list-style:none; display:flex; flex-direction:column; gap:4px;">
+            <li>🔹 Google Apps Script V8</li>
+            <li>🔹 HtmlService (SPA)</li>
+            <li>🔹 GmailApp · Drive API v3</li>
+          </ul>
+        </div>
+        <div style="background:#ede9e1; border-radius:10px; padding:18px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">💾 데이터 · 인프라</p>
+          <ul style="font-size:13px; color:#1c1917; line-height:1.7; list-style:none; display:flex; flex-direction:column; gap:4px;">
+            <li>🔹 Google Sheets (DB)</li>
+            <li>🔹 Google Drive (파일)</li>
+            <li>🔹 서버 비용 <strong>0원</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 아키텍처 코드 블록 -->
+      <div style="background:#1c1917; border-radius:10px; padding:20px; margin-top:14px; font-family:'DM Mono',monospace; font-size:12px; color:#d6d0c4; line-height:1.9; overflow-x:auto; white-space:pre;">
+<span style="color:#c8622a;">[고객사 담당자]</span>  ─── 견적 요청 ──────→  <span style="color:#fdf0e8; font-weight:600;">[GAS Web App]</span>
+<span style="color:#c8622a;">[공급업체 담당자]</span> ─── 단가/재고 등록 ──→  <span style="color:#fdf0e8;">  Code.gs (서버리스)</span>
+<span style="color:#c8622a;">[VNTG 관리자]</span>    ─── 전체 관리 ───────→  <span style="color:#fdf0e8;">  ├── Google Sheets  (데이터)</span>
+                                          <span style="color:#fdf0e8;">  ├── Google Drive   (견적서)</span>
+                                          <span style="color:#fdf0e8;">  └── Gmail API      (이메일)</span></div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ ⑦ 기대 효과 ━━━ -->
+    <section>
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px;">
+
+        <div class="effect-card">
+          <div class="mono" style="font-size:36px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">83%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">업무 시간 절감</p>
+          <p style="font-size:12px; color:#78716c;">월 3시간 → 30분<br>수작업 단계 완전 제거</p>
+        </div>
+
+        <div class="effect-card">
+          <div class="mono" style="font-size:36px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">4개</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">공급업체 실시간 통합</p>
+          <p style="font-size:12px; color:#78716c;">단가·재고 자동 취합<br>개별 연락 불필요</p>
+        </div>
+
+        <div class="effect-card">
+          <div class="mono" style="font-size:36px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">0원</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">추가 서버 비용</p>
+          <p style="font-size:12px; color:#78716c;">Google Workspace 환경<br>기존 인프라 그대로 활용</p>
+        </div>
+
+      </div>
+
+      <!-- 확산 가능성 -->
+      <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+        <p style="font-size:12px; font-weight:700; color:#c8622a; margin-bottom:12px; letter-spacing:0.05em;">🌐 확산 가능성</p>
+        <ul style="font-size:14px; color:#44403c; line-height:1.8; list-style:none; display:flex; flex-direction:column; gap:6px;">
+          <li>✅ <strong>URL 공유만으로</strong> 고객사·업체 즉시 사용 — 설치 없음, 교육 불필요</li>
+          <li>✅ 동일 견적 업무가 있는 <strong>타 사업부·계열사</strong>에 URL 별도 발급으로 즉시 적용 가능</li>
+          <li>✅ <strong>비개발자 친화적</strong> 버튼 클릭 방식 UI</li>
+          <li>✅ 팀 KPI <em>"전산장비 구매 신청 사이트 및 견적서 자동 메일 발송 시스템 구축"</em> 직접 달성</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ━━━ 푸터 ━━━ -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AI-WORKER 최종후보 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; 경영지원팀 · 조은서
+    </p>
+  </footer>
+
+</body>
+</html>
