@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adaptive — Anti-Slop AI Interface</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ─── Design Variance System ─── */
+    :root {
+      --DESIGN_VARIANCE: high;
+      --MOTION_INTENSITY: expressive;
+      --VISUAL_DENSITY: spacious;
+
+      --bg:        #0A0A0F;
+      --surface:   rgba(255,255,255,0.04);
+      --border:    rgba(255,255,255,0.07);
+      --primary:   #7C3AED;
+      --coral:     #FF4D6D;
+      --text:      #F0F0F8;
+      --muted:     #6B6B80;
+      --lift-dur:  400ms;
+      --lift-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 28px; }
+
+    /* ─── Animated Blob Background ─── */
+    .blob-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.12;
+      animation: float 12s ease-in-out infinite;
+    }
+
+    .blob-1 {
+      width: 700px;
+      height: 700px;
+      background: var(--primary);
+      top: -200px;
+      left: -200px;
+      animation-delay: 0s;
+    }
+
+    .blob-2 {
+      width: 500px;
+      height: 500px;
+      background: var(--coral);
+      bottom: -100px;
+      right: -100px;
+      animation-delay: -4s;
+    }
+
+    .blob-3 {
+      width: 400px;
+      height: 400px;
+      background: #06B6D4;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation-delay: -8s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -40px) scale(1.05); }
+      66% { transform: translate(-20px, 30px) scale(0.95); }
+    }
+
+    /* ─── Navbar ─── */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      padding: 16px 0;
+    }
+
+    .navbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10,10,15,0.6);
+      backdrop-filter: blur(24px) saturate(200%);
+      -webkit-backdrop-filter: blur(24px) saturate(200%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 20px;
+    }
+
+    .logo {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .logo span {
+      background: linear-gradient(90deg, var(--primary), var(--coral));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      transition: color 250ms ease;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    @media (max-width: 700px) { .nav-links { display: none; } }
+
+    .nav-btn {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 20px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--coral));
+      color: #fff;
+      transition: opacity 250ms ease, transform 250ms var(--lift-ease);
+    }
+    .nav-btn:hover { opacity: 0.85; transform: translateY(-2px); }
+
+    /* ─── Scroll Reveal ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity var(--lift-dur) var(--lift-ease), transform var(--lift-dur) var(--lift-ease);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 80ms; }
+    .reveal-delay-2 { transition-delay: 160ms; }
+    .reveal-delay-3 { transition-delay: 240ms; }
+    .reveal-delay-4 { transition-delay: 320ms; }
+
+    /* ─── Hero ─── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 140px 0 100px;
+    }
+
+    .hero-content { max-width: 780px; margin: 0 auto; }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--primary);
+      background: rgba(124,58,237,0.12);
+      border: 1px solid rgba(124,58,237,0.25);
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 40px;
+    }
+
+    .hero-eyebrow-dot {
+      width: 5px;
+      height: 5px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.7); }
+      50% { box-shadow: 0 0 0 6px rgba(124,58,237,0); }
+    }
+
+    .hero h1 {
+      font-size: clamp(52px, 8vw, 96px);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 0.95;
+      margin-bottom: 28px;
+    }
+
+    .grad-hero {
+      background: linear-gradient(135deg, #fff 30%, var(--primary) 65%, var(--coral) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto 52px;
+      line-height: 1.75;
+      font-weight: 400;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 80px;
+    }
+
+    .btn-big {
+      font-size: 16px;
+      font-weight: 700;
+      padding: 16px 36px;
+      border-radius: 14px;
+      transition: transform var(--lift-dur) var(--lift-ease), box-shadow var(--lift-dur) var(--lift-ease), opacity 250ms ease;
+      letter-spacing: -0.01em;
+    }
+
+    .btn-big-primary {
+      background: linear-gradient(135deg, var(--primary), var(--coral));
+      color: #fff;
+    }
+    .btn-big-primary:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(124,58,237,0.4);
+    }
+
+    .btn-big-outline {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-big-outline:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.15);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    /* ─── Hero Metrics ─── */
+    .hero-metrics {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .metric {
+      padding: 20px 36px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .metric:last-child { border-right: none; }
+
+    .metric-val {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .metric-lbl {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    /* ─── Features ─── */
+    .section {
+      position: relative;
+      z-index: 1;
+      padding: 120px 0;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 80px;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--coral);
+      margin-bottom: 16px;
+    }
+
+    .section-header h2 {
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      font-size: 16px;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    /* Glass Cards */
+    .glass-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .glass-grid { grid-template-columns: 1fr; }
+    }
+
+    .glass-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 32px;
+      position: relative;
+      overflow: hidden;
+      transition: transform var(--lift-dur) var(--lift-ease), border-color 300ms ease, box-shadow var(--lift-dur) var(--lift-ease);
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    }
+
+    .glass-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(124,58,237,0.25);
+      box-shadow: 0 32px 64px rgba(0,0,0,0.5), 0 0 80px rgba(124,58,237,0.08);
+    }
+
+    .glow-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .glow-violet {
+      background: rgba(124,58,237,0.15);
+      box-shadow: 0 0 20px rgba(124,58,237,0.2);
+    }
+    .glow-coral {
+      background: rgba(255,77,109,0.15);
+      box-shadow: 0 0 20px rgba(255,77,109,0.2);
+    }
+    .glow-cyan {
+      background: rgba(6,182,212,0.15);
+      box-shadow: 0 0 20px rgba(6,182,212,0.2);
+    }
+
+    .glass-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .glass-card p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .card-glow-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      opacity: 0;
+      transition: opacity 300ms ease;
+    }
+    .glass-card:hover .card-glow-line { opacity: 1; }
+
+    .glow-line-violet { background: linear-gradient(90deg, transparent, var(--primary), transparent); }
+    .glow-line-coral  { background: linear-gradient(90deg, transparent, var(--coral), transparent); }
+    .glow-line-cyan   { background: linear-gradient(90deg, transparent, #06B6D4, transparent); }
+
+    /* ─── Stats Band ─── */
+    .stats-band {
+      position: relative;
+      z-index: 1;
+      background: rgba(255,255,255,0.02);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .stats-band::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(124,58,237,0.05), transparent 50%, rgba(255,77,109,0.05));
+      pointer-events: none;
+    }
+
+    .stats-inner {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+    }
+
+    @media (max-width: 700px) {
+      .stats-inner { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .stat-block {
+      padding: 64px 40px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      transition: background 300ms ease;
+    }
+    .stat-block:last-child { border-right: none; }
+    .stat-block:hover { background: rgba(255,255,255,0.02); }
+
+    .stat-block-num {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-block-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .g-violet { background: linear-gradient(135deg, #7C3AED, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .g-coral  { background: linear-gradient(135deg, #FF4D6D, #FCA5A5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .g-cyan   { color: #06B6D4; }
+    .g-white  { color: #fff; }
+
+    /* ─── Feature Spotlight ─── */
+    .spotlight-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    @media (max-width: 800px) {
+      .spotlight-grid { grid-template-columns: 1fr; gap: 48px; }
+    }
+
+    .spotlight-grid h2 {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .spotlight-grid p {
+      font-size: 16px;
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 32px;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(124,58,237,0.12);
+      border: 1px solid rgba(124,58,237,0.2);
+      color: #C4B5FD;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 100px;
+      transition: background 250ms ease, transform 250ms var(--lift-ease);
+    }
+    .pill:hover { background: rgba(124,58,237,0.2); transform: translateY(-2px); }
+
+    .demo-terminal {
+      background: #0D0D14;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .terminal-bar {
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .t-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .t-red    { background: #FF5F57; }
+    .t-yellow { background: #FFBD2E; }
+    .t-green  { background: #28C840; }
+
+    .terminal-body { padding: 24px; line-height: 1.8; font-size: 13px; }
+    .t-comment { color: #4B4B6A; }
+    .t-key     { color: #7C3AED; }
+    .t-string  { color: #34D399; }
+    .t-val     { color: var(--coral); }
+    .t-cursor  { display: inline-block; width: 8px; height: 14px; background: var(--primary); vertical-align: middle; animation: blink 1s infinite; }
+
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    /* ─── CTA ─── */
+    .cta-section {
+      position: relative;
+      z-index: 1;
+      padding: 140px 0;
+      text-align: center;
+    }
+
+    .cta-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 100px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse, rgba(124,58,237,0.25) 0%, rgba(255,77,109,0.1) 40%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-box h2 {
+      font-size: clamp(36px, 5vw, 60px);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .cta-box p {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto 48px;
+      position: relative;
+    }
+
+    .cta-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    /* ─── Footer ─── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-brand {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .footer-copy {
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Animated Blobs -->
+  <div class="blob-container" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container">
+      <div class="navbar-inner">
+        <div class="logo"><span>Adaptive</span></div>
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#metrics">Metrics</a></li>
+          <li><a href="#api">API</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+        </ul>
+        <a href="#" class="nav-btn">Get access →</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+
+        <div class="hero-eyebrow reveal">
+          <span class="hero-eyebrow-dot"></span>
+          Anti-Slop AI — Now in Beta
+        </div>
+
+        <h1 class="reveal reveal-delay-1">
+          <span class="grad-hero">AI that actually<br>gets your taste</span>
+        </h1>
+
+        <p class="hero-sub reveal reveal-delay-2">
+          Adaptive learns your aesthetic preferences, writing style, and visual sensibility — then generates output that feels unmistakably yours.
+        </p>
+
+        <div class="hero-actions reveal reveal-delay-3">
+          <a href="#" class="btn-big btn-big-primary">Experience it free →</a>
+          <a href="#features" class="btn-big btn-big-outline">See how it works</a>
+        </div>
+
+        <div class="hero-metrics reveal reveal-delay-4">
+          <div class="metric">
+            <div class="metric-val g-violet">2.4M</div>
+            <div class="metric-lbl">Taste profiles</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val g-coral">92%</div>
+            <div class="metric-lbl">First-try satisfaction</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val g-cyan">8ms</div>
+            <div class="metric-lbl">Adaptation latency</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="eyebrow">Core Engine</div>
+        <h2>Built for<br>discriminating creators</h2>
+        <p>Three systems working in concert to ensure every output meets your standard — not the generic average.</p>
+      </div>
+
+      <div class="glass-grid">
+        <div class="glass-card reveal reveal-delay-1">
+          <div class="glow-icon glow-violet">🧠</div>
+          <h3>DESIGN_VARIANCE Engine</h3>
+          <p>Tracks your aesthetic variance tolerance. High variance users get bold, experimental outputs. Low variance users get consistently precise results.</p>
+          <div class="card-glow-line glow-line-violet"></div>
+        </div>
+        <div class="glass-card reveal reveal-delay-2">
+          <div class="glow-icon glow-coral">✦</div>
+          <h3>MOTION_INTENSITY Layer</h3>
+          <p>Every generated interface adapts its animation intensity to your sensitivity. From subtle micro-interactions to expressive kinetic motion.</p>
+          <div class="card-glow-line glow-line-coral"></div>
+        </div>
+        <div class="glass-card reveal reveal-delay-3">
+          <div class="glow-icon glow-cyan">◈</div>
+          <h3>VISUAL_DENSITY Control</h3>
+          <p>Spacious or information-dense? Adaptive reads your behavior and automatically calibrates whitespace, font size, and content hierarchy.</p>
+          <div class="card-glow-line glow-line-cyan"></div>
+        </div>
+        <div class="glass-card reveal reveal-delay-1">
+          <div class="glow-icon glow-violet">🎨</div>
+          <h3>Palette Memory</h3>
+          <p>Learns which colors make you reach for the approve button. Builds a private color signature that evolves with your work over time.</p>
+          <div class="card-glow-line glow-line-violet"></div>
+        </div>
+        <div class="glass-card reveal reveal-delay-2">
+          <div class="glow-icon glow-coral">⚡</div>
+          <h3>Instant Style Transfer</h3>
+          <p>Upload a reference. In 400ms, Adaptive extracts the typographic rhythm, spatial logic, and tonal character — then applies it universally.</p>
+          <div class="card-glow-line glow-line-coral"></div>
+        </div>
+        <div class="glass-card reveal reveal-delay-3">
+          <div class="glow-icon glow-cyan">🔗</div>
+          <h3>Cross-Media Coherence</h3>
+          <p>Text, image, video, and UI — one taste profile governs all. Your brand voice stays consistent whether you're writing docs or building interfaces.</p>
+          <div class="card-glow-line glow-line-cyan"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="stats-band" id="metrics">
+    <div class="container">
+      <div class="stats-inner">
+        <div class="stat-block reveal">
+          <div class="stat-block-num g-violet">2.4M</div>
+          <div class="stat-block-label">Active taste profiles</div>
+        </div>
+        <div class="stat-block reveal reveal-delay-1">
+          <div class="stat-block-num g-coral">92%</div>
+          <div class="stat-block-label">Satisfaction on first try</div>
+        </div>
+        <div class="stat-block reveal reveal-delay-2">
+          <div class="stat-block-num g-cyan">400ms</div>
+          <div class="stat-block-label">Style extraction speed</div>
+        </div>
+        <div class="stat-block reveal reveal-delay-3">
+          <div class="stat-block-num g-white">∞</div>
+          <div class="stat-block-label">Media types supported</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- API Spotlight -->
+  <section class="section" id="api">
+    <div class="container">
+      <div class="spotlight-grid">
+        <div class="reveal">
+          <div class="eyebrow" style="color: var(--primary);">Developer API</div>
+          <h2>Three lines.<br><span style="background:linear-gradient(135deg,var(--primary),var(--coral));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Any output.</span></h2>
+          <p>The Adaptive SDK wraps any generative model with taste-aware context injection. Works with OpenAI, Anthropic, Gemini — or your own fine-tuned model.</p>
+          <div class="pill-list">
+            <span class="pill">✓ Python SDK</span>
+            <span class="pill">✓ TypeScript</span>
+            <span class="pill">✓ REST API</span>
+            <span class="pill">✓ Streaming</span>
+            <span class="pill">✓ Webhooks</span>
+          </div>
+        </div>
+
+        <div class="demo-terminal reveal reveal-delay-2">
+          <div class="terminal-bar">
+            <span class="t-dot t-red"></span>
+            <span class="t-dot t-yellow"></span>
+            <span class="t-dot t-green"></span>
+            <span style="font-size:12px; color:#4B4B6A; margin-left:8px;">adaptive_client.py</span>
+          </div>
+          <div class="terminal-body">
+            <span class="t-comment"># Initialize with your taste profile</span><br>
+            <span class="t-key">from</span> adaptive <span class="t-key">import</span> TasteClient<br><br>
+            client = TasteClient(<br>
+            &nbsp;&nbsp;<span class="t-string">api_key</span>=<span class="t-val">"apt_live_xxx"</span>,<br>
+            &nbsp;&nbsp;<span class="t-string">profile_id</span>=<span class="t-val">"your-taste-id"</span><br>
+            )<br><br>
+            <span class="t-comment"># Generate with taste injection</span><br>
+            result = client.generate(<br>
+            &nbsp;&nbsp;<span class="t-string">prompt</span>=<span class="t-val">"Write a hero section"</span>,<br>
+            &nbsp;&nbsp;<span class="t-string">variance</span>=<span class="t-val">"high"</span>,<br>
+            &nbsp;&nbsp;<span class="t-string">motion</span>=<span class="t-val">"expressive"</span><br>
+            )<br><br>
+            <span class="t-comment"># Output matches YOUR aesthetic</span><br>
+            print(result.content) <span class="t-cursor"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-box reveal">
+        <h2>
+          Stop generating slop.<br>
+          <span style="background:linear-gradient(135deg,var(--primary),var(--coral));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+            Start generating you.
+          </span>
+        </h2>
+        <p>Your first 500 generations are free. No credit card. No generic outputs. Just AI that finally matches your taste.</p>
+        <div class="cta-actions">
+          <a href="#" class="btn-big btn-big-primary">Start for free →</a>
+          <a href="#" class="btn-big btn-big-outline">Book a demo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand" style="background:linear-gradient(90deg,var(--primary),var(--coral));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Adaptive</div>
+        <div class="footer-copy">© 2025 Adaptive Labs, Inc. All rights reserved.</div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Immediate reveal for hero
+    document.querySelectorAll('.hero .reveal').forEach(el => el.classList.add('visible'));
+  </script>
+
+</body>
+</html>
