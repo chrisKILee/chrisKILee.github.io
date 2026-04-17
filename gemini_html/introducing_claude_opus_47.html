@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introducing Claude Opus 4.7</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Pretendard:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #F9F9FB;
+      --surface:      #FFFFFF;
+      --surface-2:    #F1F2F7;
+      --surface-3:    #E8EAF2;
+      --border:       rgba(0,0,0,0.08);
+      --text:         #09090B;
+      --muted:        #6B7280;
+      --accent:       #7C3AED;
+      --accent-2:     #BE185D;
+      --accent-glow:  rgba(124,58,237,0.10);
+      --header-bg:    rgba(249,249,251,0.92);
+      --divider:      rgba(0,0,0,0.07);
+      --stat-bg:      #F1F2F7;
+      --code-text:    #374151;
+      --font-primary: 'Pretendard', sans-serif;
+      --font-display: 'Outfit', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg:           #09090B;
+      --surface:      #111115;
+      --surface-2:    #18181C;
+      --surface-3:    #1F1F25;
+      --border:       rgba(255,255,255,0.07);
+      --text:         #FAFAFA;
+      --muted:        #8B8B99;
+      --accent:       #8B5CF6;
+      --accent-2:     #F43F5E;
+      --accent-glow:  rgba(139,92,246,0.12);
+      --header-bg:    rgba(9,9,11,0.88);
+      --divider:      rgba(255,255,255,0.06);
+      --stat-bg:      #18181C;
+      --code-text:    #E2E8F0;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      word-break: keep-all;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 3px; }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { opacity: 0.8; }
+
+    /* ── 헤더 ── */
+    .site-header {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .site-header-inner {
+      max-width: 1600px; margin: 0 auto;
+      padding: 0 24px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .site-logo {
+      font-family: var(--font-display);
+      font-weight: 900; font-size: 18px;
+      letter-spacing: -0.03em; color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .logo-mark {
+      width: 24px; height: 24px; border-radius: 6px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-mark svg { width: 12px; height: 12px; fill: #fff; }
+    .site-nav { display: flex; align-items: center; gap: 20px; font-size: 14px; }
+    .site-nav a { color: var(--muted); transition: color 0.15s; }
+    .site-nav a:hover { color: var(--text); opacity: 1; }
+
+    .theme-toggle {
+      width: 36px; height: 36px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, border-color 0.2s; margin-left: 8px;
+    }
+    .theme-toggle:hover { background: var(--surface-2); }
+    .theme-toggle svg { width: 16px; height: 16px; stroke: var(--muted); fill: none; }
+    .icon-sun { display: none; }
+    .icon-moon { display: block; }
+    [data-theme="dark"] .icon-sun { display: block; }
+    [data-theme="dark"] .icon-moon { display: none; }
+
+    /* ── 히어로 ── */
+    .hero {
+      max-width: 1600px; margin: 0 auto;
+      padding: 80px 24px 72px;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -120px; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 500px;
+      background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: 999px;
+      background: rgba(124,58,237,0.08);
+      border: 1px solid rgba(124,58,237,0.2);
+      font-size: 13px; font-weight: 700; color: var(--accent);
+      letter-spacing: 0.02em; margin-bottom: 28px;
+    }
+    [data-theme="dark"] .hero-badge {
+      background: rgba(139,92,246,0.1);
+      border-color: rgba(139,92,246,0.3);
+    }
+    .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(42px, 6vw, 76px);
+      font-weight: 900; line-height: 1.05;
+      letter-spacing: -0.04em; margin-bottom: 12px;
+      color: var(--text);
+    }
+    .hero-title-em { color: var(--accent); display: block; }
+    .hero-desc {
+      font-size: 18px; color: var(--muted);
+      max-width: 640px; line-height: 1.65;
+      margin-top: 20px; margin-bottom: 36px;
+    }
+    .hero-meta {
+      display: flex; align-items: center; gap: 20px;
+      font-size: 13px; color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    /* ── 구분선 ── */
+    .divider {
+      max-width: 1600px; margin: 0 auto; padding: 0 24px;
+      border: none; border-top: 1px solid var(--divider);
+    }
+
+    /* ── 섹션 ── */
+    .section { max-width: 1600px; margin: 0 auto; padding: 60px 24px; }
+    .section-label {
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent); font-family: var(--font-mono);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 28px; font-weight: 900;
+      letter-spacing: -0.03em; margin-bottom: 8px;
+      color: var(--text);
+    }
+    .section-desc {
+      font-size: 15px; color: var(--muted);
+      line-height: 1.7; margin-bottom: 40px; max-width: 560px;
+    }
+
+    /* ── 카드 그리드 ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .card:hover {
+      border-color: rgba(124,58,237,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    [data-theme="dark"] .card:hover {
+      border-color: rgba(139,92,246,0.35);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .card-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(124,58,237,0.10);
+      border: 1px solid rgba(124,58,237,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 16px;
+    }
+    [data-theme="dark"] .card-icon {
+      background: rgba(139,92,246,0.15);
+      border-color: rgba(139,92,246,0.25);
+    }
+    .card-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.01em; color: var(--text); }
+    .card-body { font-size: 14px; color: var(--muted); line-height: 1.65; }
+    .card-featured {
+      background: linear-gradient(135deg, rgba(124,58,237,0.07) 0%, rgba(190,24,93,0.04) 100%);
+      border-color: rgba(124,58,237,0.18);
+    }
+    [data-theme="dark"] .card-featured {
+      background: linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(244,63,94,0.06) 100%);
+      border-color: rgba(139,92,246,0.3);
+    }
+
+    /* ── 콜아웃 ── */
+    .callout {
+      border-radius: 10px; padding: 16px 20px;
+      display: flex; gap: 12px; margin: 24px 0;
+      font-size: 14px; line-height: 1.6;
+    }
+    .callout-info {
+      background: rgba(124,58,237,0.06);
+      border: 1px solid rgba(124,58,237,0.2);
+      color: #5B21B6;
+    }
+    [data-theme="dark"] .callout-info {
+      background: rgba(139,92,246,0.08);
+      border-color: rgba(139,92,246,0.25);
+      color: #d4bbff;
+    }
+    .callout-warn {
+      background: rgba(180,83,9,0.06);
+      border: 1px solid rgba(180,83,9,0.2);
+      color: #92400E;
+    }
+    [data-theme="dark"] .callout-warn {
+      background: rgba(215,119,6,0.08);
+      border-color: rgba(215,119,6,0.25);
+      color: #fcd34d;
+    }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── 코드 블럭 ── */
+    .code-block {
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden; margin: 16px 0;
+    }
+    .code-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .code-lang {
+      font-size: 12px; font-weight: 700; color: var(--muted);
+      font-family: var(--font-mono); letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .code-copy {
+      font-size: 12px; color: var(--muted); cursor: pointer;
+      font-family: var(--font-mono); background: none; border: none;
+      padding: 2px 8px; border-radius: 4px; transition: color 0.15s, background 0.15s;
+    }
+    .code-copy:hover { color: var(--text); background: var(--border); }
+    .code-body {
+      padding: 16px; font-family: var(--font-mono);
+      font-size: 13px; line-height: 1.7;
+      color: var(--code-text); overflow-x: auto; white-space: pre;
+    }
+
+    /* ── 스탯 카드 ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px; margin-bottom: 40px;
+    }
+    .stat-card {
+      background: var(--stat-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 20px 16px;
+    }
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 900; letter-spacing: -0.04em;
+      line-height: 1; margin-bottom: 6px;
+      color: var(--accent);
+    }
+    .stat-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+    /* ── 배지 ── */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: 999px;
+      font-size: 12px; font-weight: 700;
+    }
+    .badge-primary {
+      background: rgba(124,58,237,0.10); color: var(--accent);
+      border: 1px solid rgba(124,58,237,0.22);
+    }
+    [data-theme="dark"] .badge-primary {
+      background: rgba(139,92,246,0.15); color: #c4b5fd;
+      border-color: rgba(139,92,246,0.3);
+    }
+    .badge-secondary {
+      background: rgba(190,24,93,0.08); color: #9D174D;
+      border: 1px solid rgba(190,24,93,0.18);
+    }
+    [data-theme="dark"] .badge-secondary {
+      background: rgba(244,63,94,0.12); color: #fb7185;
+      border-color: rgba(244,63,94,0.25);
+    }
+    .badge-success {
+      background: rgba(5,150,105,0.08); color: #065F46;
+      border: 1px solid rgba(5,150,105,0.18);
+    }
+    [data-theme="dark"] .badge-success {
+      background: rgba(22,163,74,0.12); color: #4ade80;
+      border-color: rgba(22,163,74,0.25);
+    }
+    .badge-warn {
+      background: rgba(180,83,9,0.08); color: #92400E;
+      border: 1px solid rgba(180,83,9,0.18);
+    }
+    [data-theme="dark"] .badge-warn {
+      background: rgba(215,119,6,0.12); color: #fcd34d;
+      border-color: rgba(215,119,6,0.25);
+    }
+
+    /* ── 테이블 ── */
+    .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--surface-2); }
+    th {
+      padding: 12px 16px; text-align: left;
+      font-size: 13px; font-weight: 700; color: var(--muted);
+      letter-spacing: 0.04em; text-transform: uppercase;
+      font-family: var(--font-mono);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px 16px; font-size: 15px;
+      color: var(--text); border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface-2); }
+
+    /* ── SVG 다이어그램 ── */
+    .diagram-wrap {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 32px 24px;
+      margin: 24px 0; overflow-x: auto;
+    }
+
+    /* ── 푸터 ── */
+    .site-footer { border-top: 1px solid var(--border); margin-top: 80px; }
+    .site-footer-inner {
+      max-width: 1600px; margin: 0 auto; padding: 32px 24px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    .footer-copy { font-size: 13px; color: var(--muted); font-family: var(--font-mono); }
+    .footer-links { display: flex; gap: 20px; font-size: 13px; }
+    .footer-links a { color: var(--muted); }
+    .footer-links a:hover { color: var(--text); opacity: 1; }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+    @media (max-width: 640px) {
+      .hero { padding: 48px 16px 40px; }
+      .section { padding: 48px 16px; }
+      .hero-meta { flex-wrap: wrap; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="site-header-inner">
+      <span class="site-logo">
+        <span class="logo-mark">
+          <svg viewBox="0 0 12 12"><polygon points="6,1 11,10 1,10"/></svg>
+        </span>
+        Claude Notes
+      </span>
+      <nav class="site-nav">
+        <a href="/">홈</a>
+        <a href="https://www.anthropic.com/news/claude-opus-4-7" target="_blank" rel="noopener">공식 발표</a>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="테마 전환">
+          <svg class="icon-moon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 히어로 -->
+  <section class="hero">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>Anthropic · 2026년 4월 16일 출시</div>
+    <h1 class="hero-title">
+      Introducing
+      <span class="hero-title-em">Claude Opus 4.7</span>
+    </h1>
+    <p class="hero-desc">
+      에이전틱 코딩과 복잡한 추론에 최적화된 Anthropic의 최신 최강 모델.
+      1M 토큰 컨텍스트, 고해상도 비전, <code style="font-family:var(--font-mono);font-size:0.9em;background:var(--surface-3);padding:1px 6px;border-radius:4px;">xhigh</code> 노력 수준을 새로 탑재했습니다.
+    </p>
+    <div class="hero-meta">
+      <span>— 2026-04-16</span>
+      <span>· Anthropic 공식 발표</span>
+      <span>· 모델 ID: <code style="font-family:var(--font-mono);">claude-opus-4-7</code></span>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 핵심 수치 -->
+  <section class="section">
+    <div class="section-label">01 — Overview</div>
+    <h2 class="section-title">핵심 수치</h2>
+    <p class="section-desc">Anthropic 공식 문서 기준 주요 스펙입니다.</p>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-value">1M</div>
+        <div class="stat-label">컨텍스트 윈도우 (토큰)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">128k</div>
+        <div class="stat-label">최대 출력 토큰</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">87.6%</div>
+        <div class="stat-label">SWE-bench Verified</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">94.2%</div>
+        <div class="stat-label">GPQA Diamond</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">3.75MP</div>
+        <div class="stat-label">최대 이미지 해상도</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">67%</div>
+        <div class="stat-label">Opus 4 대비 가격 절감</div>
+      </div>
+    </div>
+
+    <!-- 모델 포지셔닝 다이어그램 -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 720 120" style="width:100%;max-width:720px;display:block;margin:0 auto;" aria-label="Claude 4 시리즈 모델 포지셔닝">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#8B5CF6"/>
+          </marker>
+        </defs>
+        <!-- Haiku 4.5 -->
+        <rect x="10" y="35" width="130" height="48" rx="8" fill="#18181C" stroke="#4B5563" stroke-width="1.2"/>
+        <text x="75" y="55" text-anchor="middle" fill="#9CA3AF" font-size="11" font-family="JetBrains Mono, monospace">Haiku 4.5</text>
+        <text x="75" y="72" text-anchor="middle" fill="#6B7280" font-size="10" font-family="JetBrains Mono, monospace">속도·비용</text>
+        <!-- 화살표 -->
+        <line x1="142" y1="59" x2="168" y2="59" stroke="#8B5CF6" stroke-width="1.2" marker-end="url(#arr)"/>
+        <!-- Sonnet 4.6 -->
+        <rect x="170" y="25" width="140" height="60" rx="8" fill="#1F1B2E" stroke="#6D28D9" stroke-width="1.2"/>
+        <text x="240" y="50" text-anchor="middle" fill="#C4B5FD" font-size="11" font-family="JetBrains Mono, monospace">Sonnet 4.6</text>
+        <text x="240" y="67" text-anchor="middle" fill="#8B5CF6" font-size="10" font-family="JetBrains Mono, monospace">균형</text>
+        <!-- 화살표 -->
+        <line x1="312" y1="55" x2="338" y2="55" stroke="#8B5CF6" stroke-width="1.2" marker-end="url(#arr)"/>
+        <!-- Opus 4.7 -->
+        <rect x="340" y="10" width="160" height="80" rx="10" fill="#2D1B69" stroke="#8B5CF6" stroke-width="2"/>
+        <text x="420" y="44" text-anchor="middle" fill="#DDD6FE" font-size="13" font-weight="bold" font-family="JetBrains Mono, monospace">Opus 4.7</text>
+        <text x="420" y="64" text-anchor="middle" fill="#8B5CF6" font-size="10" font-family="JetBrains Mono, monospace">최고 성능</text>
+        <text x="420" y="80" text-anchor="middle" fill="#6D28D9" font-size="9" font-family="JetBrains Mono, monospace">에이전틱·추론</text>
+        <!-- 화살표 -->
+        <line x1="502" y1="50" x2="528" y2="50" stroke="#8B5CF6" stroke-width="1.2" marker-end="url(#arr)"/>
+        <!-- Mythos (Preview) -->
+        <rect x="530" y="20" width="170" height="60" rx="8" fill="#09090B" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
+        <text x="615" y="45" text-anchor="middle" fill="#4B5563" font-size="11" font-family="JetBrains Mono, monospace">Claude Mythos</text>
+        <text x="615" y="63" text-anchor="middle" fill="#374151" font-size="9" font-family="JetBrains Mono, monospace">Research Preview</text>
+      </svg>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:12px;font-family:var(--font-mono);">Claude 4 시리즈 모델 포지셔닝 — 출처: Anthropic 공식 문서</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 주요 특징 -->
+  <section class="section">
+    <div class="section-label">02 — What's New</div>
+    <h2 class="section-title">주요 신기능</h2>
+    <p class="section-desc">Opus 4.6 대비 새롭게 추가·변경된 핵심 기능입니다.</p>
+    <div class="card-grid">
+      <div class="card card-featured">
+        <div class="card-icon">🚀</div>
+        <div class="card-title">xhigh 노력 수준</div>
+        <div class="card-body">
+          기존 <code style="font-family:var(--font-mono);font-size:0.9em;">low / medium / high</code>에 <strong>xhigh</strong>가 추가되었습니다.
+          복잡한 코딩·에이전틱 작업에서 품질을 최우선으로 할 때 사용합니다.
+        </div>
+      </div>
+      <div class="card card-featured">
+        <div class="card-icon">🖼️</div>
+        <div class="card-title">고해상도 비전 (3.75MP)</div>
+        <div class="card-body">
+          이미지 해상도가 1,568px → <strong>2,576px</strong>으로 향상(3.3배).
+          픽셀 1:1 좌표 매핑으로 화학 구조, 기술 다이어그램, 스크린샷 분석 정밀도가 크게 개선됩니다.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💡</div>
+        <div class="card-title">Adaptive Thinking</div>
+        <div class="card-body">
+          Extended thinking의 수동 budget 설정이 제거되고, 모델이 문제 복잡도에 따라 생각 깊이를 자동 조절하는 Adaptive 방식으로 전환됩니다.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🗂️</div>
+        <div class="card-title">Task Budgets (베타)</div>
+        <div class="card-body">
+          에이전틱 루프 전체에 소프트 토큰 예산을 설정할 수 있습니다. 모델이 예산을 인지해 작업 범위를 자율 조정합니다. (최소 20k 토큰, 베타 헤더 필요)
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <div class="card-title">새 토크나이저</div>
+        <div class="card-body">
+          성능 향상을 위한 신형 토크나이저가 도입됩니다. 단, 동일 텍스트 기준 토큰 사용량이 최대 <strong>35% 증가</strong>할 수 있어 마이그레이션 시 비용 테스트가 필요합니다.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">1M</div>
+        <div class="card-title">1M 토큰 컨텍스트</div>
+        <div class="card-body">
+          Opus 4의 200k에서 <strong>1M 토큰</strong>으로 대폭 확장. 추가 요금 없이 표준 가격에 제공됩니다. 멀티-세션 파일시스템 기반 메모리 능력도 향상됩니다.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Breaking Changes -->
+  <section class="section">
+    <div class="section-label">03 — Migration</div>
+    <h2 class="section-title">Breaking Changes</h2>
+    <p class="section-desc">Opus 4 / Opus 4.6에서 마이그레이션 시 반드시 확인해야 할 변경사항입니다.</p>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span>아래 파라미터를 그대로 유지하면 <strong>400 에러</strong>가 발생합니다. 마이그레이션 전 코드 점검이 필수입니다.</span>
+    </div>
+
+    <div style="max-width:720px;">
+      <div class="table-wrap" style="margin-top:24px;">
+        <table>
+          <thead>
+            <tr><th>변경 항목</th><th>이전 (Opus 4 / 4.6)</th><th>Opus 4.7</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:700;">temperature</td>
+              <td><code style="font-family:var(--font-mono);font-size:13px;">temperature: 0.7</code></td>
+              <td><span class="badge badge-secondary">완전 제거</span> — 설정 시 400 에러</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">top_p / top_k</td>
+              <td><code style="font-family:var(--font-mono);font-size:13px;">top_p: 0.9</code></td>
+              <td><span class="badge badge-secondary">완전 제거</span> — 설정 시 400 에러</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Extended thinking budget</td>
+              <td><code style="font-family:var(--font-mono);font-size:13px;">budget_tokens: 10000</code></td>
+              <td><span class="badge badge-warn">Adaptive으로 대체</span> — 수동 budget 제거</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">토큰 사용량</td>
+              <td>기존 토크나이저</td>
+              <td><span class="badge badge-warn">최대 35% 증가</span> — 비용 재산정 필요</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- API 사용법 -->
+  <section class="section">
+    <div class="section-label">04 — API Usage</div>
+    <h2 class="section-title">API 사용법</h2>
+    <p class="section-desc">Anthropic SDK 기준 호출 예시입니다. (출처: 공식 docs.anthropic.com)</p>
+
+    <div style="max-width:720px;">
+      <p style="font-size:15px;color:var(--text);margin-bottom:16px;font-weight:600;">기본 호출</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <button class="code-copy" onclick="copyCode(this)">복사</button>
+        </div>
+        <div class="code-body">import anthropic
+
+client = anthropic.Anthropic()
+
+response = client.messages.create(
+    model="claude-opus-4-7",
+    max_tokens=128000,
+    messages=[{"role": "user", "content": "복잡한 코드 리팩토링 작업"}]
+)
+print(response.content)</div>
+      </div>
+
+      <p style="font-size:15px;color:var(--text);margin:32px 0 16px;font-weight:600;">xhigh + Adaptive Thinking</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <button class="code-copy" onclick="copyCode(this)">복사</button>
+        </div>
+        <div class="code-body">response = client.messages.create(
+    model="claude-opus-4-7",
+    max_tokens=128000,
+    thinking={"type": "adaptive"},
+    output_config={"effort": "xhigh"},  # 신규: xhigh
+    messages=[{"role": "user", "content": "어려운 알고리즘 문제"}]
+)</div>
+      </div>
+
+      <p style="font-size:15px;color:var(--text);margin:32px 0 16px;font-weight:600;">Task Budget (베타)</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <button class="code-copy" onclick="copyCode(this)">복사</button>
+        </div>
+        <div class="code-body">response = client.beta.messages.create(
+    model="claude-opus-4-7",
+    max_tokens=128000,
+    output_config={
+        "effort": "high",
+        "task_budget": {"type": "tokens", "total": 128000},
+    },
+    messages=[{"role": "user", "content": "코드베이스 전체 리뷰 및 리팩토링 계획"}],
+    betas=["task-budgets-2026-03-13"],
+)</div>
+      </div>
+
+      <div class="callout callout-info" style="margin-top:24px;">
+        <span class="callout-icon">✦</span>
+        <span>AWS Bedrock: <code style="font-family:var(--font-mono);font-size:0.9em;">anthropic.claude-opus-4-7</code> / GCP Vertex AI·Microsoft Foundry에서도 지원됩니다.</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 벤치마크 -->
+  <section class="section">
+    <div class="section-label">05 — Benchmarks</div>
+    <h2 class="section-title">벤치마크 비교</h2>
+    <p class="section-desc">Anthropic 공식 시스템 카드 및 발표 기준 수치입니다.</p>
+
+    <!-- 벤치마크 시각화 -->
+    <div class="diagram-wrap" style="margin-bottom:32px;">
+      <svg viewBox="0 0 640 220" style="width:100%;max-width:640px;display:block;margin:0 auto;" aria-label="Opus 4.7 vs 4.6 벤치마크 비교">
+        <!-- SWE-bench Verified -->
+        <text x="20" y="32" fill="#8B8B99" font-size="11" font-family="JetBrains Mono, monospace">SWE-bench Verified</text>
+        <rect x="20" y="40" width="406" height="18" rx="4" fill="#2D1B69" opacity="0.5"/>
+        <rect x="20" y="40" width="406" height="18" rx="4" fill="#8B5CF6"/>
+        <text x="434" y="53" fill="#DDD6FE" font-size="11" font-weight="bold" font-family="JetBrains Mono, monospace">87.6%</text>
+        <rect x="20" y="62" width="374" height="14" rx="4" fill="#18181C" stroke="#4B5563" stroke-width="1"/>
+        <rect x="20" y="62" width="374" height="14" rx="4" fill="#4B5563" opacity="0.6"/>
+        <text x="402" y="73" fill="#6B7280" font-size="10" font-family="JetBrains Mono, monospace">4.6: 80.8%</text>
+
+        <!-- GPQA Diamond -->
+        <text x="20" y="105" fill="#8B8B99" font-size="11" font-family="JetBrains Mono, monospace">GPQA Diamond</text>
+        <rect x="20" y="112" width="435" height="18" rx="4" fill="#2D1B69" opacity="0.5"/>
+        <rect x="20" y="112" width="435" height="18" rx="4" fill="#8B5CF6"/>
+        <text x="463" y="125" fill="#DDD6FE" font-size="11" font-weight="bold" font-family="JetBrains Mono, monospace">94.2%</text>
+        <rect x="20" y="134" width="422" height="14" rx="4" fill="#18181C" stroke="#4B5563" stroke-width="1"/>
+        <rect x="20" y="134" width="422" height="14" rx="4" fill="#4B5563" opacity="0.6"/>
+        <text x="450" y="145" fill="#6B7280" font-size="10" font-family="JetBrains Mono, monospace">4.6: 91.3%</text>
+
+        <!-- CharXiv -->
+        <text x="20" y="178" fill="#8B8B99" font-size="11" font-family="JetBrains Mono, monospace">CharXiv (차트 이해)</text>
+        <rect x="20" y="186" width="380" height="18" rx="4" fill="#2D1B69" opacity="0.5"/>
+        <rect x="20" y="186" width="380" height="18" rx="4" fill="#8B5CF6"/>
+        <text x="408" y="199" fill="#DDD6FE" font-size="11" font-weight="bold" font-family="JetBrains Mono, monospace">82.1%</text>
+        <rect x="20" y="208" width="319" height="14" rx="4" fill="#18181C" stroke="#4B5563" stroke-width="1"/>
+        <rect x="20" y="208" width="319" height="14" rx="4" fill="#4B5563" opacity="0.6"/>
+        <text x="347" y="219" fill="#6B7280" font-size="10" font-family="JetBrains Mono, monospace">4.6: 69.1%</text>
+      </svg>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:16px;font-family:var(--font-mono);">보라: Opus 4.7 / 회색: Opus 4.6 — 출처: Anthropic 시스템 카드 (Vellum AI 인용)</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>벤치마크</th><th>Opus 4.7</th><th>Opus 4.6</th><th>변화</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:700;">SWE-bench Verified</td>
+            <td style="font-weight:700;color:var(--accent);">87.6%</td>
+            <td>80.8%</td>
+            <td><span class="badge badge-success">+6.8%</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">SWE-bench Pro</td>
+            <td style="font-weight:700;color:var(--accent);">64.3%</td>
+            <td>53.4%</td>
+            <td><span class="badge badge-success">+10.9%</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">Terminal-Bench 2.0</td>
+            <td style="font-weight:700;color:var(--accent);">69.4%</td>
+            <td>65.4%</td>
+            <td><span class="badge badge-success">+4.0%</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">OSWorld-Verified</td>
+            <td style="font-weight:700;color:var(--accent);">78.0%</td>
+            <td>72.7%</td>
+            <td><span class="badge badge-success">+5.3%</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">GPQA Diamond</td>
+            <td style="font-weight:700;color:var(--accent);">94.2%</td>
+            <td>91.3%</td>
+            <td><span class="badge badge-success">+2.9%</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">CharXiv (무도구)</td>
+            <td style="font-weight:700;color:var(--accent);">82.1%</td>
+            <td>69.1%</td>
+            <td><span class="badge badge-success">+13.0%</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">BrowseComp</td>
+            <td>79.3%</td>
+            <td style="font-weight:700;color:var(--accent);">83.7%</td>
+            <td><span class="badge badge-secondary">-4.4%</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-top:12px;">출처: Anthropic 시스템 카드 (Vellum AI 분석 인용). BrowseComp은 아직 개선 여지가 있습니다.</p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Opus 4 vs Opus 4.7 비교 -->
+  <section class="section">
+    <div class="section-label">06 — Comparison</div>
+    <h2 class="section-title">Opus 4 → Opus 4.7 마이그레이션 가이드</h2>
+    <p class="section-desc">Opus 4는 2026년 6월 15일 은퇴 예정입니다. 마이그레이션 시 아래 변경사항을 확인하세요.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>항목</th><th>Claude Opus 4 (은퇴 예정)</th><th>Claude Opus 4.7</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:700;">모델 ID</td>
+            <td><code style="font-family:var(--font-mono);font-size:13px;">claude-opus-4-0</code></td>
+            <td><code style="font-family:var(--font-mono);font-size:13px;">claude-opus-4-7</code></td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">출시일</td>
+            <td>2025년 5월 22일</td>
+            <td>2026년 4월 16일</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">입력 가격</td>
+            <td>$15 / 1M 토큰</td>
+            <td style="font-weight:700;color:var(--accent);">$5 / 1M 토큰 (67% 절감)</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">출력 가격</td>
+            <td>$75 / 1M 토큰</td>
+            <td style="font-weight:700;color:var(--accent);">$25 / 1M 토큰 (67% 절감)</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">컨텍스트 윈도우</td>
+            <td>200k 토큰</td>
+            <td style="font-weight:700;color:var(--accent);">1M 토큰</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">최대 출력</td>
+            <td>32k 토큰</td>
+            <td style="font-weight:700;color:var(--accent);">128k 토큰</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">이미지 해상도</td>
+            <td>1,568px / 1.15MP</td>
+            <td style="font-weight:700;color:var(--accent);">2,576px / 3.75MP</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">지식 컷오프</td>
+            <td>2025년 1월</td>
+            <td style="font-weight:700;color:var(--accent);">2026년 1월</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">은퇴 예정</td>
+            <td><span class="badge badge-secondary">2026년 6월 15일</span></td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 활용 사례 -->
+  <section class="section">
+    <div class="section-label">07 — Use Cases</div>
+    <h2 class="section-title">활용 사례</h2>
+    <p class="section-desc">Opus 4.7이 특히 강점을 발휘하는 작업 유형입니다. (출처: Anthropic 공식 발표)</p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">💻</div>
+        <div class="card-title">복잡한 소프트웨어 엔지니어링</div>
+        <div class="card-body">긴밀한 감독 없이 장시간 코딩 작업 위임 가능. SWE-bench Pro 64.3%로 복잡한 실제 코드베이스 리팩토링에 최적화됩니다.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <div class="card-title">에이전틱 워크플로우</div>
+        <div class="card-body">멀티턴·멀티일 프로젝트 관리, 자기 검증 후 결과 보고. Task Budgets로 예산 내 자율 작업 범위 조정이 가능합니다.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-title">고해상도 차트·이미지 분석</div>
+        <div class="card-body">3.75MP 이미지 지원으로 화학 구조, 기술 다이어그램, 스크린샷을 픽셀 1:1 정확도로 이해합니다. CharXiv +13% 향상.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📄</div>
+        <div class="card-title">문서 전문 처리</div>
+        <div class="card-body">.docx 리드라인, .pptx 편집, 슬라이드 레이아웃 자동 검증. 1M 컨텍스트로 대용량 문서 전체를 한 번에 처리합니다.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧬</div>
+        <div class="card-title">과학·기술 추론</div>
+        <div class="card-body">GPQA Diamond 94.2%로 박사급 과학 문제 해결 능력. 의학, 물리, 생물 등 전문 영역 추론에 활용됩니다.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🗄️</div>
+        <div class="card-title">장문 컨텍스트 분석</div>
+        <div class="card-body">1M 토큰(약 75만 단어)을 단일 컨텍스트로 처리. 법률 문서, 코드베이스 전체, 학술 논문 묶음 분석에 적합합니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <span class="footer-copy">2026-04-16 · Anthropic 공식 발표 기반 정리</span>
+      <div class="footer-links">
+        <a href="https://www.anthropic.com/news/claude-opus-4-7" target="_blank" rel="noopener">공식 블로그 →</a>
+        <a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">모델 문서 →</a>
+        <a href="/">홈으로</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+    }
+    function copyCode(btn) {
+      const code = btn.closest('.code-block').querySelector('.code-body').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = '복사됨';
+        setTimeout(() => { btn.textContent = '복사'; }, 1500);
+      });
+    }
+  </script>
+  <script data-page-hash="KKV3J3U" src="/gemini_html/page-footer.js"></script>
+</body>
+</html>
