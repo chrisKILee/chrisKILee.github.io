@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Design 완전 정복</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* Top Bar */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+    .topbar-meta { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    /* Hero */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 28px 60px;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-bdr);
+      color: var(--accent);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      max-width: 780px;
+      margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
+    .hero-desc { font-size: 17px; color: var(--ink-3); max-width: 640px; line-height: 1.75; margin-bottom: 36px; }
+    .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 6px 12px;
+      font-size: 13px; font-weight: 500; color: var(--ink-2);
+    }
+
+    /* Section */
+    .section { padding: 56px 28px; border-bottom: 1px solid var(--border); }
+    .section-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); max-width: 80px; }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700; letter-spacing: -0.02em;
+      color: var(--ink); margin-bottom: 10px;
+    }
+    .section-desc { font-size: 15px; color: var(--ink-3); max-width: 640px; margin-bottom: 36px; line-height: 1.7; }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card__header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+    .card__icon { font-size: 22px; margin-bottom: 8px; }
+    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__body { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__footer { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+    .card__tag { font-size: 11px; font-weight: 600; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* Stat bar */
+    .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 36px; }
+    .stat-item { padding: 24px 20px; background: var(--surface); border-right: 1px solid var(--border); }
+    .stat-item:last-child { border-right: none; }
+    .stat-val { font-family: var(--font-display); font-size: 2rem; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 6px; }
+    .stat-label { font-size: 13px; color: var(--ink-3); }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--bg-2); border: 1px solid var(--border); padding: 11px 16px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:hover td { background: var(--bg); }
+
+    /* Callouts */
+    .callout { border-left: 3px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; font-size: 14px; line-height: 1.65; }
+    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+    /* Code block */
+    .code-wrap { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 0; }
+    .code-bar { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--bg-2); }
+    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body { padding: 18px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; color: var(--ink-2); }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--surface); margin-top: 2px; }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .step-badge { display: inline-block; font-size: 11px; font-weight: 700; font-family: var(--font-mono); color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-bdr); border-radius: 4px; padding: 2px 7px; margin-bottom: 6px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* Tag / Badge */
+    .tag { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+    .tag.blue { background: #eff6ff; color: #1d4ed8; }
+
+    /* SVG diagram wrapper */
+    .diagram-wrap { margin: 32px 0; display: flex; justify-content: center; }
+
+    /* 2-col layout */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* Input grid */
+    .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 24px; }
+    .input-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .input-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .input-name { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+    .input-desc { font-size: 13px; color: var(--ink-3); }
+
+    /* Export grid */
+    .export-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 24px; }
+    .export-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .export-fmt { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .export-use { font-size: 13px; color: var(--ink-3); }
+
+    /* Plan table highlight */
+    .plan-best td:first-child { font-weight: 700; color: var(--accent); }
+
+    /* Case study cards */
+    .case-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .case-company { font-size: 13px; font-weight: 700; font-family: var(--font-mono); color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; }
+    .case-result { font-size: 15px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+    .case-detail { font-size: 14px; color: var(--ink-3); line-height: 1.6; }
+
+    /* Flow diagram */
+    .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 24px 0; }
+    .flow-node {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-2);
+      text-align: center;
+      min-width: 100px;
+    }
+    .flow-node.accent { background: var(--accent-bg); border-color: var(--accent-bdr); color: var(--accent); }
+    .flow-arrow { padding: 0 8px; color: var(--ink-4); font-size: 18px; }
+
+    footer {
+      padding: 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--ink-4);
+    }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+      .stat-item:last-child { border-bottom: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">Claude Design 완전 정복</span>
+  <span class="topbar-meta">2026-04-17 출시</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">🆕 Anthropic Labs · Research Preview</div>
+    <h1>Claude Design<br><em>AI 디자인 도구의 새 시대</em></h1>
+    <p class="hero-desc">
+      텍스트·이미지·문서 하나면 슬라이드·프로토타입·랜딩페이지까지 한 번에.
+      2026년 4월 17일 Anthropic이 공개한 Claude Opus 4.7 기반 비주얼 디자인 도구입니다.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🤖 Claude Opus 4.7 기반</span>
+      <span class="chip">🎨 디자인 시스템 자동화</span>
+      <span class="chip">📤 PPTX · PDF · Canva 내보내기</span>
+      <span class="chip">🔗 Claude Code 핸드오프</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 01: 개요 통계 + 아키텍처 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 개요</div>
+    <h2 class="section-title">Claude Design이란?</h2>
+    <p class="section-desc">
+      Anthropic Labs(실험적 연구 부서)가 만든 독립적인 비주얼 디자인 전용 제품.
+      채팅·Claude Code와 별개의 주간 허용량으로 운영됩니다.
+    </p>
+
+    <div class="stat-row">
+      <div class="stat-item">
+        <div class="stat-val">4.7</div>
+        <div class="stat-label">기반 모델 Claude Opus 4.7</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">Apr 17</div>
+        <div class="stat-label">출시일 2026년 4월 17일</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">7+</div>
+        <div class="stat-label">내보내기 포맷 (PDF·PPTX·HTML 등)</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">Pro↑</div>
+        <div class="stat-label">이용 가능 플랜 (무료 제외)</div>
+      </div>
+    </div>
+
+    <!-- 플로우 다이어그램 -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 700 80" style="width:100%;max-width:700px;" aria-label="Claude Design 워크플로우">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#A8A8A3"/>
+          </marker>
+        </defs>
+        <!-- Input -->
+        <rect x="10" y="20" width="110" height="40" rx="8" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="65" y="38" text-anchor="middle" fill="#3D3D3A" font-size="11" font-family="Inter, sans-serif" font-weight="600">텍스트 / 이미지</text>
+        <text x="65" y="52" text-anchor="middle" fill="#6B6B66" font-size="10" font-family="Inter, sans-serif">파일 / 웹 캡처</text>
+        <line x1="120" y1="40" x2="155" y2="40" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- Claude Design -->
+        <rect x="158" y="14" width="130" height="52" rx="8" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="223" y="36" text-anchor="middle" fill="#C4522A" font-size="12" font-family="Inter, sans-serif" font-weight="700">Claude Design</text>
+        <text x="223" y="52" text-anchor="middle" fill="#C4522A" font-size="10" font-family="Inter, sans-serif">claude.ai/design</text>
+        <line x1="288" y1="40" x2="323" y2="40" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- Output -->
+        <rect x="326" y="20" width="110" height="40" rx="8" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="381" y="38" text-anchor="middle" fill="#3D3D3A" font-size="11" font-family="Inter, sans-serif" font-weight="600">슬라이드 / 프로토타입</text>
+        <text x="381" y="52" text-anchor="middle" fill="#6B6B66" font-size="10" font-family="Inter, sans-serif">랜딩 / 카드뉴스</text>
+        <line x1="436" y1="40" x2="471" y2="40" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- Export -->
+        <rect x="474" y="20" width="110" height="40" rx="8" fill="#F0FDF4" stroke="#bbf7d0" stroke-width="1.5"/>
+        <text x="529" y="38" text-anchor="middle" fill="#1A7F5A" font-size="11" font-family="Inter, sans-serif" font-weight="600">PDF · PPTX · HTML</text>
+        <text x="529" y="52" text-anchor="middle" fill="#1A7F5A" font-size="10" font-family="Inter, sans-serif">Canva · Claude Code</text>
+      </svg>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">Anthropic Labs란?</div>
+      Anthropic 내 실험적 연구·제품 부서. Claude Design은 "Research Preview" 상태로 출시됐으며 정식 출시 전 단계입니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 02: 핵심 기능 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 핵심 기능</div>
+    <h2 class="section-title">만들 수 있는 결과물</h2>
+    <p class="section-desc">공식 발표에서 명시된 5가지 출력 유형.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🖥️</div>
+          <div class="card__title">인터랙티브 프로토타입</div>
+        </div>
+        <div class="card__body">
+          <p>코드 리뷰·PR 없이 바로 공유·테스트할 수 있는 프로토타입. 사용자 테스트까지 한 번에 가능합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">INTERACTIVE</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">📊</div>
+          <div class="card__title">슬라이드 · 피치덱</div>
+        </div>
+        <div class="card__body">
+          <p>개요만 주면 온브랜드 덱이 완성. PPTX 또는 Canva로 바로 내보내기 가능합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">SLIDES</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">📐</div>
+          <div class="card__title">와이어프레임 · 목업</div>
+        </div>
+        <div class="card__body">
+          <p>제품 UI 와이어프레임과 고충실도 목업을 대화형으로 생성. 반복 수정도 자유롭습니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">WIREFRAME</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">📣</div>
+          <div class="card__title">마케팅 자산</div>
+        </div>
+        <div class="card__body">
+          <p>원페이저, 랜딩페이지, 카드뉴스, 이메일 템플릿 등 마케팅에 바로 쓸 수 있는 자산을 생성합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">MARKETING</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">⚡</div>
+          <div class="card__title">프런티어 디자인</div>
+        </div>
+        <div class="card__body">
+          <p>음성·영상·셰이더·3D·내장 AI가 포함된 코드 구동 프로토타입. 기존 디자인 도구의 한계를 넘어섭니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">CODE-DRIVEN</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🎨</div>
+          <div class="card__title">디자인 시스템 자동화</div>
+        </div>
+        <div class="card__body">
+          <p>코드베이스·디자인 파일을 읽어 팀의 색상·타이포·컴포넌트를 자동으로 반영. 이후 모든 프로젝트에 일관 적용됩니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">BRAND SYSTEM</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 03: Artifacts vs Claude Design -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 비교</div>
+    <h2 class="section-title">Artifacts vs Claude Design</h2>
+    <p class="section-desc">자주 혼동되는 두 기능의 차이. 간단한 결과물은 Artifacts, 반복 사용하는 디자인 작업은 Claude Design.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th>Claude Artifacts</th>
+            <th>Claude Design</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>정의</strong></td>
+            <td>일반 채팅 내 코드·문서·HTML 사이드패널</td>
+            <td>독립적인 비주얼 디자인 전용 제품</td>
+          </tr>
+          <tr>
+            <td><strong>용도</strong></td>
+            <td>간단한 코드 스니펫, SVG, 문서 생성</td>
+            <td>디자인 시스템 기반 인터랙티브 시각물 제작</td>
+          </tr>
+          <tr>
+            <td><strong>사용량 추적</strong></td>
+            <td>일반 채팅 한도에 포함</td>
+            <td><span class="tag orange">별도 주간 허용량</span> (독립 집계)</td>
+          </tr>
+          <tr>
+            <td><strong>이용 플랜</strong></td>
+            <td>무료 포함 전 플랜</td>
+            <td><span class="tag blue">Pro · Max · Team · Enterprise</span></td>
+          </tr>
+          <tr>
+            <td><strong>내보내기</strong></td>
+            <td>없음 (복사/다운로드)</td>
+            <td>PDF · PPTX · HTML · Canva · ZIP · URL</td>
+          </tr>
+          <tr>
+            <td><strong>디자인 시스템</strong></td>
+            <td>❌ 없음</td>
+            <td><span class="tag green">✓ 브랜드 일관 적용</span></td>
+          </tr>
+          <tr>
+            <td><strong>Claude Code 연동</strong></td>
+            <td>❌ 없음</td>
+            <td><span class="tag green">✓ 핸드오프 번들</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout tip" style="margin-top:24px;">
+      <div class="callout-title">한 줄 요약</div>
+      Artifacts = "편리한 도구" / Claude Design = "전용 스튜디오"
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 04: 입력 방식 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 입력</div>
+    <h2 class="section-title">어떻게 시작하나요?</h2>
+    <p class="section-desc">5가지 입력 방식 중 어떤 것이든 첫 초안이 바로 나옵니다.</p>
+
+    <div class="input-grid">
+      <div class="input-item">
+        <div class="input-icon">💬</div>
+        <div>
+          <div class="input-name">텍스트 프롬프트</div>
+          <div class="input-desc">자연어로 원하는 디자인 설명. 포맷·비율·스타일·개수를 명확하게 입력할수록 품질이 높아집니다.</div>
+        </div>
+      </div>
+      <div class="input-item">
+        <div class="input-icon">🖼️</div>
+        <div>
+          <div class="input-name">이미지 업로드</div>
+          <div class="input-desc">PNG, JPG 등 시각 레퍼런스. 첨부가 있을 때와 없을 때 품질 차이가 큽니다.</div>
+        </div>
+      </div>
+      <div class="input-item">
+        <div class="input-icon">📄</div>
+        <div>
+          <div class="input-name">문서 업로드</div>
+          <div class="input-desc">DOCX, PPTX, XLSX 파일 드래그앤드롭. 브랜드 가이드도 업로드 가능합니다.</div>
+        </div>
+      </div>
+      <div class="input-item">
+        <div class="input-icon">💻</div>
+        <div>
+          <div class="input-name">코드베이스 연동</div>
+          <div class="input-desc">팀 코드베이스를 읽어 색상·타이포·컴포넌트를 자동 추출. 프로젝트에 저장해 매번 재사용합니다.</div>
+        </div>
+      </div>
+      <div class="input-item">
+        <div class="input-icon">🌐</div>
+        <div>
+          <div class="input-name">웹 캡처 (Design Capture)</div>
+          <div class="input-desc">라이브 웹사이트에서 특정 요소를 직접 선택해 Claude Design으로 가져옵니다. 북마크릿 방식.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 05: Design Capture 상세 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 Design Capture</div>
+    <h2 class="section-title">웹 요소를 그대로 가져오기</h2>
+    <p class="section-desc">
+      Plannotator, Agentation 같은 플러그인에서 보이던 방식. 웹 요소를 직접 선택해 Claude Design에 인풋으로 줄 수 있습니다.
+    </p>
+
+    <div class="callout accent">
+      <div class="callout-title">Design Capture 사용법</div>
+      Claude Design → [Import] → [Grab web element] 선택 → 나오는 버튼을 브라우저 북마크바에 저장 → 원하는 사이트에서 북마크 클릭 → 원하는 요소 선택
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-badge">IMPORT</div>
+          <div class="step-title">claude.ai/design → Import → Grab web element</div>
+          <div class="step-body">Claude Design 워크스페이스에서 Import 버튼을 클릭하고 "Grab web element"를 선택합니다. 북마크릿 버튼이 나타납니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-badge">SAVE</div>
+          <div class="step-title">북마크바에 드래그하여 저장</div>
+          <div class="step-body">나타난 버튼을 브라우저 북마크바로 드래그해서 저장합니다. 한 번만 하면 됩니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-badge">CAPTURE</div>
+          <div class="step-title">원하는 웹사이트에서 북마크 클릭 → 요소 선택</div>
+          <div class="step-body">원하는 웹사이트로 이동해 북마크를 클릭하면 선택 모드가 활성화됩니다. 원하는 요소를 클릭하면 Claude Design으로 전송됩니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip" style="margin-top: 24px;">
+      <div class="callout-title">왜 유용한가?</div>
+      전체 코드베이스를 읽거나 이미지로 캡처해서 주지 않아도, 특정 요소만 인풋으로 줄 수 있습니다. 마케팅 팀이 라이브 페이지를 재현한 뒤 A/B 테스트를 하고 우승 버전을 Claude Code에 핸드오프하는 워크플로우가 공식 사례로 소개됩니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 06: 5단계 실전 가이드 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">06 실전 가이드</div>
+    <h2 class="section-title">Claude Design 5단계 워크플로우</h2>
+    <p class="section-desc">메뉴 진입부터 프롬프트, 편집, 내보내기까지 — 오늘 한 번만 따라해보면 완전히 감잡을 수 있습니다.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-badge">STEP 01 · ENTER</div>
+          <div class="step-title">claude.ai 접속 후 디자인 탭 클릭</div>
+          <div class="step-body">브라우저에서 claude.ai 로그인 → 좌측 사이드바의 "디자인" 탭을 누르면 디자인 전용 워크스페이스로 진입합니다. 카드뉴스 / 덱 / 프로토타입 / 애니메이션 중 원하는 포맷을 선택합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-badge">STEP 02 · ATTACH</div>
+          <div class="step-title">레퍼런스 먼저 첨부하기</div>
+          <div class="step-body">프롬프트 입력창의 + 버튼 → 파일 업로드로 레퍼런스 이미지·로고·브랜드 가이드를 올리세요. 첨부가 있을 때와 없을 때 품질 차이가 큽니다. 이미지·PDF·코드 모두 드래그앤드롭 가능. 브랜드 자료는 프로젝트에 저장하면 매번 채팅마다 재사용됩니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-badge">STEP 03 · PROMPT</div>
+          <div class="step-title">프롬프트는 구체적으로</div>
+          <div class="step-body">포맷·비율·스타일·개수를 명확히 적으세요. 애매한 요청은 애매한 결과물을 낳습니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">프롬프트 템플릿</span>
+            </div>
+            <pre class="code-body">인스타그램 카드뉴스를 만들어줘. [주제]에 대한 내용.
+비율은 4:5 (1080×1350), 총 7장으로.
+감성은 첨부한 레퍼런스처럼 그라디언트 + 모던하게.
+가독성 중요하고, 색은 핑크·퍼플·옐로 중심으로.</pre>
+          </div>
+          <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <span class="chip">① 포맷 지정 — 카드뉴스 / 덱 / 프로토타입</span>
+            <span class="chip">② 비율·장수 지정 — 4:5, 16:9, 9:16</span>
+            <span class="chip">③ 톤·컬러 지정 — 레퍼런스 + 키워드</span>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-badge">STEP 04 · EDIT</div>
+          <div class="step-title">요소 클릭해서 바로 수정</div>
+          <div class="step-body">
+            미리보기에서 바꾸고 싶은 요소를 클릭하고 코멘트를 남기면 정확히 그 부분만 고쳐집니다.
+            상단 툴바의 Tweaks 토글로 색·폰트도 실시간 조정 가능합니다.
+          </div>
+          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
+              <span style="font-size: 18px;">💬</span>
+              <div><div style="font-size: 14px; font-weight: 700; margin-bottom: 2px;">Comment</div><div style="font-size: 13px; color: var(--ink-3);">특정 요소에 핀을 꽂고 메모 → Claude가 해당 요소만 수정</div></div>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
+              <span style="font-size: 18px;">🎛️</span>
+              <div><div style="font-size: 14px; font-weight: 700; margin-bottom: 2px;">Tweaks</div><div style="font-size: 13px; color: var(--ink-3);">"어떤 컨트롤이 필요하세요?" → AI가 디자인별 맞춤 슬라이더·색상 피커·토글 자동 생성. 전체 재생성 없이 실시간 조정</div></div>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
+              <span style="font-size: 18px;">✏️</span>
+              <div><div style="font-size: 14px; font-weight: 700; margin-bottom: 2px;">Edit / Draw</div><div style="font-size: 13px; color: var(--ink-3);">텍스트 직접 클릭 수정 + 요소 드로잉 도구</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div>
+          <div class="step-badge">STEP 05 · EXPORT</div>
+          <div class="step-title">내보내기로 원하는 포맷 저장</div>
+          <div class="step-body">작업창 우측 상단 … 메뉴에서 내보내기. PDF·PPTX·단일 HTML·Canva까지 한 번의 클릭으로 가져갈 수 있습니다.</div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+            <span class="chip">📄 PDF — 인쇄·공유용</span>
+            <span class="chip">📊 PPTX — 발표용, 텍스트 편집 가능</span>
+            <span class="chip">🎨 Canva — 웹 공유·추가 편집</span>
+            <span class="chip">💻 단일 HTML — 웹 배포</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 07: 내보내기 포맷 전체 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">07 내보내기</div>
+    <h2 class="section-title">지원하는 내보내기 포맷</h2>
+    <p class="section-desc">공식 발표에서 명시된 포맷 목록.</p>
+
+    <div class="export-grid">
+      <div class="export-item">
+        <div class="export-fmt">PDF</div>
+        <div class="export-use">인쇄·공유용 정적 문서</div>
+      </div>
+      <div class="export-item">
+        <div class="export-fmt">PPTX</div>
+        <div class="export-use">PowerPoint — 텍스트 편집 가능</div>
+      </div>
+      <div class="export-item">
+        <div class="export-fmt">HTML</div>
+        <div class="export-use">독립형 단일 파일 웹 배포</div>
+      </div>
+      <div class="export-item">
+        <div class="export-fmt">ZIP</div>
+        <div class="export-use">디자인 번들 전체 패키징</div>
+      </div>
+      <div class="export-item">
+        <div class="export-fmt">URL</div>
+        <div class="export-use">조직 내 링크 공유</div>
+      </div>
+      <div class="export-item">
+        <div class="export-fmt">Canva</div>
+        <div class="export-use">전송 후 완전 편집·협업</div>
+      </div>
+      <div class="export-item">
+        <div class="export-fmt">Claude Code</div>
+        <div class="export-use">핸드오프 번들 → 코드 구현</div>
+      </div>
+    </div>
+
+    <div class="callout info" style="margin-top: 24px;">
+      <div class="callout-title">Claude Code 핸드오프</div>
+      디자인 완료 후 한 번의 명령으로 Claude Code에 전달 가능한 핸드오프 번들로 패키징. 탐색 → 프로토타입 → 프로덕션 코드 전 과정이 Anthropic 에코시스템 내에서 완결됩니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 08: 플랜 & 가격 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">08 플랜 & 가격</div>
+    <h2 class="section-title">어느 플랜에서 쓸 수 있나?</h2>
+    <p class="section-desc">무료 플랜은 이용 불가. Pro 이상 유료 플랜 전용. 채팅·Claude Code와 별개인 주간 허용량으로 운영됩니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>플랜</th>
+            <th>대상</th>
+            <th>이용 가능</th>
+            <th>특이사항</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>무료</strong></td>
+            <td>일반 사용자</td>
+            <td><span class="tag gray">❌ 불가</span></td>
+            <td>—</td>
+          </tr>
+          <tr class="plan-best">
+            <td><strong>Pro ($20/월)</strong></td>
+            <td>일회성 탐색 목적</td>
+            <td><span class="tag green">✓ 가능</span></td>
+            <td>주간 기본 허용량 포함</td>
+          </tr>
+          <tr>
+            <td><strong>Max 5x ($100/월)</strong></td>
+            <td>PM, 엔지니어 반정기 사용</td>
+            <td><span class="tag green">✓ 가능</span></td>
+            <td>Pro 대비 높은 허용량</td>
+          </tr>
+          <tr>
+            <td><strong>Max 20x ($200/월)</strong></td>
+            <td>디자이너, 크리에이티브</td>
+            <td><span class="tag green">✓ 가능</span></td>
+            <td>최고 허용량</td>
+          </tr>
+          <tr>
+            <td><strong>Team</strong></td>
+            <td>팀 단위</td>
+            <td><span class="tag green">✓ 가능</span></td>
+            <td>Standard / Premium 2단계, 사용자 단위 배분</td>
+          </tr>
+          <tr>
+            <td><strong>Enterprise</strong></td>
+            <td>기업</td>
+            <td><span class="tag green">✓ 가능</span></td>
+            <td>좌석 기반 또는 사용량 기반, 감사 로그 미지원(현재)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn" style="margin-top: 24px;">
+      <div class="callout-title">주간 허용량 주의</div>
+      Claude Design 사용량은 채팅·Claude Code 한도와 완전히 별개로 집계됩니다. 초과 시 추가 구매(Extra usage) 가능합니다. PCWorld 리뷰에 따르면 Pro 플랜에서 30분 만에 주간 허용량이 소진된 사례도 있습니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 09: 활용 사례 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">09 활용 사례</div>
+    <h2 class="section-title">실제로 어떻게 쓰이나?</h2>
+    <p class="section-desc">공식 발표 및 주요 미디어에서 소개된 사례만 수록합니다.</p>
+
+    <div class="cards">
+      <div class="case-card">
+        <div class="case-company">Brilliant (에듀테크)</div>
+        <div class="case-result">복잡한 페이지 재현 20회+ 프롬프트 → 단 2회로 압축</div>
+        <div class="case-detail">경쟁 툴에서 20회 이상의 프롬프트가 필요하던 작업을 Claude Design에서 2회 프롬프트로 완성. 이후 인터랙티브 프로토타입으로 전환해 사용자 테스트를 진행했습니다.</div>
+      </div>
+      <div class="case-card">
+        <div class="case-company">Datadog</div>
+        <div class="case-result">브리프 → 목업 → 리뷰 1주 사이클 → 대화 한 번으로</div>
+        <div class="case-detail">브리프에서 목업 생성, 리뷰 라운드로 이어지던 1주 사이클을 Claude Design 대화 한 번으로 압축했습니다.</div>
+      </div>
+      <div class="case-card">
+        <div class="case-company">마케팅팀</div>
+        <div class="case-result">라이브 페이지 캡처 → A/B 테스트 → Claude Code 핸드오프</div>
+        <div class="case-detail">Design Capture로 라이브 페이지를 가져와 Tweaks 패널에서 카피·레이아웃 A/B 테스트를 진행하고 우승 버전을 Claude Code에 핸드오프하는 워크플로우가 공식 사례로 소개됩니다.</div>
+      </div>
+      <div class="case-card">
+        <div class="case-company">연구자 / 학술</div>
+        <div class="case-result">논문 PDF → 학회발표용 슬라이드 자동 전환</div>
+        <div class="case-detail">GitHub 리포를 임포트해 템플릿을 만들어두고, 논문 PDF를 주면 질문 몇 개에 답하는 것만으로 발표 슬라이드가 완성됩니다. 기존 GenSpark·NotebookLM 슬라이드 기능을 대체합니다.</div>
+      </div>
+      <div class="case-card">
+        <div class="case-company">세일즈 / 창업자</div>
+        <div class="case-result">개요 → 온브랜드 피치덱 수 분 내 완성</div>
+        <div class="case-detail">거친 개요에서 온브랜드 피치덱을 수 분 내 완성 후 PPTX 또는 Canva로 바로 내보내기 가능합니다.</div>
+      </div>
+      <div class="case-card">
+        <div class="case-company">비개발자 실무자</div>
+        <div class="case-result">단일 프롬프트로 카드뉴스 제작 → 실시간 빌더화</div>
+        <div class="case-detail">단일 프롬프트로 카드뉴스를 만들고, "프롬프트 빌더 만들어줘"라고 하면 재사용 가능한 프롬프트 생성기도 뽑아줍니다. 색감·글자크기·비율 실시간 수정 가능합니다.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 10: 경쟁 구도 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">10 경쟁 구도</div>
+    <h2 class="section-title">AI 디자인 도구 지형 변화</h2>
+    <p class="section-desc">Claude Design 출시가 업계에 미친 영향.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>도구</th>
+            <th>강점</th>
+            <th>Claude Design과의 관계</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Figma</strong></td>
+            <td>전문 디자이너 협업, 컴포넌트 시스템</td>
+            <td>Claude Design 출시 당일 Figma 주가 약 7% 하락. Anthropic CPO가 Figma 이사회 사임(4/14)</td>
+          </tr>
+          <tr>
+            <td><strong>Canva</strong></td>
+            <td>비개발자 친화, 템플릿 다양성</td>
+            <td>Claude Design의 공식 파트너십 — "Send to Canva" 내보내기 지원</td>
+          </tr>
+          <tr>
+            <td><strong>Google NotebookLM 슬라이드</strong></td>
+            <td>PDF·문서 → 슬라이드 변환</td>
+            <td>논문 → 학회발표 슬라이드 변환에서 직접 경쟁. 커뮤니티에선 "퇴물화"라는 평가도</td>
+          </tr>
+          <tr>
+            <td><strong>Lovable / v0</strong></td>
+            <td>자연어 → UI 코드 생성</td>
+            <td>프런티어 디자인(코드 구동 프로토타입) 영역에서 겹침</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>Claude Design 완전 정복 — Anthropic Labs Research Preview</span>
+  <span>출처: <a href="https://www.anthropic.com/news/claude-design-anthropic-labs" target="_blank" rel="noopener">Anthropic 공식 발표</a> · <a href="https://support.claude.com/en/articles/14667344-claude-design-subscription-usage-and-pricing" target="_blank" rel="noopener">Claude 헬프센터</a></span>
+</footer>
+
+  <script data-page-hash="XVVKZ7L" src="/gemini_html/page-footer.js"></script>
+</body>
+</html>
