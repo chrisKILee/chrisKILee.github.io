@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magika: AI 파일 감지 도구</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* Top Bar */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+    .topbar-meta { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    /* Hero */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 28px 60px;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-bg); border: 1px solid var(--accent-bdr);
+      color: var(--accent); border-radius: 99px; padding: 5px 14px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900; line-height: 1.08;
+      letter-spacing: -0.025em; color: var(--ink);
+      max-width: 740px; margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
+    .hero-desc { font-size: 17px; color: var(--ink-3); max-width: 620px; line-height: 1.75; margin-bottom: 36px; }
+    .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 6px 12px;
+      font-size: 13px; font-weight: 500; color: var(--ink-2);
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: flex; gap: 0; flex-wrap: wrap;
+      border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; background: var(--surface); margin-top: 36px;
+    }
+    .stat {
+      flex: 1; min-width: 140px;
+      padding: 20px 24px;
+      border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-family: var(--font-display); font-size: 2rem; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 12px; color: var(--ink-4); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+
+    /* Section */
+    .section { padding: 56px 28px; border-bottom: 1px solid var(--border); }
+    .section-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); max-width: 80px; }
+    .section-title { font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 10px; }
+    .section-desc { font-size: 15px; color: var(--ink-3); max-width: 620px; margin-bottom: 36px; line-height: 1.7; }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card__header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+    .card__icon { font-size: 22px; margin-bottom: 8px; }
+    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__body { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__footer { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+    .card__tag { font-size: 11px; font-weight: 600; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--bg-2); border: 1px solid var(--border); padding: 11px 16px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:hover td { background: var(--bg); }
+
+    /* Callouts */
+    .callout { border-left: 3px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; font-size: 14px; line-height: 1.65; }
+    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+    /* Code block */
+    .code-wrap { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 0; }
+    .code-bar { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--bg-2); }
+    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body { padding: 18px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; color: var(--ink-2); }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--surface); margin-top: 2px; }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* Tags */
+    .tag { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+
+    /* SVG diagram container */
+    .diagram-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 32px 24px; margin-top: 24px; overflow-x: auto; text-align: center; }
+
+    /* Use case list */
+    .usecase-list { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+    .usecase-item { display: flex; align-items: flex-start; gap: 16px; padding: 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+    .usecase-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+    .usecase-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .usecase-desc { font-size: 13px; color: var(--ink-3); line-height: 1.6; }
+
+    /* Type grid */
+    .type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 24px; }
+    .type-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+    .type-category { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+    .type-examples { font-size: 13px; color: var(--ink-3); line-height: 1.6; font-family: var(--font-mono); }
+    .type-count { font-size: 12px; font-weight: 600; color: var(--ink-4); margin-top: 6px; }
+
+    /* Limit list */
+    .limit-list { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+    .limit-item { display: flex; gap: 12px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; align-items: flex-start; }
+    .limit-badge { flex-shrink: 0; font-size: 12px; font-weight: 700; background: var(--warn-bg); color: var(--warn); padding: 2px 8px; border-radius: 4px; margin-top: 1px; }
+    .limit-text { font-size: 14px; color: var(--ink-2); line-height: 1.65; }
+
+    /* Footer */
+    footer { padding: 28px; border-top: 1px solid var(--border); background: var(--surface); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--ink-4); }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+      .stat { min-width: 100px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">Magika</span>
+  <span class="topbar-meta">2026-04-19</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">🛡️ 보안 도구 · Google Open Source</div>
+    <h1>파일 속을 들여다보는<br><em>AI 파일 감지</em></h1>
+    <p class="hero-desc">
+      Magika(마지카)는 Google이 만든 AI 기반 파일 타입 감지 도구입니다.
+      파일 이름이나 확장자가 아닌 <strong>파일 내용을 직접 분석</strong>해서 216개 파일 타입을
+      99% 정확도로, 5ms 안에 판별합니다.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🤖 딥러닝 모델</span>
+      <span class="chip">🔓 Apache 2.0 오픈소스</span>
+      <span class="chip">🐍 Python / JavaScript / CLI</span>
+      <span class="chip">📦 모델 크기 ~1MB</span>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num">99%</div>
+        <div class="stat-label">전체 정확도 (F1)</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">216</div>
+        <div class="stat-label">지원 파일 타입</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">5ms</div>
+        <div class="stat-label">파일당 추론 속도</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">+20%</div>
+        <div class="stat-label">기존 도구 대비 향상</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">1억+</div>
+        <div class="stat-label">학습 데이터 파일 수</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 01: 개요 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 개요</div>
+    <h2 class="section-title">왜 Magika가 필요한가?</h2>
+    <p class="section-desc">
+      기존 파일 감지 방식은 수작업 규칙(매직 바이트)에 의존해 텍스트·코드 파일 구분에 취약했습니다.
+      Magika는 딥러닝으로 이 문제를 해결합니다.
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔍</div>
+          <div class="card__title">파일 내용 기반 분석</div>
+        </div>
+        <div class="card__body">
+          <p>이름이나 확장자가 아닌 <strong>파일 바이트 내용</strong>을 직접 읽어 판별합니다. "귀여운사진.jpg"로 위장한 악성 파일도 잡아냅니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">content-based</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">⚡</div>
+          <div class="card__title">밀리초 단위 추론</div>
+        </div>
+        <div class="card__body">
+          <p>모델 로드 후 파일당 <strong>약 5ms</strong>. 파일 크기와 무관하게 앞·중간·끝 1,536바이트만 분석하기 때문입니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">~5ms / file</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🌐</div>
+          <div class="card__title">Google 실전 투입</div>
+        </div>
+        <div class="card__body">
+          <p>Gmail·Google Drive·Safe Browsing에서 <strong>주당 수천억 개</strong> 파일을 처리하는 데 이미 사용 중입니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">production-grade</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout accent" style="margin-top:32px;">
+      <div class="callout-title">보안 활용 포인트</div>
+      바이러스나 악성코드는 종종 확장자를 .jpg, .pdf 등으로 위장합니다.
+      Magika는 확장자 대신 파일 내부를 분석하므로 이런 위장 공격을 탐지할 수 있어
+      보안 스캐너 라우팅(어떤 스캐너로 보낼지 결정)에 특히 유용합니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 02: 기존 방식 비교 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 비교</div>
+    <h2 class="section-title">Magika vs 기존 도구</h2>
+    <p class="section-desc">
+      공식 논문(arXiv:2409.13768, ICSE 2025)의 벤치마크 기준 비교입니다.
+      120만 개 테스트셋, 113개 파일 타입 기준.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th>libmagic (file 명령어)</th>
+            <th>guesslang</th>
+            <th>Magika</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>감지 방식</strong></td>
+            <td>수작업 매직 바이트 규칙</td>
+            <td>통계 기반 언어 감지</td>
+            <td><span class="tag green">딥러닝 모델</span></td>
+          </tr>
+          <tr>
+            <td><strong>전체 F1 점수</strong></td>
+            <td>88%</td>
+            <td>77% (텍스트 한정)</td>
+            <td><span class="tag green">99%</span></td>
+          </tr>
+          <tr>
+            <td><strong>바이너리 파일 F1</strong></td>
+            <td>96%</td>
+            <td>해당 없음</td>
+            <td><span class="tag green">100%</span></td>
+          </tr>
+          <tr>
+            <td><strong>텍스트/코드 F1</strong></td>
+            <td>약 70%대</td>
+            <td>77%</td>
+            <td><span class="tag green">99%</span></td>
+          </tr>
+          <tr>
+            <td><strong>신규 타입 추가</strong></td>
+            <td>수작업 규칙 추가</td>
+            <td>재학습 필요</td>
+            <td><span class="tag orange">재학습 필요</span></td>
+          </tr>
+          <tr>
+            <td><strong>모델 크기</strong></td>
+            <td>~수십 KB (규칙 DB)</td>
+            <td>~수 MB</td>
+            <td><span class="tag green">~1MB</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12px;color:var(--ink-4);margin-top:10px;">출처: <a href="https://arxiv.org/html/2409.13768v1" style="color:var(--ink-3);">arXiv:2409.13768</a> · Google OSS Blog 2024-02-16</p>
+  </div>
+</section>
+
+<!-- SECTION 03: 작동 원리 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 작동 원리</div>
+    <h2 class="section-title">AI가 파일을 어떻게 읽는가</h2>
+    <p class="section-desc">
+      파일 전체를 다 읽지 않습니다. 앞·중간·끝 각 512바이트씩 총 1,536바이트만 추출해서
+      딥러닝 모델에 넣습니다. 파일 크기에 상관없이 처리 시간이 일정한 이유입니다.
+    </p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 200" style="width:100%;max-width:760px;" role="img" aria-label="Magika 파일 분석 흐름도">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#A8A8A3"/>
+          </marker>
+        </defs>
+
+        <!-- 파일 박스 -->
+        <rect x="10" y="70" width="110" height="60" rx="8" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="65" y="97" text-anchor="middle" fill="#1C1C1A" font-size="13" font-family="Inter" font-weight="600">파일</text>
+        <text x="65" y="115" text-anchor="middle" fill="#A8A8A3" font-size="11" font-family="Inter">(크기 무관)</text>
+
+        <!-- 화살표 1 -->
+        <line x1="120" y1="100" x2="158" y2="100" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- 바이트 추출 -->
+        <rect x="160" y="55" width="130" height="90" rx="8" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="225" y="78" text-anchor="middle" fill="#C4522A" font-size="11" font-family="Inter" font-weight="700">바이트 추출</text>
+        <text x="225" y="97" text-anchor="middle" fill="#6B6B66" font-size="11" font-family="Inter">앞 512B</text>
+        <text x="225" y="112" text-anchor="middle" fill="#6B6B66" font-size="11" font-family="Inter">중간 512B</text>
+        <text x="225" y="127" text-anchor="middle" fill="#6B6B66" font-size="11" font-family="Inter">끝 512B</text>
+
+        <!-- 화살표 2 -->
+        <line x1="290" y1="100" x2="328" y2="100" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- 임베딩 -->
+        <rect x="330" y="65" width="120" height="70" rx="8" fill="#F4F4F1" stroke="#D4D4CF" stroke-width="1.5"/>
+        <text x="390" y="93" text-anchor="middle" fill="#3D3D3A" font-size="12" font-family="Inter" font-weight="600">임베딩 →</text>
+        <text x="390" y="110" text-anchor="middle" fill="#6B6B66" font-size="11" font-family="Inter">Dense Layer</text>
+        <text x="390" y="125" text-anchor="middle" fill="#A8A8A3" font-size="10" font-family="JetBrains Mono">128-dim</text>
+
+        <!-- 화살표 3 -->
+        <line x1="450" y1="100" x2="488" y2="100" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- ONNX 모델 -->
+        <rect x="490" y="65" width="120" height="70" rx="8" fill="#F4F4F1" stroke="#D4D4CF" stroke-width="1.5"/>
+        <text x="550" y="93" text-anchor="middle" fill="#3D3D3A" font-size="12" font-family="Inter" font-weight="600">ONNX 추론</text>
+        <text x="550" y="110" text-anchor="middle" fill="#6B6B66" font-size="11" font-family="Inter">Softmax</text>
+        <text x="550" y="125" text-anchor="middle" fill="#A8A8A3" font-size="10" font-family="JetBrains Mono">216 classes</text>
+
+        <!-- 화살표 4 -->
+        <line x1="610" y1="100" x2="648" y2="100" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- 결과 -->
+        <rect x="650" y="65" width="100" height="70" rx="8" fill="#F0FDF4" stroke="#86efac" stroke-width="1.5"/>
+        <text x="700" y="93" text-anchor="middle" fill="#1A7F5A" font-size="13" font-family="Inter" font-weight="700">결과</text>
+        <text x="700" y="110" text-anchor="middle" fill="#6B6B66" font-size="11" font-family="Inter">label: pdf</text>
+        <text x="700" y="125" text-anchor="middle" fill="#A8A8A3" font-size="10" font-family="JetBrains Mono">score: 0.97</text>
+      </svg>
+      <p style="font-size:12px;color:var(--ink-4);margin-top:12px;">Magika 추론 파이프라인 — 파일 크기와 무관하게 고정된 1,536바이트만 분석</p>
+    </div>
+
+    <div class="table-wrap" style="margin-top:32px;">
+      <table>
+        <thead>
+          <tr><th>구성 요소</th><th>내용</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>입력</strong></td><td>앞 512B + 중간 512B + 끝 512B = 총 1,536바이트. 짧은 파일은 바이트값 256으로 패딩</td></tr>
+          <tr><td><strong>임베딩</strong></td><td>Dense Embedding Layer → 128차원 벡터로 변환</td></tr>
+          <tr><td><strong>특징 추출</strong></td><td>Dense Layer (256차원, GELU 활성화) × 2 + Global Max Pooling</td></tr>
+          <tr><td><strong>정규화</strong></td><td>Layer Normalization + Dropout 10% + Spatial Dropout 10%</td></tr>
+          <tr><td><strong>학습 프레임워크</strong></td><td>Keras (학습) → ONNX Runtime (추론)</td></tr>
+          <tr><td><strong>모델 크기</strong></td><td>약 1MB (GPU 불필요, CPU만으로 추론 가능)</td></tr>
+          <tr><td><strong>학습 데이터</strong></td><td>약 1억 개 파일 (GitHub + VirusTotal)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 04: Google 활용 사례 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 활용 사례</div>
+    <h2 class="section-title">Google이 이미 쓰고 있는 방식</h2>
+    <p class="section-desc">
+      "Magika는 주당 수천억 개의 파일을 처리하면서 Google 사용자 안전을 돕는 데 사용됩니다."
+      — Google OSS Blog (2024-02-16)
+    </p>
+
+    <div class="usecase-list">
+      <div class="usecase-item">
+        <div class="usecase-icon">📧</div>
+        <div>
+          <div class="usecase-title">Gmail — 첨부파일 스캐너 라우팅</div>
+          <div class="usecase-desc">업로드된 첨부파일이 어떤 종류인지 판별 후, 알맞은 보안·콘텐츠 정책 스캐너로 자동 분류합니다. 특수 악성 문서 스캐너 연결 파일이 11% 증가했습니다.</div>
+        </div>
+      </div>
+      <div class="usecase-item">
+        <div class="usecase-icon">💾</div>
+        <div>
+          <div class="usecase-title">Google Drive — 업로드 파일 분류</div>
+          <div class="usecase-desc">드라이브에 올라오는 파일의 타입을 판별하고 적절한 보안 검사 파이프라인으로 연결합니다. 미분류 파일 비율이 3%로 감소했습니다.</div>
+        </div>
+      </div>
+      <div class="usecase-item">
+        <div class="usecase-icon">🛡️</div>
+        <div>
+          <div class="usecase-title">Safe Browsing — 악성 파일 사전 탐지</div>
+          <div class="usecase-desc">브라우저 다운로드 파일을 사전 분류해 악성코드 스캐너 효율을 높입니다. 기존 대비 정확도가 50% 향상됐습니다.</div>
+        </div>
+      </div>
+      <div class="usecase-item">
+        <div class="usecase-icon">🔬</div>
+        <div>
+          <div class="usecase-title">VirusTotal — 악성코드 분석 전처리</div>
+          <div class="usecase-desc">Code Insight(생성 AI 기반 악성코드 분석 기능)의 입력 전처리 필터로 사용됩니다. 파일 타입에 따라 적합한 분석 모델을 선택합니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 05: 설치 및 사용법 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 사용 방법</div>
+    <h2 class="section-title">설치 및 기본 사용법</h2>
+    <p class="section-desc">
+      Python, CLI, JavaScript 등 다양한 환경을 지원합니다. pip 설치 후 바로 사용 가능합니다.
+    </p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">설치</div>
+          <div class="step-body">pip 또는 원하는 패키지 매니저로 설치합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body"># Python (pip)
+pip install magika
+
+# CLI 전용 설치 (pipx 권장)
+pipx install magika
+
+# macOS / Linux (Homebrew)
+brew install magika
+
+# Node.js / JavaScript
+npm install magika</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Python API 기본 사용</div>
+          <div class="step-body">bytes, 파일 경로, 파일 스트림 세 가지 방식으로 분석할 수 있습니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">python</span>
+            </div>
+            <pre class="code-body">from magika import Magika
+
+m = Magika()
+
+# 방법 1: 바이트 직접 전달
+res = m.identify_bytes(b'function log(msg) {console.log(msg);}')
+print(res.output.label)       # javascript
+print(res.output.mime_type)   # application/javascript
+print(res.score)              # 0.99 (신뢰도 점수, 0.0 ~ 1.0)
+
+# 방법 2: 파일 경로로 분석
+res = m.identify_path('./document.pdf')
+print(res.output.label)       # pdf
+print(res.output.description) # PDF document
+
+# 방법 3: 파일 스트림으로 분석
+with open('./archive.zip', 'rb') as f:
+    res = m.identify_stream(f)
+    print(res.output.label)   # zip</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">CLI 사용</div>
+          <div class="step-body">터미널에서 바로 파일 타입을 확인할 수 있습니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body"># 단일 파일 확인
+magika ./suspicious_file.exe
+
+# 디렉토리 내 모든 파일 재귀 스캔
+magika -r ./target_dir/
+
+# JSON 형식으로 출력 (신뢰도 포함)
+magika ./file.py --json
+
+# MIME 타입만 출력
+magika ./file.py --mime-type
+
+# 표준 입력(stdin)으로 전달
+cat file.ini | magika -</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title">신뢰도 모드 선택 (PredictionMode)</div>
+          <div class="step-body">용도에 따라 신뢰도 기준을 조정할 수 있습니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">python</span>
+            </div>
+            <pre class="code-body">from magika import Magika, PredictionMode
+
+# high-confidence: 확신이 높을 때만 구체적 타입 반환 (보안 용도 권장)
+m = Magika(prediction_mode=PredictionMode.HIGH_CONFIDENCE)
+
+# medium-confidence: 기본값 — 균형 잡힌 정확도
+m = Magika(prediction_mode=PredictionMode.MEDIUM_CONFIDENCE)
+
+# best-guess: 항상 가장 가능성 높은 타입 반환 (파일 정리 용도에 적합)
+m = Magika(prediction_mode=PredictionMode.BEST_GUESS)</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip" style="margin-top:8px;">
+      <div class="callout-title">활용 아이디어</div>
+      <code style="font-family:var(--font-mono);font-size:13px;">PredictionMode.BEST_GUESS</code> + 재귀 스캔으로
+      폴더 내 파일을 자동 분류하는 "파일 정리 도우미"를 만들 수 있습니다.
+      확장자가 틀렸거나 없는 파일도 올바른 타입으로 분류·이동할 수 있습니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 06: 지원 파일 타입 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">06 지원 타입</div>
+    <h2 class="section-title">216개 파일 타입 지원</h2>
+    <p class="section-desc">
+      model v3.3 기준. 프로그래밍 언어, 문서, 미디어, 실행파일, 악성코드 관련 포맷 등 광범위하게 지원합니다.
+    </p>
+
+    <div class="type-grid">
+      <div class="type-item">
+        <div class="type-category">프로그래밍 언어</div>
+        <div class="type-examples">Python, JavaScript, TypeScript, Java, C/C++, Go, Rust, Ruby, PHP, Kotlin, Swift...</div>
+        <div class="type-count">40+ 타입</div>
+      </div>
+      <div class="type-item">
+        <div class="type-category">문서</div>
+        <div class="type-examples">PDF, DOCX, XLSX, PPTX, HTML, XML, JSON, Markdown, INI, YAML...</div>
+        <div class="type-count">20+ 타입</div>
+      </div>
+      <div class="type-item">
+        <div class="type-category">압축 / 아카이브</div>
+        <div class="type-examples">ZIP, RAR, 7-zip, TAR, GZIP, BZIP2, XZ...</div>
+        <div class="type-count">15+ 타입</div>
+      </div>
+      <div class="type-item">
+        <div class="type-category">이미지</div>
+        <div class="type-examples">JPEG, PNG, GIF, BMP, TIFF, WebP, SVG, DWG, DXF...</div>
+        <div class="type-count">12+ 타입</div>
+      </div>
+      <div class="type-item">
+        <div class="type-category">미디어</div>
+        <div class="type-examples">MP3, MP4, WebM, FLAC, WAV, MKV, MOV, FLV...</div>
+        <div class="type-count">10+ 타입</div>
+      </div>
+      <div class="type-item">
+        <div class="type-category">실행 파일</div>
+        <div class="type-examples">PE (Windows), ELF (Linux), Mach-O (macOS), DEX, APK, Java bytecode...</div>
+        <div class="type-count">8+ 타입</div>
+      </div>
+      <div class="type-item">
+        <div class="type-category">데이터 포맷</div>
+        <div class="type-examples">Parquet, HDF5, NumPy, PyTorch, ONNX, SQLite, Protocol Buffers...</div>
+        <div class="type-count">8+ 타입</div>
+      </div>
+      <div class="type-item">
+        <div class="type-category">기타</div>
+        <div class="type-examples">인증서(PEM/DER), Dockerfile, Shell 스크립트, Git 메타데이터, DICOM(의료), Windows Registry...</div>
+        <div class="type-count">다수</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 07: 주의사항 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">07 주의사항</div>
+    <h2 class="section-title">알려진 한계</h2>
+    <p class="section-desc">
+      공식 논문(arXiv:2409.13768) 및 GitHub에서 명시한 제한 사항입니다.
+    </p>
+
+    <div class="limit-list">
+      <div class="limit-item">
+        <span class="limit-badge">커버리지</span>
+        <div class="limit-text"><strong>216개 타입만 지원.</strong> 새 파일 타입을 추가하려면 모델 재학습이 필요합니다.</div>
+      </div>
+      <div class="limit-item">
+        <span class="limit-badge">폴리글랏</span>
+        <div class="limit-text"><strong>여러 포맷에 동시에 유효한 파일</strong>(예: ZIP 겸 JAR)을 완벽히 구분하기 어렵습니다.</div>
+      </div>
+      <div class="limit-item">
+        <span class="limit-badge">적대적 공격</span>
+        <div class="limit-text">파일 내용에 <strong>소량의 조작</strong>을 가하면 잘못된 타입으로 오인될 수 있습니다. 모든 AI 모델의 공통 한계입니다.</div>
+      </div>
+      <div class="limit-item">
+        <span class="limit-badge">초기화 오버헤드</span>
+        <div class="limit-text">첫 파일 처리 시 <strong>모델 로드에 &lt;100ms</strong> 소요됩니다. 단일 파일 CLI 사용 시 체감될 수 있습니다.</div>
+      </div>
+      <div class="limit-item">
+        <span class="limit-badge">샘플링 방식</span>
+        <div class="limit-text">앞·중간·끝 1,536바이트만 분석하므로, <strong>핵심 시그니처가 파일 중간부에만 있는 포맷</strong>에서 불리할 수 있습니다.</div>
+      </div>
+    </div>
+
+    <div class="callout warn" style="margin-top:24px;">
+      <div class="callout-title">보안 사용 시 주의</div>
+      Magika는 파일 타입 분류를 돕는 도구이며, 단독으로 완전한 악성코드 탐지 솔루션이 되지는 않습니다.
+      실제 보안 파이프라인에서는 Magika로 타입을 분류한 뒤,
+      해당 타입에 특화된 안티바이러스/샌드박스 분석기와 함께 사용하는 것을 권장합니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 08: 오픈소스 정보 -->
+<section class="section" style="border-bottom:none;">
+  <div class="page-wrap">
+    <div class="section-label">08 오픈소스</div>
+    <h2 class="section-title">프로젝트 정보</h2>
+    <p class="section-desc">Apache 2.0 라이선스로 공개되어 누구나 자유롭게 사용·수정·배포할 수 있습니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>항목</th><th>내용</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>GitHub</strong></td><td><a href="https://github.com/google/magika" style="color:var(--accent);">github.com/google/magika</a></td></tr>
+          <tr><td><strong>라이선스</strong></td><td>Apache 2.0</td></tr>
+          <tr><td><strong>최신 릴리스</strong></td><td>python-v1.0.2 (2026-02-27)</td></tr>
+          <tr><td><strong>GitHub Stars</strong></td><td>15,900+</td></tr>
+          <tr><td><strong>주요 언어</strong></td><td>Python 33% · Rust 26% · TypeScript 18%</td></tr>
+          <tr><td><strong>공식 문서</strong></td><td><a href="https://securityresearch.google/magika/introduction/overview/" style="color:var(--accent);">securityresearch.google/magika</a></td></tr>
+          <tr><td><strong>연구 논문</strong></td><td>arXiv:2409.13768 · ICSE 2025 게재</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>Magika: AI 파일 감지 도구 · 🛡️ 플랫폼정보보호</span>
+  <span>2026-04-19 · <a href="https://github.com/google/magika">github.com/google/magika</a></span>
+</footer>
+
+  <script data-page-hash="XKWBGGC" src="/gemini_html/page-footer.js"></script>
+</body>
+</html>
