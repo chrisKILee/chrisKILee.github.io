@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 기반 원자재 시장 분석 및 조달 의사결정 지원 시스템 — AIVE-CONTEST 2025</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    .screenshot-gallery img {
+      cursor: zoom-in; transition: opacity 0.15s;
+    }
+    .screenshot-gallery img:hover { opacity: 0.88; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.82); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; cursor: zoom-out;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-img {
+      max-width: 90vw; max-height: 88vh;
+      border-radius: 10px; box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      object-fit: contain;
+    }
+    #lb-close {
+      position: fixed; top: 20px; right: 24px;
+      color: #fff; font-size: 28px; font-weight: 300;
+      cursor: pointer; line-height: 1; opacity: 0.8;
+    }
+    #lb-close:hover { opacity: 1; }
+    #lb-prev, #lb-next {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,.15); border: none; color: #fff;
+      font-size: 36px; padding: 12px 18px; cursor: pointer;
+      border-radius: 8px; z-index: 10001;
+    }
+    #lb-prev { left: 16px; }
+    #lb-next { right: 16px; }
+  </style>
+</head>
+<body>
+
+  <!-- ━━━ 고정 헤더 ━━━ -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AIVE-CONTEST 2025</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">AI 기반 원자재 시장 분석 및 조달 의사결정 지원 시스템</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">DX 서비스팀 · 김대후</span>
+        <span class="mono" style="font-size:14px; font-weight:500; color:#c8622a; background:#fdf0e8; padding:4px 12px; border-radius:7px; border:1px solid #e8b896;">85점</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:920px; margin:0 auto; padding:52px 28px 88px;">
+
+    <!-- ━━━ 히어로 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제</p>
+          <h1 style="font-size:32px; font-weight:800; color:#1c1917; line-height:1.2; letter-spacing:-0.02em; margin-bottom:18px;">AI 기반 원자재 시장 분석<br>및 조달 의사결정 지원 시스템</h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">
+            채팅 한 줄로 LME 비철금속 가격·거시지표·뉴스를 통합 분석하고,<br>
+            VaR·CTRM 시뮬레이션으로 <strong>구매 의사결정을 자동 지원</strong>하는 AI 다중 에이전트 시스템
+          </p>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026-04-07 제출</span>
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">DX 서비스팀</span>
+            <span class="check-badge on">🏆 AIVE-CONTEST</span>
+          </div>
+        </div>
+
+        <!-- 점수 패널 -->
+        <div style="background:#ede9e1; border:1px solid #d6d0c4; border-radius:16px; padding:24px; min-width:210px;">
+          <p class="eval-label" style="margin-bottom:14px;">종합 점수</p>
+          <div style="text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d6d0c4;">
+            <span class="mono" style="font-size:52px; font-weight:500; color:#c8622a; line-height:1;">85</span>
+            <span style="font-size:18px; color:#b5895a; font-weight:400;"> / 100</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">32</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">③ 효율성 /35</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">22</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">④ 아이디어 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">18</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑤ 확산성 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">13</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑥ 조직목표 /15</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 문제 정의 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">기존의 어려움</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none; padding:0;">
+            <li>🔴 <strong>며칠 소요</strong> — ERP 다운 → 블룸버그 검색 → 뉴스 취합 → PPT 보고서</li>
+            <li style="margin-top:8px;">🔴 <strong>전문성 장벽</strong> — LME 가격·거시지표 정량 분석은 전문 지식 필요</li>
+            <li style="margin-top:8px;">🔴 <strong>분석-실행 괴리</strong> — 외부 리포트는 단편적 추세만 전달, 액션 플랜 없음</li>
+            <li style="margin-top:8px;">🔴 <strong>정적 대시보드</strong> — 거시경제·뉴스 연계 분석 없음</li>
+          </ul>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:10px; letter-spacing:0.05em;">✨ AI로 해결한 방식</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none; padding:0;">
+            <li>✅ 채팅 한 줄 → <strong>수십 초</strong>에 통합 분석·리포트 자동 출력</li>
+            <li style="margin-top:8px;">✅ <strong>자연어 SQL</strong> 자동 생성 — 코딩 지식 불필요</li>
+            <li style="margin-top:8px;">✅ <strong>CTRM 시뮬레이터</strong> — "현물 N% / 선물 N%" 명확한 구매 가이드</li>
+            <li style="margin-top:8px;">✅ <strong>이중 교차 검증</strong> — 통계 에이전트 + RAG 뉴스 에이전트 협업</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 체크리스트 시각화 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
+
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge on">✅ 런타임 AI (Gemini API)</span>
+          <span class="check-badge">노코드 AI</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 반복 보고서 취합·정리</span>
+          <span class="check-badge on">✅ 데이터 수집·분류·가공</span>
+          <span class="check-badge on">✅ 내부 문의·요청 자동 처리</span>
+          <span class="check-badge on">✅ 알림·모니터링 자동화</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">32<span style="font-size:12px; color:#b5895a;">/35</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            데이터 수집·가공 시간 <strong>90% 이상 절감</strong> 명시. 기존 며칠 소요 업무를 수십 초로 단축하는 Full End-to-End 자동화 구현. 실제 실행 가능한 ~9,000줄 코드로 자동화 범위 넓음.
+          </p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">22<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            문제 3가지 명확 정의 (전문성 장벽·분석-실행 괴리·정적 대시보드). LangGraph 다중 에이전트 + CTRM 시뮬레이터 선택이 문제에 정확히 매칭. 실용적으로 구현됨.
+          </p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">18<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            Streamlit 채팅 UI로 비개발자 접근 가능. 재무·영업·물류 확장 계획 구체적. SQLite+ChromaDB 로컬 설치 진입 장벽 존재.
+          </p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">13<span style="font-size:12px; color:#b5895a;">/15</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            원가 변동성 통제·데이터 기반 의사결정 표준화와 직접 연결. 전사 부서 간 Silo 해소, 데이터 민주화 기여. 팀 전체 수준 영향 명확.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 주요 기능 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">⚡ 주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🗣️ 자연어 데이터 조회</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">
+            채팅으로 SQL 자동 생성, 다중 테이블 조인. "니켈·달러인덱스 2024년 보여줘" 한 줄로 통합 DataFrame 반환.
+          </p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📈 추세 분석</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">
+            이동평균, 시계열 분해, 다중 선형 회귀, 골든/데드크로스, VECM 공적분 분석. Plotly 인터랙티브 차트.
+          </p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">⚠️ 변동성·VaR 분석</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">
+            일일 수익률 분포, 볼린저밴드, <strong>95%·99% VaR(예상 최대 손실액)</strong> 자동 산출. 조달 예산 리스크 정량화.
+          </p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🎯 CTRM 시뮬레이터</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">
+            현물·선물·장기계약 비율을 <strong>1,000회 몬테카를로</strong> 시뮬레이션. 최적 헷징 비율 자동 도출.
+          </p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🔔 리스크 모니터링</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">
+            볼린저밴드·RSI·MACD 실시간 연산. "현재 과매수 → 즉각 매수 중단" 등 명확한 구매 타이밍 가이드.
+          </p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📰 RAG 뉴스 교차 분석</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">
+            ChromaDB + DuckDuckGo 이중 검색. 가격 급등락 <strong>진짜 원인</strong>(파업·정책 변화 등) 자동 분석.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ AI 활용 방식 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:28px;">
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:24px; margin-bottom:24px;">
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">에이전트 구조</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none;">
+              <li>🔹 <strong>Supervisor Agent</strong> — 사용자 의도 파악 후 도구 라우팅</li>
+              <li>🔹 <strong>Event Tool</strong> — 도메인별 분석 도구 6종 실행</li>
+              <li>🔹 <strong>Worker Agent</strong> — 코드 생성·실행·차트 해석</li>
+              <li>🔹 <strong>LangGraph StateGraph</strong> — 3계층 에이전트 흐름 제어</li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">AI 모델 &amp; 기술</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none;">
+              <li>🔹 <strong>Gemini 3 Flash / Pro</strong> — SQL 생성, 코드 생성, 리포트 작성</li>
+              <li>🔹 <strong>multilingual-e5-large</strong> — ChromaDB 임베딩</li>
+              <li>🔹 <strong>statsmodels / scipy</strong> — VECM, VaR, 포트폴리오 최적화</li>
+              <li>🔹 <strong>PyOD</strong> — ECOD 이상치 탐지</li>
+            </ul>
+          </div>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:10px; padding:16px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:8px;">🔄 데이터 흐름</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.8;">
+            자연어 질의 → ① Supervisor 라우팅 → ② SQL 자동 생성 → ③ SQLite 다중 테이블 조인 →
+            ④ 통계 연산·시각화 (Plotly) → ⑤ RAG 뉴스 교차 분석 →
+            ⑥ Gemini 멀티모달 리포트 생성 → Streamlit 채팅 출력
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 시각 증빙 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📸 시각 증빙 자료</p>
+      <p style="font-size:13px; color:#78716c; margin-bottom:16px;">시뮬레이션, 변동성 분석, 리스크 헷징 실제 화면 캡처 (클릭 시 확대)</p>
+
+      <div style="margin-bottom:24px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① CTRM 시뮬레이션</p>
+        <div class="screenshot-gallery" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
+          <img src="assets/김대후_sim1.png" alt="CTRM 시뮬레이션 화면 1"
+            onclick="openLb(0)" style="width:100%; border-radius:8px; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+          <img src="assets/김대후_sim2.png" alt="CTRM 시뮬레이션 화면 2"
+            onclick="openLb(1)" style="width:100%; border-radius:8px; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+          <img src="assets/김대후_sim3.png" alt="CTRM 시뮬레이션 화면 3"
+            onclick="openLb(2)" style="width:100%; border-radius:8px; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+        </div>
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 변동성·VaR 분석</p>
+        <div class="screenshot-gallery" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
+          <img src="assets/김대후_vol1.png" alt="변동성 분석 화면 1"
+            onclick="openLb(3)" style="width:100%; border-radius:8px; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+          <img src="assets/김대후_vol2.png" alt="변동성 분석 화면 2"
+            onclick="openLb(4)" style="width:100%; border-radius:8px; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+          <img src="assets/김대후_vol3.png" alt="변동성 분석 화면 3"
+            onclick="openLb(5)" style="width:100%; border-radius:8px; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+        </div>
+      </div>
+
+      <div>
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">③ 리스크 헷징 모니터링</p>
+        <div class="screenshot-gallery" style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px;">
+          <img src="assets/김대후_hedge1.png" alt="리스크 헷징 화면 1"
+            onclick="openLb(6)" style="width:100%; border-radius:8px; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+          <img src="assets/김대후_hedge2.png" alt="리스크 헷징 화면 2"
+            onclick="openLb(7)" style="width:100%; border-radius:8px; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 기대 효과 ━━━ -->
+    <section>
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">90%+</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">데이터 수집·분석 시간 절감</p>
+          <p style="font-size:12px; color:#78716c;">기존 며칠 → 수십 초 자동 출력</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">6종+</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">자동화 분석 유형</p>
+          <p style="font-size:12px; color:#78716c;">추세·VaR·CTRM·RAG·전처리·모니터링</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">전사</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">데이터 민주화</p>
+          <p style="font-size:12px; color:#78716c;">구매·재무·영업·물류 전 부서 확장 가능</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ━━━ 푸터 ━━━ -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AIVE-CONTEST 2025 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; DX 서비스팀
+    </p>
+  </footer>
+
+  <!-- Arrow Lightbox -->
+  <div id="lb-overlay" onclick="closeLb()">
+    <span id="lb-close" onclick="closeLb()">✕</span>
+    <button id="lb-prev" onclick="event.stopPropagation(); moveLb(-1)">‹</button>
+    <img id="lb-img" src="" alt="" onclick="event.stopPropagation()">
+    <button id="lb-next" onclick="event.stopPropagation(); moveLb(1)">›</button>
+  </div>
+
+  <script>
+    var _lbImgs = [
+      {src:'assets/김대후_sim1.png', alt:'CTRM 시뮬레이션 화면 1'},
+      {src:'assets/김대후_sim2.png', alt:'CTRM 시뮬레이션 화면 2'},
+      {src:'assets/김대후_sim3.png', alt:'CTRM 시뮬레이션 화면 3'},
+      {src:'assets/김대후_vol1.png', alt:'변동성 분석 화면 1'},
+      {src:'assets/김대후_vol2.png', alt:'변동성 분석 화면 2'},
+      {src:'assets/김대후_vol3.png', alt:'변동성 분석 화면 3'},
+      {src:'assets/김대후_hedge1.png', alt:'리스크 헷징 화면 1'},
+      {src:'assets/김대후_hedge2.png', alt:'리스크 헷징 화면 2'}
+    ];
+    var _lbIdx = 0;
+
+    function openLb(idx) {
+      _lbIdx = idx;
+      _updateLb();
+      document.getElementById('lb-overlay').classList.add('open');
+    }
+    function closeLb() {
+      document.getElementById('lb-overlay').classList.remove('open');
+    }
+    function moveLb(dir) {
+      _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
+      _updateLb();
+    }
+    function _updateLb() {
+      var d = _lbImgs[_lbIdx];
+      var img = document.getElementById('lb-img');
+      img.src = d.src; img.alt = d.alt || '';
+    }
+    document.addEventListener('keydown', function(e) {
+      var o = document.getElementById('lb-overlay');
+      if (o.classList.contains('open')) {
+        if (e.key === 'Escape') closeLb();
+        if (e.key === 'ArrowLeft') moveLb(-1);
+        if (e.key === 'ArrowRight') moveLb(1);
+      }
+    });
+  </script>
+</body>
+</html>

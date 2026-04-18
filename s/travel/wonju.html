@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>원주 오크밸리 2박 3일 여행 플래너</title>
+    <!-- Chosen Palette: Warm Winter (Stone Gray, Snow White, Soft Teal, Muted Orange) for a cozy yet active vibe. -->
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts (Noto Sans KR) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .tab-active {
+            background-color: #374151;
+            color: white;
+            border-color: #374151;
+        }
+
+        .tab-inactive {
+            background-color: white;
+            color: #6b7280;
+            border-color: #e5e7eb;
+        }
+
+        .tab-inactive:hover {
+            background-color: #f9fafb;
+            color: #374151;
+        }
+
+        /* Smooth transitions */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+    <!-- Application Structure Plan: 
+         1. Header: Trip Context & Summary.
+         2. Group Persona Analysis: Explaining the strategy for Teens/Kids.
+         3. Day 1 Strategy: Managing the 'Sledding' concern.
+         4. Day 2 Interactive Planner: The core value. Tabs for Course A/B/C.
+         5. Dynamic Visualization: Radar chart comparing courses (Fun vs Cost vs Fatigue).
+         6. Budget Calculator: Auto-summing costs based on inputs.
+    -->
+
+    <!-- Navigation / Header -->
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-gray-800 tracking-tight">❄️ 원주 가족 여행</span>
+                </div>
+                <div class="hidden md:flex space-x-4 text-sm text-gray-500">
+                    <span>2박 3일 일정</span>
+                    <span>•</span>
+                    <span>오크밸리 거점</span>
+                    <span>•</span>
+                    <span>7~8인 대가족</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
+
+        <!-- Section 1: Trip Context & Analysis -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="col-span-1 md:col-span-2 bg-white rounded-xl card-shadow p-6">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">📋 여행 분석 리포트</h2>
+                <div class="prose text-gray-600 mb-4">
+                    <p>
+                        중학교 2학년(사춘기 절정/감성 중요)과 초등 고학년(활동성 중요)이 섞인 대가족 구성입니다.
+                        가장 큰 과제는 <strong>"모두를 만족시키는 밸런스"</strong>입니다.
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                        <h3 class="font-bold text-blue-800">🎯 핵심 포인트</h3>
+                        <ul class="list-disc list-inside text-sm text-blue-700 mt-2 space-y-1">
+                            <li><strong>포토 스팟 필수:</strong> 여중생들을 위한 '인생샷' 명소.</li>
+                            <li><strong>활동성 보장:</strong> 남학생들의 에너지를 뺄 코스.</li>
+                            <li><strong>방한 대책:</strong> 강원도의 1월은 춥습니다. 실내/외 배분.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
+                        <h3 class="font-bold text-orange-800">🚧 주의사항</h3>
+                        <ul class="list-disc list-inside text-sm text-orange-700 mt-2 space-y-1">
+                            <li>오크밸리 눈썰매장은 <strong>유아/초저학년 위주</strong>로 코스가 단순합니다.</li>
+                            <li>둘째 날 코스는 '확실한 테마'가 필요합니다.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day 1 Quick Fix -->
+            <div class="col-span-1 bg-gray-800 text-white rounded-xl card-shadow p-6 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-xl font-bold mb-2">Day 1: 눈썰매장 생존법 🛷</h2>
+                    <p class="text-gray-300 text-sm mb-4">"시시할까봐 걱정돼요"</p>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <span class="text-xl mr-2">🌙</span>
+                            <div class="text-sm">
+                                <strong>야간권 추천:</strong> <br>규모의 단점을 조명과 분위기로 커버하세요. 사람이 적어 대기시간이 짧습니다.
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="text-xl mr-2">🎳</span>
+                            <div class="text-sm">
+                                <strong>플랜 B (리조트 내):</strong> <br>너무 시시해하면 바로 <strong>볼링장/오락실</strong>(빌리지센터)로 이동하거나,
+                                가능하다면 <strong>수영장</strong>을 이용하세요.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Day 2 Course Selection (The Core) -->
+        <section id="course-selector" class="space-y-6">
+            <div class="text-center max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-900">Day 2: 어디로 갈까요?</h2>
+                <p class="text-gray-500 mt-2">아이들의 성향과 날씨에 맞춰 아래 3가지 코스 중 하나를 선택해보세요.</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex flex-wrap justify-center gap-2 mb-6">
+                <button onclick="updateCourse('active')" id="btn-active"
+                    class="px-6 py-3 rounded-full border text-sm font-semibold transition-all duration-200 tab-active shadow-sm">
+                    🏃 코스 A: 액티비티 & 스릴
+                </button>
+                <button onclick="updateCourse('culture')" id="btn-culture"
+                    class="px-6 py-3 rounded-full border text-sm font-semibold transition-all duration-200 tab-inactive shadow-sm">
+                    📸 코스 B: 감성 & 힐링 (강추)
+                </button>
+                <button onclick="updateCourse('indoor')" id="btn-indoor"
+                    class="px-6 py-3 rounded-full border text-sm font-semibold transition-all duration-200 tab-inactive shadow-sm">
+                    🏛️ 코스 C: 실내 & 체험
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- Left: Course Details -->
+                <div class="lg:col-span-2 space-y-6 fade-in" id="course-content">
+                    <!-- Dynamic Content populated by JS -->
+                </div>
+
+                <!-- Right: Chart & Calculator -->
+                <div class="space-y-6">
+                    <!-- Chart Container -->
+                    <div class="bg-white p-4 rounded-xl card-shadow flex flex-col items-center">
+                        <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-2">코스 밸런스 분석</h3>
+                        <div class="chart-container">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                        <p id="chart-desc" class="text-xs text-center text-gray-500 mt-2">차트 데이터 로딩 중...</p>
+                    </div>
+
+                    <!-- Budget Calculator -->
+                    <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+                        <h3 class="font-bold text-indigo-900 flex items-center mb-4">
+                            <span class="mr-2">💰</span> 예상 입장료 계산기
+                        </h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-gray-700">대인 (19세+)</label>
+                                <input type="number" id="input-adult" value="3" min="0"
+                                    class="w-16 p-1 text-center border rounded bg-white" onchange="calculateBudget()">
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <label class="text-gray-700">청소년 (중고생)</label>
+                                <input type="number" id="input-teen" value="3" min="0"
+                                    class="w-16 p-1 text-center border rounded bg-white" onchange="calculateBudget()">
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <label class="text-gray-700">소인 (초등)</label>
+                                <input type="number" id="input-child" value="2" min="0"
+                                    class="w-16 p-1 text-center border rounded bg-white" onchange="calculateBudget()">
+                            </div>
+                            <hr class="border-indigo-200 my-2">
+                            <div class="flex justify-between items-center font-bold text-lg text-indigo-700">
+                                <span>총 예상 금액</span>
+                                <span id="total-cost">0 원</span>
+                            </div>
+                            <p class="text-xs text-indigo-400 mt-1">* 식비 제외, 입장료/체험비 기준 단순 추산</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm">
+            <p class="mb-2">즐거운 원주 여행 되세요! 🚐</p>
+            <p>※ 각 여행지의 입장료와 운영 시간은 현지 사정에 따라 변동될 수 있습니다.</p>
+        </div>
+    </footer>
+
+    <!-- Visualization & Content Choices: 
+         - Radar Chart: Chosen to visualize the trade-offs between 'Fun', 'Cost', 'Photo Ops', and 'Comfort'. 
+           This helps the user balance the needs of teens (Photo/Fun) vs parents (Cost/Comfort).
+         - Interactive Budget: Large families are sensitive to total cost. Immediate feedback is crucial.
+         - Dynamic Content: Uses JS objects to swap HTML content, keeping the DOM clean and single-page.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script>
+        // --- Data Storage ---
+        const courses = {
+            active: {
+                title: "소금산 그랜드밸리 & 레일바이크",
+                subtitle: "에너지가 넘치는 아이들을 위한 스릴 코스",
+                description: "원주의 랜드마크인 출렁다리와 울렁다리를 건너며 겨울 풍경을 즐기고, 레일바이크로 신나게 달리는 코스입니다. 걷는 양이 많으니 운동화 필수!",
+                pros: ["압도적인 풍경 (출렁다리)", "아이들 에너지 발산", "기억에 남는 스릴"],
+                cons: ["많이 걸어야 함 (추위 대비)", "고소공포증 주의"],
+                spots: [
+                    {
+                        name: "1. 소금산 그랜드밸리 (출렁다리)",
+                        desc: "길이 200m의 출렁다리와 절벽을 따라 걷는 소금잔도. 중2 아이들에게 담력 테스트 겸 멋진 배경이 됩니다.",
+                        imgColor: "bg-blue-100",
+                        icon: "🌉",
+                        price: { adult: 9000, teen: 5000, child: 5000 },
+                        note: "매표 후 20분 정도 계단 등산 필요. 원주사랑상품권으로 일부 환급 가능성 있음."
+                    },
+                    {
+                        name: "2. 점심식사 (간현관광지 내)",
+                        desc: "주차장 근처에 식당이 많습니다. 뜨끈한 막국수나 돈가스 추천.",
+                        imgColor: "bg-orange-100",
+                        icon: "🍜",
+                        price: { adult: 12000, teen: 12000, child: 10000 },
+                        note: "입맛대로 골라 먹기 좋음."
+                    },
+                    {
+                        name: "3. 원주 레일파크",
+                        desc: "풍경열차를 타고 올라가서 레일바이크를 타고 내려오는 코스. 내리막이라 힘들지 않고 재미있습니다.",
+                        imgColor: "bg-green-100",
+                        icon: "🚲",
+                        price: { adult: 12000, teen: 12000, child: 12000 }, // Avg per person based on 4-seater
+                        note: "4인승 1대 약 48,000원. 미리 예약 권장."
+                    }
+                ],
+                chartData: [90, 70, 60, 40], // Fun, Photo, Comfort, Cost-Efficiency (High is good)
+                labels: ["재미/활동성", "사진 명소", "편안함(덜 힘듦)", "가성비"]
+            },
+            culture: {
+                title: "뮤지엄 산 & 미로예술시장",
+                subtitle: "중2 여학생 & 엄마 취향 저격 감성 코스 (추천)",
+                description: "오크밸리 바로 옆 세계적인 건축가 안도 타다오의 '뮤지엄 산'에서 인생 사진을 남기고, 시장에서 맛있는 군것질을 하는 코스입니다.",
+                pros: ["최고의 포토존 (인스타각)", "따뜻한 실내 관람", "시장 먹방의 재미"],
+                cons: ["뮤지엄 입장료가 비쌈", "초등 남학생은 박물관 지루해 할 수 있음"],
+                spots: [
+                    {
+                        name: "1. 뮤지엄 산 (Museum SAN)",
+                        desc: "공유가 커피 광고를 찍은 그곳. 건물 자체가 예술이며 눈 내린 야외 가든이 환상적입니다. 종이 박물관 체험도 가능.",
+                        imgColor: "bg-stone-200",
+                        icon: "🏛️",
+                        price: { adult: 23000, teen: 15000, child: 15000 },
+                        note: "기본권(야외+종이/미술관) 추천. 제임스터렐관은 추가비용/예약 필요."
+                    },
+                    {
+                        name: "2. 원주 중앙시장 (미로예술시장)",
+                        desc: "백종원의 골목식당 촬영지. 2층 미로시장에 아기자기한 소품샵과 맛집(칼국수, 돈가스, 타코 등)이 많습니다.",
+                        imgColor: "bg-yellow-100",
+                        icon: "🛍️",
+                        price: { adult: 0, teen: 0, child: 0 },
+                        note: "입장료 없음. 온누리상품권 사용 가능. 주차는 공영주차장 이용."
+                    },
+                    {
+                        name: "3. 강원감영",
+                        desc: "시장 바로 근처. 조선시대 관청 건물로 야경이 예쁘고 가볍게 산책하기 좋습니다.",
+                        imgColor: "bg-indigo-100",
+                        icon: "🏯",
+                        price: { adult: 0, teen: 0, child: 0 },
+                        note: "무료 입장."
+                    }
+                ],
+                chartData: [60, 95, 80, 50],
+                labels: ["재미/활동성", "사진 명소", "편안함(덜 힘듦)", "가성비"]
+            },
+            indoor: {
+                title: "한지테마파크 & 실내 체험",
+                subtitle: "혹한기 대비 따뜻한 실내 위주 코스",
+                description: "날씨가 너무 춥거나 눈이 많이 올 때 추천합니다. 원주 특산물인 한지로 공예 체험을 하고 여유롭게 즐기는 일정입니다.",
+                pros: ["따뜻함", "교육적 효과", "저렴한 비용"],
+                cons: ["활동적인 아이들에겐 지루할 수 있음"],
+                spots: [
+                    {
+                        name: "1. 원주 한지테마파크",
+                        desc: "한지 뜨기 체험, 한지 공예품 만들기 등 아이들이 직접 손으로 만드는 체험이 잘 되어 있습니다.",
+                        imgColor: "bg-red-50",
+                        icon: "🏮",
+                        price: { adult: 0, teen: 0, child: 0 },
+                        note: "입장료 무료. 체험비 별도 (5,000원~10,000원 수준). 월요일 휴관 확인."
+                    },
+                    {
+                        name: "2. 기후변화홍보관 / 행구 수변공원",
+                        desc: "실내 전시관이 잘 되어 있고, 바로 앞 수변공원 산책로가 좋습니다.",
+                        imgColor: "bg-teal-100",
+                        icon: "🌍",
+                        price: { adult: 0, teen: 0, child: 0 },
+                        note: "무료 관람."
+                    },
+                    {
+                        name: "3. 예쁜 베이커리 카페 (치악산 뷰)",
+                        desc: "원주에는 '베이커리 궁', '사이다' 등 대형 카페가 많습니다. 빵과 음료로 마무리.",
+                        imgColor: "bg-amber-100",
+                        icon: "☕",
+                        price: { adult: 8000, teen: 8000, child: 6000 },
+                        note: "식음료 비용."
+                    }
+                ],
+                chartData: [50, 60, 90, 90],
+                labels: ["재미/활동성", "사진 명소", "편안함(덜 힘듦)", "가성비"]
+            }
+        };
+
+        let currentCourseKey = 'active'; // default
+        let radarChartInstance = null;
+
+        // --- Core Logic ---
+
+        function init() {
+            updateCourse('culture'); // Set default recommendation to Culture (better balance)
+        }
+
+        function updateCourse(courseKey) {
+            currentCourseKey = courseKey;
+
+            // 1. Update Tabs UI
+            ['active', 'culture', 'indoor'].forEach(key => {
+                const btn = document.getElementById(`btn-${key}`);
+                if (key === courseKey) {
+                    btn.classList.remove('tab-inactive');
+                    btn.classList.add('tab-active');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('tab-inactive');
+                }
+            });
+
+            // 2. Render Content
+            renderContent(courses[courseKey]);
+
+            // 3. Update Chart
+            updateChart(courses[courseKey]);
+
+            // 4. Recalculate Budget
+            calculateBudget();
+        }
+
+        function renderContent(data) {
+            const container = document.getElementById('course-content');
+
+            let spotsHtml = data.spots.map((spot, index) => `
+                <div class="flex flex-col sm:flex-row bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                    <div class="${spot.imgColor} sm:w-24 h-24 sm:h-auto flex items-center justify-center text-4xl shrink-0">
+                        ${spot.icon}
+                    </div>
+                    <div class="p-4 flex-grow">
+                        <div class="flex justify-between items-start mb-1">
+                            <h4 class="font-bold text-lg text-gray-800">${spot.name}</h4>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">${spot.desc}</p>
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">💡 ${spot.note}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                    <div class="p-6 border-b border-gray-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-2xl font-bold text-gray-800">${data.title}</h3>
+                        </div>
+                        <p class="text-indigo-600 font-medium">${data.subtitle}</p>
+                        <p class="text-gray-500 mt-2 text-sm leading-relaxed">${data.description}</p>
+                    </div>
+                    <div class="px-6 py-4 bg-gray-50 flex flex-wrap gap-4">
+                        <div class="text-sm"><span class="font-bold text-green-600">👍 장점:</span> ${data.pros.join(', ')}</div>
+                        <div class="text-sm"><span class="font-bold text-red-500">👎 단점:</span> ${data.cons.join(', ')}</div>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <h3 class="font-bold text-gray-700 ml-1">📍 상세 일정</h3>
+                    ${spotsHtml}
+                </div>
+            `;
+
+            // Re-trigger animation
+            container.classList.remove('fade-in');
+            void container.offsetWidth; // trigger reflow
+            container.classList.add('fade-in');
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+
+            if (radarChartInstance) {
+                radarChartInstance.destroy();
+            }
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: '코스 특성 점수',
+                        data: data.chartData,
+                        fill: true,
+                        backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                        borderColor: 'rgb(79, 70, 229)',
+                        pointBackgroundColor: 'rgb(79, 70, 229)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(79, 70, 229)'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: { display: false } // Hide numbers for cleaner look
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.label + ': ' + context.raw + '점';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('chart-desc').innerText = `"${data.title}"의 특성 그래프입니다.`;
+        }
+
+        function calculateBudget() {
+            const adults = parseInt(document.getElementById('input-adult').value) || 0;
+            const teens = parseInt(document.getElementById('input-teen').value) || 0;
+            const children = parseInt(document.getElementById('input-child').value) || 0;
+
+            const currentSpots = courses[currentCourseKey].spots;
+
+            let total = 0;
+
+            currentSpots.forEach(spot => {
+                total += (spot.price.adult * adults);
+                total += (spot.price.teen * teens);
+                total += (spot.price.child * children);
+            });
+
+            document.getElementById('total-cost').innerText = total.toLocaleString() + " 원";
+        }
+
+        // Initialize on load
+        window.addEventListener('load', init);
+
+    </script>
+</body>
+
+</html>

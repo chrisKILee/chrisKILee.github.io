@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Antigravity x Figma MCP 가이드</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Pretendard', sans-serif;
+      background-color: #fafaf9;
+      /* stone-50 */
+      color: #1c1917;
+      /* stone-900 */
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      height: 300px;
+      max-height: 400px;
+    }
+
+    @media (min-width: 768px) {
+      .chart-container {
+        height: 350px;
+      }
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(229, 231, 235, 0.5);
+    }
+
+    .tab-active {
+      border-bottom: 2px solid #4f46e5;
+      color: #4f46e5;
+      font-weight: 600;
+    }
+
+    .nav-active {
+      background-color: #e0e7ff;
+      /* indigo-100 */
+      color: #4f46e5;
+      /* indigo-600 */
+      border-right: 3px solid #4f46e5;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+
+<body class="flex flex-col md:flex-row min-h-screen">
+
+  <!-- Chosen Palette: Warm Neutrals (Stone) with Indigo (Tech) and Orange (Figma-inspired) accents -->
+  <!-- Application Structure Plan: A 'Documentation Dashboard' layout. It uses a fixed sidebar for easy navigation through the sequential learning process (Concepts -> Fact Check -> 3 Steps -> Tips). This structure is chosen because the source material is instructional. Interactive elements like tabs (for alternative setup methods) and click-to-copy code blocks are used to make technical execution easier without cluttering the view. A chart is used to visually emphasize the critical pricing limitations early on. -->
+  <!-- Visualization & Content Choices: 
+         1. Workflow Diagram -> HTML/CSS Flexbox -> Goal: Inform -> Justification: Shows the pipeline (Figma -> MCP -> Antigravity -> React) visually without relying on SVG.
+         2. Pricing Fact Check -> Bar Chart (Chart.js) -> Goal: Compare -> Justification: Starkly visualizes the impracticality of the free tier (6 calls) vs the necessity of the paid tier (thousands of calls) for real work.
+         3. Setup Methods -> Tabbed UI (JS) -> Goal: Organize -> Justification: Presents Method A and Method B separately to avoid confusion and cognitive overload.
+         4. Code/Prompts -> Styled Pre/Code blocks with Copy Button -> Goal: Inform/Interact -> Justification: Makes it actionable for the user to copy configurations and prompts directly.
+    -->
+  <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+  <nav
+    class="w-full md:w-64 bg-white border-r border-stone-200 shrink-0 md:sticky top-0 md:h-screen overflow-y-auto z-10">
+    <div class="p-6">
+      <h1 class="text-xl font-bold text-indigo-900 tracking-tight flex items-center gap-2">
+        <span class="text-2xl">🚀</span> Vibe Coding
+      </h1>
+      <p class="text-xs text-stone-500 mt-1">디자인-개발 자동화 입문</p>
+    </div>
+    <ul class="flex flex-col text-sm font-medium" id="nav-menu">
+      <li><a href="#intro"
+          class="nav-item block py-3 px-6 hover:bg-stone-50 text-stone-600 transition-colors nav-active"
+          data-target="intro">환영합니다</a></li>
+      <li><a href="#concepts" class="nav-item block py-3 px-6 hover:bg-stone-50 text-stone-600 transition-colors"
+          data-target="concepts">1. 핵심 개념 이해</a></li>
+      <li><a href="#factcheck" class="nav-item block py-3 px-6 hover:bg-stone-50 text-stone-600 transition-colors"
+          data-target="factcheck">2. 요금제 팩트 체크</a></li>
+      <li><a href="#step1" class="nav-item block py-3 px-6 hover:bg-stone-50 text-stone-600 transition-colors"
+          data-target="step1">3. 실전 1: 디자인 최적화</a></li>
+      <li><a href="#step2" class="nav-item block py-3 px-6 hover:bg-stone-50 text-stone-600 transition-colors"
+          data-target="step2">4. 실전 2: MCP 연결</a></li>
+      <li><a href="#step3" class="nav-item block py-3 px-6 hover:bg-stone-50 text-stone-600 transition-colors"
+          data-target="step3">5. 실전 3: 코드 생성</a></li>
+      <li><a href="#tips" class="nav-item block py-3 px-6 hover:bg-stone-50 text-stone-600 transition-colors"
+          data-target="tips">6. 실무 적용 팁</a></li>
+    </ul>
+  </nav>
+
+  <main class="flex-1 p-6 md:p-12 max-w-5xl mx-auto overflow-x-hidden">
+
+    <section id="intro" class="mb-20 section-block">
+      <div class="bg-gradient-to-br from-indigo-50 to-white p-8 rounded-2xl border border-indigo-100 shadow-sm">
+        <span
+          class="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold tracking-wide mb-4">INTRODUCTION</span>
+        <h2 class="text-3xl md:text-4xl font-bold text-stone-900 mb-4 leading-tight">AI 기반 디자인-개발 자동화 입문:<br><span
+            class="text-indigo-600">Google Antigravity와 Figma MCP</span></h2>
+        <p class="text-stone-600 text-lg mb-6 leading-relaxed">
+          AI와 개발의 경계가 허물어지는 시대에 오신 것을 환영합니다. 과거에는 디자이너가 Figma로 그린 화면을 개발자가 일일이 HTML/CSS와 React로 수동 변환해야 했습니다. 하지만 이제는 AI
+          에이전트와 MCP 기술을 활용하여, 디자인에서 코드로 즉각 변환되는 <strong>'바이브 코딩(Vibe Coding)'</strong>이 가능해졌습니다.
+        </p>
+        <div
+          class="p-4 bg-white rounded-xl border border-stone-200 shadow-inner flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="flex flex-col items-center p-2">
+            <div
+              class="w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-2xl mb-2 font-bold">
+              F</div>
+            <span class="text-xs font-semibold text-stone-500">Figma Design</span>
+          </div>
+          <div class="text-stone-300 hidden md:block">➔</div>
+          <div class="text-stone-300 md:hidden">⬇</div>
+          <div class="flex flex-col items-center p-2">
+            <div
+              class="w-12 h-12 rounded-full bg-stone-100 border-2 border-dashed border-stone-300 text-stone-500 flex items-center justify-center text-xl mb-2">
+              🌉</div>
+            <span class="text-xs font-semibold text-stone-500">MCP Bridge</span>
+          </div>
+          <div class="text-stone-300 hidden md:block">➔</div>
+          <div class="text-stone-300 md:hidden">⬇</div>
+          <div class="flex flex-col items-center p-2">
+            <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl mb-2">
+              🤖</div>
+            <span class="text-xs font-semibold text-stone-500">Antigravity</span>
+          </div>
+          <div class="text-stone-300 hidden md:block">➔</div>
+          <div class="text-stone-300 md:hidden">⬇</div>
+          <div class="flex flex-col items-center p-2">
+            <div
+              class="w-12 h-12 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center text-2xl mb-2 font-bold">
+              ⚛</div>
+            <span class="text-xs font-semibold text-stone-500">React.js Code</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="concepts" class="mb-20 pt-10 border-t border-stone-200 section-block">
+      <h3 class="text-2xl font-bold mb-2">1. 핵심 개념 이해하기</h3>
+      <p class="text-stone-600 mb-8">성공적인 자동화를 위해 사용되는 두 가지 핵심 기술의 역할을 이해합니다.</p>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="glass-panel p-6 rounded-xl hover:shadow-md transition-shadow">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded bg-blue-100 flex items-center justify-center text-blue-600 text-xl">🚀</div>
+            <h4 class="text-xl font-bold text-stone-800">Google Antigravity</h4>
+          </div>
+          <p class="text-stone-600 text-sm leading-relaxed">
+            단순한 코드 자동 완성 도구가 아닙니다. Gemini 3 Pro 및 Claude Sonnet 4.5 등 최신 거대언어모델(LLM)을 탑재한 <strong>'에이전트 우선(Agent-first)
+              차세대 통합 개발 환경(IDE)'</strong>입니다. AI 에이전트가 터미널과 브라우저를 직접 제어하며 자율적으로 코드를 작성하고 검증합니다. 현재 퍼블릭 프리뷰 기간 동안 개인에게
+            무료로 제공됩니다.
+          </p>
+        </div>
+
+        <div class="glass-panel p-6 rounded-xl hover:shadow-md transition-shadow">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">🔌
+            </div>
+            <h4 class="text-xl font-bold text-stone-800">MCP (Model Context Protocol)</h4>
+          </div>
+          <p class="text-stone-600 text-sm leading-relaxed">
+            AI 모델이 외부 도구나 데이터베이스와 안전하게 통신할 수 있게 해주는 오픈 표준 규격(일종의 'AI용 USB-C')입니다. Antigravity가 호스트, AI가 클라이언트라면,
+            <strong>Figma MCP 서버는 디자인 데이터를 AI가 이해할 수 있는 코드로 번역해 주는 '다리(Bridge)'</strong> 역할을 수행합니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="factcheck" class="mb-20 pt-10 border-t border-stone-200 section-block">
+      <h3 class="text-2xl font-bold mb-2 flex items-center gap-2">⚠️ 2. 요금제에 대한 정확한 팩트 체크</h3>
+      <p class="text-stone-600 mb-6">무료 계정으로 이 모든 것이 가능할까요? 기술적으로는 "가능"하지만, 실무적으로는 "불가능"에 가깝습니다.</p>
+
+      <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm mb-8">
+        <div class="grid md:grid-cols-2 gap-8 items-center">
+          <div>
+            <h4 class="font-bold text-stone-800 mb-3 border-b pb-2">제한 사항 (Starter 플랜)</h4>
+            <p class="text-sm text-stone-600 mb-4">
+              Figma 무료 사용자는 원격 MCP 서버 연결은 가능하지만, <strong>월 최대 6회의 도구 호출 권한</strong>만 부여됩니다. 화면 하나 변환 시 3~5회가 소모되므로 한 달에
+              1~2개 화면만 테스트 가능합니다.
+            </p>
+
+            <h4 class="font-bold text-stone-800 mb-3 border-b pb-2">권장 사항 (Professional 플랜)</h4>
+            <p class="text-sm text-stone-600">
+              실제 프로젝트 진행을 위해서는 하루 200~600회 호출이 가능한 <strong>Professional 플랜($16/월)과 개발 좌석(Dev Seat)</strong> 확보가 필수적입니다.
+            </p>
+          </div>
+          <div class="bg-stone-50 p-4 rounded-lg border border-stone-100">
+            <h5 class="text-center text-sm font-bold text-stone-500 mb-4">월간 API 도구 호출 한도 비교</h5>
+            <div class="chart-container">
+              <canvas id="pricingChart"></canvas>
+            </div>
+            <p class="text-center text-xs text-stone-400 mt-2">* Pro 플랜은 일일 수백 회 호출을 바탕으로 한 월간 추정치입니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="step1" class="mb-20 pt-10 border-t border-stone-200 section-block">
+      <h3 class="text-2xl font-bold mb-2">3. 실전 1단계: Figma 디자인 최적화</h3>
+      <p class="text-stone-600 mb-6">AI가 코드를 잘 짜게 하려면, 원본 파일이 구조화되어 있어야 합니다. AI는 그림이 아닌 노드 트리와 속성을 읽습니다.</p>
+
+      <div class="bg-orange-50 p-6 rounded-xl border border-orange-100">
+        <ul class="space-y-4">
+          <li class="flex items-start gap-3">
+            <div
+              class="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 text-xs font-bold">
+              1</div>
+            <div>
+              <h5 class="font-bold text-stone-800">의미 있는 이름 부여 (Semantic Naming)</h5>
+              <p class="text-sm text-stone-600 mt-1"><code
+                  class="bg-white px-1 py-0.5 rounded text-orange-600 text-xs border">Frame 123</code> 대신 <code
+                  class="bg-white px-1 py-0.5 rounded text-green-600 text-xs border">SubmitButton</code>, <code
+                  class="bg-white px-1 py-0.5 rounded text-green-600 text-xs border">PricingCardContainer</code>처럼 역할
+                기반으로 이름을 지어주세요.</p>
+            </div>
+          </li>
+          <li class="flex items-start gap-3">
+            <div
+              class="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 text-xs font-bold">
+              2</div>
+            <div>
+              <h5 class="font-bold text-stone-800">오토 레이아웃(Auto Layout) 필수 적용</h5>
+              <p class="text-sm text-stone-600 mt-1">오토 레이아웃을 사용해야 AI가 이를 CSS의 Flexbox나 Grid 아키텍처로 정확히 매핑하여 반응형 웹을 구현할 수
+                있습니다.</p>
+            </div>
+          </li>
+          <li class="flex items-start gap-3">
+            <div
+              class="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 text-xs font-bold">
+              3</div>
+            <div>
+              <h5 class="font-bold text-stone-800">디자인 토큰(변수) 사용</h5>
+              <p class="text-sm text-stone-600 mt-1">색상이나 간격을 단순 Hex 코드가 아닌 Figma의 Variables로 정의하면, AI가 Tailwind CSS의 테마
+                설정과 연결된 깔끔한 코드를 작성합니다.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="step2" class="mb-20 pt-10 border-t border-stone-200 section-block">
+      <h3 class="text-2xl font-bold mb-2">4. 실전 2단계: Antigravity와 Figma 연결하기</h3>
+      <p class="text-stone-600 mb-4">진행 전, Figma의 Settings > Security에서 Personal Access Token을 미리 발급받아 복사해 두세요.</p>
+
+      <div class="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">
+        <div class="flex border-b border-stone-200 bg-stone-50">
+          <button class="flex-1 py-3 px-4 text-sm font-medium transition-colors tab-btn tab-active" data-tab="method-a">
+            방법 A: 공식 스토어 (추천/가장 쉬움)
+          </button>
+          <button
+            class="flex-1 py-3 px-4 text-sm font-medium text-stone-500 hover:text-stone-700 transition-colors tab-btn"
+            data-tab="method-b">
+            방법 B: Framelink 수동 설정
+          </button>
+        </div>
+
+        <div class="p-6">
+          <div id="method-a" class="tab-content block animate-fade-in">
+            <ol class="list-decimal pl-5 space-y-3 text-sm text-stone-700">
+              <li>Antigravity 에디터 사이드 패널 상단의 <code class="bg-stone-100 px-1 rounded">...</code> 아이콘을 클릭하고 <strong>"MCP
+                  Servers"</strong>를 선택해 내장 스토어를 엽니다.</li>
+              <li><strong>"Figma Dev Mode MCP"</strong>를 검색하여 Install을 클릭합니다.</li>
+              <li>브라우저 창이 열리면 Figma 계정 접근 권한을 승인(OAuth 인증)합니다.</li>
+              <li>연결이 완료되면 <code
+                  class="bg-indigo-50 text-indigo-600 px-1 rounded border border-indigo-100">#get_design_context</code>
+                같은 도구가 에이전트 패널에 나타납니다.</li>
+            </ol>
+          </div>
+
+          <div id="method-b" class="tab-content hidden animate-fade-in">
+            <p class="text-sm text-stone-600 mb-4">데스크톱 앱 제약 등을 우회하고 싶다면 GitHub 별 13,300개 이상을 받은 Framelink MCP 서버를 수동으로
+              설정할 수 있습니다.</p>
+            <ol class="list-decimal pl-5 space-y-3 text-sm text-stone-700 mb-4">
+              <li>Manage MCP Servers 메뉴에서 View raw config를 눌러 <code
+                  class="bg-stone-100 px-1 rounded">mcp_config.json</code> 파일을 엽니다.</li>
+              <li>아래 코드를 붙여넣습니다. (서버 이름에 띄어쓰기 대신 하이픈 사용 필수)</li>
+            </ol>
+            <div class="relative group">
+              <pre class="bg-stone-900 text-stone-300 p-4 rounded-lg text-xs overflow-x-auto font-mono leading-relaxed"
+                id="config-code">{
+  "mcpServers": {
+    "Framelink-MCP-for-Figma": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "figma-developer-mcp",
+        "--figma-api-key=여기에_발급받은_토큰_입력",
+        "--stdio"
+      ]
+    }
+  }
+}</pre>
+              <button
+                class="absolute top-2 right-2 bg-stone-700 hover:bg-stone-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                onclick="copyToClipboard('config-code')">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="step3" class="mb-20 pt-10 border-t border-stone-200 section-block">
+      <h3 class="text-2xl font-bold mb-2">5. 실전 3단계: AI 에이전트에게 코드 생성 지시</h3>
+      <p class="text-stone-600 mb-6">연결이 끝났다면, 대화형 인터페이스를 통해 프롬프트를 입력하고 코드를 뽑아낼 차례입니다.</p>
+
+      <div class="flex flex-col md:flex-row gap-6">
+        <div class="flex-1 space-y-4">
+          <div class="flex gap-4 p-4 bg-stone-50 rounded-lg border border-stone-200">
+            <div
+              class="w-8 h-8 rounded bg-orange-100 flex items-center justify-center text-orange-600 font-bold shrink-0">
+              1</div>
+            <p class="text-sm text-stone-700 pt-1">Figma에서 변환하고 싶은 프레임을 선택하고 우클릭하여 <strong>"Copy link to
+                selection"</strong>을 누릅니다.</p>
+          </div>
+          <div class="flex gap-4 p-4 bg-stone-50 rounded-lg border border-stone-200">
+            <div class="w-8 h-8 rounded bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">2
+            </div>
+            <p class="text-sm text-stone-700 pt-1">Antigravity 챗 창에 링크를 붙여넣고, 프레임워크와 아키텍처를 명시하는 <strong>'지침 기반
+                프롬프트'</strong>를 입력합니다.</p>
+          </div>
+          <div class="flex gap-4 p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+            <div
+              class="w-8 h-8 rounded bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold shrink-0">
+              3</div>
+            <p class="text-sm text-stone-700 pt-1">에이전트는 자율적으로 노드 정보를 가져오고, React+Tailwind 구조의 200~350줄가량 초안 코드를 반환합니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex-1 bg-white border border-stone-200 rounded-xl shadow-lg overflow-hidden flex flex-col">
+          <div class="bg-stone-100 px-4 py-2 border-b border-stone-200 flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-red-400"></div>
+            <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+            <div class="w-3 h-3 rounded-full bg-green-400"></div>
+            <span class="text-xs text-stone-500 font-mono ml-2">Antigravity Chat</span>
+          </div>
+          <div class="p-4 flex-1 bg-stone-50 flex flex-col gap-4">
+            <div
+              class="self-end bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[90%] relative group shadow-sm text-sm">
+              <p id="prompt-text">이 Figma 디자인 링크(https://figma.com/...)를 분석해서 Next.js 14 환경에 맞는 React 컴포넌트로 만들어줘.
+                Tailwind CSS를 사용하고, 모든 요소는 하나의 파일에 넣지 말고 src/components/ui 폴더 내에 분리해서 저장해. 버튼에는 클라이언트 측 상호작용을 위해 상단에
+                'use client'를 선언해 줘.</p>
+              <button
+                class="absolute -top-3 -right-2 bg-stone-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                onclick="copyToClipboard('prompt-text')">Copy Prompt</button>
+            </div>
+            <div
+              class="self-start bg-white border border-stone-200 p-3 rounded-2xl rounded-tl-none max-w-[90%] shadow-sm flex items-start gap-3">
+              <div
+                class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs shrink-0 mt-1">
+                🤖</div>
+              <div class="text-sm text-stone-700">
+                <p class="mb-2 text-xs text-stone-500 italic">Calling get_design_context...</p>
+                <p>디자인을 분석했습니다. 요청하신 대로 <code
+                    class="bg-stone-100 px-1 rounded">src/components/ui/SubmitButton.tsx</code> 등을 분리하여 Next.js 14 기반의
+                  Tailwind 컴포넌트를 생성하겠습니다.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tips" class="mb-20 pt-10 border-t border-stone-200 section-block">
+      <h3 class="text-2xl font-bold mb-6">💡 6. 성공적인 실무 적용을 위한 팁</h3>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm border-l-4 border-l-green-500">
+          <h4 class="text-lg font-bold text-stone-800 mb-2 flex items-center gap-2">📝 AGENTS.md 활용</h4>
+          <p class="text-sm text-stone-600 leading-relaxed">
+            프로젝트 최상위 경로에 <code class="bg-stone-100 px-1 rounded">.agent</code> 또는 <code
+              class="bg-stone-100 px-1 rounded">AGENTS.md</code> 파일을 만들고 <em>"우리 팀은 Shadcn UI를 사용한다"</em> 같은 규칙을 적어두세요.
+            AI의 코드 생성 성공률과 일관성이 비약적으로 상승합니다.
+          </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm border-l-4 border-l-blue-500">
+          <h4 class="text-lg font-bold text-stone-800 mb-2 flex items-center gap-2">🎯 완벽주의 버리기</h4>
+          <p class="text-sm text-stone-600 leading-relaxed">
+            AI가 생성하는 코드는 훌륭한 <strong>"강력한 초안(Strong first draft)"</strong>입니다. 정적인 UI 레이아웃은 완벽하게 잡아내지만, 복잡한 상태 관리나 비즈니스
+            로직 연동은 여전히 개발자의 마무리 손길이 필요함을 기억하세요.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Chart.js Implementation for Pricing Fact Check
+    document.addEventListener('DOMContentLoaded', function () {
+      const ctx = document.getElementById('pricingChart').getContext('2d');
+
+      // Logarithmic scale or visually distinct bars to show the massive difference
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['무료 (Starter)', '유료 (Professional)'],
+          datasets: [{
+            label: '월간 도구 호출 한도 (추정치)',
+            data: [6, 12000], // 6 vs approx 400/day * 30
+            backgroundColor: [
+              'rgba(234, 88, 12, 0.7)', // Orange for free
+              'rgba(79, 70, 229, 0.8)'   // Indigo for pro
+            ],
+            borderColor: [
+              'rgb(234, 88, 12)',
+              'rgb(79, 70, 229)'
+            ],
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  if (context.raw === 6) return '월 최대 6회 (실무 불가)';
+                  return '월 10,000회 이상 (실무 가능)';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              type: 'logarithmic', // Use log scale to show 6 and 12000 together clearly
+              display: true,
+              title: {
+                display: true,
+                text: '호출 횟수 (Log Scale)',
+                font: { size: 10 }
+              },
+              ticks: {
+                callback: function (value, index, values) {
+                  if (value === 1 || value === 10 || value === 100 || value === 1000 || value === 10000) {
+                    return value;
+                  }
+                  return null;
+                }
+              }
+            }
+          }
+        }
+      });
+    });
+
+    // Tab Switching Logic
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active classes
+        tabBtns.forEach(b => {
+          b.classList.remove('tab-active');
+          b.classList.add('text-stone-500');
+        });
+        tabContents.forEach(c => c.classList.add('hidden'));
+
+        // Add active class to clicked
+        btn.classList.add('tab-active');
+        btn.classList.remove('text-stone-500');
+
+        // Show content
+        const targetId = btn.getAttribute('data-tab');
+        document.getElementById(targetId).classList.remove('hidden');
+      });
+    });
+
+    // Copy to Clipboard Utility
+    function copyToClipboard(elementId) {
+      const textToCopy = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = 'Copied!';
+        btn.classList.add('bg-green-600');
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.classList.remove('bg-green-600');
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+      });
+    }
+
+    // Active Navigation Highlight based on Scroll
+    const sections = document.querySelectorAll('section[id]');
+    const navItems = document.querySelectorAll('.nav-item');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        // Add an offset to trigger earlier
+        if (pageYOffset >= (sectionTop - 150)) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navItems.forEach(item => {
+        item.classList.remove('nav-active');
+        if (item.getAttribute('data-target') === current) {
+          item.classList.add('nav-active');
+        }
+      });
+    });
+
+    // Smooth scroll for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>

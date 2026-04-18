@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code Channels — 터미널 밖에서 Claude와 대화하기</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0e0e11;
+      --surface: #18181c;
+      --surface2: #202026;
+      --border: #2a2a35;
+      --purple: #a78bfa;
+      --purple-dim: #7c3aed;
+      --pink: #f472b6;
+      --teal: #2dd4bf;
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --text: #f0f0f4;
+      --text-muted: #8b8b99;
+      --text-dim: #5a5a68;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(14,14,17,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 56px;
+      display: flex; align-items: center; gap: 20px;
+    }
+    .nav-logo { font-weight: 700; font-size: 15px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .nav-logo span { color: var(--purple); }
+    .nav-links { display: flex; gap: 24px; margin-left: auto; }
+    .nav-links a { color: var(--text-muted); font-size: 13px; text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-badge {
+      margin-left: auto;
+      background: rgba(167,139,250,0.15);
+      border: 1px solid rgba(167,139,250,0.3);
+      color: var(--purple);
+      font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+
+    /* HERO */
+    .hero {
+      padding: 80px 32px 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse at center, rgba(124,58,237,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(167,139,250,0.1);
+      border: 1px solid rgba(167,139,250,0.25);
+      color: var(--purple);
+      font-size: 12px; font-weight: 700;
+      padding: 5px 14px; border-radius: 20px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: normal; background: linear-gradient(135deg, var(--purple), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero-desc { font-size: 17px; color: var(--text-muted); max-width: 600px; margin-bottom: 40px; line-height: 1.75; }
+
+    .hero-stats {
+      display: flex; gap: 16px; flex-wrap: wrap;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      min-width: 140px;
+    }
+    .stat-card .val { font-size: 22px; font-weight: 800; color: var(--purple); display: block; }
+    .stat-card .lbl { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* CONCEPT SVG */
+    .concept-wrap {
+      max-width: 1200px; margin: 0 auto; padding: 0 32px 60px;
+    }
+    .section-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--purple);
+      margin-bottom: 8px;
+    }
+    .section-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .section-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 28px; }
+
+    /* SECTIONS */
+    .section { max-width: 1200px; margin: 0 auto; padding: 0 32px 64px; }
+    .section-divider { border: none; border-top: 1px solid var(--border); margin: 0 32px 64px; }
+
+    /* PLATFORM GRID */
+    .platform-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .platform-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .platform-card:hover { border-color: rgba(167,139,250,0.4); transform: translateY(-2px); }
+    .platform-card.supported::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--purple), var(--pink)); }
+    .platform-card.unsupported::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--border); }
+    .platform-icon { font-size: 28px; margin-bottom: 14px; }
+    .platform-name { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+    .platform-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+    .platform-tag {
+      display: inline-block; margin-top: 12px;
+      font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 8px;
+      letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .tag-supported { background: rgba(52,211,153,0.12); color: var(--green); border: 1px solid rgba(52,211,153,0.25); }
+    .tag-unsupported { background: rgba(139,139,153,0.1); color: var(--text-muted); border: 1px solid var(--border); }
+
+    /* STEPS */
+    .steps-wrap { display: flex; flex-direction: column; gap: 16px; }
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px;
+      display: flex; gap: 20px; align-items: flex-start;
+    }
+    .step-num {
+      width: 36px; height: 36px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--purple-dim), var(--purple));
+      color: white; font-size: 14px; font-weight: 800;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step-body { flex: 1; }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+
+    /* CODE BLOCK */
+    .code-block {
+      background: #0d0d10;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-top: 10px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: #c9d1d9;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.6;
+    }
+    .code-block .cmd { color: #79c0ff; }
+    .code-block .arg { color: #a5d6ff; }
+    .code-block .comment { color: #6e7681; font-style: italic; }
+    .code-block .var { color: #ffa657; }
+
+    /* COMPARE TABLE */
+    .compare-table { width: 100%; border-collapse: collapse; }
+    .compare-table th, .compare-table td {
+      padding: 13px 16px;
+      text-align: left;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-table th {
+      background: var(--surface);
+      font-size: 12px; font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { font-weight: 600; color: var(--text); }
+    .compare-table .highlight { background: rgba(167,139,250,0.06); }
+    .compare-table .highlight td:first-child { color: var(--purple); }
+
+    /* CALLOUT */
+    .callout {
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex; gap: 14px; align-items: flex-start;
+      margin-bottom: 20px;
+      font-size: 14px; line-height: 1.7;
+    }
+    .callout-warn { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); }
+    .callout-info { background: rgba(45,212,191,0.06); border: 1px solid rgba(45,212,191,0.2); }
+    .callout-tip  { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2); }
+    .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .callout-warn .callout-icon { color: var(--yellow); }
+    .callout-info .callout-icon { color: var(--teal); }
+    .callout-tip  .callout-icon { color: var(--purple); }
+    .callout strong { display: block; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .callout span { color: var(--text-muted); }
+
+    /* TABS */
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .tab-btn {
+      background: none; border: none; cursor: pointer;
+      padding: 10px 18px; font-size: 14px; font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+      font-family: inherit;
+    }
+    .tab-btn.active { color: var(--purple); border-bottom-color: var(--purple); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* SECURITY */
+    .security-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .security-item {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+    }
+    .security-item .icon { font-size: 20px; margin-bottom: 10px; }
+    .security-item h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .security-item p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    footer a { color: var(--purple); text-decoration: none; }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .hero, .concept-wrap, .section { padding-left: 16px; padding-right: 16px; }
+      .section-divider { margin: 0 16px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><i class="fas fa-satellite-dish" style="color:var(--purple)"></i> Claude Code <span>Channels</span></div>
+  <div class="nav-links">
+    <a href="#concept">개념</a>
+    <a href="#platforms">플랫폼</a>
+    <a href="#setup">설정</a>
+    <a href="#security">보안</a>
+    <a href="#compare">비교</a>
+  </div>
+  <span class="nav-badge">Research Preview</span>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge"><span class="dot"></span>Claude Code v2.1.80+ 신기능</div>
+  <h1>터미널 밖에서도<br><em>Claude와 실시간 대화</em></h1>
+  <p class="hero-desc">
+    Channels는 Telegram·Discord 메시지를 실행 중인 Claude Code 세션으로 직접 전달하는 기능입니다.
+    폰에서 메시지 보내면 Claude가 터미널에서 작업하고 답장을 돌려보냅니다.
+  </p>
+  <div class="hero-stats">
+    <div class="stat-card"><span class="val">2</span><span class="lbl">공식 지원 플랫폼</span></div>
+    <div class="stat-card"><span class="val">v2.1.80+</span><span class="lbl">최소 요구 버전</span></div>
+    <div class="stat-card"><span class="val">양방향</span><span class="lbl">이벤트 채널</span></div>
+  </div>
+</div>
+
+<!-- CONCEPT DIAGRAM -->
+<div class="concept-wrap" id="concept">
+  <div class="section-label">개념</div>
+  <div class="section-title">Channel이란?</div>
+  <div class="section-sub">외부 이벤트를 실행 중인 Claude Code 세션으로 밀어 넣는 MCP 서버 기반 브리지</div>
+
+  <!-- SVG Architecture Diagram -->
+  <svg viewBox="0 0 760 130" style="width:100%;max-width:760px;display:block;margin-bottom:32px;">
+    <defs>
+      <marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+        <path d="M0,0 L0,7 L7,3.5 z" fill="#6b7280"/>
+      </marker>
+      <marker id="arr-pur" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+        <path d="M0,0 L0,7 L7,3.5 z" fill="#a78bfa"/>
+      </marker>
+    </defs>
+
+    <!-- Phone -->
+    <rect x="10" y="40" width="110" height="50" rx="10" fill="#18181c" stroke="#3f3f46" stroke-width="1.5"/>
+    <text x="65" y="60" text-anchor="middle" fill="#f0f0f4" font-size="11" font-family="system-ui">📱 폰 / 메신저</text>
+    <text x="65" y="78" text-anchor="middle" fill="#8b8b99" font-size="10" font-family="system-ui">Telegram / Discord</text>
+
+    <!-- Arrow 1: send -->
+    <line x1="122" y1="58" x2="190" y2="58" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr-pur)" stroke-dasharray="4 2"/>
+    <text x="156" y="50" text-anchor="middle" fill="#a78bfa" font-size="10" font-family="system-ui">메시지 전송</text>
+
+    <!-- Channel Plugin -->
+    <rect x="192" y="30" width="130" height="70" rx="10" fill="#1a1625" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="257" y="56" text-anchor="middle" fill="#a78bfa" font-size="11" font-family="system-ui" font-weight="700">Channel Plugin</text>
+    <text x="257" y="72" text-anchor="middle" fill="#8b8b99" font-size="10" font-family="system-ui">(MCP Server)</text>
+    <text x="257" y="88" text-anchor="middle" fill="#6b7280" font-size="9" font-family="system-ui">Bot Token 처리</text>
+
+    <!-- Arrow 2: event push -->
+    <line x1="324" y1="65" x2="390" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+    <text x="357" y="57" text-anchor="middle" fill="#6b7280" font-size="10" font-family="system-ui">이벤트 push</text>
+
+    <!-- Claude Code Session -->
+    <rect x="392" y="30" width="160" height="70" rx="10" fill="#0f1923" stroke="#2dd4bf" stroke-width="1.5"/>
+    <text x="472" y="56" text-anchor="middle" fill="#2dd4bf" font-size="11" font-family="system-ui" font-weight="700">Claude Code Session</text>
+    <text x="472" y="72" text-anchor="middle" fill="#8b8b99" font-size="10" font-family="system-ui">로컬 터미널</text>
+    <text x="472" y="88" text-anchor="middle" fill="#6b7280" font-size="9" font-family="system-ui">--channels 플래그로 실행</text>
+
+    <!-- Arrow 3: reply -->
+    <line x1="554" y1="58" x2="624" y2="58" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr-pur)" stroke-dasharray="4 2"/>
+    <text x="589" y="50" text-anchor="middle" fill="#a78bfa" font-size="10" font-family="system-ui">답장 발송</text>
+
+    <!-- Reply bubble -->
+    <rect x="626" y="38" width="120" height="40" rx="10" fill="#18181c" stroke="#3f3f46" stroke-width="1.5"/>
+    <text x="686" y="57" text-anchor="middle" fill="#f0f0f4" font-size="10" font-family="system-ui">작업 결과 메시지</text>
+    <text x="686" y="72" text-anchor="middle" fill="#8b8b99" font-size="9" font-family="system-ui">실시간 전달</text>
+  </svg>
+
+  <div class="callout callout-warn">
+    <span class="callout-icon"><i class="fas fa-triangle-exclamation"></i></span>
+    <div>
+      <strong>⚠️ Research Preview 주의사항</strong>
+      <span>claude.ai 로그인 필수 (Console/API 키 인증 불가). Team·Enterprise 플랜은 관리자가 별도 활성화해야 사용 가능. 프로토콜 문법이 향후 변경될 수 있습니다.</span>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- PLATFORMS -->
+<div class="section" id="platforms">
+  <div class="section-label">플랫폼</div>
+  <div class="section-title">지원 플랫폼</div>
+  <div class="section-sub">공식 문서 기준 (2026-03-21)</div>
+
+  <div class="platform-grid">
+    <div class="platform-card supported">
+      <div class="platform-icon">✈️</div>
+      <div class="platform-name">Telegram</div>
+      <div class="platform-desc">BotFather로 봇 생성 → 토큰 설정만 하면 바로 연결. DM 봇 형태로 동작. 메시지 전송·수신 모두 지원.</div>
+      <span class="platform-tag tag-supported">공식 지원</span>
+    </div>
+    <div class="platform-card supported">
+      <div class="platform-icon">🎮</div>
+      <div class="platform-name">Discord</div>
+      <div class="platform-desc">Discord Developer Portal에서 봇 생성. Message Content Intent 권한 필요. DM·채널 메시지 모두 수신.</div>
+      <span class="platform-tag tag-supported">공식 지원</span>
+    </div>
+    <div class="platform-card supported">
+      <div class="platform-icon">🧪</div>
+      <div class="platform-name">Fakechat (로컬 데모)</div>
+      <div class="platform-desc">외부 서비스 없이 localhost:8787에서 테스트. 실제 메신저 연결 전 구조 이해용으로 적합.</div>
+      <span class="platform-tag tag-supported">공식 지원 (데모)</span>
+    </div>
+    <div class="platform-card unsupported">
+      <div class="platform-icon">💬</div>
+      <div class="platform-name">Google Chat</div>
+      <div class="platform-desc">현재 공식 Channels 플러그인 없음. Webhook 기반 커스텀 채널로 구현 가능하나 공식 지원 외 방식. 향후 추가 가능성 있음.</div>
+      <span class="platform-tag tag-unsupported">공식 미지원 (2026-03 기준)</span>
+    </div>
+    <div class="platform-card unsupported">
+      <div class="platform-icon">💼</div>
+      <div class="platform-name">Slack</div>
+      <div class="platform-desc">Claude in Slack은 별도 제품(웹 샌드박스 기반). Channels 기능과는 다른 방식. 직접 로컬 세션 연결은 공식 미지원.</div>
+      <span class="platform-tag tag-unsupported">공식 미지원</span>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- SETUP TABS -->
+<div class="section" id="setup">
+  <div class="section-label">설정 가이드</div>
+  <div class="section-title">플랫폼별 설정 방법</div>
+  <div class="section-sub">설정은 공통적으로 ① 봇 생성 → ② 플러그인 설치 → ③ 토큰 설정 → ④ 재시작 → ⑤ 페어링 5단계</div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab(event, 'tab-telegram')">✈️ Telegram</button>
+    <button class="tab-btn" onclick="switchTab(event, 'tab-discord')">🎮 Discord</button>
+    <button class="tab-btn" onclick="switchTab(event, 'tab-fakechat')">🧪 Fakechat (데모)</button>
+  </div>
+
+  <!-- TELEGRAM TAB -->
+  <div id="tab-telegram" class="tab-panel active">
+    <div class="steps-wrap">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Telegram에서 봇 생성</div>
+          <div class="step-desc">
+            Telegram에서 <strong>@BotFather</strong>를 검색해 대화 시작 → <code>/newbot</code> 전송 → 봇 이름과 사용자명 입력 → 발급된 토큰 복사
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Claude Code에서 플러그인 설치</div>
+          <div class="step-desc">Claude Code 세션에서 아래 명령어 실행</div>
+          <div class="code-block"><span class="cmd">/plugin install</span> <span class="arg">telegram@claude-plugins-official</span>
+
+<span class="comment"># 플러그인을 찾을 수 없다면 마켓플레이스 먼저 추가:</span>
+<span class="cmd">/plugin marketplace add</span> <span class="arg">anthropics/claude-plugins-official</span>
+<span class="cmd">/plugin install</span> <span class="arg">telegram@claude-plugins-official</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">봇 토큰 설정</div>
+          <div class="step-desc">복사한 토큰을 아래 명령어로 등록 (토큰은 <code>~/.claude/channels/telegram/.env</code>에 저장됨)</div>
+          <div class="code-block"><span class="cmd">/telegram:configure</span> <span class="var">YOUR_BOT_TOKEN_HERE</span>
+
+<span class="comment"># 또는 환경변수로 설정:</span>
+<span class="cmd">export</span> TELEGRAM_BOT_TOKEN=<span class="var">YOUR_BOT_TOKEN_HERE</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">Channels 플래그로 Claude Code 재시작</div>
+          <div class="step-desc">터미널에서 Claude Code를 아래 명령어로 새로 시작</div>
+          <div class="code-block"><span class="cmd">claude</span> <span class="arg">--channels</span> plugin:telegram@claude-plugins-official
+
+<span class="comment"># Telegram + Discord 동시 연결:</span>
+<span class="cmd">claude</span> <span class="arg">--channels</span> plugin:telegram@claude-plugins-official plugin:discord@claude-plugins-official</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="step-title">페어링 코드 입력</div>
+          <div class="step-desc">Telegram에서 등록한 봇에게 아무 메시지나 전송 → 봇이 페어링 코드로 답장 → Claude Code에서 확인</div>
+          <div class="code-block"><span class="cmd">/telegram:access pair</span> <span class="var">PAIRING_CODE</span>
+
+<span class="comment"># 허가된 사용자만 접근하도록 허용 목록 정책 설정:</span>
+<span class="cmd">/telegram:access policy</span> allowlist</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCORD TAB -->
+  <div id="tab-discord" class="tab-panel">
+    <div class="steps-wrap">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Discord Developer Portal에서 봇 생성</div>
+          <div class="step-desc">
+            <a href="https://discord.com/developers/applications" target="_blank" style="color:var(--purple)">discord.com/developers/applications</a> 접속 → New Application 생성 → Bot 섹션 → 사용자명 설정 → Reset Token → 토큰 복사
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Message Content Intent 활성화</div>
+          <div class="step-desc">
+            Bot 설정 → Privileged Gateway Intents 섹션 → <strong>Message Content Intent</strong> 토글 ON → Save Changes
+          </div>
+          <div class="callout callout-warn" style="margin-top:10px">
+            <span class="callout-icon"><i class="fas fa-triangle-exclamation"></i></span>
+            <div><span>이 설정 없이는 봇이 메시지 내용을 읽지 못합니다. 반드시 활성화해야 합니다.</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">봇을 서버에 초대</div>
+          <div class="step-desc">OAuth2 → URL Generator → Scope: <code>bot</code> → 권한 선택 후 초대 URL로 서버에 추가</div>
+          <div class="code-block"><span class="comment"># 필요 권한 체크리스트:</span>
+✓ View Channels
+✓ Send Messages
+✓ Send Messages in Threads
+✓ Read Message History
+✓ Attach Files
+✓ Add Reactions</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">플러그인 설치 및 토큰 설정</div>
+          <div class="code-block"><span class="cmd">/plugin install</span> <span class="arg">discord@claude-plugins-official</span>
+
+<span class="cmd">/discord:configure</span> <span class="var">YOUR_BOT_TOKEN_HERE</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="step-title">재시작 및 페어링</div>
+          <div class="code-block"><span class="cmd">claude</span> <span class="arg">--channels</span> plugin:discord@claude-plugins-official
+
+<span class="comment"># Discord에서 봇에게 DM 전송 → 페어링 코드 수신 →</span>
+<span class="cmd">/discord:access pair</span> <span class="var">PAIRING_CODE</span>
+<span class="cmd">/discord:access policy</span> allowlist</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAKECHAT TAB -->
+  <div id="tab-fakechat" class="tab-panel">
+    <div class="callout callout-info">
+      <span class="callout-icon"><i class="fas fa-flask"></i></span>
+      <div>
+        <strong>데모용 로컬 채널</strong>
+        <span>외부 서비스 계정 없이 localhost에서 Channels 구조를 체험하는 테스트 모드입니다.</span>
+      </div>
+    </div>
+    <div class="steps-wrap">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">플러그인 설치</div>
+          <div class="code-block"><span class="cmd">/plugin install</span> <span class="arg">fakechat@claude-plugins-official</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Channels 플래그로 실행</div>
+          <div class="code-block"><span class="cmd">claude</span> <span class="arg">--channels</span> plugin:fakechat@claude-plugins-official</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">브라우저에서 테스트</div>
+          <div class="step-desc">
+            브라우저에서 <strong>http://localhost:8787</strong> 접속 → 메시지 입력 → Claude Code 세션으로 전달 확인
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- SECURITY -->
+<div class="section" id="security">
+  <div class="section-label">보안</div>
+  <div class="section-title">보안 모델</div>
+  <div class="section-sub">누구나 메시지를 보낼 수 있으면 위험합니다. Channels는 페어링 + 허용 목록 이중 구조로 보호합니다.</div>
+
+  <div class="security-grid">
+    <div class="security-item">
+      <div class="icon">🔗</div>
+      <h4>페어링 필수</h4>
+      <p>봇이 페어링 코드를 발급하고, Claude Code에서 확인하는 2단계 인증. 한 번만 설정하면 이후 자동 인식.</p>
+    </div>
+    <div class="security-item">
+      <div class="icon">📋</div>
+      <h4>Sender Allowlist</h4>
+      <p><code>/telegram:access policy allowlist</code>로 허가된 ID만 메시지 수신. 설정 안 하면 누구나 Claude에게 명령 전송 가능해집니다.</p>
+    </div>
+    <div class="security-item">
+      <div class="icon">🔑</div>
+      <h4>토큰 로컬 저장</h4>
+      <p>봇 토큰은 <code>~/.claude/channels/{플랫폼}/.env</code>에 로컬 저장. 서버로 업로드되지 않습니다.</p>
+    </div>
+    <div class="security-item">
+      <div class="icon">⚡</div>
+      <h4>무인 실행 옵션</h4>
+      <p><code>--dangerously-skip-permissions</code> 플래그로 권한 확인 대화 없이 자동 실행. 신뢰된 환경에서만 사용 권장.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-tip" style="margin-top:24px">
+    <span class="callout-icon"><i class="fas fa-lightbulb"></i></span>
+    <div>
+      <strong>설정 우선 순위</strong>
+      <span>페어링 코드 입력 후 반드시 <code>/telegram:access policy allowlist</code> 또는 <code>/discord:access policy allowlist</code>를 설정하세요. 그렇지 않으면 해당 봇을 아는 누구나 메시지를 보낼 수 있습니다.</span>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- COMPARE TABLE -->
+<div class="section" id="compare">
+  <div class="section-label">비교</div>
+  <div class="section-title">Channels vs 유사 기능 비교</div>
+  <div class="section-sub">공식 문서 기준 — Channels가 다른 Claude 기능들과 어떻게 다른지</div>
+
+  <div style="overflow-x:auto; border-radius:12px; border:1px solid var(--border);">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>기능</th>
+          <th>무엇을 하는가</th>
+          <th>실행 위치</th>
+          <th>적합한 용도</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight">
+          <td>🛰 Channels (이 문서)</td>
+          <td>외부 이벤트를 실행 중인 로컬 세션으로 push</td>
+          <td>로컬 터미널</td>
+          <td>채팅 브리지, 폰에서 원격 지시</td>
+        </tr>
+        <tr>
+          <td>Remote Control</td>
+          <td>claude.ai/모바일에서 로컬 세션 직접 조작</td>
+          <td>로컬 터미널</td>
+          <td>진행 중인 세션을 다른 기기에서 조종</td>
+        </tr>
+        <tr>
+          <td>Claude Code on the web</td>
+          <td>GitHub에서 클라우드 샌드박스에서 작업 실행</td>
+          <td>클라우드 (신선한 환경)</td>
+          <td>비동기 작업 위임</td>
+        </tr>
+        <tr>
+          <td>Claude in Slack</td>
+          <td>@Claude 멘션으로 웹 세션 생성</td>
+          <td>클라우드</td>
+          <td>팀 채팅에서 작업 요청</td>
+        </tr>
+        <tr>
+          <td>Standard MCP Server</td>
+          <td>Claude가 필요할 때 서버에 쿼리</td>
+          <td>로컬 또는 원격</td>
+          <td>온디맨드 읽기/쿼리</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Enterprise Plan Table -->
+  <div style="margin-top:32px;">
+    <div class="section-label" style="margin-bottom:8px">요금제별 사용 가능 여부</div>
+    <div style="overflow-x:auto; border-radius:12px; border:1px solid var(--border);">
+      <table class="compare-table">
+        <thead>
+          <tr><th>플랜</th><th>기본값</th><th>활성화 방법</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Pro / Max (개인)</td>
+            <td style="color:var(--green)">사용 가능</td>
+            <td>세션마다 <code>--channels</code> 플래그 추가</td>
+          </tr>
+          <tr>
+            <td>Team / Enterprise</td>
+            <td style="color:var(--red)">비활성화됨</td>
+            <td>claude.ai 관리자 설정 → Claude Code → Channels → 활성화, 또는 managed settings에서 <code>channelsEnabled: true</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- GOOGLE CHAT NOTE -->
+<div class="section">
+  <div class="section-label">참고</div>
+  <div class="section-title">Google Chat 연동 현황</div>
+  <div class="section-sub">공식 Channels 플러그인은 현재 미지원 (2026-03 기준)</div>
+
+  <div class="callout callout-warn">
+    <span class="callout-icon"><i class="fas fa-triangle-exclamation"></i></span>
+    <div>
+      <strong>Google Chat은 공식 Channels 플러그인 없음</strong>
+      <span>현재 Anthropic이 제공하는 <code>claude-plugins-official</code> 저장소에는 Telegram·Discord·Fakechat 플러그인만 존재합니다. Google Chat 공식 플러그인은 아직 발표되지 않았습니다.</span>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <span class="callout-icon"><i class="fas fa-circle-info"></i></span>
+    <div>
+      <strong>대안 — Telegram MCP Server</strong>
+      <span>사용자 메시지에서 언급된 <em>Telegram MCP Server</em>는 Bun 기반의 커뮤니티 도구로, 텔레그램 봇을 Claude Code에 MCP로 연결합니다. 공식 Channels와 유사하지만 별도 프로젝트입니다. 봇 토큰만 있으면 비교적 빠르게 연결 가능합니다.</span>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <span class="callout-icon"><i class="fas fa-lightbulb"></i></span>
+    <div>
+      <strong>Google Chat 우회 방법 (비공식)</strong>
+      <span>Google Chat은 Incoming/Outgoing Webhook을 지원합니다. 중간에 Webhook 수신 서버를 두고 Claude Code를 폴링하거나, n8n·Make 같은 워크플로우 자동화 도구로 Google Chat → Telegram → Channels 브리지를 구성하는 방식이 사용됩니다. 단, 이는 공식 지원 방식이 아닙니다.</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>공식 문서: <a href="https://code.claude.com/docs/en/channels" target="_blank">code.claude.com/docs/en/channels</a> &nbsp;·&nbsp; 2026-03-21 기준 &nbsp;·&nbsp; Research Preview — 기능 변경 가능</p>
+</footer>
+
+<script>
+  function switchTab(e, id) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById(id).classList.add('active');
+  }
+</script>
+</body>
+</html>

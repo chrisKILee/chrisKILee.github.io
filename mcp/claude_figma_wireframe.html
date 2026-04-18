@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude × Figma 와이어프레임</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* TOP BAR */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .topbar-meta {
+      font-size: 12px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+    }
+
+    /* HERO */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 28px 60px;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-bdr);
+      color: var(--accent);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      max-width: 740px;
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--accent);
+    }
+    .hero-desc {
+      font-size: 17px;
+      color: var(--ink-3);
+      max-width: 620px;
+      line-height: 1.75;
+      margin-bottom: 36px;
+    }
+    .hero-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-2);
+    }
+
+    /* SECTION */
+    .section {
+      padding: 56px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      max-width: 80px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .section-desc {
+      font-size: 15px;
+      color: var(--ink-3);
+      max-width: 640px;
+      margin-bottom: 36px;
+      line-height: 1.7;
+    }
+
+    /* CARDS */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card__header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card__icon { font-size: 22px; margin-bottom: 8px; }
+    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__body { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .card__tag {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--ink-4);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:hover td { background: var(--bg); }
+
+    /* CALLOUTS */
+    .callout {
+      border-left: 3px solid;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+    /* CODE BLOCK */
+    .code-wrap {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+    .code-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-2);
+    }
+    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body {
+      padding: 18px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink-2);
+    }
+
+    /* STEPS */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--surface);
+      margin-top: 2px;
+    }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* TAGS */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+    .tag.blue { background: #eff6ff; color: #1d4ed8; }
+
+    /* SVG DIAGRAM */
+    .diagram-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px;
+      margin: 24px 0;
+      overflow-x: auto;
+    }
+
+    /* LOOP BOX */
+    .loop-box {
+      border: 2px dashed var(--border-2);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 20px 0;
+      background: var(--bg-2);
+    }
+    .loop-box-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 16px;
+    }
+    .loop-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .loop-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .loop-step-badge {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--ink);
+      color: var(--surface);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .loop-step-badge.human {
+      background: var(--accent);
+    }
+    .loop-step-content { flex: 1; }
+    .loop-step-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .loop-step-desc { font-size: 13px; color: var(--ink-3); line-height: 1.55; }
+
+    /* FOOTER */
+    footer {
+      padding: 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--ink-4);
+    }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+      .diagram-wrap { padding: 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">Claude × Figma 와이어프레임</span>
+  <span class="topbar-meta">2026-04-06</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">🌉 MCP · Figma · 기획 워크플로우</div>
+    <h1>피그마 와이어프레임,<br><em>AI로 바꾸는 방법</em></h1>
+    <p class="hero-desc">
+      Claude MCP와 Figma를 연결하면 기획 문서 → 와이어프레임 → 수정까지 대화 한 번으로 처리됩니다.
+      단순히 AI가 그려주는 것에서 나아가, '수정이 거의 없는 기획안'을 만드는 워크플로우를 소개합니다.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🔌 Claude MCP</span>
+      <span class="chip">🎨 Figma 공식 MCP</span>
+      <span class="chip">📋 Manyfast PRD</span>
+      <span class="chip">🔄 Human-in-the-Loop</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: 전체 워크플로우 개요 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 워크플로우 개요</div>
+    <h2 class="section-title">3단계 기획 자동화 흐름</h2>
+    <p class="section-desc">아이디어에서 피그마 와이어프레임까지, 각 단계에서 AI가 어떤 역할을 하는지 전체 구조를 먼저 파악합니다.</p>
+
+    <!-- SVG 플로우 다이어그램 -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 900 200" style="width:100%;max-width:900px;display:block;margin:0 auto;" aria-label="기획 워크플로우 다이어그램">
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#A8A8A3"/>
+          </marker>
+        </defs>
+
+        <!-- Step 1: Manyfast -->
+        <rect x="10" y="60" width="160" height="80" rx="10" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="90" y="90" text-anchor="middle" fill="#C4522A" font-size="11" font-family="Inter" font-weight="700">① MANYFAST</text>
+        <text x="90" y="108" text-anchor="middle" fill="#7c2d12" font-size="12" font-family="Inter">아이디어 입력</text>
+        <text x="90" y="126" text-anchor="middle" fill="#7c2d12" font-size="12" font-family="Inter">PRD · 유저플로우 생성</text>
+
+        <!-- Arrow 1 -->
+        <line x1="170" y1="100" x2="220" y2="100" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Step 2: Claude 기획 -->
+        <rect x="224" y="60" width="180" height="80" rx="10" fill="#F0FDF4" stroke="#6ee7b7" stroke-width="1.5"/>
+        <text x="314" y="90" text-anchor="middle" fill="#1A7F5A" font-size="11" font-family="Inter" font-weight="700">② CLAUDE AI</text>
+        <text x="314" y="108" text-anchor="middle" fill="#064e3b" font-size="12" font-family="Inter">우선순위 · 기능 정제</text>
+        <text x="314" y="126" text-anchor="middle" fill="#064e3b" font-size="12" font-family="Inter">PRD 기반 화면 목록 확정</text>
+
+        <!-- Arrow 2 -->
+        <line x1="404" y1="100" x2="454" y2="100" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Step 3: Figma MCP -->
+        <rect x="458" y="60" width="180" height="80" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+        <text x="548" y="90" text-anchor="middle" fill="#1d4ed8" font-size="11" font-family="Inter" font-weight="700">③ FIGMA MCP</text>
+        <text x="548" y="108" text-anchor="middle" fill="#1e3a8a" font-size="12" font-family="Inter">와이어프레임 자동 생성</text>
+        <text x="548" y="126" text-anchor="middle" fill="#1e3a8a" font-size="12" font-family="Inter">캔버스에 직접 그리기</text>
+
+        <!-- Arrow 3 -->
+        <line x1="638" y1="100" x2="688" y2="100" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Step 4: Human Review -->
+        <rect x="692" y="60" width="180" height="80" rx="10" fill="#F1F1EE" stroke="#D4D4CF" stroke-width="1.5"/>
+        <text x="782" y="90" text-anchor="middle" fill="#3D3D3A" font-size="11" font-family="Inter" font-weight="700">④ 사람이 검토</text>
+        <text x="782" y="108" text-anchor="middle" fill="#6B6B66" font-size="12" font-family="Inter">수정 프레임 지정 후</text>
+        <text x="782" y="126" text-anchor="middle" fill="#6B6B66" font-size="12" font-family="Inter">Claude에게 재요청</text>
+
+        <!-- Feedback arrow -->
+        <path d="M782 140 Q782 175 548 175 Q400 175 314 175 Q230 175 230 140" fill="none" stroke="#A8A8A3" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+        <text x="548" y="192" text-anchor="middle" fill="#A8A8A3" font-size="11" font-family="Inter">Human-in-the-Loop 수정 반복</text>
+      </svg>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">핵심 포인트</div>
+      AI가 초안을 만들고 사람이 검토·지정하는 방식으로, '수정이 거의 없는 기획안'을 목표로 합니다. 와이어프레임을 처음부터 완벽하게 만들려 하지 말고, 반복 루프를 설계하는 것이 핵심입니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: 도구 소개 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 도구 구성</div>
+    <h2 class="section-title">워크플로우를 구성하는 3가지 도구</h2>
+    <p class="section-desc">각 단계마다 다른 도구를 사용합니다. 역할이 겹치지 않으므로 함께 사용할 때 효과가 극대화됩니다.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">📋</div>
+          <div class="card__title">Manyfast (매니패스트)</div>
+        </div>
+        <div class="card__body">
+          <p>한국 스타트업 리오랩이 만든 <strong>기획 전용 AI 에디터</strong>. 아이디어를 채팅으로 입력하면 PRD(제품 요구사항 문서), IA(정보구조도), 기능명세서를 자동 생성합니다. 기획 시간을 평균 2개월에서 1주일로 단축하며, AI 제안은 사람 승인 후에만 반영됩니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">PRD · 유저플로우 자동화</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🤖</div>
+          <div class="card__title">Claude AI</div>
+        </div>
+        <div class="card__body">
+          <p>Manyfast에서 나온 PRD를 받아 <strong>우선순위 정리, 뺄 기능 판단, 화면 목록 확정</strong>을 도와줍니다. "이 기능이 MVP에 꼭 필요한가?"를 AI와 토론하며 불필요한 범위를 줄이는 데 활용합니다. 이후 Figma MCP와 연결해 와이어프레임을 직접 그립니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">기획 정제 · MCP 와이어프레임</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🎨</div>
+          <div class="card__title">Figma 공식 MCP 서버</div>
+        </div>
+        <div class="card__body">
+          <p>2025년 Figma가 공식 출시한 MCP 서버. Claude와 연결하면 <strong>대화 한 번으로 Figma 캔버스에 직접 와이어프레임이 그려집니다.</strong> 기존 컴포넌트·색상 변수를 그대로 활용할 수 있어, 디자인 시스템과 일관성을 유지합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">캔버스 직접 조작 · 컴포넌트 재사용</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: Figma MCP 연결 방법 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 연결 방법</div>
+    <h2 class="section-title">Claude ↔ Figma MCP 설정하기</h2>
+    <p class="section-desc">Claude Code(터미널)와 Claude Desktop 앱 모두 지원합니다. Remote 방식이 캔버스 쓰기(Write)까지 가능해 와이어프레임 생성에 적합합니다.</p>
+
+    <div class="callout accent">
+      <div class="callout-title">시작 전 준비</div>
+      Figma 계정 필요 (Pro 이상 권장) / Claude.ai Pro 또는 API 키 필요 / Figma 개인 액세스 토큰 발급 필요
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Figma 개인 액세스 토큰 발급</div>
+          <div class="step-body">
+            Figma.com → 우상단 프로필 → <strong>설정(Settings)</strong> → <strong>보안(Security)</strong> → <strong>개인 액세스 토큰(Personal Access Tokens)</strong> → 새 토큰 생성.<br>
+            토큰 이름을 입력하고 <strong>만료일 없음</strong>으로 설정. 생성된 토큰값(<code>figd_...</code>)을 복사해 안전한 곳에 보관합니다. 창을 닫으면 다시 볼 수 없습니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Claude Code에 MCP 서버 등록</div>
+          <div class="step-body">터미널에서 아래 명령어를 실행합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body"># Figma MCP 서버 등록 (개인 액세스 토큰 방식)
+claude mcp add figma \
+  -e FIGMA_PERSONAL_ACCESS_TOKEN=figd_여기에_토큰_붙여넣기 \
+  -- npx -y @figma/mcp-server
+
+# 연결 상태 확인
+/mcp</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">Claude Desktop 앱 설정 (선택)</div>
+          <div class="step-body">
+            Claude Desktop을 사용할 경우, <code>claude_desktop_config.json</code> 파일에 아래 내용을 추가합니다.
+            위치: <code>~/Library/Application Support/Claude/</code> (macOS) 또는 <code>%APPDATA%\Claude\</code> (Windows)
+          </div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">json</span>
+            </div>
+            <pre class="code-body">{
+  "mcpServers": {
+    "figma": {
+      "command": "npx",
+      "args": ["-y", "@figma/mcp-server"],
+      "env": {
+        "FIGMA_PERSONAL_ACCESS_TOKEN": "figd_여기에_토큰_붙여넣기"
+      }
+    }
+  }
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title">연결 테스트</div>
+          <div class="step-body">
+            Figma에서 테스트 파일을 하나 열고 URL을 복사합니다. Claude에게 아래처럼 물어보세요.
+          </div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">Claude 프롬프트</span>
+            </div>
+            <pre class="code-body">이 Figma 파일을 분석해줘: https://www.figma.com/file/xxxxx
+페이지 구조, 기존 컴포넌트, 색상 팔레트를 파악하고 요약해줘.</pre>
+          </div>
+          <div class="step-body" style="margin-top:10px;">Claude가 Figma 파일 내용을 정확히 설명하면 연결 성공입니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>연결 방식</th>
+            <th>캔버스 쓰기(와이어프레임 생성)</th>
+            <th>읽기(분석)</th>
+            <th>비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Remote Server (npx)</strong></td>
+            <td><span class="tag green">✓ 지원</span></td>
+            <td><span class="tag green">✓ 지원</span></td>
+            <td>와이어프레임 생성에 필수. Pro 이상 권장</td>
+          </tr>
+          <tr>
+            <td><strong>Desktop Plugin</strong></td>
+            <td><span class="tag gray">제한적</span></td>
+            <td><span class="tag green">✓ 지원</span></td>
+            <td>선택(Selection) 기반 분석 중심</td>
+          </tr>
+          <tr>
+            <td><strong>서드파티 MCP (claude-talk-to-figma)</strong></td>
+            <td><span class="tag orange">부분 지원</span></td>
+            <td><span class="tag green">✓ 지원</span></td>
+            <td>Bun 런타임 필요, WebSocket 방식. 도형 수준 생성</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: 기획 → 와이어프레임 흐름 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 실전 워크플로우</div>
+    <h2 class="section-title">Claude로 기획하고 Figma에 전달하는 방법</h2>
+    <p class="section-desc">PRD가 준비된 상태에서 Claude와 대화하며 와이어프레임을 만드는 실제 흐름입니다.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">PRD 기반으로 화면 목록 확정</div>
+          <div class="step-body">Manyfast에서 만든 PRD를 Claude에 붙여넣고, 어떤 화면이 필요한지 목록화합니다. 이 단계에서 MVP에 불필요한 기능을 제거합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">Claude 프롬프트</span>
+            </div>
+            <pre class="code-body">아래 PRD를 바탕으로 MVP에 필요한 화면 목록을 만들어줘.
+각 화면의 목적, 주요 UI 요소, 다음 화면 연결 관계를 정리해줘.
+MVP 범위에 포함되지 않아도 되는 기능은 별도로 표시해줘.
+
+[PRD 내용 붙여넣기]</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">FigJam에 유저플로우 다이어그램 생성</div>
+          <div class="step-body">화면 목록이 확정되면 사용자가 어떤 순서로 이동하는지 플로우를 Figma에 직접 그립니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">Claude 프롬프트</span>
+            </div>
+            <pre class="code-body">아래 화면 목록을 바탕으로 FigJam에 유저플로우 다이어그램을 만들어줘.
+FigJam 파일: https://www.figma.com/file/xxxxx
+
+화면 순서: 스플래시 → 로그인 → 대시보드 → 상세화면 → 결제
+분기: 로그인 실패 시 오류 메시지 → 재시도, 비회원은 게스트 모드로 진행</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">와이어프레임 1차 생성</div>
+          <div class="step-body">화면별로 Claude에게 Figma 캔버스에 직접 그리도록 요청합니다. 한 번에 전체를 요청하지 말고, 화면 하나씩 요청하는 것이 품질이 높습니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">Claude 프롬프트</span>
+            </div>
+            <pre class="code-body">아래 Figma 파일의 'Wireframe' 페이지에 모바일 로그인 화면 와이어프레임을 만들어줘.
+파일: https://www.figma.com/file/xxxxx
+
+구성:
+- 상단: 서비스 로고 (중앙 정렬)
+- 중앙: 이메일 입력 필드, 비밀번호 입력 필드 (세로 배치)
+- 하단: 로그인 버튼 (Primary), 소셜 로그인 버튼 (Google, Apple)
+- 최하단: '계정이 없으신가요? 회원가입' 링크
+
+기존 디자인 시스템 컴포넌트를 최대한 활용해줘.
+프레임 이름은 'Login - Mobile'로 지정해줘.</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: Human-in-the-Loop -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 반복 수정 루프</div>
+    <h2 class="section-title">Human-in-the-Loop: 수정사항 반영하기</h2>
+    <p class="section-desc">1차 생성 후, 피그마에서 수정이 필요한 프레임을 지정해 Claude에게 재요청하는 것이 핵심입니다.</p>
+
+    <div class="loop-box">
+      <div class="loop-box-title">반복 수정 사이클</div>
+      <div class="loop-steps">
+        <div class="loop-step">
+          <div class="loop-step-badge">AI</div>
+          <div class="loop-step-content">
+            <div class="loop-step-title">1차 와이어프레임 생성</div>
+            <div class="loop-step-desc">Claude가 Figma MCP를 통해 캔버스에 직접 그립니다. 여러 화면을 한꺼번에 생성합니다.</div>
+          </div>
+        </div>
+
+        <div class="loop-step">
+          <div class="loop-step-badge human">인간</div>
+          <div class="loop-step-content">
+            <div class="loop-step-title">Figma에서 검토 — "수정사항" 프레임 지정</div>
+            <div class="loop-step-desc">수정이 필요한 영역을 Figma에서 선택하고, 우클릭 → <strong>"Copy link to selection"</strong>으로 해당 프레임의 URL을 복사합니다. 또는 수정 필요 사항을 별도 "수정사항" 프레임으로 직접 표시합니다.</div>
+          </div>
+        </div>
+
+        <div class="loop-step">
+          <div class="loop-step-badge">AI</div>
+          <div class="loop-step-content">
+            <div class="loop-step-title">프레임 URL + 수정 지시 → 재제작</div>
+            <div class="loop-step-desc">특정 프레임 URL과 수정 내용을 Claude에게 전달하면, 해당 프레임만 정확히 수정합니다. 다른 프레임은 건드리지 않습니다.</div>
+          </div>
+        </div>
+
+        <div class="loop-step">
+          <div class="loop-step-badge human">인간</div>
+          <div class="loop-step-content">
+            <div class="loop-step-title">만족할 때까지 반복</div>
+            <div class="loop-step-desc">보통 2~3 사이클로 디자이너에게 전달할 수 있는 수준에 도달합니다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-title">효과적인 수정 요청 프롬프트</div>
+      "이 프레임의 헤더 높이를 64px로, 네비게이션 간격을 24px로 변경해줘: <em>[프레임 URL]</em>"<br>
+      파일 전체 URL이 아닌 <strong>특정 프레임/노드 URL</strong>을 제공해야 정확하게 수정됩니다.
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">피해야 할 패턴</div>
+      <strong>❌ 파일 전체 URL만 전달 후 "전체 수정해줘"</strong> — 의도와 다른 결과 빈번<br>
+      <strong>❌ 한 번에 전체 화면 재설계 요청</strong> — 화면 단위로 쪼개서 진행 권장<br>
+      <strong>❌ 레이어 이름 없이 "중간 버튼"처럼 모호하게 지정</strong> — 레이어 명에 의미 있는 이름 사용
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: 비용 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">06 비용</div>
+    <h2 class="section-title">실제로 얼마나 드나요?</h2>
+    <p class="section-desc">Figma 플랜과 Claude 사용 방식에 따라 비용이 크게 달라집니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>서비스</th>
+            <th>플랜</th>
+            <th>MCP 일일 한도</th>
+            <th>비용</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Figma</strong></td>
+            <td>Starter</td>
+            <td><span class="tag orange">월 6회</span> (실무 불가)</td>
+            <td>무료</td>
+          </tr>
+          <tr>
+            <td><strong>Figma</strong></td>
+            <td>Pro (에디터 시트)</td>
+            <td><span class="tag green">200회/일</span></td>
+            <td>$15/월 (에디터 시트 기준)</td>
+          </tr>
+          <tr>
+            <td><strong>Figma</strong></td>
+            <td>Enterprise</td>
+            <td><span class="tag green">600회/일</span></td>
+            <td>별도 문의</td>
+          </tr>
+          <tr>
+            <td><strong>Claude.ai</strong></td>
+            <td>Pro</td>
+            <td>—</td>
+            <td>$20/월</td>
+          </tr>
+          <tr>
+            <td><strong>Claude.ai</strong></td>
+            <td>Max 5×</td>
+            <td>—</td>
+            <td>$100/월 (Pro 대비 5배 사용량)</td>
+          </tr>
+          <tr>
+            <td><strong>Claude API</strong></td>
+            <td>Sonnet 종량제</td>
+            <td>—</td>
+            <td>입력 $3 / 출력 $15 (백만 토큰)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn" style="margin-top:24px;">
+      <div class="callout-title">토큰 소비 주의</div>
+      Figma MCP는 토큰을 빠르게 소모합니다. 와이어프레임 세션 1회 기준 $3~5 (Sonnet 기준, 복잡도에 따라 변동). 스크린샷 기능(<code>get_screenshot</code>)을 비활성화하면 토큰을 아낄 수 있습니다. 복잡한 작업이 많다면 <strong>Claude.ai Max 플랜</strong>이 API 종량제보다 비용 예측이 쉽습니다.
+    </div>
+
+    <div class="cards" style="margin-top:24px;">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">💡</div>
+          <div class="card__title">비용 절감 팁</div>
+        </div>
+        <div class="card__body">
+          <p>
+            · API 사용 시 <strong>Batch API 50% 할인</strong> 적용 가능<br>
+            · 프롬프트 캐싱: 반복 입력 토큰의 90% 절감<br>
+            · 스크린샷 기능 비활성화 시 대폭 절감<br>
+            · 화면 하나씩 요청해 실패 비용 최소화
+          </p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">비용 최적화</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">📊</div>
+          <div class="card__title">현실적인 월 비용 예시</div>
+        </div>
+        <div class="card__body">
+          <p>
+            <strong>PM 1인, 주 2~3회 와이어프레임 작업 기준:</strong><br>
+            Figma Pro: $15 + Claude.ai Pro: $20<br>
+            = <strong>월 약 $35 (약 5만원)</strong><br><br>
+            기존 외주 기획비 수십만 원 대비 대폭 절감
+          </p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">비용 예시</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 7: 실제 사용 후기 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">07 실제 사례</div>
+    <h2 class="section-title">실무에서 어떻게 쓰나요?</h2>
+    <p class="section-desc">실제 기획자·디자이너가 보고한 경험을 정리했습니다.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">✅</div>
+          <div class="card__title">잘 되는 것들</div>
+        </div>
+        <div class="card__body">
+          <p>
+            · PRD → 화면 목록 자동 도출<br>
+            · FigJam 유저플로우 다이어그램 생성<br>
+            · 기존 컴포넌트 재사용한 일관성 유지<br>
+            · 특정 프레임 URL 지정 후 부분 수정<br>
+            · 기획서·명세서 자동 생성<br>
+            · 초기 설계 시간 대폭 단축
+          </p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">강점</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">⚠️</div>
+          <div class="card__title">아직 한계인 것들</div>
+        </div>
+        <div class="card__body">
+          <p>
+            · 복잡한 인터랙션은 직접 손봐야 함<br>
+            · Starter 플랜 월 6회 한도 → 실무 불가<br>
+            · 토큰 소비가 빠름 (Max 플랜 권장)<br>
+            · "초안" 수준이며 디자이너 정제 필요<br>
+            · 파일 전체 URL로만 요청하면 부정확
+          </p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">한계점</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🏆</div>
+          <div class="card__title">최적 활용 사례</div>
+        </div>
+        <div class="card__body">
+          <p>
+            · 손으로 그린 스케치 → Claude 촬영 → Figma 프로토타입 즉시 생성 (Figma 공식 케이스)<br>
+            · PRD 붙여넣기 → 화면 목록 + 와이어프레임 일괄 생성 후 디자이너에게 전달<br>
+            · Code Connect 연동으로 React 컴포넌트 자동 업데이트
+          </p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">베스트 케이스</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip" style="margin-top:24px;">
+      <div class="callout-title">PM이 실제로 쓰는 방법 요약</div>
+      "AI를 디렉터처럼 활용한다"는 표현이 자주 나옵니다. Claude에게 무엇을 어떻게 그릴지 <strong>명확하게 지시</strong>하고, 사람은 방향을 잡고 검토하는 역할에 집중하는 방식입니다. 처음부터 완벽한 와이어프레임을 기대하지 않고 <strong>반복 루프를 설계</strong>하는 것이 성공의 핵심입니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 8: 추천 스택 -->
+<section class="section" style="border-bottom:none;">
+  <div class="page-wrap">
+    <div class="section-label">08 추천 조합</div>
+    <h2 class="section-title">목적별 추천 도구 스택</h2>
+    <p class="section-desc">상황에 따라 적합한 도구 조합이 다릅니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>상황</th>
+            <th>추천 도구</th>
+            <th>비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>기획서 · PRD 자동화 (한국어, PM 친화)</strong></td>
+            <td><span class="tag orange">Manyfast</span></td>
+            <td>IT 기획 프로세스 전용, 한국어 지원</td>
+          </tr>
+          <tr>
+            <td><strong>코드 연동 와이어프레임 (개발팀 협업)</strong></td>
+            <td><span class="tag blue">Claude Code + Figma 공식 MCP</span></td>
+            <td>Code Connect로 컴포넌트 자동 연결</td>
+          </tr>
+          <tr>
+            <td><strong>유저플로우 다이어그램</strong></td>
+            <td><span class="tag blue">Claude.ai + FigJam MCP</span></td>
+            <td>Mermaid 문법 → FigJam 자동 변환</td>
+          </tr>
+          <tr>
+            <td><strong>저비용 초안 생성</strong></td>
+            <td><span class="tag gray">Figma AI (Figma Make 내장)</span></td>
+            <td>Figma 내부 AI 기능, 별도 설정 불필요</td>
+          </tr>
+          <tr>
+            <td><strong>디자인 → 코드 변환</strong></td>
+            <td><span class="tag blue">Figma MCP + Code Connect</span></td>
+            <td>디자인 변경 시 React 컴포넌트 자동 업데이트</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>Claude × Figma 와이어프레임</span>
+  <span>2026-04-06</span>
+</footer>
+
+  <script data-page-hash="W55TATK" src="/assets/js/page-footer.js"></script>
+</body>
+</html>

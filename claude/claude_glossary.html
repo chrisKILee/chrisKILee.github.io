@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude 용어 사전 — Glossary</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F7F6F2;
+      --surface: #FFFFFF;
+      --border: #E3E0D8;
+      --text: #1A1916;
+      --muted: #6B6860;
+      --faint: #9B9890;
+
+      --ai-color: #1B5FA8;
+      --ai-bg: #EFF6FF;
+      --ai-border: #BFDBFE;
+
+      --prod-color: #6D3FA0;
+      --prod-bg: #F5F0FD;
+      --prod-border: #DDD6FE;
+
+      --feat-color: #1E7A4A;
+      --feat-bg: #ECFDF3;
+      --feat-border: #A7F3D0;
+
+      --agent-color: #B45309;
+      --agent-bg: #FFFBEB;
+      --agent-border: #FDE68A;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 56px 24px 48px;
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 16px;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 900;
+      line-height: 1.08;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .hero-title span {
+      color: var(--ai-color);
+    }
+
+    .hero-desc {
+      max-width: 560px;
+      margin: 0 auto 28px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 16px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    /* ── 탭 네비게이션 (스티키) ── */
+    .tab-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tab-nav::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      flex-shrink: 0;
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.ai.active    { color: var(--ai-color);    border-bottom-color: var(--ai-color); }
+    .tab-btn.prod.active  { color: var(--prod-color);  border-bottom-color: var(--prod-color); }
+    .tab-btn.feat.active  { color: var(--feat-color);  border-bottom-color: var(--feat-color); }
+    .tab-btn.agent.active { color: var(--agent-color); border-bottom-color: var(--agent-color); }
+
+    /* ── 메인 ── */
+    .main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* ── 섹션 ── */
+    .section { margin-bottom: 72px; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-ai    { background: var(--ai-color); }
+    .dot-prod  { background: var(--prod-color); }
+    .dot-feat  { background: var(--feat-color); }
+    .dot-agent { background: var(--agent-color); }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.015em;
+    }
+
+    .section-count {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--faint);
+      font-weight: 500;
+    }
+
+    /* ── 용어 카드 그리드 ── */
+    .term-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .term-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+      transition: box-shadow 0.15s, transform 0.15s;
+      cursor: default;
+    }
+
+    .term-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      transform: translateY(-1px);
+    }
+
+    .term-card.ai    { border-top: 3px solid var(--ai-color); }
+    .term-card.prod  { border-top: 3px solid var(--prod-color); }
+    .term-card.feat  { border-top: 3px solid var(--feat-color); }
+    .term-card.agent { border-top: 3px solid var(--agent-color); }
+
+    .term-icon {
+      font-size: 22px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .term-name {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .term-en {
+      font-size: 12px;
+      color: var(--faint);
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+
+    .term-short {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 12px;
+      border-left: 2px solid var(--border);
+      padding-left: 10px;
+    }
+
+    .term-detail {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .term-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .tag-ai    { background: var(--ai-bg);    color: var(--ai-color);    border: 1px solid var(--ai-border); }
+    .tag-prod  { background: var(--prod-bg);  color: var(--prod-color);  border: 1px solid var(--prod-border); }
+    .tag-feat  { background: var(--feat-bg);  color: var(--feat-color);  border: 1px solid var(--feat-border); }
+    .tag-agent { background: var(--agent-bg); color: var(--agent-color); border: 1px solid var(--agent-border); }
+
+    .term-note {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .note-info  { background: var(--ai-bg);    color: var(--ai-color); }
+    .note-warn  { background: var(--agent-bg); color: var(--agent-color); }
+    .note-green { background: var(--feat-bg);  color: var(--feat-color); }
+
+    /* ── 모델 비교 테이블 ── */
+    .model-table-wrap {
+      overflow-x: auto;
+      margin: 16px 0 0;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .model-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .model-table th {
+      background: var(--bg);
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .model-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .model-table tr:last-child td { border-bottom: none; }
+    .model-table td:first-child { font-weight: 700; color: var(--text); }
+
+    /* ── 검색창 ── */
+    .search-wrap {
+      max-width: 480px;
+      margin: 0 auto 40px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 20px;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background: var(--surface);
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .search-input:focus {
+      border-color: var(--ai-color);
+      box-shadow: 0 0 0 3px rgba(27,95,168,0.1);
+    }
+
+    .search-input::placeholder { color: var(--faint); }
+
+    /* ── 숨김 처리 ── */
+    .hidden { display: none !important; }
+
+    /* ── 구분선 ── */
+    hr.section-sep {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 56px 0;
+    }
+
+    /* ── 반응형 ── */
+    @media (max-width: 640px) {
+      .hero { padding: 40px 20px 36px; }
+      .term-grid { grid-template-columns: 1fr; }
+      .main { padding: 36px 16px 60px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+
+    /* ── 이미지 소스 나란히 ── */
+    .image-source-section {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 24px;
+    }
+    .image-source-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .image-source-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .image-source-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+    .image-col-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 12px;
+    }
+    .image-col img {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+    .image-ko-content h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 20px 0 8px;
+    }
+    .image-ko-content h3:first-child { margin-top: 0; }
+    .image-ko-content ul {
+      padding-left: 18px;
+      margin: 0 0 12px;
+    }
+    .image-ko-content li {
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .image-ko-content .ko-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .ko-badge.ai   { background: var(--ai-bg);    color: var(--ai-color);    border: 1px solid var(--ai-border); }
+    .ko-badge.prod { background: var(--prod-bg);  color: var(--prod-color);  border: 1px solid var(--prod-border); }
+    .ko-badge.feat { background: var(--feat-bg);  color: var(--feat-color);  border: 1px solid var(--feat-border); }
+    .ko-badge.agent{ background: var(--agent-bg); color: var(--agent-color); border: 1px solid var(--agent-border); }
+
+    @media (max-width: 768px) {
+      .image-source-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <p class="hero-eyebrow">Claude Reference</p>
+  <h1 class="hero-title"><span>Claude</span> 용어 사전</h1>
+  <p class="hero-desc">
+    Claude AI를 처음 접하는 분부터 개발자까지 — 자주 만나는 29개 핵심 용어를
+    공식 문서 기반으로 정리했습니다.
+  </p>
+  <div class="hero-stats">
+    <span class="stat-pill">📖 29개 용어</span>
+    <span class="stat-pill">🧠 AI Concepts 8개</span>
+    <span class="stat-pill">📦 Products 8개</span>
+    <span class="stat-pill">⚡ Core Features 8개</span>
+    <span class="stat-pill">🤖 Agents & Automation 7개</span>
+  </div>
+</header>
+
+<!-- 원본 이미지 + 한글 설명 나란히 -->
+<section class="image-source-section">
+  <div class="image-source-inner">
+    <p class="image-source-eyebrow">소스 원문 &amp; 한글 설명</p>
+    <div class="image-source-grid">
+
+      <!-- 좌: 원본 이미지 -->
+      <div class="image-col">
+        <p class="image-col-label">원본 이미지</p>
+        <img src="/gemini_html/assets/img/glossary001.jpg" alt="Claude Glossary 원본 인포그래픽">
+      </div>
+
+      <!-- 우: 한글 설명 -->
+      <div class="image-col">
+        <p class="image-col-label">한글 설명</p>
+        <div class="image-ko-content">
+
+          <h3><span class="ko-badge ai">AI Concepts</span> AI 개념</h3>
+          <ul>
+            <li><strong>Extended Context Window</strong> — 최대 200,000 토큰의 긴 문서를 한 번에 처리하는 능력</li>
+            <li><strong>Adaptive Thinking</strong> — 문제 복잡도에 따라 사고 깊이를 자동 조절 (구 Extended Thinking)</li>
+            <li><strong>In-Context Learning</strong> — 프롬프트 안에 예시를 넣어 즉시 학습시키는 방식</li>
+            <li><strong>Constitutional AI</strong> — 규칙 집합을 기반으로 안전하게 응답을 생성하는 Anthropic 훈련 방법론</li>
+            <li><strong>RLHF</strong> — 인간 피드백 강화학습. 사람의 선호를 반영해 모델을 개선</li>
+            <li><strong>Hallucination</strong> — AI가 사실이 아닌 내용을 그럴듯하게 생성하는 현상</li>
+            <li><strong>Tokenization</strong> — 텍스트를 AI가 처리 가능한 숫자 조각(토큰)으로 분할하는 과정</li>
+            <li><strong>Temperature</strong> — 응답의 창의성·다양성을 조절하는 파라미터 (0 = 일정, 1 = 창의적)</li>
+          </ul>
+
+          <h3><span class="ko-badge prod">Products</span> 제품</h3>
+          <ul>
+            <li><strong>Claude 3.7 Sonnet</strong> — 최신 플래그십 모델. 코딩·분석·200k 컨텍스트 지원</li>
+            <li><strong>claude.ai</strong> — 웹/앱 기반 Claude 대화 인터페이스 (무료 + Pro 플랜)</li>
+            <li><strong>Claude API</strong> — 개발자가 Claude 기능을 자체 앱에 통합할 수 있는 HTTP API</li>
+            <li><strong>Claude Code</strong> — 터미널 기반 AI 코딩 에이전트 (이 사이트 제작 도구)</li>
+            <li><strong>Claude for Enterprise</strong> — 기업용 보안·관리 기능 탑재 버전</li>
+            <li><strong>Workspaces</strong> — API 사용량 및 팀 권한을 조직 단위로 관리하는 대시보드</li>
+            <li><strong>Model Tiers</strong> — Haiku(빠름/저렴) → Sonnet(균형) → Opus(최고성능) 3단계</li>
+            <li><strong>Prompt Library</strong> — Anthropic 공식 제공 검증된 프롬프트 모음</li>
+          </ul>
+
+          <h3><span class="ko-badge feat">Core Features</span> 핵심 기능</h3>
+          <ul>
+            <li><strong>Tool Use (Function Calling)</strong> — Claude가 외부 함수·API를 직접 호출하는 기능</li>
+            <li><strong>System Prompt</strong> — 대화 전체에 적용되는 역할·규칙을 설정하는 숨겨진 지시문</li>
+            <li><strong>Artifacts</strong> — 코드·문서·SVG 등 결과물을 별도 창에 렌더링하는 기능</li>
+            <li><strong>Vision</strong> — 이미지·PDF·차트를 분석하고 이해하는 멀티모달 기능</li>
+            <li><strong>Streaming</strong> — 응답을 단어 단위로 실시간 전달하는 방식 (타이핑 효과)</li>
+            <li><strong>Prompt Caching</strong> — 반복 사용되는 프롬프트를 캐싱해 비용·속도 최적화</li>
+            <li><strong>Batch API</strong> — 대량 요청을 비동기로 처리해 50% 비용 절감</li>
+            <li><strong>Citations</strong> — 문서 기반 답변 시 출처 구절을 자동 인용하는 기능</li>
+          </ul>
+
+          <h3><span class="ko-badge agent">Agents &amp; Automation</span> 에이전트 &amp; 자동화</h3>
+          <ul>
+            <li><strong>MCP (Model Context Protocol)</strong> — AI 어시스턴트와 외부 도구를 연결하는 Anthropic 공개 표준</li>
+            <li><strong>Computer Use</strong> — AI가 직접 마우스·키보드·화면을 조작하는 기능 (Vercept 인수 기술)</li>
+            <li><strong>Multi-Agent</strong> — 여러 Claude 인스턴스가 역할을 나눠 협업하는 아키텍처</li>
+            <li><strong>Subagent</strong> — 오케스트레이터가 위임한 단일 작업을 수행하는 하위 에이전트</li>
+            <li><strong>Hooks</strong> — Claude Code에서 특정 이벤트(파일 저장 등) 발생 시 자동 실행되는 스크립트</li>
+            <li><strong>Projects</strong> — claude.ai에서 문서·지시사항을 세션 간 유지하는 작업공간</li>
+            <li><strong>Memory</strong> — 대화나 파일을 통해 Claude가 정보를 장기 기억하는 메커니즘</li>
+          </ul>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- 탭 네비게이션 -->
+<nav class="tab-nav" id="tabNav">
+  <button class="tab-btn ai active" onclick="scrollToSection('ai')">🧠 AI Concepts</button>
+  <button class="tab-btn prod" onclick="scrollToSection('prod')">📦 Products</button>
+  <button class="tab-btn feat" onclick="scrollToSection('feat')">⚡ Core Features</button>
+  <button class="tab-btn agent" onclick="scrollToSection('agent')">🤖 Agents &amp; Automation</button>
+</nav>
+
+<main class="main">
+
+  <!-- 검색 -->
+  <div class="search-wrap">
+    <input class="search-input" type="search" id="searchInput" placeholder="🔍 용어 검색... (예: token, 아티팩트)" oninput="filterTerms(this.value)">
+  </div>
+
+  <!-- ══════════════════════════════
+       섹션 1: AI Concepts
+  ══════════════════════════════ -->
+  <section class="section" id="ai">
+    <div class="section-header">
+      <div class="section-dot dot-ai"></div>
+      <h2 class="section-title">AI Concepts</h2>
+      <span class="section-count">8개 용어</span>
+    </div>
+    <div class="term-grid" id="grid-ai">
+
+      <!-- Token -->
+      <div class="term-card ai" data-terms="token 토큰">
+        <span class="term-icon">🔤</span>
+        <span class="term-tag tag-ai">AI 기초</span>
+        <div class="term-name">Token <span style="font-weight:400;font-size:14px;color:var(--faint)">(토큰)</span></div>
+        <p class="term-short">Claude가 읽고 쓰는 텍스트의 최소 단위 — 영문 약 4글자(≈ 단어의 ¾) 1토큰에 해당.</p>
+        <p class="term-detail">API 사용 요금은 토큰 수로 청구됩니다. 한국어는 영문보다 토큰을 더 많이 사용합니다. 이미지·PDF 페이지도 토큰으로 환산되며, 요청당 최대 600개 이미지/PDF 페이지 제한이 있습니다.</p>
+        <div class="term-note note-info">💡 1M 컨텍스트 창 ≈ 약 750K 단어 분량</div>
+      </div>
+
+      <!-- Context Window -->
+      <div class="term-card ai" data-terms="context window 컨텍스트 창 working memory">
+        <span class="term-icon">🪟</span>
+        <span class="term-tag tag-ai">핵심 개념</span>
+        <div class="term-name">Context Window <span style="font-weight:400;font-size:14px;color:var(--faint)">(컨텍스트 창)</span></div>
+        <p class="term-short">Claude의 작업 메모리 — 한 번에 읽고 기억할 수 있는 모든 텍스트의 최대 범위.</p>
+        <p class="term-detail">대화 이력, 시스템 프롬프트, 현재 입력, 출력 토큰이 모두 포함됩니다. 컨텍스트가 늘어날수록 정확도가 저하되는 "context rot" 현상이 발생할 수 있습니다.</p>
+        <div class="model-table-wrap">
+          <table class="model-table">
+            <thead><tr><th>모델</th><th>컨텍스트 창</th></tr></thead>
+            <tbody>
+              <tr><td>Opus 4.6 / Sonnet 4.6</td><td>1M 토큰</td></tr>
+              <tr><td>Haiku 4.5 / Sonnet 4.5</td><td>200K 토큰</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Model -->
+      <div class="term-card ai" data-terms="model 모델 haiku sonnet opus 하이쿠 소네트 오퍼스">
+        <span class="term-icon">🎭</span>
+        <span class="term-tag tag-ai">모델 선택</span>
+        <div class="term-name">Model <span style="font-weight:400;font-size:14px;color:var(--faint)">(모델)</span></div>
+        <p class="term-short">대화 상대인 Claude의 특정 버전 — Haiku, Sonnet, Opus 3가지 등급으로 제공.</p>
+        <p class="term-detail">각 등급은 속도·비용·지능의 균형이 다릅니다. Haiku는 가장 빠르고 저렴하며, Opus는 가장 지능적입니다.</p>
+        <div class="model-table-wrap">
+          <table class="model-table">
+            <thead><tr><th>등급</th><th>특징</th><th>비용(입/출)</th></tr></thead>
+            <tbody>
+              <tr><td>Haiku 4.5</td><td>최고 속도</td><td>$1 / $5 /MTok</td></tr>
+              <tr><td>Sonnet 4.6</td><td>속도·지능 균형</td><td>$3 / $15 /MTok</td></tr>
+              <tr><td>Opus 4.6</td><td>최고 지능</td><td>$5 / $25 /MTok</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Extended Thinking -->
+      <div class="term-card ai" data-terms="extended thinking 확장 사고 reasoning">
+        <span class="term-icon">🤔</span>
+        <span class="term-tag tag-ai">추론 기능</span>
+        <div class="term-name">Extended Thinking <span style="font-weight:400;font-size:14px;color:var(--faint)">(확장 사고)</span></div>
+        <p class="term-short">Claude가 최종 답변 전 단계별 사고 과정을 거치는 심층 추론 기능.</p>
+        <p class="term-detail">응답에 <code style="font-size:11px;background:#f0f0ec;padding:1px 5px;border-radius:3px;">thinking</code>(내부 추론) 블록과 <code style="font-size:11px;background:#f0f0ec;padding:1px 5px;border-radius:3px;">text</code>(최종 답변) 블록이 함께 포함됩니다. Opus 4.6 / Sonnet 4.6에서는 <strong>Adaptive Thinking</strong>이 권장됩니다 (Claude가 복잡도에 따라 사고량을 자동 조절).</p>
+        <div class="term-note note-warn">⚠️ Extended Thinking 활성화 시 temperature는 반드시 1로 설정</div>
+      </div>
+
+      <!-- Hallucination -->
+      <div class="term-card ai" data-terms="hallucination 환각 거짓 오류">
+        <span class="term-icon">🌀</span>
+        <span class="term-tag tag-ai">주의사항</span>
+        <div class="term-name">Hallucination <span style="font-weight:400;font-size:14px;color:var(--faint)">(환각)</span></div>
+        <p class="term-short">Claude가 사실과 다른 정보를 자신 있게 말하는 현상.</p>
+        <p class="term-detail">지식 공백을 채우려 하거나 입력이 모호할 때 발생합니다. Claude는 모르는 질문에 추측 대신 거부하도록 훈련되어 있지만 완전하지는 않습니다. 중요한 팩트·링크는 반드시 별도 검증이 필요합니다.</p>
+        <div class="term-note note-warn">⚠️ Sonnet 4.6 computer use 평가에서 환각된 링크 0개 생성 (이전 ⅓ 대비 개선)</div>
+      </div>
+
+      <!-- Prompt -->
+      <div class="term-card ai" data-terms="prompt 프롬프트 입력">
+        <span class="term-icon">💬</span>
+        <span class="term-tag tag-ai">기본 개념</span>
+        <div class="term-name">Prompt <span style="font-weight:400;font-size:14px;color:var(--faint)">(프롬프트)</span></div>
+        <p class="term-short">사용자가 Claude에게 전달하는 메시지 또는 지시문.</p>
+        <p class="term-detail">API에서는 <code style="font-size:11px;background:#f0f0ec;padding:1px 5px;border-radius:3px;">messages</code> 배열의 <code style="font-size:11px;background:#f0f0ec;padding:1px 5px;border-radius:3px;">user</code> 역할 메시지로 전달됩니다. Anthropic은 <strong>"brilliant but new employee"(똑똑하지만 신입 직원)</strong> 비유를 사용 — 원하는 출력 형식과 제약사항을 명확히 명시하는 것을 권장합니다.</p>
+        <div class="term-note note-info">💡 XML 태그로 구조화(&lt;instructions&gt;, &lt;context&gt;, &lt;examples&gt;) 시 품질 향상</div>
+      </div>
+
+      <!-- System Prompt -->
+      <div class="term-card ai" data-terms="system prompt 시스템 프롬프트 지시문">
+        <span class="term-icon">⚙️</span>
+        <span class="term-tag tag-ai">개발자 도구</span>
+        <div class="term-name">System Prompt <span style="font-weight:400;font-size:14px;color:var(--faint)">(시스템 프롬프트)</span></div>
+        <p class="term-short">개발자가 Claude의 역할·행동 방식·응답 톤을 사전에 설정하는 숨겨진 지시문.</p>
+        <p class="term-detail">API 요청의 <code style="font-size:11px;background:#f0f0ec;padding:1px 5px;border-radius:3px;">system</code> 파라미터로 전달됩니다. 모든 대화에 걸쳐 일관되게 적용됩니다.</p>
+        <div class="term-note note-warn">⚠️ Claude.ai의 내부 시스템 프롬프트는 Claude API에는 적용되지 않음</div>
+      </div>
+
+      <!-- Temperature -->
+      <div class="term-card ai" data-terms="temperature 온도 창의성 무작위">
+        <span class="term-icon">🌡️</span>
+        <span class="term-tag tag-ai">파라미터</span>
+        <div class="term-name">Temperature <span style="font-weight:400;font-size:14px;color:var(--faint)">(온도)</span></div>
+        <p class="term-short">Claude 응답의 창의성(무작위성)을 조절하는 다이얼 — 낮을수록 일관되고, 높을수록 다양함.</p>
+        <p class="term-detail">API 기본값은 <strong>1</strong>. 코드 생성·사실 기반 답변은 낮게, 창의적 글쓰기는 높게 설정합니다. Extended Thinking 활성화 시 반드시 1로 고정해야 합니다.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="section-sep">
+
+  <!-- ══════════════════════════════
+       섹션 2: Products
+  ══════════════════════════════ -->
+  <section class="section" id="prod">
+    <div class="section-header">
+      <div class="section-dot dot-prod"></div>
+      <h2 class="section-title">Products</h2>
+      <span class="section-count">8개 용어</span>
+    </div>
+    <div class="term-grid" id="grid-prod">
+
+      <!-- Claude.ai -->
+      <div class="term-card prod" data-terms="claude.ai 웹 앱 사이트">
+        <span class="term-icon">🌐</span>
+        <span class="term-tag tag-prod">웹 앱</span>
+        <div class="term-name">Claude.ai</div>
+        <p class="term-short">대부분의 사람들이 Claude와 대화하는 공식 웹사이트 및 앱.</p>
+        <p class="term-detail">무료·Pro·Max·Team·Enterprise 플랜을 제공합니다. Artifacts, Projects, Memory, Deep Research, Web Search, Style, Connectors(MCP) 등 모든 주요 기능을 포함합니다.</p>
+      </div>
+
+      <!-- Claude Desktop -->
+      <div class="term-card prod" data-terms="claude desktop 데스크톱 앱 mcp">
+        <span class="term-icon">🖥️</span>
+        <span class="term-tag tag-prod">데스크톱 앱</span>
+        <div class="term-name">Claude Desktop</div>
+        <p class="term-short">MCP 연결과 로컬 도구 사용을 가능하게 하는 다운로드 앱.</p>
+        <p class="term-detail">내장 Node.js 환경으로 Python·바이너리 MCP 서버를 지원합니다. "Desktop Extensions Directory"에서 원클릭 MCP 서버 설치, macOS Keychain / Windows Credential Manager를 통한 보안 API 키 관리 기능을 제공합니다.</p>
+      </div>
+
+      <!-- Cowork -->
+      <div class="term-card prod" data-terms="cowork 코웍 데스크톱 에이전트 자율 작업">
+        <span class="term-icon">🤝</span>
+        <span class="term-tag tag-prod">에이전트</span>
+        <div class="term-name">Cowork</div>
+        <p class="term-short">실제 파일과 앱에서 작업하는 Claude 데스크톱 에이전트.</p>
+        <p class="term-detail">목표를 제시하면 로컬 파일·폴더·애플리케이션에서 작업하여 완성된 결과물을 반환합니다. 비기술 지식 노동자를 대상으로 설계된 자율 실행 에이전트입니다. Claude Desktop 앱을 통해 Research Preview로 이용 가능합니다.</p>
+        <div class="term-note note-green">💡 Claude.ai(대화형) vs Cowork(자율 다단계 워크플로우)</div>
+      </div>
+
+      <!-- Claude Code -->
+      <div class="term-card prod" data-terms="claude code 코딩 터미널 개발자">
+        <span class="term-icon">⌨️</span>
+        <span class="term-tag tag-prod">개발자 도구</span>
+        <div class="term-name">Claude Code</div>
+        <p class="term-short">터미널에서 코드베이스를 읽고, 파일을 수정하고, 테스트하고, 커밋까지 수행하는 AI 코딩 에이전트.</p>
+        <p class="term-detail">터미널·IDE·데스크톱 앱·브라우저에서 사용 가능합니다. Skills, MCP, Subagents, Hooks, 스케줄 실행을 지원합니다. 비개발자도 자연어로 소프트웨어를 개발할 수 있게 합니다.</p>
+      </div>
+
+      <!-- Claude in Chrome -->
+      <div class="term-card prod" data-terms="claude chrome 크롬 브라우저 확장">
+        <span class="term-icon">🌏</span>
+        <span class="term-tag tag-prod">브라우저 확장</span>
+        <div class="term-name">Claude in Chrome</div>
+        <p class="term-short">현재 보고 있는 웹 페이지를 읽고 작업을 수행하는 Chrome 사이드패널 확장.</p>
+        <p class="term-detail">다중 탭 동시 관리, Slack·Gmail·Google Docs·GitHub 네이티브 탐색, 워크플로우 녹화 후 학습·반복 실행, 브라우저 콘솔 에러·네트워크 요청 읽기 기능을 포함합니다.</p>
+        <div class="term-note note-warn">⚠️ 현재 Max 플랜 구독자 베타 제공</div>
+      </div>
+
+      <!-- Claude in Excel -->
+      <div class="term-card prod" data-terms="claude excel 엑셀 스프레드시트">
+        <span class="term-icon">📊</span>
+        <span class="term-tag tag-prod">Office 통합</span>
+        <div class="term-name">Claude in Excel</div>
+        <p class="term-short">스프레드시트 안에서 살아 숨쉬는 Claude — 수식·피벗·차트를 자연어로 조작.</p>
+        <p class="term-detail">워크북 질문 답변(셀 수준 인용), 수식 의존성 보존, 오류 탐지/수정, 피벗 테이블 편집, MCP 커넥터(S&amp;P Global, LSEG, Bloomberg 등) 연동 기능을 제공합니다. Excel on the web, Windows(Microsoft 365), Mac(16.46+), iPad를 지원합니다.</p>
+      </div>
+
+      <!-- Claude in PowerPoint -->
+      <div class="term-card prod" data-terms="claude powerpoint 파워포인트 프레젠테이션">
+        <span class="term-icon">📑</span>
+        <span class="term-tag tag-prod">Office 통합</span>
+        <div class="term-name">Claude in PowerPoint</div>
+        <p class="term-short">프레젠테이션 제작을 돕는 PowerPoint 통합 에이전트.</p>
+        <p class="term-detail">기업 템플릿을 유지하며 슬라이드 생성, 자연어로 전체 덱 구조 생성, 편집 가능한 네이티브 차트·다이어그램 생성, 브랜드 가이드라인 유지 기능을 제공합니다.</p>
+        <div class="term-note note-warn">⚠️ 세션 간 채팅 이력 미저장 — 매 사용 시 새 대화 시작</div>
+      </div>
+
+      <!-- Claude Marketplace -->
+      <div class="term-card prod" data-terms="claude marketplace 마켓플레이스 커넥터 연동">
+        <span class="term-icon">🏪</span>
+        <span class="term-tag tag-prod">통합 허브</span>
+        <div class="term-name">Claude Marketplace</div>
+        <p class="term-short">외부 서비스와 Claude를 연결하는 커넥터(Connector)를 검색·설치하는 디렉토리.</p>
+        <p class="term-detail">MCP(Model Context Protocol) 기반의 서드파티 통합 카탈로그입니다. 데이터, 코드, 커뮤니케이션, 디자인, 금융, 생산성, 영업/마케팅 등 카테고리를 포함합니다. Claude.ai, Claude Code, Skills 제품군과 호환됩니다.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="section-sep">
+
+  <!-- ══════════════════════════════
+       섹션 3: Core Features
+  ══════════════════════════════ -->
+  <section class="section" id="feat">
+    <div class="section-header">
+      <div class="section-dot dot-feat"></div>
+      <h2 class="section-title">Core Features</h2>
+      <span class="section-count">8개 용어</span>
+    </div>
+    <div class="term-grid" id="grid-feat">
+
+      <!-- Artifact -->
+      <div class="term-card feat" data-terms="artifact 아티팩트 파일 코드 위젯">
+        <span class="term-icon">📎</span>
+        <span class="term-tag tag-feat">창작 도구</span>
+        <div class="term-name">Artifact <span style="font-weight:400;font-size:14px;color:var(--faint)">(아티팩트)</span></div>
+        <p class="term-short">Claude가 사이드 패널에 생성하는 파일 또는 앱 — 문서, 코드, SVG, 위젯.</p>
+        <p class="term-detail">콘텐츠가 15줄 이상이고 대화 밖에서 재사용 가능할 때 자동 생성됩니다. 단일 페이지 HTML 웹사이트, SVG 이미지, 다이어그램, 인터랙티브 React 컴포넌트 등을 지원합니다.</p>
+        <div class="term-note note-info">💡 공유 시 사용량은 각 열람자의 구독 한도에서 차감됨</div>
+      </div>
+
+      <!-- Project -->
+      <div class="term-card feat" data-terms="project 프로젝트 작업공간 워크스페이스">
+        <span class="term-icon">📁</span>
+        <span class="term-tag tag-feat">조직화</span>
+        <div class="term-name">Project <span style="font-weight:400;font-size:14px;color:var(--faint)">(프로젝트)</span></div>
+        <p class="term-short">관련 대화, 문서, 지식을 한 공간에 모아 관리하는 전용 작업 공간.</p>
+        <p class="term-detail">각 프로젝트는 <strong>200K 컨텍스트 창</strong>(약 500페이지 분량)을 보유합니다. 문서/코드/인사이트를 업로드해 Claude 응답을 기반화하고, 프로젝트별 커스텀 지시문을 설정할 수 있습니다. Pro/Team 플랜 이용 가능.</p>
+        <div class="term-note note-green">✅ 프로젝트 내 데이터는 동의 없이 모델 학습에 사용되지 않음</div>
+      </div>
+
+      <!-- Memory -->
+      <div class="term-card feat" data-terms="memory 메모리 기억 선호도">
+        <span class="term-icon">🧠</span>
+        <span class="term-tag tag-feat">개인화</span>
+        <div class="term-name">Memory <span style="font-weight:400;font-size:14px;color:var(--faint)">(메모리)</span></div>
+        <p class="term-short">대화 간 사용자 정보와 선호도를 기억하는 기능.</p>
+        <p class="term-detail">Claude.ai에서는 Profile Preferences(계정 전체 적용)로 구현됩니다. API에서는 Memory Tool(파일 디렉토리 기반 영구 저장소)을 통해 세션 간 지식을 축적합니다. 다른 AI 제공자의 메모리를 가져와 이전 가능합니다.</p>
+      </div>
+
+      <!-- Deep Research -->
+      <div class="term-card feat" data-terms="deep research 심층 연구 조사 검색">
+        <span class="term-icon">🔬</span>
+        <span class="term-tag tag-feat">리서치</span>
+        <div class="term-name">Deep Research <span style="font-weight:400;font-size:14px;color:var(--faint)">(심층 연구)</span></div>
+        <p class="term-short">Claude가 자율적으로 여러 검색을 순차적으로 수행해 인용 출처가 포함된 심층 리포트를 작성.</p>
+        <p class="term-detail">에이전트로서 다각도의 질문을 자동 탐색합니다. Gmail, Google Calendar, Google Docs 등 연결된 내부 소스와 웹 모두에서 리서치를 수행합니다.</p>
+        <div class="term-note note-warn">⚠️ 유료 플랜(Pro, Max, Team, Enterprise)만 이용 가능</div>
+      </div>
+
+      <!-- Web Search -->
+      <div class="term-card feat" data-terms="web search 웹 검색 실시간 인터넷">
+        <span class="term-icon">🔎</span>
+        <span class="term-tag tag-feat">실시간 정보</span>
+        <div class="term-name">Web Search <span style="font-weight:400;font-size:14px;color:var(--faint)">(웹 검색)</span></div>
+        <p class="term-short">Claude가 대화 중 실시간으로 인터넷을 검색하여 최신 정보를 반영하는 기능.</p>
+        <p class="term-detail">Deep Research 기능의 핵심 의존 도구입니다. 유료 플랜에서 활성화할 수 있으며, Deep Research를 사용하려면 반드시 활성화 상태여야 합니다.</p>
+      </div>
+
+      <!-- Style -->
+      <div class="term-card feat" data-terms="style 스타일 문체 글쓰기 어조">
+        <span class="term-icon">✍️</span>
+        <span class="term-tag tag-feat">개인화</span>
+        <div class="term-name">Style <span style="font-weight:400;font-size:14px;color:var(--faint)">(스타일)</span></div>
+        <p class="term-short">Claude가 사용자의 문체를 학습하고 흉내 내는 기능 — 응답 어조와 형식을 맞춤화.</p>
+        <p class="term-detail">세 가지 레이어: <strong>Profile Preferences</strong>(계정 전체 선호도), <strong>Project Instructions</strong>(프로젝트별 컨텍스트), <strong>Styles</strong>(concise·explanatory 등 응답 포맷 전환).</p>
+      </div>
+
+      <!-- User Preferences -->
+      <div class="term-card feat" data-terms="user preferences 사용자 설정 선호도 톤">
+        <span class="term-icon">🎛️</span>
+        <span class="term-tag tag-feat">설정</span>
+        <div class="term-name">User Preferences <span style="font-weight:400;font-size:14px;color:var(--faint)">(사용자 선호도)</span></div>
+        <p class="term-short">Claude가 응답 시 고려할 선호 어조·형식·전문 용어를 계정 수준에서 설정.</p>
+        <p class="term-detail">모든 대화에 걸쳐 적용되는 계정 전체 설정입니다. 특정 프로젝트에만 적용하려면 Project Instructions를 활용합니다.</p>
+      </div>
+
+      <!-- Compaction -->
+      <div class="term-card feat" data-terms="compaction 컴팩션 요약 컨텍스트 자동">
+        <span class="term-icon">🗜️</span>
+        <span class="term-tag tag-feat">컨텍스트 관리</span>
+        <div class="term-name">Compaction <span style="font-weight:400;font-size:14px;color:var(--faint)">(컴팩션)</span></div>
+        <p class="term-short">컨텍스트 창 한도에 근접하면 대화를 자동 요약해 새 컨텍스트를 시작 — 무한 대화 가능.</p>
+        <p class="term-detail">API에서는 서버사이드 컴팩션(Opus 4.6, Sonnet 4.6 베타)으로 서버에서 자동 요약 처리합니다. Claude Code에서는 세션 내 컨텍스트가 임계치 도달 시 자동 실행됩니다.</p>
+        <div class="term-note note-info">💡 Claude Code: /compact 명령으로 수동 실행 가능</div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="section-sep">
+
+  <!-- ══════════════════════════════
+       섹션 4: Agents & Automation
+  ══════════════════════════════ -->
+  <section class="section" id="agent">
+    <div class="section-header">
+      <div class="section-dot dot-agent"></div>
+      <h2 class="section-title">Agents &amp; Automation</h2>
+      <span class="section-count">7개 용어</span>
+    </div>
+    <div class="term-grid" id="grid-agent">
+
+      <!-- Connector -->
+      <div class="term-card agent" data-terms="connector 커넥터 외부 연동 서비스">
+        <span class="term-icon">🔗</span>
+        <span class="term-tag tag-agent">자동화</span>
+        <div class="term-name">Connector <span style="font-weight:400;font-size:14px;color:var(--faint)">(커넥터)</span></div>
+        <p class="term-short">Claude와 외부 서비스(캘린더, Slack, Drive 등)를 연결하는 라이브 링크.</p>
+        <p class="term-detail">MCP 기반으로 동작합니다. 연결된 앱에서 데이터 읽기/생성/수정/삭제, 대시보드·작업 보드 표시, 사용자 대신 자동 작업 수행이 가능합니다. OAuth를 통한 사전 승인이 필요합니다(실제 비밀번호 공유 불필요).</p>
+      </div>
+
+      <!-- MCP -->
+      <div class="term-card agent" data-terms="mcp model context protocol 모델 컨텍스트 프로토콜 표준">
+        <span class="term-icon">🔌</span>
+        <span class="term-tag tag-agent">표준 프로토콜</span>
+        <div class="term-name">MCP</div>
+        <div class="term-en">Model Context Protocol</div>
+        <p class="term-short">모든 커넥터를 구동하는 오픈 표준 — AI와 외부 데이터 소스를 연결하는 범용 프로토콜.</p>
+        <p class="term-detail">AI 시스템과 데이터 소스를 연결하는 범용 표준입니다. MCP 서버(데이터 제공자)와 MCP 클라이언트(AI 앱)의 양방향 구조로 동작합니다. 기존 개별 통합을 단일 프로토콜로 대체해 Slack, GitHub, Google Drive, Asana 등을 연동합니다.</p>
+        <div class="term-note note-info">💡 Anthropic이 제안한 오픈 표준 — 다른 AI 시스템도 구현 가능</div>
+      </div>
+
+      <!-- Skill -->
+      <div class="term-card agent" data-terms="skill 스킬 마크다운 도구 확장">
+        <span class="term-icon">📖</span>
+        <span class="term-tag tag-agent">확장 모듈</span>
+        <div class="term-name">Skill <span style="font-weight:400;font-size:14px;color:var(--faint)">(스킬)</span></div>
+        <p class="term-short">Claude에게 특정 도구나 실천법을 가르치는 마크다운 파일.</p>
+        <p class="term-detail">지시문·스크립트·리소스가 포함된 폴더 형태의 확장 모듈입니다. <strong>Composable</strong>(여러 스킬 자동 조합), <strong>Portable</strong>(Claude.ai·Claude Code·API 전체에서 동일 포맷), <strong>Efficient</strong>(필요할 때만 컨텍스트에 로드) 특성을 가집니다.</p>
+        <div class="term-note note-info">💡 적용 범위: Enterprise &gt; Personal (~/.claude/skills/) &gt; Project (.claude/skills/)</div>
+      </div>
+
+      <!-- Slash Command -->
+      <div class="term-card agent" data-terms="slash command 슬래시 커맨드 명령어 단축키">
+        <span class="term-icon">⚡</span>
+        <span class="term-tag tag-agent">단축 명령</span>
+        <div class="term-name">Slash Command <span style="font-weight:400;font-size:14px;color:var(--faint)">(슬래시 커맨드)</span></div>
+        <p class="term-short">스킬 + 커넥터 묶음으로 Claude에게 특정 AI 역할을 부여하는 /명령어 형태의 단축키.</p>
+        <p class="term-detail">빌트인 커맨드(<code style="font-size:11px;background:#f0f0ec;padding:1px 5px;border-radius:3px;">/help</code>, <code style="font-size:11px;background:#f0f0ec;padding:1px 5px;border-radius:3px;">/compact</code>)와 스킬 기반 커스텀 커맨드로 구분됩니다. 스킬의 <code style="font-size:11px;background:#f0f0ec;padding:1px 5px;border-radius:3px;">name</code> 필드가 슬래시 커맨드 이름이 됩니다.</p>
+        <div class="term-note note-warn">⚠️ 같은 이름의 스킬과 커맨드가 충돌 시 스킬이 우선</div>
+      </div>
+
+      <!-- Scheduled Task -->
+      <div class="term-card agent" data-terms="scheduled task 스케줄 작업 자동화 크론 반복">
+        <span class="term-icon">⏰</span>
+        <span class="term-tag tag-agent">자동화</span>
+        <div class="term-name">Scheduled Task <span style="font-weight:400;font-size:14px;color:var(--faint)">(스케줄 작업)</span></div>
+        <p class="term-short">Claude가 일정에 따라 자동으로 실행하는 반복 작업.</p>
+        <p class="term-detail">매일 아침 PR 리뷰, 야간 CI 실패 분석, 주간 의존성 감사, PR 머지 후 문서 동기화 등에 활용됩니다. Claude Code에서는 Anthropic 관리 인프라에서 실행되므로 컴퓨터가 꺼져 있어도 계속 실행됩니다.</p>
+      </div>
+
+      <!-- Dispatch -->
+      <div class="term-card agent" data-terms="dispatch 디스패치 모바일 원격 코웍">
+        <span class="term-icon">📱</span>
+        <span class="term-tag tag-agent">원격 제어</span>
+        <div class="term-name">Dispatch <span style="font-weight:400;font-size:14px;color:var(--faint)">(디스패치)</span></div>
+        <p class="term-short">Claude 모바일 앱에서 Cowork를 원격으로 제어하는 기능.</p>
+        <p class="term-detail">모바일에서 작업을 위임하면 데스크톱 세션이 생성되어 실행됩니다. Cowork의 다단계 워크플로우를 외출 중에도 시작할 수 있습니다.</p>
+      </div>
+
+      <!-- Computer Use -->
+      <div class="term-card agent" data-terms="computer use 컴퓨터 사용 마우스 클릭 자동화">
+        <span class="term-icon">🖱️</span>
+        <span class="term-tag tag-agent">컴퓨터 제어</span>
+        <div class="term-name">Computer Use <span style="font-weight:400;font-size:14px;color:var(--faint)">(컴퓨터 사용)</span></div>
+        <p class="term-short">화면을 보고, 커서를 움직이고, 버튼을 클릭하고, 텍스트를 입력하는 방식으로 Claude가 컴퓨터를 사람처럼 조작하는 기능.</p>
+        <p class="term-detail">반복 프로세스 자동화, 소프트웨어 빌드/테스트, 오픈엔드 리서치 등에 활용됩니다. 스크린샷·마우스 동작·키보드 입력·관련 파일은 모두 사용자 환경에 저장됩니다(Anthropic에 저장 불필요).</p>
+        <div class="term-note note-info">💡 2026년 Anthropic이 Vercept 인수 → Computer Use 역량 강화</div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<script>
+  /* ── 탭 활성화 ── */
+  function scrollToSection(id) {
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // 탭 active 상태 업데이트
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.tab-btn.' + id)?.classList.add('active');
+  }
+
+  /* ── 스크롤 감지로 탭 자동 업데이트 ── */
+  const sections = ['ai', 'prod', 'feat', 'agent'];
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        sections.forEach(id => {
+          document.querySelector('.tab-btn.' + id)?.classList.remove('active');
+        });
+        const activeId = entry.target.id;
+        document.querySelector('.tab-btn.' + activeId)?.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-120px 0px -60% 0px', threshold: 0 });
+
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+
+  /* ── 검색 필터 ── */
+  function filterTerms(q) {
+    const query = q.toLowerCase().trim();
+    const cards = document.querySelectorAll('.term-card');
+    let anyVisible = false;
+
+    cards.forEach(card => {
+      const terms = (card.dataset.terms || '').toLowerCase();
+      const name  = card.querySelector('.term-name')?.textContent.toLowerCase() || '';
+      const short = card.querySelector('.term-short')?.textContent.toLowerCase() || '';
+      const match = !query || terms.includes(query) || name.includes(query) || short.includes(query);
+      card.classList.toggle('hidden', !match);
+      if (match) anyVisible = true;
+    });
+
+    // 섹션 헤더 표시/숨김
+    sections.forEach(id => {
+      const grid = document.getElementById('grid-' + id);
+      const section = document.getElementById(id);
+      if (!grid || !section) return;
+      const hasVisible = [...grid.querySelectorAll('.term-card')].some(c => !c.classList.contains('hidden'));
+      section.classList.toggle('hidden', !hasVisible);
+    });
+  }
+</script>
+
+  <script data-page-hash="6HEQ953" src="/assets/js/page-footer.js"></script>
+</body>
+</html>

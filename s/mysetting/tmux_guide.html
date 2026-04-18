@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tmux 개발 환경 가이드</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #FAFAF8;
+      --surface: #FFFFFF;
+      --surface-alt: #F4F4F0;
+      --border: #E5E5E0;
+      --text-primary: #1A1A18;
+      --text-secondary: #4A4A44;
+      --text-muted: #8A8A82;
+      --accent: #C96A2E;
+      --accent-light: #FDF0E8;
+      --accent-border: #F0C4A0;
+      --code-bg: #1E1E1C;
+      --code-text: #E8E8E2;
+      --green: #2D7D4E;
+      --green-bg: #EEF8F2;
+      --blue: #2563EB;
+      --blue-bg: #EFF6FF;
+      --yellow-bg: #FFFBEB;
+      --yellow-border: #FDE68A;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    /* Header */
+    .site-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .site-header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-badge {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .header-title {
+      font-family: 'Fraunces', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Layout */
+    .layout {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    /* Sidebar TOC */
+    .toc {
+      position: sticky;
+      top: 80px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .toc-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .toc a {
+      display: block;
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 5px 8px;
+      border-radius: 6px;
+      transition: all 0.15s;
+      line-height: 1.4;
+    }
+    .toc a:hover { background: var(--surface-alt); color: var(--text-primary); }
+    .toc a.sub { padding-left: 18px; font-size: 12px; color: var(--text-muted); }
+
+    /* Main content */
+    .content { min-width: 0; }
+
+    .hero { margin-bottom: 48px; }
+    .hero-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      line-height: 1.15;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+    .hero-desc {
+      font-size: 17px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    .hero-meta {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Section */
+    section { margin-bottom: 56px; scroll-margin-top: 90px; }
+    section h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    section h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 24px 0 10px;
+    }
+    p { font-size: 15px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.75; }
+
+    /* Callout */
+    .callout {
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin: 20px 0;
+      font-size: 14px;
+      line-height: 1.65;
+      display: flex;
+      gap: 12px;
+    }
+    .callout.info { background: var(--blue-bg); border-left: 3px solid var(--blue); color: #1e40af; }
+    .callout.tip { background: var(--green-bg); border-left: 3px solid var(--green); color: #166534; }
+    .callout.warn { background: var(--yellow-bg); border-left: 3px solid #D97706; color: #92400e; }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .callout-body strong { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* Code block */
+    .code-block {
+      background: var(--code-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: #2A2A28;
+      border-bottom: 1px solid #3A3A38;
+    }
+    .code-lang {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #888882;
+    }
+    .code-body {
+      padding: 16px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--code-text);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .code-body .comment { color: #666660; }
+    .code-body .cmd { color: #A8D8A8; }
+    .code-body .flag { color: #FFCC80; }
+    .code-body .str { color: #80CBC4; }
+
+    /* Inline code */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--accent);
+    }
+
+    /* Shortcut table */
+    .shortcut-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 16px 0;
+    }
+    .shortcut-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .shortcut-key {
+      background: var(--code-bg);
+      color: #A8D8A8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      border: 1px solid #3A3A38;
+    }
+    .shortcut-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-top: 2px;
+    }
+
+    /* Flow diagram */
+    .flow-diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 20px 0;
+      overflow-x: auto;
+    }
+
+    /* Session card */
+    .session-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .session-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .session-card .win-name {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .session-card .win-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .win-num {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      background: var(--code-bg);
+      color: #A8D8A8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 5px;
+      text-align: center;
+      line-height: 22px;
+      margin-right: 6px;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin: 16px 0;
+    }
+    th {
+      background: var(--surface-alt);
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface-alt); }
+
+    /* Footer */
+    .page-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .layout { grid-template-columns: 1fr; gap: 32px; padding: 32px 16px 60px; }
+      .toc { position: static; }
+      .shortcut-grid { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <span class="header-badge">MySetting</span>
+    <span class="header-title">tmux 개발 환경 가이드</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- TOC -->
+  <nav class="toc" aria-label="목차">
+    <div class="toc-title">목차</div>
+    <a href="#what">tmux가 뭐야?</a>
+    <a href="#flow">기본 흐름</a>
+    <a href="#session">세션 시작 & 복귀</a>
+    <a href="#windows">창 구성 & 전환</a>
+    <a href="#shortcuts">단축키 전체 정리</a>
+    <a href="#tmux-cmd">/tmux 커맨드</a>
+    <a href="#workflow">실전 워크플로우</a>
+    <a href="#claude">Claude는 어디서?</a>
+  </nav>
+
+  <!-- Content -->
+  <main class="content">
+
+    <div class="hero">
+      <div class="hero-label">개발 환경 설정</div>
+      <h1>tmux<br>개발 환경 가이드</h1>
+      <p class="hero-desc">터미널 안에 터미널 여러 개를 띄우고, 닫아도 프로세스가 살아있는 멀티플렉서. 세션 관리부터 창 전환, 단축키까지 한 번에 정리합니다.</p>
+      <div class="hero-meta">2026-03-27 · MySetting</div>
+    </div>
+
+    <!-- 1. tmux가 뭐야 -->
+    <section id="what">
+      <h2>💡 tmux가 뭐야?</h2>
+      <p><strong>터미널 멀티플렉서(Terminal Multiplexer)</strong>입니다. 쉽게 말하면 두 가지 기능을 합니다:</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;">
+          <div style="font-size:24px;margin-bottom:8px;">📺</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:6px;">터미널 창 분할</div>
+          <div style="font-size:13px;color:var(--text-secondary);">하나의 터미널 안에서 창을 여러 개로 나눠 동시에 볼 수 있음</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;">
+          <div style="font-size:24px;margin-bottom:8px;">🔋</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:6px;">세션 유지 (핵심!)</div>
+          <div style="font-size:13px;color:var(--text-secondary);">터미널을 닫아도 서버가 계속 살아있음. 재접속하면 그대로 이어서 작업</div>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">💡</span>
+        <div class="callout-body">
+          <strong>핵심 비유</strong>
+          tmux는 <strong>탭이 있는 브라우저</strong>와 비슷합니다. 창이 여러 개 열려 있어도 한 번에 하나만 보이고, 단축키로 전환합니다. 그리고 브라우저를 꺼도 탭이 사라지지 않는 마법 같은 버전이라고 생각하세요.
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 기본 흐름 -->
+    <section id="flow">
+      <h2>🔄 기본 흐름</h2>
+
+      <div class="flow-diagram">
+        <svg viewBox="0 0 660 160" style="width:100%;max-width:660px;display:block;margin:0 auto;">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#C96A2E"/>
+            </marker>
+          </defs>
+          <!-- 박스들 -->
+          <rect x="10" y="60" width="110" height="40" rx="8" fill="#1E1E1C" stroke="#C96A2E" stroke-width="1.5"/>
+          <text x="65" y="84" text-anchor="middle" fill="#E8E8E2" font-size="11" font-family="Inter">터미널 열기</text>
+
+          <rect x="155" y="60" width="110" height="40" rx="8" fill="#1E1E1C" stroke="#C96A2E" stroke-width="1.5"/>
+          <text x="210" y="84" text-anchor="middle" fill="#E8E8E2" font-size="11" font-family="Inter">/tmux on</text>
+
+          <rect x="300" y="60" width="110" height="40" rx="8" fill="#1E1E1C" stroke="#C96A2E" stroke-width="1.5"/>
+          <text x="355" y="84" text-anchor="middle" fill="#E8E8E2" font-size="11" font-family="Inter">작업</text>
+
+          <rect x="445" y="60" width="120" height="40" rx="8" fill="#1E1E1C" stroke="#3A3A38" stroke-width="1.5"/>
+          <text x="505" y="78" text-anchor="middle" fill="#888882" font-size="10" font-family="Inter">터미널 닫기</text>
+          <text x="505" y="93" text-anchor="middle" fill="#666660" font-size="10" font-family="Inter">(세션 유지됨)</text>
+
+          <!-- 화살표 -->
+          <line x1="120" y1="80" x2="152" y2="80" stroke="#C96A2E" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="265" y1="80" x2="297" y2="80" stroke="#C96A2E" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="410" y1="80" x2="442" y2="80" stroke="#C96A2E" stroke-width="1.5" marker-end="url(#arr)"/>
+
+          <!-- 복귀 화살표 -->
+          <path d="M505 100 Q505 140 355 140 Q210 140 65 140 Q65 105 65 102" stroke="#C96A2E" stroke-width="1.5" fill="none" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+          <text x="355" y="155" text-anchor="middle" fill="#C96A2E" font-size="10" font-family="Inter">tmux attach -t 세션이름 → 이어서 작업</text>
+        </svg>
+      </div>
+
+      <p>터미널을 닫아도 tmux 세션 안의 프로세스(서버, DB 등)는 계속 실행됩니다. 다시 터미널을 열고 <code>tmux attach</code>하면 그대로 이어집니다.</p>
+    </section>
+
+    <!-- 3. 세션 시작 & 복귀 -->
+    <section id="session">
+      <h2>🚀 세션 시작 & 복귀</h2>
+
+      <h3>처음 시작할 때</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <div class="code-body"><span class="comment"># 프로젝트 폴더로 이동</span>
+<span class="cmd">cd</span> ~/git/all_mighty
+
+<span class="comment"># tmux 세션 시작 (폴더명 = 세션이름 자동 설정)</span>
+/tmux on
+<span class="comment"># → "all_mighty" 라는 이름으로 세션 생성</span></div>
+      </div>
+
+      <h3>WSL/PC 재시작 후 복귀</h3>
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div class="callout-body">
+          <strong>주의</strong>
+          WSL이나 PC를 재시작하면 tmux 세션이 사라집니다. <code>/tmux on</code>으로 새로 만들어야 합니다.
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <div class="code-body"><span class="comment"># 세션이 살아있을 때 복귀</span>
+<span class="cmd">tmux attach</span> <span class="flag">-t</span> all_mighty
+<span class="comment"># 짧게: tmux a -t all_mighty</span>
+
+<span class="comment"># 세션 목록 확인</span>
+<span class="cmd">tmux ls</span>
+
+<span class="comment"># 세션이 없으면 새로 생성</span>
+/tmux on</div>
+      </div>
+
+      <h3>세션 종료</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <div class="code-body"><span class="comment"># tmux 안에서 나가기 (세션은 유지)</span>
+<span class="str">Ctrl+B</span> → <span class="str">d</span>   <span class="comment"># detach</span>
+
+<span class="comment"># 세션 완전 종료</span>
+/tmux off</div>
+      </div>
+    </section>
+
+    <!-- 4. 창 구성 & 전환 -->
+    <section id="windows">
+      <h2>🪟 창 구성 & 전환</h2>
+
+      <p>tmux는 창(window)이 여러 개 있어도 <strong>한 번에 하나만 보입니다</strong>. 탭 브라우저처럼요. 하단 상태바에서 현재 창 목록을 확인할 수 있습니다.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">상태바 예시</span></div>
+        <div class="code-body">[1] backend<span class="str">*</span>  [2] frontend  [3] test  [4] terminal
+          <span class="comment">↑ * = 지금 보고 있는 창</span></div>
+      </div>
+
+      <p>이 프로젝트(all_mighty)의 창 구성:</p>
+      <div class="session-cards">
+        <div class="session-card">
+          <div class="win-name"><span class="win-num">1</span>backend</div>
+          <div class="win-desc">NestJS API 서버 실행<br><code>npm run start</code> 여기서!</div>
+        </div>
+        <div class="session-card">
+          <div class="win-name"><span class="win-num">2</span>frontend</div>
+          <div class="win-desc">Next.js 개발 서버<br><code>npm run dev</code></div>
+        </div>
+        <div class="session-card">
+          <div class="win-name"><span class="win-num">3</span>test</div>
+          <div class="win-desc">테스트 실행용<br><code>npm test</code></div>
+        </div>
+        <div class="session-card">
+          <div class="win-name"><span class="win-num">4</span>terminal</div>
+          <div class="win-desc">일반 터미널<br>git, 기타 명령</div>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-icon">✅</span>
+        <div class="callout-body">
+          <strong>창 전환 방법</strong>
+          <code>Ctrl+B</code> 를 누르고 <strong>손을 뗀 다음</strong> 숫자를 누릅니다.<br>
+          동시에 누르는 게 아닙니다! <code>Ctrl+B</code> → 손 떼기 → <code>2</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 단축키 -->
+    <section id="shortcuts">
+      <h2>⌨️ 단축키 전체 정리</h2>
+
+      <p>모든 tmux 단축키는 <strong>Ctrl+B를 먼저 누르고 손을 뗀 뒤</strong> 다음 키를 누릅니다.</p>
+
+      <div class="shortcut-grid">
+        <div class="shortcut-card">
+          <div class="shortcut-key">Ctrl+B → 숫자</div>
+          <div class="shortcut-desc">창 전환<br>(1=backend, 2=frontend...)</div>
+        </div>
+        <div class="shortcut-card">
+          <div class="shortcut-key">Ctrl+B → w</div>
+          <div class="shortcut-desc">창 목록 보기<br>(방향키로 선택)</div>
+        </div>
+        <div class="shortcut-card">
+          <div class="shortcut-key">Ctrl+B → d</div>
+          <div class="shortcut-desc">tmux에서 나가기<br>(세션은 유지됨)</div>
+        </div>
+        <div class="shortcut-card">
+          <div class="shortcut-key">Ctrl+B → [</div>
+          <div class="shortcut-desc">스크롤 모드<br>(q로 종료)</div>
+        </div>
+        <div class="shortcut-card">
+          <div class="shortcut-key">Ctrl+B → c</div>
+          <div class="shortcut-desc">새 창 만들기</div>
+        </div>
+        <div class="shortcut-card">
+          <div class="shortcut-key">Ctrl+B → ,</div>
+          <div class="shortcut-desc">창 이름 바꾸기</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>CLI 명령어</th><th>설명</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>tmux ls</code></td><td>실행 중인 세션 목록</td></tr>
+          <tr><td><code>tmux attach -t 이름</code></td><td>세션에 다시 붙기</td></tr>
+          <tr><td><code>tmux kill-session -t 이름</code></td><td>세션 강제 종료</td></tr>
+          <tr><td><code>tmux new-session -s 이름</code></td><td>새 세션 생성</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 6. /tmux 커맨드 -->
+    <section id="tmux-cmd">
+      <h2>🤖 /tmux 커맨드</h2>
+
+      <p>이 프로젝트에서는 Claude Code 스킬로 <code>/tmux</code>를 지원합니다.</p>
+
+      <table>
+        <thead>
+          <tr><th>커맨드</th><th>동작</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>/tmux on</code></td><td>현재 폴더명으로 세션 생성 (4개 창 자동 구성)</td></tr>
+          <tr><td><code>/tmux off</code></td><td>현재 폴더명의 세션 종료</td></tr>
+          <tr><td><code>/tmux status</code></td><td>현재 세션 상태 확인</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ️</span>
+        <div class="callout-body">
+          <strong>세션 이름 자동 결정</strong>
+          <code>/tmux on</code>은 현재 디렉토리 이름을 세션 이름으로 씁니다. <code>~/git/all_mighty</code>에서 실행하면 세션 이름은 <strong>all_mighty</strong>가 됩니다.
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. 실전 워크플로우 -->
+    <section id="workflow">
+      <h2>🛠️ 실전 워크플로우</h2>
+
+      <h3>매일 개발 시작할 때</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <div class="code-body"><span class="comment"># 1. 터미널 열기</span>
+<span class="cmd">cd</span> ~/git/all_mighty
+
+<span class="comment"># 2. 세션 살아있으면 복귀, 없으면 생성</span>
+<span class="cmd">tmux attach</span> <span class="flag">-t</span> all_mighty <span class="flag">||</span> /tmux on
+
+<span class="comment"># 3. 1번 backend 창에서 서버 시작</span>
+<span class="comment"># (자동으로 1번 창이 활성화됨)</span>
+<span class="cmd">npm run start</span>   <span class="comment"># DB + API + Frontend 한 번에 시작</span>
+
+<span class="comment"># 4. 브라우저에서 확인</span>
+<span class="comment"># http://localhost:3000</span></div>
+      </div>
+
+      <h3>작업 중 창 이동</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">단축키 흐름</span></div>
+        <div class="code-body">서버 로그 보다가 → <span class="str">Ctrl+B → 4</span> → terminal 창에서 git 작업
+git 완료 후   → <span class="str">Ctrl+B → 3</span> → test 창에서 npm test
+테스트 완료   → <span class="str">Ctrl+B → 1</span> → backend 창으로 복귀</div>
+      </div>
+    </section>
+
+    <!-- 8. Claude는 어디서 -->
+    <section id="claude">
+      <h2>🤖 Claude Code는 어디서 열어?</h2>
+
+      <p>Claude Code는 <strong>tmux 밖의 별도 터미널 탭</strong>에서 엽니다. tmux 창 안에서 열면 화면이 깨지거나 단축키가 충돌할 수 있습니다.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">Windows Terminal 탭 구성 권장</span></div>
+        <div class="code-body"><span class="comment"># 탭 1: tmux (서버 실행)</span>
+tmux attach <span class="flag">-t</span> all_mighty   <span class="comment">← npm run start 실행 중</span>
+
+<span class="comment"># 탭 2: Claude Code</span>
+<span class="cmd">cd</span> ~/git/all_mighty && <span class="cmd">claude</span>     <span class="comment">← AI 작업</span>
+
+<span class="comment"># 탭 3: 자유 터미널</span>
+<span class="comment">← git, 기타 명령</span></div>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <div class="callout-body">
+          <strong>Windows Terminal 탭 추가</strong>
+          <code>Ctrl+Shift+T</code>로 새 탭을 열 수 있습니다.
+        </div>
+      </div>
+
+      <div class="page-footer">
+        tmux 개발 환경 가이드 · MySetting · 2026-03-27
+      </div>
+    </section>
+
+  </main>
+</div>
+
+</body>
+</html>

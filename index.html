@@ -1,525 +1,2004 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Tech Feed — Chris Lee</title>
-<meta name="description" content="Claude, Gemini, Codex 최신 AI 소식을 한국어로 요약 정리">
-<link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archive</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --text-muted: #6b7280;
+      --accent: #059669;
+      --border: #e5e7eb;
+      --card-bg: #ffffff;
+      --admin-accent: #dc2626;
+      --font: 'Inter', sans-serif;
+    }
 
-  :root {
-    --bg: #F7F8FA;
-    --surface: #FFFFFF;
-    --border: #E5E7EB;
-    --text-primary: #111827;
-    --text-secondary: #6B7280;
-    --text-muted: #9CA3AF;
-    --accent: #2563EB;
-    --accent-hover: #1D4ED8;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    --cat-claude: #7C3AED;
-    --cat-claude-bg: #F5F3FF;
-    --cat-claude-border: #DDD6FE;
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
 
-    --cat-gemini: #2563EB;
-    --cat-gemini-bg: #EFF6FF;
-    --cat-gemini-border: #BFDBFE;
+    body.admin-mode { border-top: 3px solid var(--admin-accent); }
 
-    --cat-codex: #059669;
-    --cat-codex-bg: #ECFDF5;
-    --cat-codex-border: #A7F3D0;
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
-    --cat-usecase: #D97706;
-    --cat-usecase-bg: #FFFBEB;
-    --cat-usecase-border: #FDE68A;
+    /* ===== NAVBAR ===== */
+    .navbar {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+    }
 
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
-    --shadow-lg: 0 10px 30px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
-    --radius: 12px;
-    --radius-sm: 8px;
-  }
+    .navbar .inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
 
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
-    background: var(--bg);
-    color: var(--text-primary);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
+    .logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
 
-  /* ── Nav ── */
-  nav {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-  }
-  .nav-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .nav-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    font-size: 18px;
-    color: var(--text-primary);
-    text-decoration: none;
-  }
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-  .nav-links { display: flex; align-items: center; gap: 8px; }
-  .nav-links a {
-    font-size: 14px;
-    color: var(--text-secondary);
-    text-decoration: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    transition: background 0.15s, color 0.15s;
-  }
-  .nav-links a:hover { background: var(--bg); color: var(--text-primary); }
+    .stats-badge { font-size: 0.85rem; color: var(--text-muted); }
 
-  /* ── Hero ── */
-  .hero {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 64px 24px 40px;
-  }
-  .hero-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 16px;
-  }
-  .hero-tag::before {
-    content: '';
-    display: block;
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-  .hero h1 {
-    font-size: clamp(32px, 5vw, 48px);
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
-    margin-bottom: 16px;
-  }
-  .hero-sub {
-    font-size: 17px;
-    color: var(--text-secondary);
-    max-width: 560px;
-    line-height: 1.7;
-  }
+    .admin-badge {
+      display: none;
+      background: var(--admin-accent);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
+      align-items: center;
+      gap: 5px;
+    }
 
-  /* ── Filter Tabs ── */
-  .filter-wrap {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px 32px;
-  }
-  .filter-tabs {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .tab-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 100px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.15s;
-    line-height: 1;
-  }
-  .tab-btn:hover { border-color: #D1D5DB; color: var(--text-primary); }
-  .tab-btn.active {
-    background: var(--text-primary);
-    border-color: var(--text-primary);
-    color: #fff;
-  }
-  .tab-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-  }
+    body.admin-mode .admin-badge { display: inline-flex; }
 
-  /* ── Grid ── */
-  .grid-wrap {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px 80px;
-  }
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 20px;
-  }
+    .nav-btn {
+      display: none;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
 
-  /* ── Card ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    cursor: pointer;
-    transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .card:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
-    border-color: #D1D5DB;
-    text-decoration: none;
-  }
-  .card-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .cat-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 100px;
-    letter-spacing: 0.04em;
-    flex-shrink: 0;
-  }
-  .cat-badge::before {
-    content: '';
-    display: block;
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-  .cat-claude  { color: var(--cat-claude);  background: var(--cat-claude-bg);  border: 1px solid var(--cat-claude-border); }
-  .cat-gemini  { color: var(--cat-gemini);  background: var(--cat-gemini-bg);  border: 1px solid var(--cat-gemini-border); }
-  .cat-codex   { color: var(--cat-codex);   background: var(--cat-codex-bg);   border: 1px solid var(--cat-codex-border); }
-  .cat-usecase { color: var(--cat-usecase); background: var(--cat-usecase-bg); border: 1px solid var(--cat-usecase-border); }
+    .nav-btn-primary { background: #111; color: white; }
+    .nav-btn-primary:hover { background: #333; }
+    .nav-btn-ghost { background: transparent; color: var(--admin-accent); border: 1px solid var(--admin-accent); }
+    .nav-btn-ghost:hover { background: #fee2e2; }
+    .nav-btn-help { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+    .nav-btn-help:hover { background: #f3f4f6; color: var(--text); }
+    .nav-btn-github { background: #1a7f37; color: white; border: none; }
+    .nav-btn-github:hover { background: #166d30; }
+    .nav-btn-github.pushing { opacity: 0.7; pointer-events: none; }
 
-  .delete-btn {
-    width: 28px; height: 28px;
-    border-radius: 6px;
-    border: 1px solid transparent;
-    background: transparent;
-    color: var(--text-muted);
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-    font-size: 14px;
-  }
-  .delete-btn:hover { background: #FEF2F2; color: #EF4444; border-color: #FECACA; }
+    body.admin-mode .nav-btn { display: inline-flex; }
 
-  .card-title {
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1.45;
-    color: var(--text-primary);
-  }
-  .card-summary {
-    font-size: 13px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-  }
-  .card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 4px;
-  }
-  .card-date {
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-  .card-arrow {
-    font-size: 13px;
-    color: var(--text-muted);
-    transition: transform 0.15s, color 0.15s;
-  }
-  .card:hover .card-arrow { transform: translateX(3px); color: var(--accent); }
+    .nav-btn-admin-toggle {
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-btn-admin-toggle:hover { background: #f3f4f6; color: var(--text); }
+    body.admin-mode .nav-btn-admin-toggle {
+      background: #fee2e2;
+      color: var(--admin-accent);
+      border-color: #fca5a5;
+    }
 
-  /* ── Empty ── */
-  .empty-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 80px 24px;
-    color: var(--text-muted);
-  }
-  .empty-state p { font-size: 15px; }
+    /* ===== HELP MODAL ===== */
+    #helpModal { z-index: 600; }
+    .help-modal {
+      background: white; border-radius: 20px;
+      max-width: 640px; width: 94%;
+      max-height: 88vh; overflow-y: auto;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+    }
+    .help-header {
+      padding: 24px 28px 0;
+      position: sticky; top: 0; background: white;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px; margin-bottom: 0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .help-header h2 { font-size: 1.1rem; font-weight: 700; }
+    .help-close {
+      background: #f3f4f6; border: none; width: 32px; height: 32px;
+      border-radius: 50%; cursor: pointer; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); transition: all 0.15s; flex-shrink: 0;
+    }
+    .help-close:hover { background: #e5e7eb; color: var(--text); }
+    .help-body { padding: 20px 28px 28px; }
+    .help-section { margin-bottom: 24px; }
+    .help-section:last-child { margin-bottom: 0; }
+    .help-section-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-muted);
+      margin-bottom: 12px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .help-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 8px 0; border-bottom: 1px solid #f9fafb;
+    }
+    .help-row:last-child { border-bottom: none; }
+    .help-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: #f3f4f6; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0;
+    }
+    .help-icon.red { background: #fee2e2; border-color: #fecaca; color: var(--admin-accent); }
+    .help-icon.green { background: #d1fae5; border-color: #a7f3d0; color: var(--accent); }
+    .help-icon.blue { background: #dbeafe; border-color: #bfdbfe; color: #2563eb; }
+    .help-icon.yellow { background: #fef3c7; border-color: #fde68a; color: #d97706; }
+    .help-text { flex: 1; }
+    .help-text strong { font-size: 0.88rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 2px; }
+    .help-text span { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+    .help-flow {
+      background: #f9fafb; border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px;
+      font-size: 0.82rem; color: var(--text-muted); line-height: 2;
+    }
+    .help-flow b { color: var(--text); }
+    .help-flow .arrow { color: #9ca3af; margin: 0 4px; }
+    .help-callout {
+      background: #fffbeb; border: 1px solid #fde68a;
+      border-radius: 10px; padding: 12px 14px;
+      font-size: 0.82rem; color: #92400e; line-height: 1.6;
+    }
+    .help-kbd {
+      background: #f3f4f6; border: 1px solid #d1d5db;
+      border-bottom: 2px solid #d1d5db; border-radius: 4px;
+      padding: 1px 7px; font-size: 0.78rem; font-family: monospace;
+      color: var(--text); white-space: nowrap;
+    }
 
-  /* ── Pagination ── */
-  .pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 32px 0 0;
-  }
-  .page-btn {
-    min-width: 36px; height: 36px;
-    padding: 0 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .page-btn:hover:not(:disabled) { border-color: #D1D5DB; color: var(--text-primary); background: var(--bg); }
-  .page-btn.active { background: var(--text-primary); border-color: var(--text-primary); color: #fff; }
-  .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-  .page-info { font-size: 13px; color: var(--text-muted); padding: 0 8px; }
+    /* ===== HERO ===== */
+    .hero { padding: 56px 0 36px; text-align: center; }
+    .hero h1 {
+      font-size: 2.75rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 10px;
+    }
+    .hero p { color: var(--text-muted); font-size: 1rem; }
 
-  /* ── Footer ── */
-  footer {
-    border-top: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .footer-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  footer p { font-size: 13px; color: var(--text-muted); }
-  footer a { color: var(--text-secondary); text-decoration: none; font-size: 13px; }
-  footer a:hover { color: var(--text-primary); }
+    /* ===== SEARCH ===== */
+    .search-wrap { margin: 0 auto 48px; max-width: 540px; position: relative; }
+    .search-input {
+      width: 100%;
+      padding: 12px 18px 12px 44px;
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-family: var(--font);
+      background: #f9fafb;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .search-input:focus { border-color: #9ca3af; background: #fff; box-shadow: 0 0 0 3px rgba(0,0,0,0.04); }
+    .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
-  /* ── Responsive ── */
-  @media (max-width: 640px) {
-    .hero { padding: 40px 16px 28px; }
-    .filter-wrap, .grid-wrap { padding-left: 16px; padding-right: 16px; }
-    .card-grid { grid-template-columns: 1fr; }
-    .nav-inner { padding: 0 16px; }
-  }
-</style>
+    /* ===== DIRECTORY ===== */
+    .directory-section { margin-bottom: 60px; }
+    .directory-section.is-hidden { opacity: 0.45; }
+
+    .dir-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--text);
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+
+    .dir-title-group { display: flex; align-items: center; gap: 9px; min-width: 0; }
+
+    .collapse-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); padding: 3px 6px; border-radius: 4px;
+      transition: color 0.2s; flex-shrink: 0;
+    }
+    .collapse-btn:hover { color: var(--text); }
+
+    .dir-name { font-size: 1.05rem; font-weight: 700; }
+    .dir-count { font-size: 0.75rem; color: var(--text-muted); background: #f3f4f6; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+    .hidden-badge { font-size: 0.68rem; background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+
+    .dir-body { transition: height 0.25s ease; overflow: hidden; }
+    .dir-body.collapsed { display: none; }
+    .file-grid.collapsed { display: none; }
+
+    /* ===== ADMIN CONTROLS ===== */
+    .admin-controls {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    body.admin-mode .admin-controls { display: flex; }
+
+    .admin-btn {
+      background: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      transition: all 0.15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-family: var(--font);
+      white-space: nowrap;
+    }
+    .admin-btn:hover { background: #f3f4f6; color: var(--text); border-color: var(--border); }
+    .admin-btn.is-active { color: var(--accent); }
+    .admin-btn.danger:hover { background: #fee2e2; color: var(--admin-accent); border-color: #fecaca; }
+
+    .dir-select {
+      font-size: 0.78rem;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: white;
+      color: var(--text);
+      cursor: pointer;
+      font-family: var(--font);
+      max-width: 140px;
+    }
+
+    /* ===== FOLDER ===== */
+    .folder-block { margin-bottom: 28px; }
+    .folder-block.is-hidden { opacity: 0.45; }
+
+    .folder-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 10px; }
+    .folder-name-group { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .folder-name { font-size: 0.92rem; font-weight: 600; }
+    .folder-item-count { font-size: 0.72rem; color: var(--text-muted); background: #f3f4f6; padding: 2px 7px; border-radius: 10px; }
+    .folder-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    .view-list-btn {
+      font-size: 0.78rem; color: var(--text-muted); text-decoration: none;
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px; transition: all 0.15s;
+    }
+    .view-list-btn:hover { background: #f3f4f6; color: var(--text); }
+
+    /* ===== FILE GRID ===== */
+    .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+
+    .file-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .file-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: #d1d5db; }
+    .new-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.6rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 10px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      animation: pulseBadge 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes pulseBadge {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.75; transform: scale(0.95); }
+    }
+
+    .file-type-badge { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 9px; }
+    .cat-badge { display: inline-block; margin-bottom: 9px; font-size: 0.62rem; font-weight: 700; padding: 2px 8px; border-radius: 8px; letter-spacing: 0.03em; background: rgba(99,102,241,0.12); color: #818cf8; border: 1px solid rgba(99,102,241,0.25); }
+    .file-title { font-size: 0.95rem; font-weight: 600; line-height: 1.45; color: var(--text); flex-grow: 1; margin-bottom: 12px; }
+
+    .card-actions { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border); margin-top: auto; }
+    .action-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.78rem; padding: 3px; transition: color 0.15s; display: inline-flex; align-items: center; gap: 4px; font-family: var(--font); }
+    .action-btn.primary { color: var(--accent); font-weight: 600; }
+    .action-btn:hover { color: var(--text); }
+
+    /* ===== ADD BUTTONS (admin only) ===== */
+    .add-folder-btn, .add-dir-btn {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: 2px dashed #d1d5db;
+      color: var(--text-muted);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all 0.2s;
+      margin: 12px 0;
+      width: 100%;
+      justify-content: center;
+    }
+    .add-folder-btn:hover, .add-dir-btn:hover { border-color: #9ca3af; color: var(--text); background: #f9fafb; }
+    body.admin-mode .add-folder-btn,
+    body.admin-mode .add-dir-btn { display: flex; }
+
+    /* ===== UNASSIGNED (admin) ===== */
+    .unassigned-section {
+      display: none;
+      margin-bottom: 40px;
+      padding: 18px 20px;
+      border: 2px dashed #e5e7eb;
+      border-radius: 12px;
+      background: #fafafa;
+    }
+    body.admin-mode .unassigned-section { display: block; }
+    .unassigned-section h3 { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; }
+    .unassigned-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .unassigned-tag { background: white; border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 8px; }
+
+    /* ===== MODAL ===== */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 500; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: white; border-radius: 16px; padding: 28px; max-width: 440px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; }
+    .modal-field {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.92rem; font-family: var(--font);
+      outline: none; margin-bottom: 14px; color: var(--text);
+    }
+    .modal-field:focus { border-color: #9ca3af; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .btn-primary { background: var(--text); color: white; border: none; padding: 9px 18px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: var(--font); }
+    .btn-primary:hover { background: #333; }
+    .btn-secondary { background: #f3f4f6; color: var(--text); border: none; padding: 9px 18px; border-radius: 8px; font-size: 0.88rem; cursor: pointer; font-family: var(--font); }
+    .btn-secondary:hover { background: #e5e7eb; }
+    .cc-modal { max-width: 420px; }
+    .cc-field-row { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+    .cc-field-row .modal-field { margin-bottom: 0; flex: 1; }
+    .cc-auto-btn { flex-shrink: 0; padding: 10px 12px; background: #f3f4f6; border: 1px solid var(--border); border-radius: 8px; font-size: 0.8rem; cursor: pointer; color: var(--text-muted); white-space: nowrap; font-family: var(--font); }
+    .cc-auto-btn:hover { background: #e5e7eb; color: var(--text); }
+    .cc-hash-badge { display: inline-block; background: #f0fdf4; color: var(--accent); font-family: monospace; font-size: 1rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; margin: 4px 0 14px; letter-spacing: 0.1em; }
+    .cc-shell { background: #1e1e2e; color: #cdd6f4; border-radius: 10px; padding: 14px 16px; font-family: monospace; font-size: 0.8rem; line-height: 1.7; white-space: pre; overflow-x: auto; margin-bottom: 12px; }
+    .cc-copy-btn { width: 100%; padding: 9px; background: #f3f4f6; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-family: var(--font); margin-bottom: 14px; }
+    .cc-copy-btn:hover { background: #e5e7eb; }
+    .move-modal { max-width: 360px; }
+    .move-modal h3 { margin-bottom: 4px; }
+    .move-file-subtitle { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .move-tree { list-style: none; padding: 0; margin: 0 0 16px; max-height: 320px; overflow-y: auto; }
+    .move-tree-dir { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 10px 4px 4px; }
+    .move-tree-folder { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text); transition: background 0.12s; }
+    .move-tree-folder:hover { background: #f3f4f6; }
+    .move-tree-folder.current { background: #f0fdf4; color: var(--accent); font-weight: 600; cursor: default; pointer-events: none; }
+    .move-tree-folder i { width: 14px; font-size: 0.8rem; color: #9ca3af; flex-shrink: 0; }
+    .move-tree-folder.current i { color: var(--accent); }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(14px);
+      background: #1f2937; color: white;
+      padding: 10px 18px; border-radius: 8px;
+      font-size: 0.88rem; opacity: 0; pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      z-index: 1000; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .loading { text-align: center; padding: 80px 0; color: var(--text-muted); }
+    .empty-msg { color: #9ca3af; font-size: 0.82rem; padding: 8px 0; }
+
+    /* ===== HIDDEN FILE CARD ===== */
+    .file-card.is-hidden { opacity: 0.45; }
+    body:not(.admin-mode) .file-card.is-hidden { display: none; }
+
+    /* ===== DRAG & DROP ===== */
+    body.admin-mode .folder-block[draggable="true"] { cursor: grab; }
+    body.admin-mode .folder-block[draggable="true"]:active { cursor: grabbing; }
+    .folder-block.dragging { opacity: 0.35; pointer-events: none; }
+    .dir-body.drag-over {
+      outline: 2px dashed var(--accent);
+      outline-offset: 4px;
+      border-radius: 8px;
+      background: rgba(5, 150, 105, 0.04);
+    }
+    .unassigned-section.drag-over {
+      border-color: var(--accent);
+      background: rgba(5, 150, 105, 0.04);
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .container { padding: 0 16px; }
+      .file-grid { grid-template-columns: 1fr; }
+      .dir-header { flex-wrap: wrap; }
+      .admin-controls { flex-wrap: wrap; }
+    }
+
+    /* ===== FAVORITES ===== */
+    .favorites-section {
+      padding: 20px 0 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .favorites-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .favorites-header h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .favorites-count {
+      font-size: 0.75rem;
+      background: #fef9c3;
+      color: #a16207;
+      border-radius: 20px;
+      padding: 1px 7px;
+      font-weight: 700;
+    }
+
+    .star-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      color: #d1d5db;
+      transition: color 0.15s, background 0.15s;
+      line-height: 1;
+      font-family: var(--font);
+    }
+    .star-btn:hover { color: #f59e0b; background: #fef9c3; }
+    .star-btn.is-active { color: #f59e0b; }
+    .star-btn.is-active:hover { color: #b45309; background: #fef9c3; }
+  </style>
 </head>
-<body>
 
-<nav>
-  <div class="nav-inner">
-    <a class="nav-logo" href="/">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32" style="flex-shrink:0;">
-        <!-- chrisnolja.dev — Block C System v2 (Two-tone) -->
-        <rect x="17" y="17" width="20" height="20" rx="3" fill="#4F46E5"/>
-        <rect x="39" y="17" width="20" height="20" rx="3" fill="#4F46E5"/>
-        <rect x="61" y="17" width="20" height="20" rx="3" fill="#4F46E5"/>
-        <rect x="17" y="39" width="20" height="20" rx="3" fill="#818CF8"/>
-        <rect x="17" y="61" width="20" height="20" rx="3" fill="#4F46E5"/>
-        <rect x="39" y="61" width="20" height="20" rx="3" fill="#4F46E5"/>
-        <rect x="61" y="61" width="20" height="20" rx="3" fill="#4F46E5"/>
-      </svg>
-      AI Tech Feed
-    </a>
-    <div class="nav-links">
-      <a href="/blog/">블로그</a>
-      <a href="/about">About</a>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="inner">
+        <div class="logo" style="display:flex;align-items:center;gap:8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="32" height="32">
+            <rect x="8"  y="8"  width="16" height="16" rx="2" fill="#F97316"/>
+            <rect x="26" y="8"  width="16" height="16" rx="2" fill="#F97316"/>
+            <rect x="8"  y="26" width="16" height="16" rx="2" fill="#FED7AA"/>
+            <rect x="26" y="26" width="16" height="16" rx="2" fill="#FED7AA"/>
+            <rect x="8"  y="44" width="16" height="16" rx="2" fill="#FED7AA"/>
+          </svg>
+          Archive
+        </div>
+        <div class="navbar-right">
+          <span class="stats-badge"><span id="totalDocs">0</span> documents</span>
+          <span class="admin-badge"><i class="fas fa-shield-alt"></i> ADMIN MODE</span>
+          <button class="nav-btn nav-btn-help" onclick="openHelp()">
+            <i class="fas fa-question-circle"></i> 도움말
+          </button>
+          <button class="nav-btn nav-btn-ghost" onclick="resetToRemote()">
+            <i class="fas fa-undo"></i> Reset
+          </button>
+          <button class="nav-btn nav-btn-primary" onclick="exportConfig()">
+            <i class="fas fa-download"></i> Export site.json
+          </button>
+          <button class="nav-btn nav-btn-github" id="githubPushBtn" onclick="openGithubPushModal()">
+            <i class="fab fa-github"></i> GitHub에 저장
+          </button>
+          <button class="nav-btn-admin-toggle" id="adminToggleBtn" onclick="toggleAdminMode()">
+            <i class="fas fa-lock"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="container">
+      <h1>Stay curious.</h1>
+      <p>프로젝트 문서, 연구 결과, 그리고 여정의 기록들.</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- FAVORITES -->
+    <div id="favoritesSection" style="display:none">
+      <div class="favorites-section">
+        <div class="favorites-header">
+          <h3>⭐ 즐겨찾기</h3>
+          <span class="favorites-count" id="favCount">0</span>
+        </div>
+        <div class="file-grid" id="favGrid"></div>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-wrap">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="search-input" id="searchInput" placeholder="문서 검색...">
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div id="contentArea">
+      <div class="loading"><i class="fas fa-spinner fa-spin"></i> 로딩 중...</div>
     </div>
   </div>
-</nav>
 
-<header class="hero">
-  <div class="hero-tag">AI 기술 동향</div>
-  <h1>최신 AI 소식,<br>한국어로 핵심만</h1>
-  <p class="hero-sub">Claude · Gemini · Codex 새소식과 실전 활용 사례를 표와 도식 중심으로 정리합니다.</p>
-</header>
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
 
-<div class="filter-wrap">
-  <div class="filter-tabs">
-    <button class="tab-btn active" data-cat="all">전체</button>
-    <button class="tab-btn" data-cat="claude">
-      <span class="tab-dot" style="background:var(--cat-claude)"></span>
-      Claude
-    </button>
-    <button class="tab-btn" data-cat="gemini">
-      <span class="tab-dot" style="background:var(--cat-gemini)"></span>
-      Gemini
-    </button>
-    <button class="tab-btn" data-cat="codex">
-      <span class="tab-dot" style="background:var(--cat-codex)"></span>
-      Codex
-    </button>
-    <button class="tab-btn" data-cat="usecase">
-      <span class="tab-dot" style="background:var(--cat-usecase)"></span>
-      활용 사례
-    </button>
-  </div>
-</div>
+  <!-- HELP MODAL -->
+  <div id="helpModal" class="modal-overlay">
+    <div class="help-modal">
+      <div class="help-header">
+        <h2>⚙️ 어드민 모드 사용 가이드</h2>
+        <button class="help-close" onclick="closeHelp()">✕</button>
+      </div>
+      <div class="help-body">
 
-<main class="grid-wrap">
-  <div class="card-grid" id="card-grid"></div>
-  <div class="pagination" id="pagination"></div>
-</main>
-
-<footer>
-  <div class="footer-inner">
-    <p>© 2026 Chris Lee — AI Tech Feed</p>
-    <a href="/blog/">Jekyll Blog →</a>
-  </div>
-</footer>
-
-<script src="/assets/js/ai-articles.js"></script>
-<script>
-  const DELETED_KEY = 'ai_feed_deleted';
-  const CAT_LABEL = { claude: 'Claude', gemini: 'Gemini', codex: 'Codex', usecase: '활용 사례' };
-  const PAGE_SIZE = 15;
-
-  function getDeleted() {
-    try { return new Set(JSON.parse(localStorage.getItem(DELETED_KEY) || '[]')); }
-    catch { return new Set(); }
-  }
-  function saveDeleted(set) {
-    localStorage.setItem(DELETED_KEY, JSON.stringify([...set]));
-  }
-
-  let currentCat = 'all';
-  let currentPage = 1;
-  const deleted = getDeleted();
-
-  function fmtDate(d) {
-    const [y, m, dd] = d.split('-');
-    return `${y}년 ${parseInt(m)}월 ${parseInt(dd)}일`;
-  }
-
-  function getFiltered() {
-    return AI_ARTICLES
-      .filter(a => !deleted.has(a.id) && (currentCat === 'all' || a.category === currentCat))
-      .sort((a, b) => b.date.localeCompare(a.date)); // 최신 순
-  }
-
-  function renderCards() {
-    const grid = document.getElementById('card-grid');
-    const all = getFiltered();
-    const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
-    if (currentPage > totalPages) currentPage = 1;
-
-    const items = all.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-    if (items.length === 0) {
-      grid.innerHTML = '<div class="empty-state"><p>표시할 아이템이 없습니다.</p></div>';
-      document.getElementById('pagination').innerHTML = '';
-      return;
-    }
-
-    grid.innerHTML = items.map(a => `
-      <article class="card" data-id="${a.id}" onclick="goDetail('${a.id}')">
-        <div class="card-header">
-          <span class="cat-badge cat-${a.category}">${CAT_LABEL[a.category]}</span>
-          <button class="delete-btn" title="삭제" onclick="deleteItem(event,'${a.id}')">✕</button>
+        <!-- 진입/종료 -->
+        <div class="help-section">
+          <div class="help-section-title">🔑 어드민 모드 진입 · 종료</div>
+          <div class="help-flow">
+            <b>진입:</b> URL 끝에 <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:0.8rem;">#gdedse-adm-2026</code> 추가<br>
+            <b>종료:</b> URL에서 # 이하 삭제 후 Enter <span class="arrow">→</span> 일반 뷰로 전환
+          </div>
+          <div style="margin-top:10px;" class="help-callout">
+            💡 어드민 모드에서는 상단에 빨간 줄과 <b>ADMIN MODE</b> 뱃지가 표시됩니다.<br>
+            모든 변경사항은 <b>이 브라우저에 자동 저장</b>됩니다. 별도 저장 버튼이 없습니다.
+          </div>
         </div>
-        <h2 class="card-title">${a.title}</h2>
-        <p class="card-summary">${a.summary}</p>
-        <div class="card-footer">
-          <span class="card-date">${fmtDate(a.date)}</span>
-          <span class="card-arrow">→</span>
+
+        <!-- 상단 버튼 -->
+        <div class="help-section">
+          <div class="help-section-title">🔧 상단 버튼</div>
+          <div class="help-row">
+            <div class="help-icon blue"><i class="fas fa-question-circle"></i></div>
+            <div class="help-text">
+              <strong>도움말</strong>
+              <span>지금 보고 있는 이 화면을 엽니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon red"><i class="fas fa-undo"></i></div>
+            <div class="help-text">
+              <strong>Reset</strong>
+              <span>브라우저에 저장된 로컬 변경사항을 모두 취소하고, 서버의 <code style="font-size:0.78rem;background:#f3f4f6;padding:1px 5px;border-radius:3px;">site.json</code>으로 원상복구합니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon green"><i class="fas fa-download"></i></div>
+            <div class="help-text">
+              <strong>Export site.json</strong>
+              <span>현재 설정을 파일로 다운로드합니다. 이 파일을 <code style="font-size:0.78rem;background:#f3f4f6;padding:1px 5px;border-radius:3px;">루트에 덮어쓴 뒤 git commit하면 모든 기기에 영구 적용됩니다.</span>
+            </div>
+          </div>
         </div>
-      </article>
-    `).join('');
 
-    renderPagination(totalPages, all.length);
-  }
+        <!-- 섹션 컨트롤 -->
+        <div class="help-section">
+          <div class="help-section-title">📁 섹션 컨트롤 <span style="font-weight:400;font-size:0.8rem;">(각 섹션 헤더 오른쪽)</span></div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-chevron-down"></i></div>
+            <div class="help-text">
+              <strong>접기 / 펴기</strong>
+              <span>섹션 이름 왼쪽의 화살표 버튼입니다. 클릭하면 하위 카테고리가 접히거나 펼쳐집니다. 어드민/일반 모드 모두 동작합니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-edit"></i></div>
+            <div class="help-text">
+              <strong>이름 변경</strong>
+              <span>섹션 제목을 수정합니다. 클릭하면 입력창이 열리고, 새 이름을 입력 후 <span class="help-kbd">Enter</span> 또는 확인 버튼을 누르면 즉시 반영됩니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-eye"></i></div>
+            <div class="help-text">
+              <strong>보이기 / 숨기기</strong>
+              <span>일반 방문자에게 이 섹션을 보여줄지 결정합니다. 숨기면 반투명하게 표시되고 <b>숨김</b> 뱃지가 붙습니다. 어드민 모드에서는 항상 보입니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-arrow-up"></i></div>
+            <div class="help-text">
+              <strong>위로 이동</strong>
+              <span>이 섹션을 목록에서 한 칸 위로 올립니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-arrow-down"></i></div>
+            <div class="help-text">
+              <strong>아래로 이동</strong>
+              <span>이 섹션을 목록에서 한 칸 아래로 내립니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon red"><i class="fas fa-trash"></i></div>
+            <div class="help-text">
+              <strong>섹션 삭제</strong>
+              <span>이 섹션을 삭제합니다. 안에 있던 카테고리들은 삭제되지 않고 <b>미분류</b> 영역으로 이동됩니다.</span>
+            </div>
+          </div>
+        </div>
 
-  function renderPagination(totalPages, total) {
-    const pg = document.getElementById('pagination');
-    if (totalPages <= 1) { pg.innerHTML = ''; return; }
+        <!-- 카테고리 컨트롤 -->
+        <div class="help-section">
+          <div class="help-section-title">🗂 카테고리 컨트롤 <span style="font-weight:400;font-size:0.8rem;">(각 카테고리 오른쪽)</span></div>
+          <div class="help-row">
+            <div class="help-icon" style="font-size:0.7rem;padding:4px;">드롭<br>다운</div>
+            <div class="help-text">
+              <strong>섹션 이동 (드롭다운)</strong>
+              <span>드롭다운에서 원하는 섹션을 선택하면 해당 카테고리가 즉시 이동됩니다. <b>미분류</b>를 선택하면 어느 섹션에도 속하지 않습니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon yellow"><i class="fas fa-arrows-alt"></i></div>
+            <div class="help-text">
+              <strong>섹션 이동 (드래그앤드랍)</strong>
+              <span>카테고리 카드를 직접 다른 섹션으로 드래그하면 즉시 이동됩니다. 미분류 영역으로도 드래그할 수 있습니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-eye"></i></div>
+            <div class="help-text">
+              <strong>카테고리 보이기 / 숨기기</strong>
+              <span>일반 방문자에게 이 카테고리를 보여줄지 결정합니다. 해당 카테고리의 모든 파일 카드가 함께 숨겨집니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon blue"><i class="fas fa-external-link-alt"></i></div>
+            <div class="help-text">
+              <strong>새 탭에서 목록 열기</strong>
+              <span>해당 카테고리의 파일 목록 페이지를 새 탭으로 엽니다. 파일을 직접 관리할 때 사용합니다.</span>
+            </div>
+          </div>
+        </div>
 
-    const prev = `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
-    const next = `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
+        <!-- 파일 카드 컨트롤 -->
+        <div class="help-section">
+          <div class="help-section-title">📄 파일 카드 컨트롤 <span style="font-weight:400;font-size:0.8rem;">(카드 하단 오른쪽)</span></div>
+          <div class="help-row">
+            <div class="help-icon"><i class="fas fa-eye"></i></div>
+            <div class="help-text">
+              <strong>파일 보이기 / 숨기기</strong>
+              <span>일반 방문자에게 개별 파일 카드를 보여줄지 결정합니다. 숨겨진 파일은 어드민 모드에서 반투명하게 표시됩니다. 설정은 <b>site.json</b>에 저장됩니다.</span>
+            </div>
+          </div>
+        </div>
 
-    // 페이지 번호 — 최대 7개 표시
-    const range = [];
-    const delta = 2;
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
-        range.push(i);
+        <!-- 추가 버튼 -->
+        <div class="help-section">
+          <div class="help-section-title">➕ 추가 버튼</div>
+          <div class="help-row">
+            <div class="help-icon green"><i class="fas fa-folder-plus"></i></div>
+            <div class="help-text">
+              <strong>카테고리 생성 (각 섹션 하단)</strong>
+              <span>새 카테고리를 만듭니다. 이름과 secretHash를 입력하면 site.json에 추가되고, SPA shell 파일 생성 명령어를 안내합니다.</span>
+            </div>
+          </div>
+          <div class="help-row">
+            <div class="help-icon green"><i class="fas fa-plus"></i></div>
+            <div class="help-text">
+              <strong>새 섹션 추가 (맨 아래)</strong>
+              <span>새로운 섹션을 만듭니다. 이름을 입력하면 빈 섹션이 추가됩니다. 이후 카테고리 배정으로 카테고리를 넣으세요.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 미분류 영역 -->
+        <div class="help-section">
+          <div class="help-section-title">🗂 미분류 카테고리 영역</div>
+          <div class="help-callout">
+            어드민 모드에서만 보이는 영역입니다. 어떤 섹션에도 속하지 않은 카테고리들이 여기에 모입니다.<br>
+            드롭다운으로 섹션을 선택하면 즉시 배정됩니다.
+          </div>
+        </div>
+
+        <!-- 저장 흐름 -->
+        <div class="help-section">
+          <div class="help-section-title">💾 변경사항 저장 흐름</div>
+          <div class="help-flow">
+            <b>1.</b> 어드민 모드에서 변경<br>
+            <span class="arrow">→</span> <b>2.</b> 브라우저 localStorage에 자동 저장 (즉시, 새로고침해도 유지)<br>
+            <span class="arrow">→</span> <b>3.</b> <b>Export site.json</b> 클릭 → 파일 다운로드<br>
+            <span class="arrow">→</span> <b>4.</b> 다운로드된 파일을 <code style="background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:0.8rem;">site.json</code>에 덮어쓰기<br>
+            <span class="arrow">→</span> <b>5.</b> git commit &amp; push → GitHub Pages 배포 (약 30~60초)
+          </div>
+          <div style="margin-top:10px;" class="help-callout">
+            ⚠️ Export → git commit을 하지 않으면 <b>이 브라우저에서만</b> 변경사항이 유지됩니다.<br>
+            다른 기기나 브라우저에서는 이전 설정이 보입니다.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="modal" class="modal-overlay">
+    <div class="modal">
+      <h3 id="modalTitle">입력</h3>
+      <input type="text" class="modal-field" id="modalInput" placeholder="">
+      <select class="modal-field" id="modalSelect" style="display:none;"></select>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal()">취소</button>
+        <button class="btn-primary" onclick="confirmModal()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="createCategoryModal" class="modal-overlay" onclick="if(event.target===this)closeCreateCategoryModal()">
+    <div class="modal cc-modal">
+      <h3>📂 카테고리 생성</h3>
+
+      <div id="ccStep1">
+        <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:16px;">
+          site.json에 카테고리를 추가합니다. 생성 후 SPA shell 파일을 별도로 만들어야 합니다.
+        </p>
+        <input class="modal-field" id="ccNameInput" type="text" placeholder="카테고리 표시명 (예: 🧪 Lab)">
+        <div class="cc-field-row">
+          <input class="modal-field" id="ccSecretInput" type="text" placeholder="secretHash (접근 비밀키)">
+          <button class="cc-auto-btn" onclick="autoGenerateSecret()">자동생성</button>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" onclick="closeCreateCategoryModal()">취소</button>
+          <button class="btn-primary" onclick="submitCreateCategory()">생성</button>
+        </div>
+      </div>
+
+      <div id="ccStep2" style="display:none">
+        <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:8px;">✅ site.json에 추가됨. 아래 명령어로 SPA shell을 만드세요.</p>
+        <div class="cc-hash-badge" id="ccHashDisplay"></div>
+        <pre class="cc-shell" id="ccShellCmd"></pre>
+        <button class="cc-copy-btn" onclick="copyCcCmd()">📋 명령어 복사</button>
+        <div class="modal-actions">
+          <button class="btn-primary" onclick="closeCreateCategoryModal()">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIN MODAL -->
+  <div id="pinModal" class="modal-overlay">
+    <div class="modal">
+      <h3>🔐 관리자 인증</h3>
+      <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:16px;">6자리 PIN을 입력하세요.</p>
+      <input type="password" inputmode="numeric" maxlength="6" class="modal-field" id="pinInput"
+             placeholder="000000" onkeydown="if(event.key==='Enter')submitPin()">
+      <p id="pinError" style="color:#dc2626;font-size:0.8rem;min-height:1.4em;margin-top:4px;"></p>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closePinModal()">취소</button>
+        <button class="btn-primary" onclick="submitPin()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GITHUB PUSH MODAL -->
+  <div id="githubModal" class="modal-overlay">
+    <div class="modal">
+      <h3><i class="fab fa-github"></i> GitHub에 저장</h3>
+      <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:16px;">
+        GitHub Personal Access Token을 입력하세요.<br>
+        <span style="font-size:0.78rem;">토큰은 탭을 닫으면 자동 삭제됩니다.</span>
+      </p>
+      <input type="password" class="modal-field" id="githubPatInput"
+             placeholder="ghp_xxxxxxxxxxxx"
+             onkeydown="if(event.key==='Enter')submitGithubPush()">
+      <div style="margin-top:8px;display:flex;align-items:center;gap:6px;">
+        <input type="checkbox" id="rememberPat" style="cursor:pointer;">
+        <label for="rememberPat" style="font-size:0.8rem;color:var(--text-muted);cursor:pointer;">이 세션에서 기억</label>
+      </div>
+      <p id="githubError" style="color:#dc2626;font-size:0.8rem;min-height:1.4em;margin-top:4px;"></p>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:12px;background:#f9fafb;padding:8px 10px;border-radius:8px;border:1px solid var(--border);">
+        커밋 메시지: <code style="font-size:0.77rem;">feat: site.json 업데이트 via GDEDSE</code>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeGithubModal()">취소</button>
+        <button class="btn-primary" id="githubSubmitBtn" onclick="submitGithubPush()">
+          <i class="fab fa-github"></i> 커밋 & 푸시
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="moveFileModal" class="modal-overlay" onclick="if(event.target===this)closeMoveModal()">
+    <div class="modal move-modal">
+      <h3>📂 파일 이동</h3>
+      <p id="moveFileSubtitle" class="move-file-subtitle"></p>
+      <ul id="moveFileTree" class="move-tree"></ul>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeMoveModal()">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =============================================
+    // STATE
+    // =============================================
+    const STORAGE_KEY = 'gdedse_site_config_v4';
+    const FAVS_KEY = 'gdedse_favs_v1';
+    const SITE_JSON_URL = '/site.json';
+    const ADMIN_PIN_HASH = '0001ae52a920c36edc7ab364ea58a58ca725f0ad44c02ba74ecefe08bb2b91a3'; // GitHub Actions가 실제 SHA-256으로 치환
+
+    let siteConfig = null;
+    let isAdmin = false;
+    let adminPinVerified = sessionStorage.getItem('gdedse_pin_ok') === '1';
+    let favorites = new Set();
+
+    // =============================================
+    // CONFIG MANAGEMENT
+    // =============================================
+    async function loadConfig() {
+      // 항상 서버에서 최신 구조(파일 목록)를 로드
+      const resp = await fetch(`${SITE_JSON_URL}?v=${Date.now()}`);
+      if (!resp.ok) throw new Error('site.json 로드 실패');
+      siteConfig = await resp.json();
+
+      // 캐시에서 어드민 설정(visible/order/categoryHash 등)만 오버레이
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const cached = JSON.parse(stored);
+          if (cached.version === siteConfig.version) {
+            applyAdminOverrides(cached);
+          } else {
+            localStorage.removeItem(STORAGE_KEY);
+          }
+        } catch (e) {
+          localStorage.removeItem(STORAGE_KEY);
+        }
       }
     }
-    const pages = [];
-    let prev_ = null;
-    for (const p of range) {
-      if (prev_ && p - prev_ > 1) pages.push('…');
-      pages.push(p);
-      prev_ = p;
+
+    // 서버 데이터 위에 어드민 변경사항(캐시)을 덮어씌움
+    // 구조(파일 존재 여부)는 서버 기준 — 어드민 설정(표시여부/순서/카테고리)만 캐시 적용
+    function applyAdminOverrides(cached) {
+      // directories: visible, collapsed, order 오버레이 + 어드민이 추가한 섹션 반영
+      (siteConfig.directories || []).forEach(dir => {
+        const c = (cached.directories || []).find(d => d.id === dir.id);
+        if (c) { dir.visible = c.visible; dir.collapsed = c.collapsed; dir.order = c.order; }
+      });
+      (cached.directories || []).forEach(cDir => {
+        if (!siteConfig.directories.find(d => d.id === cDir.id)) siteConfig.directories.push(cDir);
+      });
+
+      // folders: visible, collapsed, order, dirId 오버레이 + 어드민이 생성한 카테고리 반영
+      Object.entries(cached.folders || {}).forEach(([hash, cCfg]) => {
+        if (siteConfig.folders[hash]) {
+          ['visible', 'collapsed', 'order', 'dirId'].forEach(k => {
+            if (cCfg[k] !== undefined) siteConfig.folders[hash][k] = cCfg[k];
+          });
+        } else {
+          siteConfig.folders[hash] = cCfg;
+        }
+      });
+
+      // files: visible, order, categoryHash, memo, isFavorite 오버레이 (서버에 없는 파일은 무시)
+      Object.entries(cached.files || {}).forEach(([hash, cFile]) => {
+        if (siteConfig.files[hash]) {
+          ['visible', 'order', 'categoryHash', 'memo', 'isFavorite'].forEach(k => {
+            if (cFile[k] !== undefined) siteConfig.files[hash][k] = cFile[k];
+          });
+        }
+      });
     }
 
-    const nums = pages.map(p =>
-      p === '…'
-        ? `<span class="page-info">…</span>`
-        : `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`
-    ).join('');
+    function persistConfig() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(siteConfig));
+    }
 
-    pg.innerHTML = `${prev}${nums}${next}`;
-  }
+    // =============================================
+    // FAVORITES
+    // =============================================
+    function initFavorites() {
+      const stored = localStorage.getItem(FAVS_KEY);
+      if (stored) {
+        try { favorites = new Set(JSON.parse(stored)); } catch (e) { favorites = new Set(); }
+      } else {
+        // localStorage가 없으면 site.json의 isFavorite: true 항목으로 초기화
+        favorites = new Set(
+          Object.entries(siteConfig.files || {})
+            .filter(([, f]) => f.isFavorite)
+            .map(([hash]) => hash)
+        );
+        saveFavs();
+      }
+    }
 
-  function goPage(p) {
-    currentPage = p;
-    renderCards();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+    function saveFavs() {
+      localStorage.setItem(FAVS_KEY, JSON.stringify([...favorites]));
+    }
 
-  function goDetail(id) {
-    window.location.href = `/ai-news/detail.html?id=${id}`;
-  }
+    function toggleFav(fileHash) {
+      if (favorites.has(fileHash)) {
+        favorites.delete(fileHash);
+        showToast('즐겨찾기에서 제거됨');
+      } else {
+        favorites.add(fileHash);
+        showToast('⭐ 즐겨찾기에 추가됨');
+      }
+      saveFavs();
+      // 어드민 모드에서는 siteConfig도 업데이트해 Export에 반영
+      if (isAdmin && siteConfig.files && siteConfig.files[fileHash]) {
+        if (favorites.has(fileHash)) {
+          siteConfig.files[fileHash].isFavorite = true;
+        } else {
+          delete siteConfig.files[fileHash].isFavorite;
+        }
+        persistConfig();
+      }
+      renderFavorites();
+      // 카드의 별 버튼 상태 갱신
+      document.querySelectorAll(`.star-btn[data-hash="${fileHash}"]`).forEach(btn => {
+        btn.classList.toggle('is-active', favorites.has(fileHash));
+        btn.title = favorites.has(fileHash) ? '즐겨찾기 해제' : '즐겨찾기 추가';
+      });
+    }
 
-  function deleteItem(e, id) {
-    e.stopPropagation();
-    if (!confirm(`이 아이템을 숨기겠습니까?\n\n영구 삭제는 ai-articles.js에서 id: "${id}" 항목 제거 후 배포하세요.`)) return;
-    deleted.add(id);
-    saveDeleted(deleted);
-    renderCards();
-  }
+    function renderFavorites() {
+      const section = document.getElementById('favoritesSection');
+      const grid = document.getElementById('favGrid');
+      const countEl = document.getElementById('favCount');
 
-  // 필터 탭
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentCat = btn.dataset.cat;
-      currentPage = 1;
-      renderCards();
+      const favHashes = [...favorites].filter(h => siteConfig.files && siteConfig.files[h]);
+      if (favHashes.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = '';
+      countEl.textContent = favHashes.length;
+      grid.innerHTML = favHashes
+        .map(hash => renderFileCard(hash, siteConfig.files[hash]))
+        .join('');
+    }
+
+    function exportConfig() {
+      const json = JSON.stringify(siteConfig, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'site.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('✅ site.json 다운로드 완료. 루트에 배치 후 커밋하세요.');
+    }
+
+    async function resetToRemote() {
+      if (!confirm('로컬 변경사항을 버리고 서버의 site.json으로 초기화할까요?')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      try {
+        const resp = await fetch(`${SITE_JSON_URL}?v=${Date.now()}`);
+        if (!resp.ok) throw new Error('서버 응답 오류');
+        siteConfig = await resp.json();
+        persistConfig();
+        render();
+        showToast('🔄 서버 설정으로 초기화됨');
+      } catch (e) {
+        showToast('❌ 서버에서 site.json을 불러올 수 없습니다.');
+      }
+    }
+
+    // =============================================
+    // PIN AUTH
+    // =============================================
+    async function sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    let _pinCallback = null;
+
+    function requirePin(callback) {
+      if (adminPinVerified) { callback(); return; }
+      _pinCallback = callback;
+      showPinModal();
+    }
+
+    function showPinModal() {
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinError').textContent = '';
+      document.getElementById('pinModal').classList.add('show');
+      setTimeout(() => document.getElementById('pinInput').focus(), 40);
+    }
+
+    function closePinModal() {
+      document.getElementById('pinModal').classList.remove('show');
+      _pinCallback = null;
+    }
+
+    async function submitPin() {
+      const pin = document.getElementById('pinInput').value.trim();
+      if (!/^\d{6}$/.test(pin)) {
+        document.getElementById('pinError').textContent = '6자리 숫자를 입력하세요';
+        return;
+      }
+      const hash = await sha256(pin);
+      if (hash === ADMIN_PIN_HASH) {
+        adminPinVerified = true;
+        sessionStorage.setItem('gdedse_pin_ok', '1');
+        closePinModal();
+        if (_pinCallback) { const cb = _pinCallback; _pinCallback = null; cb(); }
+      } else {
+        document.getElementById('pinError').textContent = '잘못된 PIN입니다';
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinInput').focus();
+      }
+    }
+
+    // =============================================
+    // ADMIN MODE
+    // =============================================
+    function checkAdminMode() {
+      document.body.classList.toggle('admin-mode', isAdmin);
+      const btn = document.getElementById('adminToggleBtn');
+      if (btn) btn.innerHTML = isAdmin
+        ? '<i class="fas fa-lock-open"></i>'
+        : '<i class="fas fa-lock"></i>';
+    }
+
+    function toggleAdminMode() {
+      if (isAdmin) {
+        exitAdminMode();
+      } else {
+        requirePin(() => {
+          isAdmin = true;
+          checkAdminMode();
+          render();
+          showToast('🔐 어드민 모드 활성화');
+        });
+      }
+    }
+
+    function exitAdminMode() {
+      isAdmin = false;
+      adminPinVerified = false;
+      sessionStorage.removeItem('gdedse_pin_ok');
+      checkAdminMode();
+      render();
+      showToast('🔓 어드민 모드 종료');
+    }
+
+    // =============================================
+    // RENDER
+    // =============================================
+    function render() {
+      checkAdminMode();
+      const container = document.getElementById('contentArea');
+      container.innerHTML = '';
+
+      const dirs = [...siteConfig.directories]
+        .filter(d => isAdmin || d.visible)
+        .sort((a, b) => a.order - b.order);
+
+      dirs.forEach(dir => container.appendChild(renderDirectory(dir)));
+
+      if (isAdmin) {
+        const unassigned = Object.entries(siteConfig.folders).filter(([, cfg]) => !cfg.dirId);
+        if (unassigned.length > 0) container.appendChild(renderUnassigned(unassigned));
+
+        const unassignedFiles = Object.entries(siteConfig.files || {}).filter(([, f]) => !f.categoryHash);
+        if (unassignedFiles.length > 0) container.appendChild(renderUnassignedFiles(unassignedFiles));
+
+        const addBtn = document.createElement('button');
+        addBtn.className = 'add-dir-btn';
+        addBtn.innerHTML = '<i class="fas fa-plus"></i> 새 섹션 추가';
+        addBtn.onclick = addDirectory;
+        container.appendChild(addBtn);
+      }
+
+      updateStats();
+      initSearch();
+    }
+
+    function renderDirectory(dir) {
+      const el = document.createElement('section');
+      el.className = 'directory-section' + (!dir.visible ? ' is-hidden' : '');
+      el.setAttribute('data-dir-id', dir.id);
+
+      const folders = Object.entries(siteConfig.folders)
+        .filter(([, cfg]) => cfg.dirId === dir.id && (isAdmin || cfg.visible))
+        .sort((a, b) => a[1].order - b[1].order);
+
+      const totalDocs = folders.reduce((acc, [hash]) => {
+        return acc + getFilesForFolder(hash).filter(([, f]) => isAdmin || f.visible).length;
+      }, 0);
+
+      const adminControls = isAdmin ? `
+        <div class="admin-controls">
+          <button class="admin-btn" onclick="editDirName('${dir.id}')" title="이름 변경">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="admin-btn${dir.visible ? '' : ' is-active'}" onclick="toggleDirVisibility('${dir.id}')" title="${dir.visible ? '숨기기' : '표시하기'}">
+            <i class="fas fa-eye${dir.visible ? '' : '-slash'}"></i>
+          </button>
+          <button class="admin-btn" onclick="moveDirOrder('${dir.id}', -1)" title="위로"><i class="fas fa-arrow-up"></i></button>
+          <button class="admin-btn" onclick="moveDirOrder('${dir.id}', 1)" title="아래로"><i class="fas fa-arrow-down"></i></button>
+          <button class="admin-btn danger" onclick="deleteDir('${dir.id}')" title="삭제"><i class="fas fa-trash"></i></button>
+        </div>` : '';
+
+      const foldersHtml = folders.map(([hash, cfg]) => renderFolder(hash, cfg)).join('');
+      const addFolderBtn = isAdmin
+        ? `<button class="add-folder-btn" onclick="openCreateCategoryModal('${dir.id}')"><i class="fas fa-folder-plus"></i> 카테고리 생성</button>`
+        : '';
+
+      el.innerHTML = `
+        <div class="dir-header">
+          <div class="dir-title-group">
+            <button class="collapse-btn" onclick="toggleCollapse('${dir.id}')">
+              <i class="fas fa-chevron-${dir.collapsed ? 'right' : 'down'}"></i>
+            </button>
+            <span class="dir-name">${esc(dir.name)}</span>
+            ${!dir.visible ? '<span class="hidden-badge">숨김</span>' : ''}
+            <span class="dir-count">${totalDocs} docs</span>
+          </div>
+          ${adminControls}
+        </div>
+        <div class="dir-body${dir.collapsed ? ' collapsed' : ''}">
+          ${foldersHtml || (isAdmin ? '' : '<p class="empty-msg">표시할 카테고리 없음</p>')}
+          ${addFolderBtn}
+        </div>`;
+
+      return el;
+    }
+
+    function renderFolder(hash, cfg) {
+      const displayName = cfg.displayName || hash;
+      const secretHash = cfg.secretHash || '';
+      const fileEntries = getFilesForFolder(hash);
+      const visibleEntries = isAdmin ? fileEntries : fileEntries.filter(([, f]) => f.visible);
+
+      const dirOptions = siteConfig.directories
+        .map(d => `<option value="${d.id}"${cfg.dirId === d.id ? ' selected' : ''}>${esc(d.name)}</option>`)
+        .join('');
+
+      const adminControls = isAdmin ? `
+        <div class="admin-controls">
+          <select class="dir-select" onchange="moveFolderToDir('${hash}', this.value)">
+            <option value="">미분류</option>
+            ${dirOptions}
+          </select>
+          <button class="admin-btn${cfg.visible ? '' : ' is-active'}" onclick="toggleFolderVisibility('${hash}')" title="${cfg.visible ? '숨기기' : '표시하기'}">
+            <i class="fas fa-eye${cfg.visible ? '' : '-slash'}"></i>
+          </button>
+          <a href="${cfg.path || '/'}" target="_blank" class="admin-btn" title="새 탭에서 목록 열기">
+            <i class="fas fa-external-link-alt"></i>
+          </a>
+        </div>` : `
+        <a href="${cfg.path || '/'}" class="view-list-btn">
+          <i class="fas fa-list"></i> 목록
+        </a>`;
+
+      const cardsHtml = fileEntries.map(([fileHash, fileCfg]) => renderFileCard(fileHash, fileCfg)).join('');
+
+      const isCollapsed = !!cfg.collapsed;
+      return `
+        <div class="folder-block${!cfg.visible ? ' is-hidden' : ''}" data-hash="${hash}"${isAdmin ? ' draggable="true"' : ''}>
+          <div class="folder-header">
+            <div class="folder-name-group">
+              <button class="collapse-btn" onclick="event.stopPropagation(); toggleFolderCollapse('${hash}')">
+                <i class="fas fa-chevron-${isCollapsed ? 'right' : 'down'}"></i>
+              </button>
+              <span class="folder-name">${esc(displayName)}</span>
+              ${!cfg.visible ? '<span class="hidden-badge">숨김</span>' : ''}
+              <span class="folder-item-count">${visibleEntries.length}</span>
+            </div>
+            <div class="folder-actions">${adminControls}</div>
+          </div>
+          <div class="file-grid${isCollapsed ? ' collapsed' : ''}">
+            ${cardsHtml || '<p class="empty-msg">문서 없음</p>'}
+          </div>
+        </div>`;
+    }
+
+    function getFolderPath(categoryHash) {
+      return (siteConfig.folders && siteConfig.folders[categoryHash]?.path) || '/';
+    }
+
+    function renderFileCard(fileHash, fileCfg) {
+      const filename = fileCfg.filename;
+      const displayName = fileCfg.displayName || filename.replace(/\.[^/.]+$/, '');
+      const isHidden = !fileCfg.visible;
+      const folderPath = getFolderPath(fileCfg.categoryHash);
+      const linkUrl = `${folderPath}${filename}`;
+      const ext = filename.split('.').pop().toUpperCase();
+      const searchData = `${displayName.toLowerCase()} ${filename.toLowerCase()}`;
+      const folder = siteConfig.folders && siteConfig.folders[fileCfg.categoryHash];
+      const tier = folder?.tier || 'public';
+      const tierIcon = tier === 'private' ? '🔒' : tier === 'company' ? '🏢' : '🌍';
+      const hasShare = !!fileCfg.shareToken;
+
+      const adminBtns = isAdmin ? `
+            <button class="action-btn${isHidden ? ' is-active' : ''}"
+                    onclick="event.stopPropagation(); toggleFileVisibility('${fileHash}')"
+                    title="${isHidden ? '표시하기' : '숨기기'}">
+              <i class="fas fa-eye${isHidden ? '-slash' : ''}"></i>
+            </button>
+            <button class="action-btn"
+                    onclick="event.stopPropagation(); openMoveModal('${fileHash}')"
+                    title="다른 카테고리로 이동">
+              <i class="fas fa-exchange-alt"></i>
+            </button>
+            <button class="action-btn"
+                    onclick="event.stopPropagation(); editMemo('${fileHash}')"
+                    title="메모 편집">
+              <i class="fas fa-tag"></i>
+            </button>
+            <button class="action-btn${hasShare ? ' is-active' : ''}"
+                    onclick="event.stopPropagation(); toggleShareLink('${fileHash}')"
+                    title="${hasShare ? '공유 링크 삭제' : '공유 링크 생성'}">
+              <i class="fas fa-share-alt"></i>
+            </button>` : '';
+
+      const isNew = fileCfg.createdAt && (Date.now() - new Date(fileCfg.createdAt)) < 604800000;
+
+      return `
+        <div class="file-card${isHidden ? ' is-hidden' : ''}"
+             onclick="location.href='${linkUrl}'"
+             data-link="${linkUrl}"
+             data-file-hash="${fileHash}"
+             data-search="${esc(searchData)}">
+          ${isNew ? '<span class="new-badge">NEW</span>' : ''}
+          ${fileCfg.memo ? `<span class="cat-badge">${esc(fileCfg.memo)}</span>` : `<div class="file-type-badge">${ext}</div>`}
+          <div class="file-title">${esc(displayName)}</div>
+          <div class="card-actions">
+            <button class="action-btn primary" onclick="event.stopPropagation(); location.href='${linkUrl}'">
+              <i class="fas fa-arrow-right"></i> 열기
+            </button>
+            <button class="action-btn" onclick="event.stopPropagation(); copyCardLink(this)">
+              <i class="fas fa-link"></i> 링크
+            </button>
+            <button class="star-btn${favorites.has(fileHash) ? ' is-active' : ''}"
+                    data-hash="${fileHash}"
+                    onclick="event.stopPropagation(); toggleFav('${fileHash}')"
+                    title="${favorites.has(fileHash) ? '즐겨찾기 해제' : '즐겨찾기 추가'}">
+              <i class="fas fa-star"></i>
+            </button>
+            ${adminBtns}
+          </div>
+        </div>`;
+    }
+
+    function renderUnassigned(unassigned) {
+      const el = document.createElement('div');
+      el.className = 'unassigned-section';
+
+      const items = unassigned.map(([hash, cfg]) => {
+        const dirOptions = siteConfig.directories
+          .map(d => `<option value="${d.id}">${esc(d.name)}</option>`)
+          .join('');
+        return `
+          <div class="unassigned-tag">
+            <span>${esc(cfg.displayName || hash)}</span>
+            <select class="dir-select" onchange="moveFolderToDir('${hash}', this.value)">
+              <option value="">섹션 선택...</option>
+              ${dirOptions}
+            </select>
+            <button class="admin-btn${cfg.visible ? '' : ' is-active'}" onclick="toggleFolderVisibility('${hash}')">
+              <i class="fas fa-eye${cfg.visible ? '' : '-slash'}"></i>
+            </button>
+          </div>`;
+      }).join('');
+
+      el.innerHTML = `<h3>🗂 미분류 카테고리</h3><div class="unassigned-list">${items}</div>`;
+      return el;
+    }
+
+    function renderUnassignedFiles(files) {
+      const el = document.createElement('div');
+      el.className = 'unassigned-section';
+
+      const cardsHtml = files
+        .sort((a, b) => (a[1].order || 999) - (b[1].order || 999))
+        .map(([fileHash, fileCfg]) => renderFileCard(fileHash, fileCfg))
+        .join('');
+
+      el.innerHTML = `<h3>📄 미분류 파일</h3><div class="file-grid">${cardsHtml}</div>`;
+      return el;
+    }
+
+    // =============================================
+    // HELPERS
+    // =============================================
+    function getFilesForFolder(folderHash) {
+      if (!siteConfig.files) return [];
+      return Object.entries(siteConfig.files)
+        .filter(([, f]) => f.categoryHash === folderHash)
+        .sort((a, b) => (a[1].order || 999) - (b[1].order || 999));
+    }
+
+    function toggleFileVisibility(fileHash) {
+      if (!adminPinVerified) { requirePin(() => toggleFileVisibility(fileHash)); return; }
+      const f = siteConfig.files && siteConfig.files[fileHash];
+      if (!f) return;
+      f.visible = !f.visible;
+      persistConfig();
+      render();
+      showToast(f.visible ? '✅ 파일 표시됨' : '🙈 파일 숨김');
+    }
+
+    function editMemo(fileHash) {
+      if (!adminPinVerified) { requirePin(() => editMemo(fileHash)); return; }
+      const f = siteConfig.files && siteConfig.files[fileHash];
+      if (!f) return;
+      openModal('메모 편집', f.memo || '', false, (val) => {
+        const trimmed = val ? val.trim() : '';
+        if (trimmed) { f.memo = trimmed; } else { delete f.memo; }
+        persistConfig();
+        render();
+        showToast('✅ 메모 저장됨');
+      });
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // =============================================
+    // ADMIN ACTIONS
+    // =============================================
+    function toggleCollapse(dirId) {
+      const dir = siteConfig.directories.find(d => d.id === dirId);
+      if (!dir) return;
+      dir.collapsed = !dir.collapsed;
+      persistConfig();
+      render();
+    }
+
+    function toggleFolderCollapse(hash) {
+      const cfg = siteConfig.folders[hash];
+      if (!cfg) return;
+      cfg.collapsed = !cfg.collapsed;
+      persistConfig();
+      render();
+    }
+
+    function toggleDirVisibility(dirId) {
+      if (!adminPinVerified) { requirePin(() => toggleDirVisibility(dirId)); return; }
+      const dir = siteConfig.directories.find(d => d.id === dirId);
+      if (!dir) return;
+      dir.visible = !dir.visible;
+      persistConfig();
+      render();
+      showToast(dir.visible ? '✅ 섹션 표시됨' : '🙈 섹션 숨김');
+    }
+
+    function toggleFolderVisibility(hash) {
+      if (!adminPinVerified) { requirePin(() => toggleFolderVisibility(hash)); return; }
+      const cfg = siteConfig.folders[hash];
+      if (!cfg) return;
+      cfg.visible = !cfg.visible;
+      persistConfig();
+      render();
+      showToast(cfg.visible ? '✅ 카테고리 표시됨' : '🙈 카테고리 숨김');
+    }
+
+    function moveDirOrder(dirId, delta) {
+      if (!adminPinVerified) { requirePin(() => moveDirOrder(dirId, delta)); return; }
+      const dirs = [...siteConfig.directories].sort((a, b) => a.order - b.order);
+      const idx = dirs.findIndex(d => d.id === dirId);
+      const swapIdx = idx + delta;
+      if (swapIdx < 0 || swapIdx >= dirs.length) return;
+
+      const tmp = dirs[idx].order;
+      dirs[idx].order = dirs[swapIdx].order;
+      dirs[swapIdx].order = tmp;
+      dirs.sort((a, b) => a.order - b.order).forEach((d, i) => { d.order = i + 1; });
+
+      persistConfig();
+      render();
+    }
+
+    function moveFolderToDir(hash, dirId) {
+      if (!adminPinVerified) { requirePin(() => moveFolderToDir(hash, dirId)); return; }
+      const cfg = siteConfig.folders[hash];
+      if (!cfg) return;
+      cfg.dirId = dirId || null;
+      persistConfig();
+      render();
+      showToast('📁 카테고리 이동됨');
+    }
+
+    function editDirName(dirId) {
+      if (!adminPinVerified) { requirePin(() => editDirName(dirId)); return; }
+      const dir = siteConfig.directories.find(d => d.id === dirId);
+      if (!dir) return;
+      openModal('섹션 이름 변경', dir.name, false, (val) => {
+        if (val && val.trim()) {
+          dir.name = val.trim();
+          persistConfig();
+          render();
+          showToast('✅ 이름 변경됨');
+        }
+      });
+    }
+
+    function deleteDir(dirId) {
+      if (!adminPinVerified) { requirePin(() => deleteDir(dirId)); return; }
+      const dir = siteConfig.directories.find(d => d.id === dirId);
+      if (!dir) return;
+      if (!confirm(`"${dir.name}" 섹션을 삭제할까요?\n(하위 카테고리들은 미분류로 이동됩니다.)`)) return;
+
+      Object.values(siteConfig.folders).forEach(cfg => {
+        if (cfg.dirId === dirId) cfg.dirId = null;
+      });
+      siteConfig.directories = siteConfig.directories.filter(d => d.id !== dirId);
+      persistConfig();
+      render();
+      showToast('🗑 섹션 삭제됨');
+    }
+
+    function addDirectory() {
+      if (!adminPinVerified) { requirePin(() => addDirectory()); return; }
+      openModal('새 섹션 이름', '', false, (name) => {
+        if (!name || !name.trim()) return;
+        const id = 'dir_' + Date.now().toString(36);
+        const maxOrder = Math.max(0, ...siteConfig.directories.map(d => d.order));
+        siteConfig.directories.push({
+          id, name: name.trim(), visible: true, collapsed: false, order: maxOrder + 1
+        });
+        persistConfig();
+        render();
+        showToast('✅ 섹션 추가됨');
+      });
+    }
+
+    // =============================================
+    // CREATE CATEGORY MODAL
+    // =============================================
+    let _createCategoryDirId = null;
+
+    function generateHash() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      const used = new Set([...Object.keys(siteConfig.folders), ...Object.keys(siteConfig.files)]);
+      let h;
+      do { h = Array.from({length: 7}, () => chars[Math.floor(Math.random() * chars.length)]).join(''); } while (used.has(h));
+      return h;
+    }
+
+    function openCreateCategoryModal(dirId) {
+      if (!adminPinVerified) { requirePin(() => openCreateCategoryModal(dirId)); return; }
+      _createCategoryDirId = dirId;
+      document.getElementById('ccNameInput').value = '';
+      document.getElementById('ccSecretInput').value = '';
+      document.getElementById('ccStep1').style.display = '';
+      document.getElementById('ccStep2').style.display = 'none';
+      document.getElementById('createCategoryModal').classList.add('show');
+      setTimeout(() => document.getElementById('ccNameInput').focus(), 40);
+    }
+
+    function closeCreateCategoryModal() {
+      document.getElementById('createCategoryModal').classList.remove('show');
+      _createCategoryDirId = null;
+    }
+
+    function autoGenerateSecret() {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      const secret = Array.from({length: 12}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+      document.getElementById('ccSecretInput').value = secret;
+    }
+
+    // =============================================
+    // SHARE LINK
+    // =============================================
+    function generateToken(len = 8) {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      return Array.from({length: len}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    }
+
+    function toggleShareLink(fileHash) {
+      if (!adminPinVerified) { requirePin(() => toggleShareLink(fileHash)); return; }
+      const f = siteConfig.files && siteConfig.files[fileHash];
+      if (!f) return;
+
+      if (f.shareToken) {
+        if (!confirm(`공유 링크를 삭제할까요?\n${location.origin}/share/${f.shareToken}`)) return;
+        f.shareToken = null;
+        persistConfig();
+        render();
+        showToast('🔒 공유 링크 삭제됨');
+      } else {
+        const token = generateToken(8);
+        f.shareToken = token;
+        const shareUrl = `${location.origin}/share/${token}`;
+        persistConfig();
+        render();
+        doCopy(shareUrl);
+        showToast(`🔗 공유 링크 생성됨 — 클립보드 복사 완료\n${shareUrl}`);
+      }
+    }
+
+    function submitCreateCategory() {
+      const name = document.getElementById('ccNameInput').value.trim();
+      const slug = name.toLowerCase().replace(/[^a-z0-9가-힣]/g, '-').replace(/-+/g, '-');
+      if (!name) { document.getElementById('ccNameInput').focus(); return; }
+
+      const hash = generateHash();
+      const maxOrder = Math.max(0, ...Object.values(siteConfig.folders)
+        .filter(f => f.dirId === _createCategoryDirId)
+        .map(f => f.order));
+
+      siteConfig.folders[hash] = {
+        dirId: _createCategoryDirId,
+        displayName: name,
+        slug: slug,
+        tier: 'public',
+        path: `/${slug}/`,
+        visible: true,
+        order: maxOrder + 1
+      };
+      persistConfig();
+      render();
+
+      // Step 2: SPA shell 안내
+      document.getElementById('ccStep1').style.display = 'none';
+      const cmd = `mkdir ${slug}\ncp ai-study/index.html ${slug}/index.html\n\n# ${slug}/index.html 에서 수정:\n#   CATEGORY_HASH = '${hash}'\n\ngit add ${slug}/ site.json\ngit commit -m "feat: ${name} 카테고리 추가"\ngit push`;
+      document.getElementById('ccHashDisplay').textContent = hash;
+      document.getElementById('ccShellCmd').textContent = cmd;
+      document.getElementById('ccStep2').style.display = '';
+    }
+
+    function copyCcCmd() {
+      navigator.clipboard.writeText(document.getElementById('ccShellCmd').textContent);
+      showToast('📋 명령어 복사됨');
+    }
+
+    // =============================================
+    // GITHUB PUSH
+    // =============================================
+    const GH_REPO = 'chrisKILee/chrisKILee.github.io';
+    const GH_FILE_PATH = 'site.json';
+    const GH_PAT_KEY = 'gdedse_gh_pat';
+
+    function openGithubPushModal() {
+      if (!adminPinVerified) { requirePin(() => openGithubPushModal()); return; }
+      const saved = sessionStorage.getItem(GH_PAT_KEY);
+      document.getElementById('githubPatInput').value = saved || '';
+      document.getElementById('rememberPat').checked = !!saved;
+      document.getElementById('githubError').textContent = '';
+      document.getElementById('githubModal').classList.add('show');
+      if (!saved) setTimeout(() => document.getElementById('githubPatInput').focus(), 40);
+    }
+
+    function closeGithubModal() {
+      document.getElementById('githubModal').classList.remove('show');
+    }
+
+    async function submitGithubPush() {
+      const pat = document.getElementById('githubPatInput').value.trim();
+      const remember = document.getElementById('rememberPat').checked;
+      const errEl = document.getElementById('githubError');
+      const btn = document.getElementById('githubSubmitBtn');
+
+      if (!pat) { errEl.textContent = 'PAT을 입력하세요.'; return; }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리 중...';
+      errEl.textContent = '';
+
+      try {
+        // 1. 현재 파일 SHA 가져오기
+        const getResp = await fetch(
+          `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE_PATH}`,
+          { headers: { Authorization: `Bearer ${pat}`, Accept: 'application/vnd.github+json' } }
+        );
+        if (!getResp.ok) {
+          const err = await getResp.json();
+          throw new Error(err.message || `GitHub API 오류 (${getResp.status})`);
+        }
+        const fileData = await getResp.json();
+        const sha = fileData.sha;
+
+        // 2. 새 내용으로 커밋
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(siteConfig, null, 2))));
+        const putResp = await fetch(
+          `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE_PATH}`,
+          {
+            method: 'PUT',
+            headers: {
+              Authorization: `Bearer ${pat}`,
+              Accept: 'application/vnd.github+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: 'feat: site.json 업데이트 via GDEDSE',
+              content,
+              sha
+            })
+          }
+        );
+        if (!putResp.ok) {
+          const err = await putResp.json();
+          throw new Error(err.message || `커밋 실패 (${putResp.status})`);
+        }
+
+        if (remember) sessionStorage.setItem(GH_PAT_KEY, pat);
+        else sessionStorage.removeItem(GH_PAT_KEY);
+
+        closeGithubModal();
+        showToast('✅ GitHub에 커밋 완료! 배포 중...');
+      } catch (e) {
+        errEl.textContent = e.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fab fa-github"></i> 커밋 & 푸시';
+      }
+    }
+
+    // =============================================
+    // HELP MODAL
+    // =============================================
+    function openHelp() {
+      document.getElementById('helpModal').classList.add('show');
+    }
+    function closeHelp() {
+      document.getElementById('helpModal').classList.remove('show');
+    }
+    document.getElementById('helpModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('helpModal')) closeHelp();
     });
-  });
 
-  renderCards();
-</script>
+    // =============================================
+    // MODAL
+    // =============================================
+    let _modalCb = null;
+
+    function openModal(title, valueOrOptions, isSelect, callback) {
+      const modal = document.getElementById('modal');
+      const input = document.getElementById('modalInput');
+      const select = document.getElementById('modalSelect');
+
+      document.getElementById('modalTitle').textContent = title;
+      _modalCb = callback;
+
+      if (isSelect) {
+        input.style.display = 'none';
+        select.style.display = 'block';
+        select.innerHTML = valueOrOptions;
+      } else {
+        select.style.display = 'none';
+        input.style.display = 'block';
+        input.value = valueOrOptions || '';
+        setTimeout(() => input.focus(), 40);
+      }
+
+      modal.classList.add('show');
+    }
+
+    function confirmModal() {
+      const input = document.getElementById('modalInput');
+      const select = document.getElementById('modalSelect');
+      const isSelect = select.style.display !== 'none';
+      const val = isSelect ? select.value : input.value;
+
+      if (_modalCb) _modalCb(val);
+      closeModal();
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('show');
+      _modalCb = null;
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        if (document.getElementById('pinModal').classList.contains('show')) { closePinModal(); return; }
+        if (document.getElementById('helpModal').classList.contains('show')) { closeHelp(); return; }
+        if (document.getElementById('createCategoryModal').classList.contains('show')) { closeCreateCategoryModal(); return; }
+        if (document.getElementById('moveFileModal').classList.contains('show')) { closeMoveModal(); return; }
+        if (document.getElementById('modal').classList.contains('show')) closeModal();
+      }
+      if (e.key === 'Enter' && document.getElementById('modal').classList.contains('show')) confirmModal();
+    });
+
+    // =============================================
+    // MOVE FILE MODAL
+    // =============================================
+    let _moveFileHash = null;
+
+    function openMoveModal(fileHash) {
+      if (!adminPinVerified) { requirePin(() => openMoveModal(fileHash)); return; }
+      _moveFileHash = fileHash;
+      const fileCfg = siteConfig.files[fileHash];
+      const currentFolder = fileCfg.categoryHash;
+
+      document.getElementById('moveFileSubtitle').textContent =
+        fileCfg.displayName || fileCfg.filename;
+
+      const tree = document.getElementById('moveFileTree');
+      tree.innerHTML = '';
+
+      function makeFolder(fHash, fCfg) {
+        const isCurrent = fHash === currentFolder;
+        const li = document.createElement('li');
+        li.className = 'move-tree-folder' + (isCurrent ? ' current' : '');
+        li.innerHTML = `<i class="fas fa-folder${isCurrent ? '-open' : ''}"></i>${esc(fCfg.displayName || fHash)}`;
+        if (!isCurrent) li.onclick = () => moveFileTo(fileHash, fHash);
+        return li;
+      }
+
+      const dirs = [...siteConfig.directories].sort((a, b) => a.order - b.order);
+      dirs.forEach(dir => {
+        const folders = Object.entries(siteConfig.folders)
+          .filter(([, cfg]) => cfg.dirId === dir.id)
+          .sort((a, b) => a[1].order - b[1].order);
+        if (!folders.length) return;
+        const dirLi = document.createElement('li');
+        dirLi.className = 'move-tree-dir';
+        dirLi.textContent = dir.name;
+        tree.appendChild(dirLi);
+        folders.forEach(([fHash, fCfg]) => tree.appendChild(makeFolder(fHash, fCfg)));
+      });
+
+      const unassigned = Object.entries(siteConfig.folders)
+        .filter(([, cfg]) => !cfg.dirId)
+        .sort((a, b) => a[1].order - b[1].order);
+      if (unassigned.length) {
+        const dirLi = document.createElement('li');
+        dirLi.className = 'move-tree-dir';
+        dirLi.textContent = '미분류';
+        tree.appendChild(dirLi);
+        unassigned.forEach(([fHash, fCfg]) => tree.appendChild(makeFolder(fHash, fCfg)));
+      }
+
+      document.getElementById('moveFileModal').classList.add('show');
+    }
+
+    function closeMoveModal() {
+      document.getElementById('moveFileModal').classList.remove('show');
+      _moveFileHash = null;
+    }
+
+    function moveFileTo(fileHash, folderHash) {
+      const f = siteConfig.files[fileHash];
+      if (!f) return;
+      const toName = siteConfig.folders[folderHash]?.displayName || folderHash;
+      f.categoryHash = folderHash;
+      persistConfig();
+      closeMoveModal();
+      render();
+      showToast(`📂 "${f.displayName || f.filename}" → ${toName}`);
+    }
+
+    // =============================================
+    // SEARCH
+    // =============================================
+    function initSearch() {
+      const input = document.getElementById('searchInput');
+      // Remove old listener by cloning
+      const newInput = input.cloneNode(true);
+      input.parentNode.replaceChild(newInput, input);
+
+      newInput.addEventListener('input', () => {
+        const term = newInput.value.toLowerCase().trim();
+
+        document.querySelectorAll('.file-card').forEach(c => {
+          const hiddenCard = !isAdmin && c.classList.contains('is-hidden');
+          if (hiddenCard) { c.style.display = 'none'; return; }
+          c.style.display = (!term || (c.dataset.search || '').includes(term)) ? '' : 'none';
+        });
+
+        document.querySelectorAll('.folder-block').forEach(fb => {
+          const visible = [...fb.querySelectorAll('.file-card')].some(c => c.style.display !== 'none');
+          fb.style.display = (!term || visible) ? '' : 'none';
+        });
+
+        document.querySelectorAll('.directory-section').forEach(ds => {
+          const visible = [...ds.querySelectorAll('.folder-block')].some(f => f.style.display !== 'none');
+          ds.style.display = (!term || visible) ? '' : 'none';
+        });
+      });
+    }
+
+    // =============================================
+    // DRAG & DROP (folder → directory)
+    // =============================================
+    function initDragAndDrop() {
+      let draggedHash = null;
+
+      document.addEventListener('dragstart', e => {
+        if (!isAdmin) return;
+        const fb = e.target.closest('.folder-block[draggable="true"]');
+        if (!fb) return;
+        draggedHash = fb.dataset.hash;
+        fb.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', draggedHash);
+      });
+
+      document.addEventListener('dragend', () => {
+        document.querySelectorAll('.folder-block.dragging').forEach(el => el.classList.remove('dragging'));
+        document.querySelectorAll('.dir-body.drag-over, .unassigned-section.drag-over').forEach(el => el.classList.remove('drag-over'));
+        draggedHash = null;
+      });
+
+      document.addEventListener('dragover', e => {
+        if (!draggedHash) return;
+        const target = e.target.closest('.dir-body') || e.target.closest('.unassigned-section');
+        if (!target) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        document.querySelectorAll('.dir-body.drag-over, .unassigned-section.drag-over').forEach(el => el.classList.remove('drag-over'));
+        target.classList.add('drag-over');
+      });
+
+      document.addEventListener('drop', e => {
+        if (!draggedHash) return;
+        e.preventDefault();
+
+        const unassignedEl = e.target.closest('.unassigned-section');
+        const dirSectionEl = e.target.closest('.directory-section');
+
+        let targetDirId = null;
+        let targetName = '미분류';
+
+        if (unassignedEl) {
+          targetDirId = null;
+          targetName = '미분류';
+        } else if (dirSectionEl) {
+          targetDirId = dirSectionEl.dataset.dirId;
+          targetName = siteConfig.directories.find(d => d.id === targetDirId)?.name || '';
+        } else {
+          document.querySelectorAll('.dir-body.drag-over, .unassigned-section.drag-over').forEach(el => el.classList.remove('drag-over'));
+          draggedHash = null;
+          return;
+        }
+
+        const folderCfg = siteConfig.folders[draggedHash];
+        if (folderCfg && folderCfg.dirId !== targetDirId) {
+          folderCfg.dirId = targetDirId;
+          persistConfig();
+          render();
+          showToast(`📁 "${siteConfig.folders[draggedHash]?.displayName || draggedHash}" → ${targetName}`);
+        }
+
+        document.querySelectorAll('.dir-body.drag-over, .unassigned-section.drag-over').forEach(el => el.classList.remove('drag-over'));
+        draggedHash = null;
+      });
+    }
+
+    // =============================================
+    // UTILITIES
+    // =============================================
+    function updateStats() {
+      const files = Object.values(siteConfig.files || {});
+      const count = isAdmin ? files.length : files.filter(f => f.visible).length;
+      document.getElementById('totalDocs').textContent = count;
+    }
+
+    function copyCardLink(btn) {
+      const card = btn.closest('.file-card');
+      const fileHash = card.dataset.fileHash;
+      const fileCfg = siteConfig.files && siteConfig.files[fileHash];
+      if (!fileCfg) return;
+      const folderHash = fileCfg.categoryHash;
+      const folderPath = (siteConfig.folders && siteConfig.folders[folderHash]?.path) || '/';
+      doCopy(`${location.origin}${folderPath}${fileCfg.filename}`);
+    }
+
+    function doCopy(text) {
+      navigator.clipboard.writeText(text)
+        .then(() => showToast('📋 링크 복사됨'))
+        .catch(() => {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          showToast('📋 링크 복사됨');
+        });
+    }
+
+    let _toastTimer;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+    }
+
+    // =============================================
+    // INIT
+    // =============================================
+    async function init() {
+      try {
+        await loadConfig();
+        initFavorites();
+        render();
+        renderFavorites();
+        initDragAndDrop();
+      } catch (e) {
+        document.getElementById('contentArea').innerHTML = `
+          <div class="loading">
+            <p>❌ 오류: ${esc(e.message)}</p>
+            <p style="margin-top:8px; font-size:0.82rem; color:#9ca3af;">
+              site.json 파일이 필요합니다.
+            </p>
+          </div>`;
+      }
+    }
+
+    window.addEventListener('hashchange', () => { render(); });
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+  <!-- Version: 2026-03-18 v4.0 – flat URL, memo field, PIN auth (GitHub Actions) -->
 </body>
+
 </html>

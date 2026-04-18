@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>백업 모니터링 - 통합 백업 웹 페이지</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #6366f1;
+            --accent2: #10b981;
+            --accent3: #f59e0b;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background: var(--bg); color: var(--text);
+            font-size: 16px; line-height: 1.7;
+        }
+
+        nav {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--primary); height: 60px;
+            display: flex; align-items: center;
+            padding: 0 2rem; gap: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+        .nav-logo { color: #fff; font-size: 1rem; font-weight: 700; margin-right: auto; text-decoration: none; }
+        .nav-links { display: flex; gap: 1.2rem; }
+        .nav-links a { color: #94a3b8; text-decoration: none; font-size: 13px; transition: color .2s; }
+        .nav-links a:hover { color: #fff; }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1040 50%, #0f172a 100%);
+            color: #fff; padding: 64px 24px 56px; text-align: center;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4);
+            color: #a5b4fc; font-size: 13px; padding: 4px 14px;
+            border-radius: 20px; margin-bottom: 20px;
+        }
+        .hero h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 16px; line-height: 1.3; }
+        .hero h1 span { color: #818cf8; }
+        .hero p { font-size: 15px; color: #94a3b8; max-width: 700px; margin: 0 auto 28px; line-height: 1.7; }
+        .hero-meta { font-size: 13px; color: #475569; }
+        .hero-stats {
+            display: flex; justify-content: center; gap: 48px;
+            margin-top: 36px; flex-wrap: wrap;
+        }
+        .stat-item { text-align: center; }
+        .stat-num { font-size: 2.2rem; font-weight: 800; color: #818cf8; line-height: 1; }
+        .stat-label { font-size: 13px; color: #64748b; margin-top: 4px; }
+
+        section { padding: 60px 24px; }
+        .wrapper { max-width: 1600px; margin: 0 auto; }
+        .section-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .section-title span { color: var(--accent); }
+        .section-desc { font-size: 15px; color: var(--text-muted); margin-bottom: 36px; line-height: 1.7; }
+        hr.divider { border: none; border-top: 1px solid var(--border); }
+        .alt-bg { background: #f1f5f9; }
+
+        /* PROBLEM / SOLUTION */
+        .prob-sol-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 768px) { .prob-sol-grid { grid-template-columns: 1fr; } }
+        .prob-card, .sol-card { border-radius: 12px; padding: 28px; }
+        .prob-card { background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); }
+        .sol-card  { background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); }
+        .prob-card h3 { font-size: 17px; font-weight: 700; color: #ef4444; margin-bottom: 16px; }
+        .sol-card h3  { font-size: 17px; font-weight: 700; color: #10b981; margin-bottom: 16px; }
+        .prob-card ul, .sol-card ul { list-style: none; padding: 0; }
+        .prob-card li, .sol-card li {
+            font-size: 15px; color: var(--text-muted);
+            padding: 7px 0; border-bottom: 1px solid rgba(0,0,0,0.05); line-height: 1.6;
+        }
+        .prob-card li:last-child, .sol-card li:last-child { border-bottom: none; }
+
+        /* FEATURE CARDS */
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .feature-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-top: 4px solid var(--accent); border-radius: 10px; padding: 24px;
+        }
+        .feature-card .icon { font-size: 1.8rem; margin-bottom: 12px; }
+        .feature-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+        .feature-card p { font-size: 15px; color: var(--text-muted); line-height: 1.65; }
+
+        /* SCREENS */
+        .screen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+        .screen-item {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: 18px 20px;
+            display: flex; align-items: center; gap: 14px;
+        }
+        .screen-num {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(99,102,241,0.1); color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700; flex-shrink: 0;
+        }
+        .screen-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+        .screen-item p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+        /* TECH */
+        .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .tech-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: 18px 20px;
+            display: flex; align-items: flex-start; gap: 12px;
+        }
+        .tech-icon {
+            width: 38px; height: 38px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; flex-shrink: 0;
+        }
+        .tech-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+        .tech-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+        /* ACCESS BOX */
+        .access-box {
+            background: linear-gradient(135deg, rgba(99,102,241,0.07), rgba(16,185,129,0.07));
+            border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; padding: 32px 36px;
+        }
+        .access-box h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .access-url {
+            display: inline-block; margin-top: 16px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 12px 20px;
+            font-family: monospace; font-size: 15px; color: var(--accent); font-weight: 600;
+        }
+        .access-note { margin-top: 12px; font-size: 14px; color: var(--text-muted); }
+
+        /* INSIGHT */
+        .insight-box {
+            background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(16,185,129,0.06));
+            border: 1px solid rgba(99,102,241,0.15);
+            border-radius: 12px; padding: 28px 32px; margin-top: 36px;
+        }
+        .insight-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+        .insight-box ul { list-style: none; padding: 0; }
+        .insight-box li { font-size: 15px; color: var(--text-muted); padding: 5px 0; line-height: 1.65; }
+        .insight-box li::before { content: '✦ '; color: var(--accent); }
+
+        footer {
+            background: var(--primary); color: #475569;
+            text-align: center; padding: 28px 24px; font-size: 13px;
+        }
+        .scroll-top {
+            position: fixed; bottom: 28px; right: 28px;
+            background: var(--accent); color: #fff; border: none;
+            border-radius: 50%; width: 44px; height: 44px;
+            font-size: 18px; cursor: pointer; opacity: 0; transition: opacity .3s;
+            box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+        }
+        .scroll-top.show { opacity: 1; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="nav-logo" href="#">🛡️ 백업 모니터링</a>
+    <div class="nav-links">
+        <a href="#background">배경</a>
+        <a href="#features">주요 기능</a>
+        <a href="#screens">화면 구성</a>
+        <a href="#tech">기술 스택</a>
+        <a href="#access">접속 안내</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-badge">AI-WORKER · 플랫폼인프라팀</div>
+    <h1>백업 모니터링<br><span>통합 백업 웹 페이지</span></h1>
+    <p>20여 대 서버를 일일이 RDP·SSH로 접속해 백업 로그를 확인하던 작업을 웹 한 곳에서 해결합니다.<br>
+    Ansible이 데이터를 수집하고, AI가 로그를 요약하며, 보고서는 버튼 하나로 생성됩니다.</p>
+    <div class="hero-meta">플랫폼인프라팀 · 2026</div>
+    <div class="hero-stats">
+        <div class="stat-item">
+            <div class="stat-num">60분</div>
+            <div class="stat-label">기존 일일 점검 소요 시간</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">3~5분</div>
+            <div class="stat-label">자동화 후 처리 시간</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">90%+</div>
+            <div class="stat-label">업무 시간 절감</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">20+</div>
+            <div class="stat-label">대상 서버 수</div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- BACKGROUND -->
+<section id="background">
+    <div class="wrapper">
+        <div class="section-title">🤔 <span>왜 만들었나요?</span></div>
+        <div class="section-desc">IT 인프라 환경의 데이터베이스 및 시스템 백업 상태를 매일 수동으로 점검하는 과정에서 세 가지 문제가 반복되고 있었습니다.</div>
+        <div class="prob-sol-grid">
+            <div class="prob-card">
+                <h3>❌ 기존 방식의 문제</h3>
+                <ul>
+                    <li>🖥️ 20여 대 서버를 RDP·SSH로 일일이 개별 접속</li>
+                    <li>⏱️ 백업 크기·로그 확인에 일평균 40~60분 소요</li>
+                    <li>⚠️ VEEAM, NetVault, RMAN, SQL Backup 등 다양한 백업 로그를 육안으로 확인 → 누락·오판독 위험</li>
+                    <li>📋 점검 결과를 '백업 일지' 양식에 맞게 다시 타이핑하는 이중 작업</li>
+                </ul>
+            </div>
+            <div class="sol-card">
+                <h3>✅ 백업 모니터링의 해결</h3>
+                <ul>
+                    <li>🌐 모든 서버 백업 상태를 웹 한 곳에서 조회</li>
+                    <li>⚡ Ansible이 매일 오전 8시 자동 수집·정리</li>
+                    <li>🤖 AI(Gemini)가 복잡한 로그를 한눈에 요약 브리핑</li>
+                    <li>📄 백업 일지 보고서 자동 생성 및 PDF 출력</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- FEATURES -->
+<section id="features" class="alt-bg">
+    <div class="wrapper">
+        <div class="section-title">⚙️ <span>주요 기능</span></div>
+        <div class="section-desc">수집부터 요약·보고서 출력까지, 백업 점검의 전 과정을 자동화했습니다.</div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">📋</div>
+                <h3>로그 중앙 집중 조회</h3>
+                <p>각 서버별 백업 덤프 파일 크기, 생성 경로, 상세 로그를 웹 브라우저에서 클릭 한 번으로 확인. 개별 서버 접속 불필요.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🤖</div>
+                <h3>Ansible 기반 완전 자동 수집</h3>
+                <p>Ansible 플레이북을 쉘 스크립트로 모듈화. crontab으로 매일 오전 8시 정각에 자동 실행하여 전 서버 데이터를 수집·저장.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🔍</div>
+                <h3>정규식 기반 데이터 자동 추출</h3>
+                <p>비정형 텍스트 로그에서 시작 시간, 종료 시간, 최종 백업 용량(GB) 등 핵심 데이터만 정확히 추출하는 맞춤형 파싱 엔진.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📄</div>
+                <h3>백업 일지 자동 생성 및 PDF 출력</h3>
+                <p>추출된 데이터를 그룹웨어 보고 양식(Table)에 자동 매핑. PDF 다운로드 버튼 한 번으로 보고서 완성.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">✨</div>
+                <h3>AI 로그 요약 (Gemini API)</h3>
+                <p>수십 개의 복잡한 백업·플레이북 실행 로그를 Gemini AI가 1차 분석하여 성공/실패 현황을 직관적으로 브리핑.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📱</div>
+                <h3>멀티 디바이스 접근</h3>
+                <p>스마트폰·태블릿 등 다양한 환경에서 접근 가능한 웹 페이지. IT 인프라 가시성과 운영 편의성 대폭 향상.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- SCREENS -->
+<section id="screens">
+    <div class="wrapper">
+        <div class="section-title">🖥️ <span>화면 구성</span></div>
+        <div class="section-desc">6개의 화면으로 백업 현황 전체를 한눈에 파악합니다.</div>
+        <div class="screen-grid">
+            <div class="screen-item">
+                <div class="screen-num">①</div>
+                <div>
+                    <h4>메인 대시보드 홈</h4>
+                    <p>전체 백업 현황 요약 및 이상 징후 알림</p>
+                </div>
+            </div>
+            <div class="screen-item">
+                <div class="screen-num">②</div>
+                <div>
+                    <h4>플레이북 실행 로그 조회</h4>
+                    <p>Ansible 플레이북 실행 결과 및 오류 내역 확인</p>
+                </div>
+            </div>
+            <div class="screen-item">
+                <div class="screen-num">③</div>
+                <div>
+                    <h4>백업 대상 서버 리스트</h4>
+                    <p>20여 대 서버 목록 및 백업 상태 한눈에 파악</p>
+                </div>
+            </div>
+            <div class="screen-item">
+                <div class="screen-num">④</div>
+                <div>
+                    <h4>백업 덤프 크기 조회</h4>
+                    <p>서버별 덤프 파일 크기 및 생성 경로 확인</p>
+                </div>
+            </div>
+            <div class="screen-item">
+                <div class="screen-num">⑤</div>
+                <div>
+                    <h4>백업 덤프 로그 조회</h4>
+                    <p>상세 백업 로그 및 AI 요약 브리핑</p>
+                </div>
+            </div>
+            <div class="screen-item">
+                <div class="screen-num">⑥</div>
+                <div>
+                    <h4>백업 일지 확인</h4>
+                    <p>자동 생성된 보고서 확인 및 PDF 다운로드</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- TECH -->
+<section id="tech" class="alt-bg">
+    <div class="wrapper">
+        <div class="section-title">🛠️ <span>기술 스택</span></div>
+        <div class="section-desc">Python 기반의 경량 스택으로 빠르게 구축했습니다.</div>
+        <div class="tech-grid">
+            <div class="tech-card">
+                <div class="tech-icon" style="background:rgba(99,102,241,0.1);">🐍</div>
+                <div>
+                    <h4>Streamlit</h4>
+                    <p>Python 기반 웹 프레임워크. 빠른 UI 구축 및 대화형 대시보드</p>
+                </div>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon" style="background:rgba(239,68,68,0.1);">📡</div>
+                <div>
+                    <h4>Ansible</h4>
+                    <p>서버 접속·로그 수집 자동화. 매일 오전 8시 crontab 스케줄 실행</p>
+                </div>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon" style="background:rgba(16,185,129,0.1);">🐼</div>
+                <div>
+                    <h4>Python + Pandas</h4>
+                    <p>데이터 구조화, 정규식 파싱, 핵심 지표 추출</p>
+                </div>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon" style="background:rgba(249,115,22,0.1);">🐳</div>
+                <div>
+                    <h4>Docker</h4>
+                    <p>컨테이너 기반 배포로 환경 일관성 유지 및 이식성 확보</p>
+                </div>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon" style="background:rgba(234,179,8,0.1);">✨</div>
+                <div>
+                    <h4>Google Gemini 2.5 Flash</h4>
+                    <p>복잡한 백업 로그를 AI가 분석하여 성공/실패 현황 자동 브리핑</p>
+                </div>
+            </div>
+            <div class="tech-card">
+                <div class="tech-icon" style="background:rgba(99,102,241,0.1);">🔤</div>
+                <div>
+                    <h4>정규식 파싱 엔진</h4>
+                    <p>비정형 로그에서 시작/종료 시간, 백업 용량 등 핵심 데이터 추출</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ACCESS -->
+<section id="access">
+    <div class="wrapper">
+        <div class="section-title">🔑 <span>접속 안내</span></div>
+        <div class="section-desc">내부망에서 아래 주소로 접속하면 바로 사용할 수 있습니다.</div>
+        <div class="access-box">
+            <h3>웹 페이지 접속</h3>
+            <p style="font-size:15px;color:var(--text-muted);">사내 내부망 접속 환경에서 아래 URL로 직접 접근하세요.</p>
+            <div class="access-url">http://172.17.40.77:8501</div>
+            <p class="access-note">※ 별도 설치 없이 웹 브라우저만으로 이용 가능. 스마트폰·태블릿에서도 접속 가능합니다.</p>
+        </div>
+        <div class="insight-box">
+            <h3>🎯 도입 성과 요약</h3>
+            <ul>
+                <li>일일 점검 소요 시간 <strong>40~60분 → 3~5분</strong> 이내로 단축 (90% 이상 절감)</li>
+                <li>20여 대 서버를 개별 접속하는 반복 작업 완전 제거</li>
+                <li>AI 요약 브리핑으로 복잡한 로그를 직관적으로 파악</li>
+                <li>백업 일지 자동 생성으로 이중 작업(점검 → 타이핑) 해소</li>
+                <li>향후 신규 서버 추가 시 hosts 파일·config.py 수정만으로 유연한 확장 가능</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p>백업 모니터링 — 통합 백업 웹 페이지 구축 · 플랫폼인프라팀</p>
+</footer>
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+    window.addEventListener('scroll', () => {
+        document.getElementById('scrollTop').classList.toggle('show', window.scrollY > 400);
+    });
+</script>
+</body>
+</html>

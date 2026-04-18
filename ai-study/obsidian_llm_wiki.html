@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Obsidian으로 세컨드 브레인 만들기 — LLM Wiki 활용기</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --color-primary: #111111;
+      --color-secondary: #f1f1f1;
+      --color-surface: #FFFFFF;
+      --color-text: #111827;
+      --color-accent: #1a1a2e;
+      --color-success: #16A34A;
+      --color-warning: #D97706;
+      --font-primary: 'Gelasio', Georgia, serif;
+      --font-mono: 'Ubuntu Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-surface);
+      color: var(--color-text);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .editorial-rule { border: none; border-top: 2px solid var(--color-primary); margin: 0; }
+    .editorial-rule-thin { border: none; border-top: 1px solid #e5e7eb; }
+
+    /* 헤더 */
+    .site-header {
+      border-bottom: 2px solid var(--color-primary);
+      padding: 20px 24px;
+    }
+    .site-header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .site-logo {
+      font-family: var(--font-primary);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+    }
+    .site-date {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #6b7280;
+      letter-spacing: 0.05em;
+    }
+
+    /* 히어로 */
+    .hero-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 72px 24px 56px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+      align-items: end;
+    }
+    .hero-kicker {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--color-surface);
+      background-color: var(--color-primary);
+      padding: 4px 10px;
+      margin-bottom: 28px;
+    }
+    .hero-heading {
+      font-family: var(--font-primary);
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+    }
+    .hero-heading em { font-style: italic; font-weight: 400; }
+    .hero-heading-em {
+      font-family: var(--font-primary);
+      font-size: clamp(22px, 3vw, 36px);
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      color: var(--color-primary);
+      opacity: 0.38;
+      margin-bottom: 32px;
+    }
+    .hero-description {
+      font-size: 17px;
+      line-height: 1.75;
+      color: #374151;
+      max-width: 480px;
+    }
+    .hero-meta {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 20px;
+      margin-top: 36px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .hero-meta-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+    .hero-meta-value {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-primary);
+    }
+    .hero-pullquote {
+      border-left: 4px solid var(--color-primary);
+      padding: 32px 36px;
+      background: var(--color-secondary);
+    }
+    .hero-pullquote blockquote {
+      font-size: clamp(16px, 2vw, 22px);
+      font-style: italic;
+      font-weight: 500;
+      line-height: 1.55;
+      color: var(--color-primary);
+      margin-bottom: 16px;
+    }
+    .hero-pullquote cite {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-style: normal;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    /* 통계 스트립 */
+    .stat-strip {
+      border-top: 2px solid var(--color-primary);
+      border-bottom: 2px solid var(--color-primary);
+      display: flex;
+    }
+    .stat-strip-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+    }
+    .stat-item {
+      flex: 1;
+      padding: 28px 32px;
+      border-right: 1px solid #d1d5db;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-number {
+      font-family: var(--font-primary);
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 700;
+      line-height: 1;
+      color: var(--color-primary);
+      letter-spacing: -0.03em;
+    }
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-top: 8px;
+    }
+    .stat-desc {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    /* 콘텐츠 */
+    .content-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* 섹션 레이블 */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 24px;
+      margin-top: 64px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e5e7eb;
+    }
+
+    /* 기사 그리드 */
+    .article-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 0;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 0;
+    }
+    .article-card {
+      padding: 32px;
+      border-right: 1px solid var(--color-primary);
+      display: flex;
+      flex-direction: column;
+    }
+    .article-card:last-child { border-right: none; }
+    .article-category {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+    .article-category.highlighted {
+      color: var(--color-surface);
+      background: var(--color-primary);
+      display: inline-block;
+      padding: 2px 8px;
+    }
+    .article-title {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--color-primary);
+      margin-bottom: 14px;
+      letter-spacing: -0.01em;
+    }
+    .article-card:not(.article-card-featured) .article-title { font-size: 17px; }
+    .article-excerpt {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #4b5563;
+      margin-bottom: 16px;
+      flex: 1;
+    }
+    .article-byline {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 16px;
+      margin-top: auto;
+    }
+
+    /* RAG 비교 테이블 */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    .compare-table th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      text-align: left;
+      padding: 0 16px 12px 0;
+      border-bottom: 2px solid var(--color-primary);
+    }
+    .compare-table th:first-child { width: 28%; }
+    .compare-table td {
+      font-size: 14px;
+      padding: 14px 16px 14px 0;
+      border-bottom: 1px solid #e5e7eb;
+      color: var(--color-text);
+      vertical-align: top;
+      line-height: 1.6;
+    }
+    .compare-table td:first-child {
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+    .compare-table .bad { color: #DC2626; }
+    .compare-table .good { color: #16A34A; }
+
+    /* 폴더 구조 코드 블록 */
+    .code-block {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-left: 4px solid var(--color-primary);
+      padding: 28px 32px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.8;
+      color: #e6edf3;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .code-dir { color: #79c0ff; }
+    .code-file { color: #a5d6ff; }
+    .code-comment { color: #6e7681; }
+    .code-arrow { color: #ffa657; }
+    .code-highlight { color: #ffa657; font-weight: 700; }
+
+    /* 이미지 페어 */
+    .image-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 32px 0;
+    }
+    .image-col { }
+    .image-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .lightbox-trigger {
+      cursor: zoom-in;
+      transition: opacity 0.15s ease;
+      display: block;
+      width: 100%;
+    }
+    .lightbox-trigger:hover { opacity: 0.88; }
+
+    /* 단계 카드 */
+    .step-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      border: 1px solid var(--color-primary);
+    }
+    .step-card {
+      padding: 32px;
+      border-right: 1px solid var(--color-primary);
+    }
+    .step-card:last-child { border-right: none; }
+    .step-number {
+      font-family: var(--font-primary);
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1;
+      color: #e5e7eb;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+    }
+    .step-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    .step-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #4b5563;
+    }
+    .step-code {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--color-secondary);
+      padding: 12px 14px;
+      margin-top: 14px;
+      border-left: 3px solid var(--color-primary);
+      color: var(--color-primary);
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    /* 한계 목록 */
+    .limit-list { list-style: none; padding: 0; }
+    .limit-item {
+      display: flex;
+      gap: 16px;
+      padding: 18px 0;
+      border-bottom: 1px solid #e5e7eb;
+      align-items: flex-start;
+    }
+    .limit-item:last-child { border-bottom: none; }
+    .limit-icon {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      background: #fef3c7;
+      color: #92400e;
+      padding: 3px 8px;
+      letter-spacing: 0.08em;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .limit-text {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #374151;
+    }
+    .limit-text strong {
+      color: var(--color-primary);
+      font-weight: 700;
+    }
+
+    /* 플러그인 카드 */
+    .plugin-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0;
+      border: 1px solid var(--color-primary);
+    }
+    .plugin-card {
+      padding: 28px 32px;
+      border-right: 1px solid var(--color-primary);
+      border-bottom: 1px solid var(--color-primary);
+    }
+    .plugin-card:nth-child(2n) { border-right: none; }
+    .plugin-card:nth-last-child(-n+2) { border-bottom: none; }
+    .plugin-name {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+    }
+    .plugin-stars {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #D97706;
+      margin-bottom: 10px;
+    }
+    .plugin-desc {
+      font-size: 14px;
+      line-height: 1.65;
+      color: #4b5563;
+    }
+
+    /* 인라인 인용 */
+    .inline-quote {
+      border-left: 4px solid var(--color-primary);
+      background: var(--color-secondary);
+      padding: 24px 28px;
+      margin: 24px 0;
+    }
+    .inline-quote p {
+      font-size: 17px;
+      font-style: italic;
+      line-height: 1.6;
+      color: var(--color-primary);
+    }
+    .inline-quote cite {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-style: normal;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-top: 12px;
+    }
+
+    /* 푸터 */
+    .site-footer {
+      border-top: 2px solid var(--color-primary);
+      padding: 32px 24px;
+    }
+    .site-footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-text {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #9ca3af;
+      letter-spacing: 0.05em;
+    }
+    .footer-link {
+      color: var(--color-primary);
+      text-decoration: none;
+      border-bottom: 1px solid currentColor;
+    }
+    .footer-rule-word {
+      font-family: var(--font-primary);
+      font-size: 13px;
+      font-style: italic;
+      color: #d1d5db;
+    }
+
+    @media (max-width: 900px) {
+      .hero-section { grid-template-columns: 1fr; gap: 40px; }
+      .stat-strip-inner { flex-wrap: wrap; }
+      .stat-item { min-width: 50%; }
+      .article-grid { grid-template-columns: 1fr; }
+      .article-card { border-right: none; border-bottom: 1px solid var(--color-primary); }
+      .step-grid { grid-template-columns: 1fr; }
+      .step-card { border-right: none; border-bottom: 1px solid var(--color-primary); }
+      .step-card:last-child { border-bottom: none; }
+      .plugin-grid { grid-template-columns: 1fr; }
+      .plugin-card { border-right: none; }
+      .image-pair { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lightbox-trigger { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <header class="site-header">
+    <div class="site-header-inner">
+      <span class="site-logo">AI Study</span>
+      <span class="site-date">2026-04-19</span>
+    </div>
+  </header>
+
+  <!-- 히어로 -->
+  <section class="hero-section">
+    <div>
+      <span class="hero-kicker">활용기 · LLM Wiki</span>
+      <h1 class="hero-heading">Obsidian으로<br><em>세컨드 브레인</em><br>만들기</h1>
+      <p class="hero-heading-em">LLM Wiki × Claude Code</p>
+      <p class="hero-description">안드레 카파시의 LLM Wiki를 Obsidian + Claude Code로 직접 구축해봤습니다. 잠자고 있던 153개 리포트가 진짜 세컨드 브레인으로 바뀌는 과정을 공유합니다.</p>
+      <div class="hero-meta">
+        <span class="hero-meta-label">Published</span>
+        <span class="hero-meta-value">2026-04-19</span>
+        <span class="hero-meta-label" style="margin-left:8px;">원문</span>
+        <span class="hero-meta-value"><a href="https://aboutcorelab.com/llm-wiki-in-obsidian-for-2nd-brain/" target="_blank" rel="noopener" style="color:inherit;border-bottom:1px solid currentColor;text-decoration:none;">aboutcorelab.com</a></span>
+      </div>
+    </div>
+    <div class="hero-pullquote">
+      <blockquote>"Obsidian is the IDE, the LLM is the programmer, the wiki is the codebase."</blockquote>
+      <cite>— Andrej Karpathy, GitHub Gist, 2026-04-03</cite>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid #d1d5db;">
+        <blockquote style="font-size:15px;opacity:0.75;">"You rarely ever write or edit the wiki manually, it's the domain of the LLM."</blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- 통계 스트립 -->
+  <div class="stat-strip">
+    <div class="stat-strip-inner">
+      <div class="stat-item">
+        <div class="stat-number">153</div>
+        <div class="stat-label">Input</div>
+        <div class="stat-desc">Obsidian 볼트에 있던 리서치 리포트 파일 수</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">146</div>
+        <div class="stat-label">Sources</div>
+        <div class="stat-desc">자동 요약된 소스 페이지 수</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">48</div>
+        <div class="stat-label">Entities</div>
+        <div class="stat-desc">자동 추출된 엔티티<br>(기업, 인물, 기술)</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">29</div>
+        <div class="stat-label">Concepts</div>
+        <div class="stat-desc">자동 생성된 컨셉 + 문서 간 연결</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-wrap">
+
+    <!-- 섹션 1: LLM Wiki란? -->
+    <p class="section-label">Background</p>
+    <div class="article-grid">
+      <div class="article-card article-card-featured">
+        <p class="article-category highlighted">Lead Story</p>
+        <h2 class="article-title">LLM Wiki란 무엇인가 — Karpathy가 제안한 지식 축적 패턴</h2>
+        <p class="article-excerpt">2026년 4월 3일, Andrej Karpathy(OpenAI 공동창업자, 전 Tesla AI 총괄)가 X(트위터)에 GitHub Gist를 공개했습니다. 새로운 앱이나 SaaS가 아닌 <strong>아이디어 파일</strong> — Claude Code 같은 LLM 에이전트에 붙여넣기만 하면 동작하는 개념적 패턴입니다.</p>
+        <p class="article-excerpt">핵심 통찰은 RAG(검색 증강 생성)의 한계를 우회하는 방식입니다. 전통 RAG는 쿼리할 때마다 벡터를 검색해 조합하지만, LLM Wiki는 <strong>수집(ingest) 시점에 한 번만 합성</strong>하고 결과를 마크다운 페이지에 저장합니다. 지식이 페이지에 쌓이며 복리로 성장합니다.</p>
+        <p class="article-byline">Andrej Karpathy · GitHub Gist · 2026-04-03</p>
+      </div>
+      <div class="article-card">
+        <p class="article-category">Key Insight</p>
+        <h2 class="article-title">RAG와 LLM Wiki의 핵심 차이</h2>
+        <table class="compare-table" style="margin-top:0;">
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th>전통 RAG</th>
+              <th>LLM Wiki</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>합성 시점</td>
+              <td class="bad">쿼리할 때마다</td>
+              <td class="good">수집 시 한 번</td>
+            </tr>
+            <tr>
+              <td>지식 축적</td>
+              <td class="bad">영구 기억상실</td>
+              <td class="good">복리로 성장</td>
+            </tr>
+            <tr>
+              <td>추적 가능성</td>
+              <td class="bad">블랙박스 벡터</td>
+              <td class="good">.md 파일로 추적</td>
+            </tr>
+            <tr>
+              <td>토큰 효율</td>
+              <td class="bad">매번 재계산</td>
+              <td class="good">최대 95% 절감*</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="article-byline" style="margin-top:12px;">* 소규모 지식 베이스 기준 (Atlan 분석)</p>
+      </div>
+    </div>
+
+    <!-- 섹션 2: 폴더 구조 -->
+    <p class="section-label">Architecture</p>
+
+    <div class="inline-quote">
+      <p>LLM Wiki의 철학: 사람은 <code style="background:#e5e7eb;padding:2px 6px;font-family:var(--font-mono);font-size:13px;">raw/</code> 폴더에 원본을 넣는다. LLM이 <code style="background:#e5e7eb;padding:2px 6px;font-family:var(--font-mono);font-size:13px;">wiki/</code> 폴더를 소유하고 관리한다.</p>
+    </div>
+
+    <div class="code-block"><span class="code-dir">your-obsidian-vault/</span>
+├── <span class="code-dir">raw/</span>                     <span class="code-comment">← 불변 원본 (사람이 관리, LLM은 읽기만)</span>
+│   └── <span class="code-dir">topic/</span>
+│       └── <span class="code-file">2026-04-03-article.md</span>
+├── <span class="code-dir">wiki/</span>                    <span class="code-comment">← LLM이 소유하고 관리하는 지식 페이지</span>
+│   ├── <span class="code-dir">sources/</span>             <span class="code-comment">← 소스 1개당 요약 페이지 1개 자동 생성</span>
+│   ├── <span class="code-dir">entities/</span>            <span class="code-comment">← 인물, 기업, 제품, 도구 페이지</span>
+│   ├── <span class="code-dir">concepts/</span>            <span class="code-comment">← 아이디어, 프레임워크, 이론 페이지</span>
+│   ├── <span class="code-dir">answers/</span>             <span class="code-comment">← /file-answer로 저장된 Q&A 페이지</span>
+│   ├── <span class="code-file">index.md</span>             <span class="code-comment">← 에이전트가 쿼리 시 먼저 읽는 카탈로그</span>
+│   └── <span class="code-file">log.md</span>              <span class="code-comment">← 추가 전용(append-only) 작업 기록</span>
+└── <span class="code-highlight">CLAUDE.md</span>                <span class="code-comment">← 가장 중요! 도메인 스키마·워크플로우 규칙</span></div>
+
+    <!-- 섹션 3: 결과 + 이미지 (그래프 뷰) -->
+    <p class="section-label">Result — Knowledge Graph</p>
+
+    <div class="image-pair">
+      <div class="image-col">
+        <div class="image-label">원본 스크린샷</div>
+        <img
+          src="/gemini_html/assets/obsidian_llm_wiki/wiki_1.jpg"
+          alt="Obsidian 그래프 뷰 — 153개 노트의 연결망"
+          class="lightbox-trigger"
+          style="border:1px solid #e5e7eb;"
+        >
+        <p style="font-family:var(--font-mono);font-size:11px;color:#9ca3af;margin-top:8px;">Obsidian 그래프 뷰 — 153개 노트가 [[wikilink]]로 연결된 모습</p>
+      </div>
+      <div class="image-col">
+        <div class="image-label">구조 해설</div>
+        <svg viewBox="0 0 480 320" class="lightbox-trigger" style="width:100%;border:1px solid #e5e7eb;background:#0d1117;">
+          <!-- 배경 -->
+          <rect width="480" height="320" fill="#0d1117"/>
+          <!-- 제목 바 -->
+          <rect x="0" y="0" width="480" height="32" fill="#161b22"/>
+          <text x="240" y="21" text-anchor="middle" fill="#c9d1d9" font-size="12" font-family="monospace" font-weight="600">그래프 뷰 — 지식 연결망</text>
+
+          <!-- 중심 노드 (entities) -->
+          <circle cx="240" cy="165" r="14" fill="#388bfd" opacity="0.9"/>
+          <text x="240" y="189" text-anchor="middle" fill="#79c0ff" font-size="9" font-family="monospace">claude</text>
+
+          <!-- 주요 노드들 -->
+          <circle cx="160" cy="120" r="10" fill="#3fb950" opacity="0.85"/>
+          <text x="160" y="139" text-anchor="middle" fill="#7ee787" font-size="8" font-family="monospace">openai</text>
+
+          <circle cx="330" cy="110" r="8" fill="#bc8cff" opacity="0.8"/>
+          <text x="330" y="127" text-anchor="middle" fill="#d2a8ff" font-size="8" font-family="monospace">agent</text>
+
+          <circle cx="120" cy="195" r="7" fill="#ffa657" opacity="0.8"/>
+          <text x="120" y="211" text-anchor="middle" fill="#ffa657" font-size="8" font-family="monospace">mcp</text>
+
+          <circle cx="360" cy="200" r="7" fill="#3fb950" opacity="0.75"/>
+          <text x="360" y="216" text-anchor="middle" fill="#7ee787" font-size="8" font-family="monospace">gemini</text>
+
+          <circle cx="195" cy="80" r="6" fill="#bc8cff" opacity="0.7"/>
+          <text x="195" y="95" text-anchor="middle" fill="#d2a8ff" font-size="7" font-family="monospace">rag</text>
+
+          <circle cx="300" cy="230" r="6" fill="#388bfd" opacity="0.7"/>
+          <text x="300" y="245" text-anchor="middle" fill="#79c0ff" font-size="7" font-family="monospace">llm-wiki</text>
+
+          <circle cx="90" cy="150" r="5" fill="#ffa657" opacity="0.65"/>
+          <circle cx="395" cy="155" r="5" fill="#3fb950" opacity="0.65"/>
+          <circle cx="260" cy="60" r="5" fill="#388bfd" opacity="0.65"/>
+          <circle cx="175" cy="250" r="5" fill="#bc8cff" opacity="0.65"/>
+          <circle cx="400" cy="260" r="4" fill="#ffa657" opacity="0.6"/>
+          <circle cx="70" cy="230" r="4" fill="#3fb950" opacity="0.6"/>
+
+          <!-- 연결선들 -->
+          <line x1="240" y1="165" x2="160" y2="120" stroke="#30363d" stroke-width="1"/>
+          <line x1="240" y1="165" x2="330" y2="110" stroke="#30363d" stroke-width="1"/>
+          <line x1="240" y1="165" x2="120" y2="195" stroke="#30363d" stroke-width="1"/>
+          <line x1="240" y1="165" x2="360" y2="200" stroke="#30363d" stroke-width="1"/>
+          <line x1="240" y1="165" x2="195" y2="80" stroke="#30363d" stroke-width="0.7"/>
+          <line x1="240" y1="165" x2="300" y2="230" stroke="#30363d" stroke-width="0.7"/>
+          <line x1="160" y1="120" x2="195" y2="80" stroke="#30363d" stroke-width="0.7"/>
+          <line x1="160" y1="120" x2="90" y2="150" stroke="#30363d" stroke-width="0.7"/>
+          <line x1="330" y1="110" x2="395" y2="155" stroke="#30363d" stroke-width="0.7"/>
+          <line x1="120" y1="195" x2="70" y2="230" stroke="#30363d" stroke-width="0.5"/>
+          <line x1="360" y1="200" x2="400" y2="260" stroke="#30363d" stroke-width="0.5"/>
+          <line x1="300" y1="230" x2="175" y2="250" stroke="#30363d" stroke-width="0.5"/>
+          <line x1="240" y1="165" x2="260" y2="60" stroke="#30363d" stroke-width="0.5"/>
+
+          <!-- 범례 -->
+          <rect x="12" y="270" width="8" height="8" rx="4" fill="#388bfd"/>
+          <text x="26" y="279" fill="#8b949e" font-size="8" font-family="monospace">entities (기업/인물)</text>
+          <rect x="130" y="270" width="8" height="8" rx="4" fill="#bc8cff"/>
+          <text x="144" y="279" fill="#8b949e" font-size="8" font-family="monospace">concepts (개념)</text>
+          <rect x="248" y="270" width="8" height="8" rx="4" fill="#3fb950"/>
+          <text x="262" y="279" fill="#8b949e" font-size="8" font-family="monospace">sources (소스)</text>
+          <rect x="355" y="270" width="8" height="8" rx="4" fill="#ffa657"/>
+          <text x="369" y="279" fill="#8b949e" font-size="8" font-family="monospace">answers</text>
+
+          <text x="240" y="308" text-anchor="middle" fill="#484f58" font-size="9" font-family="monospace">153개 노트 → 자동 연결된 지식 그래프</text>
+        </svg>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#9ca3af;margin-top:8px;">[[wikilink]]가 자동 생성되어 Obsidian 그래프 뷰에서 시각화됨</p>
+      </div>
+    </div>
+
+    <!-- 섹션 4: Claudian 플러그인 -->
+    <p class="section-label">Claudian Plugin — 터미널 없이 위키에 질문</p>
+
+    <div class="article-grid" style="margin-bottom:0;">
+      <div class="article-card article-card-featured">
+        <p class="article-category highlighted">핵심 도구</p>
+        <h2 class="article-title">Obsidian Claudian — Claude Code를 사이드바로</h2>
+        <p class="article-excerpt">Claudian은 Obsidian 볼트에 <strong>Claude Code를 사이드바로 임베드</strong>하는 커뮤니티 플러그인입니다. "Your vault becomes the agent's working directory" — 볼트가 에이전트의 작업 디렉토리가 되어 터미널 없이 파일 읽기/쓰기, 검색, bash 명령 실행이 가능합니다.</p>
+        <p class="article-excerpt"><code style="background:#e5e7eb;padding:2px 6px;font-family:var(--font-mono);font-size:12px;">/query 에이전트 하네스에 대해서 알려줘</code> 라고 입력하면 Claude가 <code style="background:#e5e7eb;padding:2px 6px;font-family:var(--font-mono);font-size:12px;">index.md</code>를 먼저 읽고, 관련 wiki 페이지를 탐색한 뒤 [[wikilink]] 인용과 함께 답변을 합성합니다. 답변은 다시 <code style="background:#e5e7eb;padding:2px 6px;font-family:var(--font-mono);font-size:12px;">wiki/answers/</code>에 저장됩니다.</p>
+        <p class="article-byline">GitHub: YishenTu/claudian · ⭐ 8,500 · MIT 라이선스 · 2026-04-10 기준</p>
+      </div>
+      <div class="article-card">
+        <p class="article-category">/query 흐름</p>
+        <h2 class="article-title">질문 → 탐색 → 답변 → 저장</h2>
+        <div class="code-block" style="font-size:11px;line-height:1.9;padding:16px 18px;">
+<span class="code-arrow">①</span> <span class="code-highlight">/query "X와 Y의 관계?"</span>
+         ↓
+<span class="code-arrow">②</span> wiki/index.md 읽기
+         ↓
+<span class="code-arrow">③</span> 관련 페이지 2~3개 탐색
+         ↓
+<span class="code-arrow">④</span> [[wikilink]] 인용 + 답변
+         ↓
+<span class="code-arrow">⑤</span> /file-answer 로 저장
+    → wiki/answers/에 축적</div>
+        <p class="article-byline">지식이 쌓일수록 점점 똑똑해지는 구조</p>
+      </div>
+    </div>
+
+    <!-- Claudian 이미지 -->
+    <div class="image-pair" style="margin-top:24px;">
+      <div class="image-col">
+        <div class="image-label">원본 스크린샷</div>
+        <img
+          src="/gemini_html/assets/obsidian_llm_wiki/wiki_2.jpg"
+          alt="Claudian 플러그인 — /query 명령어 실행 화면"
+          class="lightbox-trigger"
+          style="border:1px solid #e5e7eb;"
+        >
+        <p style="font-family:var(--font-mono);font-size:11px;color:#9ca3af;margin-top:8px;">Claudian 사이드바에서 /query 실행 — Claude가 wiki를 탐색하며 한국어로 답변</p>
+      </div>
+      <div class="image-col">
+        <div class="image-label">인터페이스 구조 (한글화)</div>
+        <svg viewBox="0 0 480 380" class="lightbox-trigger" style="width:100%;border:1px solid #e5e7eb;background:#1a1a2e;">
+          <!-- 배경 -->
+          <rect width="480" height="380" fill="#1a1a2e"/>
+
+          <!-- 왼쪽 사이드바 -->
+          <rect x="0" y="0" width="160" height="380" fill="#141414"/>
+          <text x="20" y="32" fill="#c9d1d9" font-size="14" font-family="monospace" font-weight="700">wiki</text>
+          <text x="130" y="32" fill="#6e7681" font-size="11" font-family="monospace">7 Items</text>
+          <line x1="0" y1="44" x2="160" y2="44" stroke="#30363d" stroke-width="1"/>
+
+          <!-- 사이드바 폴더 -->
+          <text x="16" y="66" fill="#8b949e" font-size="10" font-family="monospace">📁 answers</text>
+          <text x="16" y="86" fill="#8b949e" font-size="10" font-family="monospace">📁 concepts</text>
+          <text x="16" y="106" fill="#8b949e" font-size="10" font-family="monospace">📁 entities</text>
+          <text x="16" y="126" fill="#8b949e" font-size="10" font-family="monospace">📁 sources</text>
+          <line x1="10" y1="134" x2="150" y2="134" stroke="#30363d" stroke-width="0.5"/>
+          <text x="16" y="152" fill="#8b949e" font-size="10" font-family="monospace">📄 overview</text>
+          <text x="16" y="172" fill="#8b949e" font-size="10" font-family="monospace">📄 index</text>
+          <text x="16" y="192" fill="#8b949e" font-size="10" font-family="monospace">📄 log</text>
+
+          <!-- 오른쪽 메인 패널 -->
+          <rect x="160" y="0" width="320" height="380" fill="#1e1e2e"/>
+
+          <!-- Claudian 헤더 -->
+          <rect x="160" y="0" width="320" height="44" fill="#141424"/>
+          <text x="174" y="20" fill="#c792ea" font-size="14" font-family="monospace">✳</text>
+          <text x="194" y="21" fill="#c9d1d9" font-size="13" font-family="monospace" font-weight="600">Claudian</text>
+
+          <!-- 사용자 질문 버블 -->
+          <rect x="190" y="52" width="278" height="32" rx="4" fill="#2a2a4a"/>
+          <text x="200" y="71" fill="#89b4fa" font-size="11" font-family="monospace">/query 에이전트 하네스에 대해서</text>
+
+          <!-- Claude 응답 영역 -->
+          <rect x="168" y="96" width="300" height="200" rx="4" fill="#1a1a2e" stroke="#30363d" stroke-width="1"/>
+
+          <!-- 도구 실행 표시 -->
+          <rect x="176" y="104" width="180" height="18" rx="2" fill="#2a2a3a"/>
+          <text x="182" y="117" fill="#7ee787" font-size="9" font-family="monospace">✓ Read  index.md</text>
+          <rect x="176" y="126" width="220" height="18" rx="2" fill="#2a2a3a"/>
+          <text x="182" y="139" fill="#7ee787" font-size="9" font-family="monospace">✓ Grep  에이전트|하네스|harness</text>
+          <rect x="176" y="148" width="200" height="18" rx="2" fill="#2a2a3a"/>
+          <text x="182" y="161" fill="#7ee787" font-size="9" font-family="monospace">✓ Read  harness-engineering.md</text>
+
+          <!-- 응답 텍스트 -->
+          <text x="176" y="186" fill="#d4a3f7" font-size="11" font-family="monospace" font-weight="700">에이전트 하네스(Agent Harness) 요약</text>
+          <text x="176" y="204" fill="#c9d1d9" font-size="9" font-family="monospace">정의 및 핵심 개념</text>
+          <text x="176" y="218" fill="#8b949e" font-size="8.5" font-family="monospace">AI 에이전트를 실행하는 런타임 프레임워크로,</text>
+          <text x="176" y="230" fill="#8b949e" font-size="8.5" font-family="monospace">도구 호출·메모리·오케스트레이션을 담당...</text>
+
+          <!-- 하단 바 -->
+          <rect x="160" y="308" width="320" height="40" fill="#141424"/>
+          <text x="174" y="332" fill="#79c0ff" font-size="10" font-family="monospace">Haiku</text>
+          <text x="224" y="332" fill="#6e7681" font-size="10" font-family="monospace">Thinking: Off</text>
+          <rect x="310" y="318" width="28" height="14" rx="7" fill="#238636"/>
+          <circle cx="331" cy="325" r="5" fill="white"/>
+          <text x="348" y="332" fill="#c9d1d9" font-size="10" font-family="monospace">YOLO</text>
+
+          <!-- 입력창 -->
+          <rect x="168" y="352" width="284" height="24" rx="4" fill="#2d2d2d" stroke="#484f58" stroke-width="1"/>
+          <text x="178" y="369" fill="#484f58" font-size="11" font-family="monospace">$ 질문을 입력하세요...</text>
+        </svg>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#9ca3af;margin-top:8px;">왼쪽: wiki 폴더 구조 / 오른쪽: Claudian 채팅 패널</p>
+      </div>
+    </div>
+
+    <!-- 섹션 5: LLM Wiki 컨셉 페이지 -->
+    <p class="section-label">Wiki Output — 자동 생성된 컨셉 페이지</p>
+
+    <div class="image-pair">
+      <div class="image-col">
+        <div class="image-label">원본 스크린샷</div>
+        <img
+          src="/gemini_html/assets/obsidian_llm_wiki/wiki_3.jpg"
+          alt="LLM Wiki 컨셉 페이지 — 2nd Brain 앱"
+          class="lightbox-trigger"
+          style="border:1px solid #e5e7eb;"
+        >
+        <p style="font-family:var(--font-mono);font-size:11px;color:#9ca3af;margin-top:8px;">자동 생성된 컨셉 페이지 — entities/concepts/sources가 연결된 구조</p>
+      </div>
+      <div class="image-col">
+        <div class="image-label">컨셉 페이지 구조 (한글화)</div>
+        <svg viewBox="0 0 480 360" class="lightbox-trigger" style="width:100%;border:1px solid #e5e7eb;background:#ffffff;">
+          <!-- 배경 -->
+          <rect width="480" height="360" fill="#f9fafb"/>
+
+          <!-- 왼쪽 사이드바 -->
+          <rect x="0" y="0" width="150" height="360" fill="#ffffff" stroke="#e5e7eb" stroke-width="1"/>
+
+          <!-- 사이드바 헤더 -->
+          <rect x="0" y="0" width="150" height="36" fill="#f3f4f6"/>
+          <text x="12" y="23" fill="#111827" font-size="12" font-family="monospace" font-weight="700">CONCEPTS 29</text>
+
+          <!-- 컨셉 목록 -->
+          <text x="12" y="54" fill="#6366f1" font-size="9" font-family="monospace">Acquihire</text>
+          <text x="12" y="70" fill="#374151" font-size="9" font-family="monospace">AI 에이전트 (AI Agent)</text>
+          <text x="12" y="86" fill="#374151" font-size="9" font-family="monospace">AI-Assisted Reading</text>
+          <text x="12" y="102" fill="#374151" font-size="9" font-family="monospace">AI Coding</text>
+          <text x="12" y="118" fill="#374151" font-size="9" font-family="monospace">AI Commerce</text>
+          <text x="12" y="134" fill="#374151" font-size="9" font-family="monospace">AI Infrastructure</text>
+          <text x="12" y="150" fill="#374151" font-size="9" font-family="monospace">AI Safety</text>
+          <rect x="0" y="154" width="150" height="18" fill="#ede9fe"/>
+          <text x="12" y="167" fill="#6366f1" font-size="9" font-family="monospace" font-weight="700">▶ AI 웨어러블 (선택됨)</text>
+          <text x="12" y="186" fill="#374151" font-size="9" font-family="monospace">Collective Intelligence</text>
+          <text x="12" y="202" fill="#374151" font-size="9" font-family="monospace">Content Marketing</text>
+          <text x="12" y="218" fill="#374151" font-size="9" font-family="monospace">Context Engineering</text>
+          <text x="12" y="234" fill="#374151" font-size="9" font-family="monospace">디지털 헬스</text>
+          <text x="12" y="250" fill="#374151" font-size="9" font-family="monospace">Foundation Model</text>
+          <text x="12" y="266" fill="#374151" font-size="9" font-family="monospace">지식 증류</text>
+          <text x="12" y="282" fill="#374151" font-size="9" font-family="monospace">LLM 환각</text>
+          <text x="12" y="298" fill="#9ca3af" font-size="8" font-family="monospace">... 더 보기</text>
+
+          <!-- ENTITIES 하단 -->
+          <line x1="0" y1="310" x2="150" y2="310" stroke="#e5e7eb" stroke-width="1"/>
+          <rect x="0" y="310" width="150" height="50" fill="#f9fafb"/>
+          <text x="12" y="330" fill="#111827" font-size="11" font-family="monospace" font-weight="700">ENTITIES 48</text>
+          <text x="12" y="346" fill="#9ca3af" font-size="8" font-family="monospace">Amazon, Apple, OpenAI...</text>
+
+          <!-- 오른쪽 메인 콘텐츠 -->
+          <rect x="150" y="0" width="330" height="360" fill="#ffffff"/>
+
+          <!-- 경로 표시 -->
+          <text x="162" y="20" fill="#9ca3af" font-size="8" font-family="monospace">홈 / Concepts / AI 웨어러블</text>
+
+          <!-- 뱃지 -->
+          <rect x="162" y="30" width="52" height="16" rx="2" fill="#f3f4f6"/>
+          <text x="167" y="42" fill="#6b7280" font-size="8" font-family="monospace">CONCEPT</text>
+
+          <!-- 제목 -->
+          <text x="162" y="68" fill="#111827" font-size="16" font-family="serif" font-weight="700">AI 웨어러블</text>
+
+          <!-- 태그 -->
+          <rect x="162" y="76" width="52" height="14" rx="2" fill="#ede9fe"/>
+          <text x="165" y="87" fill="#6366f1" font-size="8" font-family="monospace">ai-wearable</text>
+          <rect x="220" y="76" width="40" height="14" rx="2" fill="#fef3c7"/>
+          <text x="223" y="87" fill="#92400e" font-size="8" font-family="monospace">privacy</text>
+          <rect x="266" y="76" width="48" height="14" rx="2" fill="#dcfce7"/>
+          <text x="269" y="87" fill="#166534" font-size="8" font-family="monospace">hardware</text>
+
+          <!-- 정의 섹션 -->
+          <text x="162" y="112" fill="#374151" font-size="10" font-family="serif" font-weight="700">정의</text>
+          <line x1="162" y1="116" x2="468" y2="116" stroke="#e5e7eb" stroke-width="1"/>
+          <text x="162" y="132" fill="#4b5563" font-size="8.5" font-family="sans-serif">AI 웨어러블은 AI 기능을 탑재한 착용형 기기로, 사용자의</text>
+          <text x="162" y="146" fill="#4b5563" font-size="8.5" font-family="sans-serif">주변 환경이나 대화를 상시 감지·기록하고 이를 분석해</text>
+          <text x="162" y="160" fill="#4b5563" font-size="8.5" font-family="sans-serif">리마인더와 할 일 목록을 자동 생성하는 것이 핵심 기능.</text>
+
+          <!-- 핵심 포인트 -->
+          <text x="162" y="188" fill="#374151" font-size="10" font-family="serif" font-weight="700">핵심 포인트</text>
+          <line x1="162" y1="192" x2="468" y2="192" stroke="#e5e7eb" stroke-width="1"/>
+          <text x="162" y="208" fill="#4b5563" font-size="8" font-family="sans-serif">• Amazon Bee 인수 기사에 따르면, Bee는 대표적인</text>
+          <text x="162" y="220" fill="#4b5563" font-size="8" font-family="sans-serif">  손목형 AI 웨어러블로 $49.99/월 또는 $19/월...</text>
+          <text x="162" y="234" fill="#4b5563" font-size="8" font-family="sans-serif">• OpenAI, Meta, Apple 등도 AI 웨어러블 시장에 진출...</text>
+
+          <!-- 소스 & 관련 -->
+          <text x="162" y="264" fill="#374151" font-size="10" font-family="serif" font-weight="700">소스 (자동 연결)</text>
+          <line x1="162" y1="268" x2="468" y2="268" stroke="#e5e7eb" stroke-width="1"/>
+          <text x="162" y="284" fill="#6366f1" font-size="8" font-family="monospace">→ amazon-bee-acquires</text>
+          <text x="162" y="298" fill="#6366f1" font-size="8" font-family="monospace">→ openai-wearable-strategy</text>
+          <text x="162" y="312" fill="#6366f1" font-size="8" font-family="monospace">→ on-device-ai-trends</text>
+        </svg>
+        <p style="font-family:var(--font-mono);font-size:11px;color:#9ca3af;margin-top:8px;">29개 컨셉 중 하나인 'AI 웨어러블' 페이지 — 소스들이 자동 연결됨</p>
+      </div>
+    </div>
+
+    <!-- 섹션 6: 시작 방법 -->
+    <p class="section-label">How to Start — 3단계 시작 가이드</p>
+
+    <div class="step-grid">
+      <div class="step-card">
+        <div class="step-number">01</div>
+        <div class="step-title">Karpathy Gist 열기 + Claude Code에 붙여넣기</div>
+        <div class="step-desc">카파시의 llm-wiki GitHub Gist를 열고, 내용을 복사해 Claude Code 또는 Claudian에 붙여넣습니다.</div>
+        <code class="step-code"># Claude Code에서
+"이걸 참고해서 내 볼트에
+ 위키 만들어줘"</code>
+      </div>
+      <div class="step-card">
+        <div class="step-number">02</div>
+        <div class="step-title">raw/ 폴더에 Obsidian 노트 넣기</div>
+        <div class="step-desc">기존 Obsidian 볼트의 마크다운 파일들을 <code style="background:#e5e7eb;padding:1px 4px;font-family:var(--font-mono);font-size:11px;">raw/</code> 폴더에 복사합니다. 이 폴더는 LLM이 읽기만 하고 절대 수정하지 않습니다.</div>
+        <code class="step-code">vault/
+├── raw/          ← 여기에 노트 복사
+│   └── *.md
+└── wiki/         ← LLM이 자동 생성</code>
+      </div>
+      <div class="step-card">
+        <div class="step-number">03</div>
+        <div class="step-title">Claudian 설치 + /ingest 실행</div>
+        <div class="step-desc">Obsidian Claudian 플러그인을 설치하고 사이드바에서 <code style="background:#e5e7eb;padding:1px 4px;font-family:var(--font-mono);font-size:11px;">/ingest</code>를 실행합니다. 이후 <code style="background:#e5e7eb;padding:1px 4px;font-family:var(--font-mono);font-size:11px;">/query "질문"</code>으로 바로 위키에 질문 가능합니다.</div>
+        <code class="step-code"># Claudian 사이드바에서
+/ingest        # 소스 요약 + 엔티티 추출
+/query "..."   # 위키에 질문</code>
+      </div>
+    </div>
+
+    <!-- 섹션 7: 주요 플러그인 -->
+    <p class="section-label">관련 Obsidian 플러그인</p>
+
+    <div class="plugin-grid">
+      <div class="plugin-card">
+        <div class="plugin-name">Claudian</div>
+        <div class="plugin-stars">⭐ 8,500 — YishenTu/claudian</div>
+        <div class="plugin-desc">Claude Code를 Obsidian 사이드바에 임베드. /query, Inline Edit, Plan Mode, MCP 서버 연결 지원. 볼트가 에이전트 작업 디렉토리가 됨.</div>
+      </div>
+      <div class="plugin-card">
+        <div class="plugin-name">claude-obsidian</div>
+        <div class="plugin-stars">AgriciDaniel/claude-obsidian</div>
+        <div class="plugin-desc">/wiki, /save, /autoresearch 명령어 + claude-canvas로 지식 그래프·플로우차트 자동 생성 (12종 템플릿).</div>
+      </div>
+      <div class="plugin-card">
+        <div class="plugin-name">second-brain (Spisak)</div>
+        <div class="plugin-stars">NicholasSpisak/second-brain</div>
+        <div class="plugin-desc">npm 패키지 형태. Claude Code, Cursor 등 40+ AI 에이전트 호환. /second-brain-ingest, /second-brain-query, /second-brain-lint 제공.</div>
+      </div>
+      <div class="plugin-card">
+        <div class="plugin-name">obsidian-wiki (QMD 연동)</div>
+        <div class="plugin-stars">Ar9av/obsidian-wiki</div>
+        <div class="plugin-desc">wiki-update / wiki-query 전역 스킬. QMD MCP 서버와 연동해 대형 볼트에서 BM25+벡터 하이브리드 검색 지원.</div>
+      </div>
+    </div>
+
+    <!-- 섹션 8: 알려진 한계 -->
+    <p class="section-label">알려진 한계 — 공식 출처 기반</p>
+
+    <ul class="limit-list">
+      <li class="limit-item">
+        <span class="limit-icon">주의 1</span>
+        <span class="limit-text"><strong>할루시네이션 축적:</strong> LLM이 소스에 없는 내용을 추가하면 위키에 기록되고, 이후 생성 결과에도 영향을 줍니다. CLAUDE.md에 "소스에 없는 내용은 추가하지 말 것" 규칙을 명시해야 합니다.</span>
+      </li>
+      <li class="limit-item">
+        <span class="limit-icon">주의 2</span>
+        <span class="limit-text"><strong>규모 확대 시 분류 체계 한계:</strong> entities/concepts 이분법은 소규모에서 잘 작동하지만, 수천 개 노트 규모에서는 더 세밀한 그룹핑이 필요합니다. CLAUDE.md를 점진적으로 발전시켜야 합니다.</span>
+      </li>
+      <li class="limit-item">
+        <span class="limit-icon">주의 3</span>
+        <span class="limit-text"><strong>컨텍스트 윈도우 한계:</strong> Claude Sonnet 기준 ~200,000 토큰. "수백 개의 집중된 노트"까지는 직접 처리 가능하지만, 그 이상은 QMD 같은 검색 레이어 도입이 권장됩니다.</span>
+      </li>
+      <li class="limit-item">
+        <span class="limit-icon">주의 4</span>
+        <span class="limit-text"><strong>RAG와의 수렴:</strong> 대규모에서는 결국 벡터 검색 도구가 필요해지는 현상이 있습니다. Karpathy 본인도 대형 볼트에서는 QMD(RAG류) 검색 도구 사용을 권장합니다.</span>
+      </li>
+    </ul>
+
+    <!-- 마무리 인용 -->
+    <div class="inline-quote" style="margin-top:64px;">
+      <p>"153개 파일을 넣었더니 146개 소스가 요약되고, 48개 엔티티와 29개 컨셉이 자동으로 추출됐습니다. 이걸 수동으로 분류했다면 며칠이 걸렸을 작업입니다. 노트 정리가 고민이신 분들은 꼭 시도해보세요."</p>
+      <cite>— 원문 활용기 · aboutcorelab.com</cite>
+    </div>
+
+  </div>
+
+  <!-- 푸터 -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <span class="footer-text">2026-04-19 · 🤖 AI Study · LLM Wiki 활용기</span>
+      <span class="footer-rule-word">«finis»</span>
+      <span class="footer-text">원문: <a href="https://aboutcorelab.com/llm-wiki-in-obsidian-for-2nd-brain/" target="_blank" rel="noopener" class="footer-link">aboutcorelab.com</a></span>
+    </div>
+  </footer>
+
+  <!-- Lightbox -->
+  <div id="lightbox" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;cursor:zoom-out;align-items:center;justify-content:center;padding:24px;">
+    <div id="lightbox-content" style="max-width:90vw;max-height:90vh;overflow:auto;"></div>
+  </div>
+
+  <script>
+  (function() {
+    var lb = document.getElementById('lightbox');
+    var lbContent = document.getElementById('lightbox-content');
+    document.querySelectorAll('.lightbox-trigger').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        lbContent.innerHTML = '';
+        var clone = el.cloneNode(true);
+        clone.removeAttribute('class');
+        clone.style.cursor = 'default';
+        if (clone.tagName === 'IMG') {
+          clone.style.maxWidth = '90vw';
+          clone.style.maxHeight = '90vh';
+          clone.style.display = 'block';
+          clone.style.borderRadius = '8px';
+        } else if (clone.tagName.toLowerCase() === 'svg') {
+          clone.style.width = 'min(90vw, 1200px)';
+          clone.style.height = 'auto';
+          clone.style.display = 'block';
+        }
+        lbContent.appendChild(clone);
+        lb.style.display = 'flex';
+      });
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') lb.style.display = 'none';
+    });
+  })();
+  </script>
+
+  <script data-page-hash="NZTD6X6" src="/assets/js/page-footer.js"></script>
+</body>
+</html>

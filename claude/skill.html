@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code Skills: Ultimate Master Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&family=JetBrains+Mono&display=swap');
+
+        :root {
+            --bg: #fdfdfb;
+            --sidebar: #f5f5f2;
+            --accent: #d97757;
+            --text: #1a1a1a;
+            --code-bg: #1e1e1e;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            scroll-behavior: smooth;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .nav-item:hover {
+            background-color: #ededea;
+        }
+
+        .nav-item.active {
+            background-color: #ededea;
+            border-left: 4px solid var(--accent);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .code-block {
+            background-color: var(--code-bg);
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+
+        .token-yaml {
+            color: #808080;
+        }
+
+        .token-key {
+            color: #569cd6;
+        }
+
+        .token-val {
+            color: #ce9178;
+        }
+
+        .token-var {
+            color: #dcdcaa;
+            font-weight: bold;
+        }
+
+        .token-cmd {
+            color: #b5cea8;
+            background: rgba(181, 206, 168, 0.1);
+            border-radius: 3px;
+        }
+
+        .chart-wrap {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        details>summary {
+            list-style: none;
+        }
+
+        details>summary::-webkit-details-marker {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col lg:flex-row min-h-screen">
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar"
+        class="hidden lg:flex flex-col w-full lg:w-80 bg-[#f5f5f2] border-r border-stone-200 h-screen sticky top-0 overflow-y-auto z-50">
+        <div class="p-8 border-b border-stone-200">
+            <div class="flex items-center gap-3 mb-2">
+                <div
+                    class="w-10 h-10 bg-[#d97757] rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-orange-200">
+                    C</div>
+                <h1 class="text-xl font-bold tracking-tight">Skills 마스터</h1>
+            </div>
+            <p class="text-[10px] text-stone-400 font-bold uppercase tracking-widest">The Ultimate Guide for Claude Code
+            </p>
+        </div>
+
+        <nav class="p-4 space-y-1">
+            <div class="px-4 py-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest">01. 시작 및 구조</div>
+            <button onclick="nav('intro')" class="nav-item w-full text-left px-4 py-2.5 rounded-lg text-sm active"
+                data-section="intro">스킬의 정의와 특징</button>
+            <button onclick="nav('location')" class="nav-item w-full text-left px-4 py-2.5 rounded-lg text-sm"
+                data-section="location">저장 위치 및 우선순위</button>
+
+            <div class="px-4 py-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-4">02. 문법 상세
+                (Reference)</div>
+            <button onclick="nav('frontmatter')" class="nav-item w-full text-left px-4 py-2.5 rounded-lg text-sm"
+                data-section="frontmatter">프론트매터(YAML) 완전 분석</button>
+            <button onclick="nav('variables')" class="nav-item w-full text-left px-4 py-2.5 rounded-lg text-sm"
+                data-section="variables">인자($)와 변수 치환</button>
+            <button onclick="nav('invocation')" class="nav-item w-full text-left px-4 py-2.5 rounded-lg text-sm"
+                data-section="invocation">호출 주체 제어 매트릭스</button>
+
+            <div class="px-4 py-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-4">03. 고급 기술
+                (Advanced)</div>
+            <button onclick="nav('dynamic')" class="nav-item w-full text-left px-4 py-2.5 rounded-lg text-sm"
+                data-section="dynamic">동적 주입(!command)</button>
+            <button onclick="nav('subagent')" class="nav-item w-full text-left px-4 py-2.5 rounded-lg text-sm"
+                data-section="subagent">서브에이전트(Fork) 전략</button>
+            <button onclick="nav('visual')" class="nav-item w-full text-left px-4 py-2.5 rounded-lg text-sm"
+                data-section="visual">시각적 출력 및 시나리오</button>
+
+            <div class="px-4 py-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-4">04. 운영 및 관리</div>
+            <button onclick="nav('management')" class="nav-item w-full text-left px-4 py-2.5 rounded-lg text-sm"
+                data-section="management">권한, 예산 및 사고 모드</button>
+            <button onclick="nav('trouble')" class="nav-item w-full text-left px-4 py-2.5 rounded-lg text-sm"
+                data-section="trouble">상세 트러블슈팅</button>
+        </nav>
+
+        <div class="mt-auto p-6 bg-stone-100/50 border-t border-stone-200">
+            <div class="text-[10px] text-stone-500 leading-tight">
+                본 가이드는 Claude Code 공식 한글 문서를 바탕으로 하며, 모든 실전 팁과 사례를 포함하고 있습니다.
+            </div>
+        </div>
+    </aside>
+
+    <!-- Mobile Nav -->
+    <div class="lg:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-[60]">
+        <span class="font-bold">Claude Code Skills Master</span>
+        <button onclick="toggleSidebar()" class="p-2 bg-stone-100 rounded">Menu</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto bg-[#fdfdfb]">
+        <div id="content-container" class="max-w-5xl mx-auto p-6 md:p-16 space-y-24">
+
+            <!-- Section: Intro -->
+            <section id="sec-intro" class="fade-in space-y-10">
+                <div class="space-y-4">
+                    <h2 class="text-4xl font-black tracking-tight text-slate-900 leading-tight">Claude에게 새로운 <br><span
+                            class="text-[#d97757]">스킬(Skills)</span>을 가르쳐주세요</h2>
+                    <p class="text-xl text-stone-500 leading-relaxed max-w-3xl">
+                        스킬은 단순히 명령어를 추가하는 것이 아닙니다. Claude의 지식 체계를 확장하고, 복잡한 워크플로우를 자동화하며, 팀의 코딩 컨벤션을 Claude의 본능으로 만드는
+                        방법입니다.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="card p-8 space-y-4 border-l-4 border-l-[#d97757]">
+                        <h3 class="text-lg font-bold">🎯 핵심 정의</h3>
+                        <p class="text-sm text-stone-600 leading-relaxed">
+                            <code class="mono bg-stone-100 px-1 rounded">SKILL.md</code> 파일 하나로 Claude의 기능을 확장합니다. 모든
+                            커스텀 슬래시 명령어는 이제 스킬로 통합되었으며, <a href="https://agentskills.io"
+                                class="text-blue-600 font-bold hover:underline italic">Agent Skills</a> 오픈 표준을 준수하여 도구 간
+                            호환성을 보장합니다.
+                        </p>
+                    </div>
+                    <div class="card p-8 bg-stone-50 border-dashed space-y-4">
+                        <h3 class="text-lg font-bold">📂 디렉토리 기반 관리</h3>
+                        <p class="text-sm text-stone-600 leading-relaxed">
+                            스킬은 단일 파일이 아닌 <strong>폴더</strong>입니다. 지침뿐만 아니라 템플릿, 예제 코드, 실행 스크립트 등을 한곳에 모아 관리할 수 있습니다.
+                        </p>
+                        <div class="code-block text-[11px] leading-tight">
+                            my-skill/<br>
+                            ├── <span class="text-[#d97757] font-bold">SKILL.md</span> (필수 - 지침 및 설정)<br>
+                            ├── template.md (Claude가 채울 서식)<br>
+                            ├── examples/sample.md (결과물 예시)<br>
+                            └── scripts/tool.py (실행용 스크립트)
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Location & Priority -->
+            <section id="sec-location" class="hidden fade-in space-y-12">
+                <div class="space-y-4">
+                    <h2 class="text-3xl font-bold">📍 스킬이 머무는 곳과 우선순위</h2>
+                    <p class="text-stone-600">스킬은 4가지 레벨에서 로드될 수 있습니다. 동일한 이름의 스킬이 존재할 경우, 상위 레벨이 우선권을 갖습니다.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    <div class="lg:col-span-2 card p-8">
+                        <div class="chart-wrap">
+                            <canvas id="priorityChart"></canvas>
+                        </div>
+                        <div class="mt-8 space-y-4 text-sm">
+                            <div class="flex gap-4 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                                <span class="text-xl">🏢</span>
+                                <div>
+                                    <h4 class="font-bold text-indigo-900">Enterprise Level (최상위)</h4>
+                                    <p class="text-indigo-700">관리형 설정을 통해 조직의 모든 사용자에게 강제로 적용되는 스킬입니다.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                                <span class="text-xl">👤</span>
+                                <div>
+                                    <h4 class="font-bold text-blue-900">Personal Level (<code
+                                            class="mono">~/.claude/skills/</code>)</h4>
+                                    <p class="text-blue-700">어떤 프로젝트에서도 내가 항상 사용할 수 있는 나만의 도구 상자입니다.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 p-4 bg-stone-100 rounded-xl border border-stone-200">
+                                <span class="text-xl">📦</span>
+                                <div>
+                                    <h4 class="font-bold text-stone-800">Project Level (<code
+                                            class="mono">.claude/skills/</code>)</h4>
+                                    <p class="text-stone-700">특정 리포지토리의 팀원들이 공유하는 프로젝트 전용 스킬입니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="card p-6 bg-amber-50 border-amber-200">
+                            <h4 class="font-bold text-amber-900 mb-3">🔍 중첩 디렉토리 자동 탐색</h4>
+                            <p class="text-xs text-amber-800 leading-relaxed">
+                                Claude Code는 모노레포 환경을 위해 하위 디렉토리의 스킬도 자동으로 찾습니다.<br><br>
+                                예: <code class="mono">packages/ui/</code> 경로에서 작업 중이라면 <code
+                                    class="mono">packages/ui/.claude/skills/</code> 폴더를 자동으로 스캔합니다.
+                            </p>
+                        </div>
+                        <div class="card p-6 bg-emerald-50 border-emerald-200">
+                            <h4 class="font-bold text-emerald-900 mb-3">🔌 플러그인 스킬</h4>
+                            <p class="text-xs text-emerald-800 leading-relaxed">
+                                플러그인은 <code class="mono">plugin:skill</code> 형식의 네임스페이스를 사용하므로 다른 레벨과 충돌하지 않습니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Frontmatter -->
+            <section id="sec-frontmatter" class="hidden fade-in space-y-12">
+                <div class="space-y-4">
+                    <h2 class="text-3xl font-bold">📘 프론트매터(Frontmatter) 레퍼런스</h2>
+                    <p class="text-stone-600"><code class="mono">SKILL.md</code> 파일 최상단의 YAML 블록을 통해 스킬의 메타데이터와 행동을
+                        정의합니다.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Key Reference -->
+                    <div class="card p-6 border-stone-200 hover:border-blue-400 transition-colors">
+                        <h4 class="font-mono text-blue-600 font-bold mb-2">name: <span
+                                class="text-stone-400 text-xs">(String)</span></h4>
+                        <p class="text-xs text-stone-600">표시 이름 및 슬래시 명령어 이름입니다. 소문자, 숫자, 하이픈만 허용됩니다. 미지정 시 디렉토리명을
+                            사용합니다.</p>
+                    </div>
+                    <div class="card p-6 border-stone-200 hover:border-blue-400 transition-colors">
+                        <h4 class="font-mono text-blue-600 font-bold mb-2">description: <span
+                                class="text-stone-400 text-xs font-bold text-red-400">(Recommended)</span></h4>
+                        <p class="text-xs text-stone-600">언제 이 스킬을 사용할지 설명합니다. Claude가 자동 실행 여부를 판단하는 가장 중요한 지표입니다.</p>
+                    </div>
+                    <div class="card p-6 border-stone-200 hover:border-blue-400 transition-colors">
+                        <h4 class="font-mono text-blue-600 font-bold mb-2">allowed-tools: <span
+                                class="text-stone-400 text-xs">(Array)</span></h4>
+                        <p class="text-xs text-stone-600">스킬 실행 중 Claude가 승인 없이 사용할 수 있는 도구를 제한합니다. (예: Read, Grep,
+                            Bash)</p>
+                    </div>
+                    <div class="card p-6 border-stone-200 hover:border-blue-400 transition-colors">
+                        <h4 class="font-mono text-blue-600 font-bold mb-2">disable-model-invocation: <span
+                                class="text-stone-400 text-xs">(Boolean)</span></h4>
+                        <p class="text-xs text-stone-600">Claude가 자동 판단으로 이 스킬을 실행하는 것을 금지합니다. 수동(/) 호출 전용으로 만듭니다.</p>
+                    </div>
+                    <div class="card p-6 border-stone-200 hover:border-blue-400 transition-colors">
+                        <h4 class="font-mono text-blue-600 font-bold mb-2">user-invocable: <span
+                                class="text-stone-400 text-xs">(Boolean)</span></h4>
+                        <p class="text-xs text-stone-600">false로 설정하면 슬래시(/) 메뉴에서 사라집니다. 배경 지식용 스킬에 적합합니다.</p>
+                    </div>
+                    <div class="card p-6 border-stone-200 hover:border-blue-400 transition-colors">
+                        <h4 class="font-mono text-blue-600 font-bold mb-2">context: <span
+                                class="text-stone-400 text-xs">(String)</span></h4>
+                        <p class="text-xs text-stone-600">'fork'로 설정하면 격리된 서브에이전트 환경에서 실행됩니다.</p>
+                    </div>
+                    <div class="card p-6 border-stone-200 hover:border-blue-400 transition-colors">
+                        <h4 class="font-mono text-blue-600 font-bold mb-2">agent: <span
+                                class="text-stone-400 text-xs">(String)</span></h4>
+                        <p class="text-xs text-stone-600">Fork 실행 시 사용할 에이전트 유형을 지정합니다. (Explore, Plan 등)</p>
+                    </div>
+                    <div class="card p-6 border-stone-200 hover:border-blue-400 transition-colors">
+                        <h4 class="font-mono text-blue-600 font-bold mb-2">argument-hint: <span
+                                class="text-stone-400 text-xs">(String)</span></h4>
+                        <p class="text-xs text-stone-600">자동 완성 시 나타날 힌트 텍스트입니다. (예: "[issue-number]")</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Variables -->
+            <section id="sec-variables" class="hidden fade-in space-y-12">
+                <div class="space-y-4">
+                    <h2 class="text-3xl font-bold">🔄 인자($)와 변수 치환</h2>
+                    <p class="text-stone-600">스킬 실행 시 입력받은 인자나 시스템 정보를 동적으로 지침에 삽입합니다.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div class="space-y-6">
+                        <div class="p-6 bg-white rounded-2xl border shadow-sm space-y-4">
+                            <h4 class="font-bold border-b pb-2">사용 가능한 특수 변수</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="mono text-blue-600 font-bold">$ARGUMENTS</span>
+                                    <span class="text-stone-500">전달된 모든 인자 텍스트</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="mono text-blue-600 font-bold">$N (또는 $ARGUMENTS[N])</span>
+                                    <span class="text-stone-500">N번째 특정 인자 (0부터 시작)</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="mono text-blue-600 font-bold">${CLAUDE_SESSION_ID}</span>
+                                    <span class="text-stone-500">현재 세션의 고유 식별자</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="p-4 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-800 leading-relaxed">
+                            <strong>💡 자동 인자 추가 규칙:</strong> 스킬 본문에 <code class="mono">$ARGUMENTS</code> 변수가 없더라도 인자를
+                            입력하고 호출하면, Claude Code는 자동으로 지침 하단에 <code class="mono">ARGUMENTS: &lt;입력값&gt;</code>을 덧붙여
+                            전송합니다.
+                        </div>
+                    </div>
+
+                    <div class="code-block text-xs">
+                        <div class="text-stone-500 mb-4"># Variable Substitution Example</div>
+                        <span class="token-yaml">---</span><br>
+                        <span class="token-key">name:</span> migrate-component<br>
+                        <span class="token-yaml">---</span><br><br>
+                        Migrate the <span class="token-var">$0</span> component from <span class="token-var">$1</span>
+                        to <span class="token-var">$2</span>.<br>
+                        Preserve all existing behavior.<br><br>
+                        <span class="text-stone-500 italic">// 호출: /migrate-component SearchBar React Vue</span><br>
+                        <span class="text-stone-500 italic">// 결과: Migrate the SearchBar component from React to
+                            Vue...</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Invocation Matrix -->
+            <section id="sec-invocation" class="hidden fade-in space-y-12">
+                <div class="space-y-4">
+                    <h2 class="text-3xl font-bold">⚖️ 호출 주체 제어 매트릭스</h2>
+                    <p class="text-stone-600">누가 스킬을 호출할 수 있고, 언제 데이터가 로드되는지 결정하는 규칙입니다.</p>
+                </div>
+
+                <div class="overflow-x-auto card">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-stone-50 border-b">
+                            <tr>
+                                <th class="p-4 font-bold text-stone-500 uppercase text-[10px]">설정 조합</th>
+                                <th class="p-4 font-bold text-stone-500 uppercase text-[10px]">사용자 호출</th>
+                                <th class="p-4 font-bold text-stone-500 uppercase text-[10px]">Claude 자동 로드</th>
+                                <th class="p-4 font-bold text-stone-500 uppercase text-[10px]">데이터 로드 시점</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            <tr>
+                                <td class="p-4 font-mono text-xs">(Default)</td>
+                                <td class="p-4 text-emerald-600 font-bold">가능</td>
+                                <td class="p-4 text-emerald-600 font-bold">가능</td>
+                                <td class="p-4 text-stone-500">설명은 항상 로드, 본문은 호출 시</td>
+                            </tr>
+                            <tr class="bg-blue-50/20">
+                                <td class="p-4 font-mono text-xs text-blue-600">disable-model-invocation: true</td>
+                                <td class="p-4 text-emerald-600 font-bold">가능</td>
+                                <td class="p-4 text-red-500 font-bold">불가능</td>
+                                <td class="p-4 text-stone-500">사용자가 호출할 때만 전체 로드</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-mono text-xs text-blue-600">user-invocable: false</td>
+                                <td class="p-4 text-red-400 font-bold">메뉴 숨김</td>
+                                <td class="p-4 text-emerald-600 font-bold">가능</td>
+                                <td class="p-4 text-stone-500">설명은 항상 로드 (배경 지식용)</td>
+                            </tr>
+                            <tr class="bg-stone-50">
+                                <td class="p-4 font-mono text-xs text-stone-400">context: fork 시</td>
+                                <td class="p-4 text-slate-400">-</td>
+                                <td class="p-4 text-slate-400">-</td>
+                                <td class="p-4 font-bold text-indigo-600">전체 본문이 시작 시 주입됨</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section: Dynamic Injection -->
+            <section id="sec-dynamic" class="hidden fade-in space-y-12">
+                <div class="space-y-4">
+                    <h2 class="text-3xl font-bold">⚡ 동적 컨텍스트 주입 (!command)</h2>
+                    <p class="text-stone-600">스킬 실행 <strong>직전</strong>에 로컬 환경의 실시간 데이터를 가져옵니다.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="code-block">
+                        <div class="text-stone-500 mb-4"># Real-time PR Context Skill</div>
+                        <span class="token-yaml">---</span><br>
+                        <span class="token-key">name:</span> pr-summary<br>
+                        <span class="token-key">context:</span> fork<br>
+                        <span class="token-yaml">---</span><br><br>
+                        ## Pull Request Context<br>
+                        - Diff: <span class="token-cmd">!`gh pr diff`</span><br>
+                        - Comments: <span class="token-cmd">!`gh pr view --comments`</span><br>
+                        - Modified: <span class="token-cmd">!`git diff --name-only`</span><br><br>
+                        Summarize this PR based on the info above.
+                    </div>
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 font-bold">
+                                !</div>
+                            <div>
+                                <h4 class="font-bold">전처리(Preprocessing) 방식</h4>
+                                <p class="text-sm text-stone-600 leading-relaxed mt-1">
+                                    이것은 Claude가 명령어를 직접 실행하는 것이 아닙니다. 시스템이 먼저 쉘 명령을 수행하고 그 <strong>출력 결과물</strong>을 마크다운
+                                    본문에 끼워 넣은 뒤 Claude에게 전송합니다.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                            <h4 class="text-sm font-bold mb-3">활용 시나리오</h4>
+                            <ul class="text-xs space-y-2 text-slate-600">
+                                <li class="flex items-center gap-2">🔹 GitHub CLI 연동을 통한 최신 PR 분석</li>
+                                <li class="flex items-center gap-2">🔹 로컬 로그 파일의 실시간 tail 결과 분석</li>
+                                <li class="flex items-center gap-2">🔹 DB 스키마 정보를 dump하여 지침에 포함</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Subagent -->
+            <section id="sec-subagent" class="hidden fade-in space-y-12">
+                <div class="space-y-4">
+                    <h2 class="text-3xl font-bold">🤝 서브에이전트(Fork Context) 전략</h2>
+                    <p class="text-stone-600"><code class="mono text-blue-600">context: fork</code>는 스킬을 별도의 격리된 컨텍스트에서
+                        실행합니다.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="card p-8 space-y-6">
+                        <h4 class="font-bold">언제 사용하나요?</h4>
+                        <p class="text-sm text-stone-600 leading-relaxed">
+                            현재 대화 맥락(History)이 너무 길어 작업 효율이 떨어지거나, 오직 스킬의 지침에만 집중해야 하는 무거운 리서치 작업에 적합합니다.
+                        </p>
+                        <div class="bg-indigo-50 p-4 rounded-xl text-xs text-indigo-800 space-y-2">
+                            <p><strong>💡 작동 메커니즘:</strong></p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>기존 대화 기록에 접근하지 않음</li>
+                                <li>에이전트 타입(Explore, Plan 등)의 고유 시스템 프롬프트 사용</li>
+                                <li><code class="mono">SKILL.md</code> 본문이 메인 'Task'가 됨</li>
+                                <li>최종 요약 결과만 본 대화로 반환</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card p-8 space-y-4 border-t-4 border-t-indigo-600">
+                        <h4 class="font-bold">에이전트 유형</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center text-sm border-b pb-2">
+                                <span class="font-bold text-indigo-600">Explore</span>
+                                <span class="text-stone-500">코드베이스 탐색 및 읽기 최적화</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm border-b pb-2">
+                                <span class="font-bold text-indigo-600">Plan</span>
+                                <span class="text-stone-500">복잡한 수정 단계 설계 최적화</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm border-b pb-2">
+                                <span class="font-bold text-indigo-600">general-purpose</span>
+                                <span class="text-stone-500">기본 범용 에이전트 (미지정 시 기본값)</span>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-stone-400 italic">커스텀 에이전트(<code
+                                class="mono">.claude/agents/</code>)도 지정 가능합니다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Visuals -->
+            <section id="sec-visual" class="hidden fade-in space-y-12">
+                <div class="space-y-4">
+                    <h2 class="text-3xl font-bold">📊 시각적 출력 및 실전 시나리오</h2>
+                    <p class="text-stone-600">스킬은 단순 텍스트 지침을 넘어 복잡한 보고서나 도구를 번들링할 수 있습니다.</p>
+                </div>
+
+                <!-- Use Case 1: Visualization -->
+                <div class="card overflow-hidden">
+                    <div class="bg-slate-800 p-6 text-white flex justify-between items-center">
+                        <h4 class="font-bold">시나리오 A: 코드베이스 시각화 (Visual Output)</h4>
+                        <span class="px-2 py-1 bg-white/20 rounded text-[10px]">고급 패턴</span>
+                    </div>
+                    <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <div class="space-y-4 text-sm text-stone-600">
+                            <p>스킬 폴더 내에 Python 스크립트를 포함하고, Claude에게 이 스크립트를 실행해 HTML 리포트를 생성한 뒤 브라우저를 열도록 지시합니다.</p>
+                            <div class="bg-stone-50 p-4 rounded-xl border space-y-2 font-mono text-xs">
+                                <div class="text-stone-400"># SKILL.md 지침 예시</div>
+                                1. Run script: <code class="mono">python visualize.py .</code><br>
+                                2. 스크립트는 <code class="mono">map.html</code>을 생성합니다.<br>
+                                3. <code class="mono">webbrowser.open()</code>을 통해 리포트를 보여줍니다.
+                            </div>
+                        </div>
+                        <div
+                            class="flex flex-col items-center justify-center bg-stone-50 rounded-2xl border-2 border-dashed">
+                            <div class="text-4xl mb-4">🖥️</div>
+                            <p class="text-xs font-bold text-stone-500">인터랙티브 트리 맵 생성</p>
+                            <p class="text-[10px] text-stone-400 px-8 text-center mt-2">파일 크기, 타입, 폴더 구조를 시각화하여 거대한
+                                리포지토리를 한눈에 분석합니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Use Case 2: API Conventions -->
+                <div class="card overflow-hidden">
+                    <div class="bg-indigo-600 p-6 text-white flex justify-between items-center">
+                        <h4 class="font-bold">시나리오 B: 배경 지식 스택 (Reference Content)</h4>
+                        <span class="px-2 py-1 bg-white/20 rounded text-[10px]">지식 주입</span>
+                    </div>
+                    <div class="p-8 space-y-4">
+                        <p class="text-sm text-stone-600 italic">"우리 팀의 API 설계 원칙을 Claude에게 상시 주입하고 싶을 때"</p>
+                        <div class="code-block text-[11px]">
+                            <span class="token-yaml">---</span><br>
+                            <span class="token-key">name:</span> api-guidelines<br>
+                            <span class="token-key">user-invocable:</span> <span class="token-val">false</span><br>
+                            <span class="token-key">description:</span> API 엔드포인트 작성 시 따라야 할 규칙<br>
+                            <span class="token-yaml">---</span><br><br>
+                            When writing API endpoints:<br>
+                            - Always use snake_case for parameters.<br>
+                            - Return errors in the standard GlobalError format.<br>
+                            - Include request validation using Joi.
+                        </div>
+                        <p class="text-xs text-stone-400">* <code class="mono">user-invocable: false</code>이므로 메뉴에는 안
+                            뜨지만, Claude는 코드를 짤 때 이 규칙을 자동으로 로드하여 적용합니다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Management -->
+            <section id="sec-management" class="hidden fade-in space-y-12">
+                <div class="space-y-4">
+                    <h2 class="text-3xl font-bold">🛡️ 권한, 예산 및 사고 모드</h2>
+                    <p class="text-stone-600">스킬의 안전성을 확보하고 컨텍스트 효율을 극대화하는 방법입니다.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Tool Permissions -->
+                    <div class="card p-8 space-y-6 border-t-4 border-t-red-500">
+                        <h4 class="font-bold flex items-center gap-2">🚫 권한 제어 (/permissions)</h4>
+                        <p class="text-sm text-stone-600">
+                            특정 스킬에 대한 Claude의 접근을 승인하거나 거부할 수 있습니다.
+                        </p>
+                        <div class="code-block text-[11px]">
+                            <span class="text-stone-500"># Skill(이름) 또는 Skill(이름 *) 문법 사용</span><br><br>
+                            <span class="text-emerald-400">Allow Skill(commit)</span><br>
+                            <span class="text-red-400">Deny Skill(deploy *)</span>
+                        </div>
+                    </div>
+
+                    <!-- Budget -->
+                    <div class="card p-8 space-y-6 border-t-4 border-t-blue-500">
+                        <h4 class="font-bold flex items-center gap-2">💰 컨텍스트 예산 관리</h4>
+                        <p class="text-sm text-stone-600">
+                            너무 많은 스킬이 로드되면 대화 효율이 떨어집니다. Claude Code는 컨텍스트 창의 약 <strong>2%(최대 16,000자)</strong>를 스킬 설명용
+                            예산으로 할당합니다.
+                        </p>
+                        <div class="p-4 bg-stone-100 rounded-xl space-y-2">
+                            <p class="text-[10px] font-bold text-stone-400 uppercase">Override Budget</p>
+                            <code class="mono text-xs text-blue-600">SLASH_COMMAND_TOOL_CHAR_BUDGET=32000</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extended Thinking -->
+                <div class="card p-10 bg-slate-900 text-white relative overflow-hidden">
+                    <div class="relative z-10 flex flex-col md:flex-row gap-8 items-center">
+                        <div class="text-6xl">🧠</div>
+                        <div class="space-y-4">
+                            <h3 class="text-2xl font-bold">심층 사고 모드 (Extended Thinking)</h3>
+                            <p class="text-slate-300 leading-relaxed text-sm">
+                                스킬 본문(마크다운 영역) 어디에서든 <span class="mono text-yellow-400 font-bold">ultrathink</span>라는
+                                단어를 포함시키세요.
+                                Claude는 이 단어를 감지하면 해당 스킬을 실행할 때 자동으로 'Extended Thinking' 모드로 전환하여 더욱 정교한 추론을 수행합니다.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="absolute top-0 right-0 p-4 opacity-10 text-8xl font-black">THINK</div>
+                </div>
+            </section>
+
+            <!-- Section: Troubleshooting -->
+            <section id="sec-trouble" class="hidden fade-in space-y-12">
+                <div class="space-y-4">
+                    <h2 class="text-3xl font-bold text-red-600">❓ 상세 트러블슈팅</h2>
+                    <p class="text-stone-600">스킬이 기대와 다르게 작동할 때의 점검 목록입니다.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <details class="group card border border-stone-200 open">
+                        <summary
+                            class="flex justify-between items-center p-6 cursor-pointer font-bold bg-stone-50 rounded-t-xl">
+                            Q1. 스킬이 자동으로 트리거되지 않습니다.
+                            <span class="text-stone-400 group-open:rotate-180 transition-transform">▼</span>
+                        </summary>
+                        <div class="p-6 text-sm text-stone-600 space-y-4 border-t">
+                            <div class="flex gap-4">
+                                <span class="font-bold text-blue-600">Solution 1:</span>
+                                <p><code class="mono">description</code> 필드가 너무 모호하지 않은지 확인하세요. 사용자가 입력할 법한 핵심 키워드들을
+                                    포함시키는 것이 좋습니다.</p>
+                            </div>
+                            <div class="flex gap-4">
+                                <span class="font-bold text-blue-600">Solution 2:</span>
+                                <p><code class="mono">disable-model-invocation: true</code>가 설정되어 있는지 확인하세요. 이 경우 수동
+                                    호출(/)만 가능합니다.</p>
+                            </div>
+                            <div class="flex gap-4">
+                                <span class="font-bold text-blue-600">Solution 3:</span>
+                                <p><code class="mono">What skills are available?</code>를 입력하여 Claude가 해당 스킬을 성공적으로 인식하고
+                                    있는지 목록을 확인하세요.</p>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="group card border border-stone-200">
+                        <summary
+                            class="flex justify-between items-center p-6 cursor-pointer font-bold bg-stone-50 rounded-t-xl">
+                            Q2. 스킬 이름 충돌이 발생합니다.
+                            <span class="text-stone-400 group-open:rotate-180 transition-transform">▼</span>
+                        </summary>
+                        <div class="p-6 text-sm text-stone-600 space-y-4 border-t">
+                            <p>우선순위는 <strong>Enterprise > Personal > Project</strong> 순입니다. 하위 레벨의 스킬을 사용하고 싶다면 이름을
+                                변경하거나, 상위 레벨의 <code class="mono">SKILL.md</code>를 수정해야 합니다.</p>
+                        </div>
+                    </details>
+
+                    <details class="group card border border-stone-200">
+                        <summary
+                            class="flex justify-between items-center p-6 cursor-pointer font-bold bg-stone-50 rounded-t-xl">
+                            Q3. !command 실행 결과가 비어있습니다.
+                            <span class="text-stone-400 group-open:rotate-180 transition-transform">▼</span>
+                        </summary>
+                        <div class="p-6 text-sm text-stone-600 space-y-4 border-t">
+                            <p>쉘 명령어가 에러를 반환하거나 경로를 찾지 못할 수 있습니다. <code class="mono">!`command 2>&1`</code>과 같이 에러 출력까지
+                                캡처하도록 설정하여 디버깅해 보세요.</p>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script>
+        // Sidebar Toggle for Mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('flex');
+        }
+
+        // Navigation logic
+        function nav(sectionId) {
+            // Hide all
+            document.querySelectorAll('.content-section, section').forEach(s => {
+                if (s.id.startsWith('sec-')) s.classList.add('hidden');
+            });
+
+            // Show target
+            const target = document.getElementById('sec-' + sectionId);
+            if (target) target.classList.remove('hidden');
+
+            // Update UI
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.querySelector(`[data-section="${sectionId}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Close mobile menu
+            if (window.innerWidth < 1024) {
+                document.getElementById('sidebar').classList.add('hidden');
+                document.getElementById('sidebar').classList.remove('flex');
+            }
+
+            // Scroll Top
+            document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- Charts ---
+        window.onload = function () {
+            const ctxPriority = document.getElementById('priorityChart').getContext('2d');
+            new Chart(ctxPriority, {
+                type: 'bar',
+                data: {
+                    labels: ['Enterprise', 'Personal (~/.claude)', 'Project (.claude)', 'Plugin'],
+                    datasets: [{
+                        label: '우선순위 수치',
+                        data: [100, 80, 60, 40],
+                        backgroundColor: [
+                            '#4338ca', // Indigo
+                            '#3b82f6', // Blue
+                            '#78716c', // Stone
+                            '#10b981'  // Emerald
+                        ],
+                        borderRadius: 12,
+                        barThickness: 35
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const tips = [
+                                        '관리자가 지정한 전역 규칙',
+                                        '내가 모든 프로젝트에서 쓰는 개인 도구',
+                                        '현재 리포지토리 전용 지침',
+                                        '네임스페이스를 사용하는 플러그인 기능'
+                                    ];
+                                    return tips[ctx.dataIndex];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+
+</html>

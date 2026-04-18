@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tmux · cmux · dmux — 터미널 멀티플렉서 완전 가이드</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET & BASE ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+:root {
+  --bg:       #0a0c10;
+  --bg2:      #0f1117;
+  --bg3:      #161923;
+  --surface:  #1a1f2e;
+  --surface2: #212736;
+  --border:   #2a3040;
+  --text:     #e2e8f4;
+  --muted:    #6b7a99;
+  --dim:      #3d4a63;
+
+  --tmux:      #00d9a6;
+  --tmux-glow: rgba(0,217,166,.18);
+  --cmux:      #ff6b35;
+  --cmux-glow: rgba(255,107,53,.18);
+  --dmux:      #7c6bff;
+  --dmux-glow: rgba(124,107,255,.18);
+  --accent:    #ffdd57;
+
+  --mono: 'JetBrains Mono', monospace;
+  --display: 'Syne', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.7;
+  overflow: hidden;
+}
+
+/* ─── LAYOUT ─── */
+.layout { display: flex; height: 100vh; overflow: hidden; }
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  padding: 1.5rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-text {
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.logo-text .accent { color: var(--accent); }
+
+.logo-sub {
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.nav-section { padding: 1rem 0; }
+
+.nav-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+  padding: 0 1.25rem;
+  margin-bottom: 0.4rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 1.25rem;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  user-select: none;
+}
+.nav-item:hover { color: var(--text); background: var(--surface); }
+.nav-item.active { border-left-color: var(--accent); color: var(--text); background: var(--surface); font-weight: 700; }
+.nav-item.active .dot { box-shadow: 0 0 6px currentColor; }
+
+.nav-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-tmux { background: var(--tmux); }
+.dot-cmux { background: var(--cmux); }
+.dot-dmux { background: var(--dmux); }
+.dot-acc  { background: var(--accent); }
+.dot-gray { background: var(--muted); }
+
+/* ─── MAIN CONTENT ─── */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+/* ─── CONTENT PANEL ─── */
+.panel { display: none; animation: fadeIn 0.35s ease; }
+.panel.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+/* ─── HERO PANEL ─── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black, transparent);
+  opacity: 0.3;
+}
+
+.hero-glow {
+  position: absolute;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,217,166,.07) 0%, rgba(124,107,255,.05) 50%, transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  pointer-events: none;
+}
+
+.hero-inner { position: relative; z-index: 1; text-align: center; max-width: 800px; }
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 100px; padding: 0.3rem 1rem;
+  font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem;
+}
+
+.hero-tag::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--tmux); box-shadow: 0 0 8px var(--tmux);
+  animation: blink 2s ease infinite;
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+
+.hero-title {
+  font-family: var(--display);
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  font-weight: 800; line-height: 0.95;
+  letter-spacing: -0.04em; margin-bottom: 1.2rem;
+}
+.t-tmux { color: var(--tmux); text-shadow: 0 0 40px var(--tmux-glow); }
+.t-cmux { color: var(--cmux); text-shadow: 0 0 40px var(--cmux-glow); }
+.t-dmux { color: var(--dmux); text-shadow: 0 0 40px var(--dmux-glow); }
+.t-sep  { color: var(--dim); margin: 0 0.15em; }
+
+.hero-sub {
+  font-family: var(--display);
+  font-size: 1rem; color: var(--muted);
+  max-width: 560px; margin: 0 auto 3rem; line-height: 1.7;
+}
+
+.hero-cards {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-top: 1rem;
+}
+
+.hcard {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.4rem;
+  cursor: pointer; transition: all 0.3s; text-align: left;
+  position: relative; overflow: hidden;
+}
+.hcard::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  opacity: .7; transition: opacity .3s;
+}
+.hcard.t::before { background: linear-gradient(90deg, var(--tmux), transparent); }
+.hcard.c::before { background: linear-gradient(90deg, var(--cmux), transparent); }
+.hcard.d::before { background: linear-gradient(90deg, var(--dmux), transparent); }
+.hcard:hover { transform: translateY(-4px); }
+.hcard.t:hover { box-shadow: 0 8px 30px var(--tmux-glow), 0 0 0 1px var(--tmux); border-color: var(--tmux); }
+.hcard.c:hover { box-shadow: 0 8px 30px var(--cmux-glow), 0 0 0 1px var(--cmux); border-color: var(--cmux); }
+.hcard.d:hover { box-shadow: 0 8px 30px var(--dmux-glow), 0 0 0 1px var(--dmux); border-color: var(--dmux); }
+
+.hcard-icon { font-size: 1.8rem; margin-bottom: 0.7rem; display: block; }
+.hcard-name {
+  font-family: var(--display); font-size: 1.3rem; font-weight: 800;
+  letter-spacing: -0.02em; margin-bottom: 0.4rem;
+}
+.hcard-desc { font-size: 0.7rem; color: var(--muted); line-height: 1.5; }
+.hcard-meta {
+  margin-top: 0.9rem; font-size: 0.62rem; color: var(--dim);
+  display: flex; align-items: center; gap: 0.3rem;
+}
+
+/* ─── SECTION WRAPPER ─── */
+.section-wrap { padding: 2.5rem 3rem; max-width: 1000px; }
+
+.section-hd {
+  display: flex; align-items: baseline; gap: 1rem; margin-bottom: 2.2rem;
+  border-bottom: 1px solid var(--border); padding-bottom: 1rem;
+}
+.section-num { font-family: var(--display); font-size: 0.7rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; }
+.section-ttl { font-family: var(--display); font-size: 1.8rem; font-weight: 800; letter-spacing: -.03em; }
+
+/* ─── TOOL CARD ─── */
+.tool-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 18px; overflow: hidden; margin-bottom: 2.5rem;
+}
+
+.tool-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.8rem 2rem; border-bottom: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.tool-head::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+}
+.tc-tmux .tool-head::after { background: radial-gradient(ellipse at left, var(--tmux) 0%, transparent 60%); opacity: .09; }
+.tc-cmux .tool-head::after { background: radial-gradient(ellipse at left, var(--cmux) 0%, transparent 60%); opacity: .09; }
+.tc-dmux .tool-head::after { background: radial-gradient(ellipse at left, var(--dmux) 0%, transparent 60%); opacity: .09; }
+
+.tool-title {
+  font-family: var(--display); font-size: 2.2rem; font-weight: 800;
+  letter-spacing: -.04em; line-height: 1; position: relative; z-index: 1;
+}
+.tc-tmux .tool-title { color: var(--tmux); }
+.tc-cmux .tool-title { color: var(--cmux); }
+.tc-dmux .tool-title { color: var(--dmux); }
+
+.tool-fullname { font-size: .72rem; color: var(--muted); margin-top: .3rem; position: relative; z-index: 1; }
+
+.tool-chips { display: flex; gap: .6rem; position: relative; z-index: 1; flex-wrap: wrap; }
+.chip {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: .4rem .8rem; font-size: .68rem; color: var(--muted); line-height: 1.3;
+}
+.chip strong { display: block; color: var(--text); font-weight: 600; font-size: .8rem; }
+
+.tool-body { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 2rem; }
+
+/* ─── TERMINAL DEMO ─── */
+.terminal { background: #050709; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; font-size: .68rem; }
+.term-bar {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .55rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.tdot { width:10px; height:10px; border-radius:50%; }
+.tdot.r{background:#ff5f57}.tdot.y{background:#ffbd2e}.tdot.g{background:#28ca41}
+.ttitle { flex:1; text-align:center; font-size:.62rem; color:var(--dim); }
+.term-body { padding: 1rem 1.2rem; line-height: 2; }
+.tc  { color: var(--dim); }
+.ts  { color: var(--tmux); }
+.tcs { color: var(--cmux); }
+.tds { color: var(--dmux); }
+.ty  { color: var(--accent); }
+.tw  { color: var(--text); }
+.tg  { color: #7dd3a8; }
+
+/* panes visual */
+.tv-panes { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr auto; gap:1px; background:var(--border); height:200px; }
+.tv-pane { background:#050709; padding:.7rem; font-size:.62rem; color:var(--muted); overflow:hidden; }
+.tv-statusbar {
+  background: var(--tmux); color:#000; padding:.3rem .8rem;
+  font-size:.62rem; font-weight:700; display:flex; gap:1.5rem; flex-shrink:0;
+}
+.tv-cmux-body { padding:.8rem; height:200px; }
+.tv-wt-header { background:var(--dmux); color:#fff; font-size:.62rem; font-weight:700; padding:.3rem .8rem; display:flex; gap:1rem; }
+.tv-wt-grid { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; padding:.8rem; height:180px; }
+.tv-wt-pane { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:.5rem; font-size:.58rem; color:var(--muted); overflow:hidden; }
+
+/* ─── PROS/CONS ─── */
+.pc-grid { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin-top:1.2rem; }
+.pc-box { background:var(--surface); border-radius:10px; padding:1.1rem 1.4rem; font-size:.72rem; }
+.pc-pro { border-left:3px solid var(--tmux); }
+.pc-con { border-left:3px solid #ff4757; }
+.tc-cmux .pc-pro { border-left-color:var(--cmux); }
+.tc-dmux .pc-pro { border-left-color:var(--dmux); }
+.pc-box h4 { font-size:.65rem; text-transform:uppercase; letter-spacing:.1em; margin-bottom:.7rem; }
+.pc-pro h4 { color:var(--tmux); }
+.tc-cmux .pc-pro h4 { color:var(--cmux); }
+.tc-dmux .pc-pro h4 { color:var(--dmux); }
+.pc-con h4 { color:#ff4757; }
+.pc-box li { list-style:none; padding:.2rem 0; color:var(--muted); display:flex; gap:.5rem; align-items:flex-start; }
+.pc-pro li::before { content:'+'; color:var(--tmux); font-weight:700; flex-shrink:0; }
+.tc-cmux .pc-pro li::before { color:var(--cmux); }
+.tc-dmux .pc-pro li::before { color:var(--dmux); }
+.pc-con li::before { content:'−'; color:#ff4757; font-weight:700; flex-shrink:0; }
+
+/* ─── INSTALL TABS ─── */
+.install { background:#050709; border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-top:1.2rem; }
+.install-tabs { display:flex; border-bottom:1px solid var(--border); background:var(--surface); }
+.itab {
+  padding:.45rem 1rem; font-size:.63rem; font-weight:600; color:var(--muted);
+  cursor:pointer; border-bottom:2px solid transparent; transition:all .2s;
+  text-transform:uppercase; letter-spacing:.07em; user-select:none;
+}
+.itab.active { color:var(--text); border-bottom-color:var(--accent); }
+.icontent { padding:1rem 1.2rem; font-size:.68rem; line-height:1.9; display:none; }
+.icontent.active { display:block; }
+.iprompt { color:var(--accent); margin-right:.3rem; }
+.icmd { color:var(--text); }
+.icmt { color:var(--muted); }
+
+/* ─── CHART SECTION ─── */
+.chart-section { background:var(--bg2); border:1px solid var(--border); border-radius:18px; padding:2rem; margin-bottom:2rem; }
+.chart-title { font-family:var(--display); font-size:1rem; font-weight:700; margin-bottom:1rem; }
+.chart-sub { font-size:.72rem; color:var(--muted); margin-bottom:1.5rem; }
+.chart-wrap { position:relative; height:300px; max-width:600px; margin:0 auto; }
+
+/* ─── COMPARE TABLE ─── */
+.compare-tbl {
+  width:100%; border-collapse:separate; border-spacing:0;
+  border:1px solid var(--border); border-radius:14px; overflow:hidden;
+}
+.compare-tbl th, .compare-tbl td {
+  padding:.85rem 1.2rem; text-align:left;
+  border-bottom:1px solid var(--border); font-size:.75rem;
+}
+.compare-tbl th { background:var(--surface); font-family:var(--display); font-size:.9rem; font-weight:700; }
+.compare-tbl th.feat { font-family:var(--mono); font-size:.65rem; color:var(--dim); text-transform:uppercase; letter-spacing:.1em; }
+.compare-tbl th.tmux-h { color:var(--tmux); }
+.compare-tbl th.cmux-h { color:var(--cmux); }
+.compare-tbl th.dmux-h { color:var(--dmux); }
+.compare-tbl tr:last-child td { border-bottom:none; }
+.compare-tbl tbody tr:nth-child(odd) td { background:rgba(255,255,255,.01); }
+.compare-tbl tbody tr:hover td { background:var(--surface); }
+.td-feat { color:var(--text); font-weight:600; white-space:nowrap; }
+
+.badge {
+  display:inline-flex; align-items:center; padding:.18rem .55rem;
+  border-radius:6px; font-size:.63rem; font-weight:700;
+  letter-spacing:.04em; text-transform:uppercase;
+}
+.b-g  { background:rgba(0,217,166,.1);  color:var(--tmux); border:1px solid rgba(0,217,166,.25); }
+.b-o  { background:rgba(255,107,53,.1); color:var(--cmux); border:1px solid rgba(255,107,53,.25); }
+.b-p  { background:rgba(124,107,255,.1);color:var(--dmux); border:1px solid rgba(124,107,255,.25); }
+.b-y  { background:rgba(255,221,87,.1); color:var(--accent);border:1px solid rgba(255,221,87,.25); }
+.b-gr { background:rgba(107,122,153,.1);color:var(--muted); border:1px solid rgba(107,122,153,.25); }
+
+/* ─── CHEATSHEET ─── */
+.cheat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; margin-top:1rem; }
+.cheat-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.cheat-head { padding:.9rem 1.3rem; border-bottom:1px solid var(--border); font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; }
+.cheat-card.t .cheat-head { background:rgba(0,217,166,.06); color:var(--tmux); }
+.cheat-card.c .cheat-head { background:rgba(255,107,53,.06); color:var(--cmux); }
+.cheat-card.d .cheat-head { background:rgba(124,107,255,.06); color:var(--dmux); }
+.cheat-row { display:flex; align-items:center; gap:.8rem; padding:.5rem 1.3rem; border-bottom:1px solid rgba(255,255,255,.03); }
+.cheat-row:last-child { border-bottom:none; }
+.kbd {
+  background:var(--surface); border:1px solid var(--border); border-radius:4px;
+  padding:.12rem .45rem; font-size:.62rem; color:var(--text); white-space:nowrap;
+  flex-shrink:0; font-family:var(--mono); font-weight:600;
+}
+.cheat-desc { font-size:.68rem; color:var(--muted); }
+
+/* ─── USE CASES ─── */
+.use-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; margin-top:1.5rem; }
+.use-card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:14px;
+  padding:1.5rem; position:relative; overflow:hidden; transition:all .3s;
+}
+.use-card::after {
+  content:''; position:absolute; bottom:0; right:0;
+  width:70px; height:70px; border-radius:50%; opacity:.07; transition:opacity .4s;
+}
+.use-card.t::after { background:var(--tmux); }
+.use-card.c::after { background:var(--cmux); }
+.use-card.d::after { background:var(--dmux); }
+.use-card:hover { transform:translateY(-3px); }
+.use-card.t:hover { border-color:var(--tmux); box-shadow:0 8px 24px var(--tmux-glow); }
+.use-card.c:hover { border-color:var(--cmux); box-shadow:0 8px 24px var(--cmux-glow); }
+.use-card.d:hover { border-color:var(--dmux); box-shadow:0 8px 24px var(--dmux-glow); }
+.use-icon { font-size:1.8rem; margin-bottom:.8rem; display:block; }
+.use-title { font-family:var(--display); font-size:.95rem; font-weight:700; margin-bottom:.5rem; }
+.use-card.t .use-title { color:var(--tmux); }
+.use-card.c .use-title { color:var(--cmux); }
+.use-card.d .use-title { color:var(--dmux); }
+.use-text { font-size:.72rem; color:var(--muted); line-height:1.7; }
+
+/* ─── ECOSYSTEM FLOW ─── */
+.eco {
+  background:var(--bg2); border:1px solid var(--border); border-radius:16px;
+  padding:2rem; margin-top:1.5rem; text-align:center;
+}
+.eco-label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:1.5rem; }
+.eco-row { display:flex; align-items:center; justify-content:center; gap:.8rem; flex-wrap:wrap; margin-bottom:1rem; }
+.eco-node {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; padding:1rem 1.5rem; text-align:center; min-width:120px;
+}
+.eco-name { font-family:var(--display); font-size:.95rem; font-weight:700; }
+.eco-sub  { font-size:.62rem; color:var(--muted); margin-top:.2rem; }
+.eco-arr  { color:var(--dim); font-size:1.3rem; }
+.eco-node.star { border-color:var(--accent); box-shadow:0 0 16px rgba(255,221,87,.1); }
+.eco-star-name { font-family:var(--display); font-size:.95rem; font-weight:700; color:var(--accent); }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  .sidebar { display:none; }
+  .hero-cards, .cheat-grid, .use-grid { grid-template-columns:1fr; }
+  .tool-body { grid-template-columns:1fr; }
+  .pc-grid { grid-template-columns:1fr; }
+  .section-wrap { padding:1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ─── SIDEBAR ─── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">terminal<span class="accent">mux</span></div>
+      <div class="logo-sub">AI Study — Terminal Tools</div>
+    </div>
+
+    <nav class="nav-section">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" onclick="show('hero',this)">
+        <span class="nav-dot dot-acc"></span> 소개 & 개요
+      </div>
+    </nav>
+
+    <nav class="nav-section">
+      <div class="nav-label">도구별 분석</div>
+      <div class="nav-item" onclick="show('tmux',this)">
+        <span class="nav-dot dot-tmux"></span> tmux
+      </div>
+      <div class="nav-item" onclick="show('cmux',this)">
+        <span class="nav-dot dot-cmux"></span> cmux
+      </div>
+      <div class="nav-item" onclick="show('dmux',this)">
+        <span class="nav-dot dot-dmux"></span> dmux
+      </div>
+    </nav>
+
+    <nav class="nav-section">
+      <div class="nav-label">비교 & 정리</div>
+      <div class="nav-item" onclick="show('compare',this)">
+        <span class="nav-dot dot-gray"></span> 종합 비교표
+      </div>
+      <div class="nav-item" onclick="show('charts',this)">
+        <span class="nav-dot dot-gray"></span> 데이터 시각화
+      </div>
+      <div class="nav-item" onclick="show('cheat',this)">
+        <span class="nav-dot dot-gray"></span> 치트시트
+      </div>
+      <div class="nav-item" onclick="show('usecase',this)">
+        <span class="nav-dot dot-acc"></span> 도구 선택 가이드
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ─── MAIN ─── -->
+  <main class="main">
+
+    <!-- ═══ HERO ═══ -->
+    <div id="panel-hero" class="panel active">
+      <div class="hero">
+        <div class="hero-grid"></div>
+        <div class="hero-glow"></div>
+        <div class="hero-inner">
+          <div class="hero-tag">AI Study · Terminal Multiplexer Complete Guide</div>
+          <h1 class="hero-title">
+            <span class="t-tmux">tmux</span><span class="t-sep">·</span><span class="t-cmux">cmux</span><span class="t-sep">·</span><span class="t-dmux">dmux</span>
+          </h1>
+          <p class="hero-sub">
+            터미널 멀티플렉서 생태계의 핵심 도구 세 가지.<br>차이점, 장단점, 설치법, 치트시트까지 완전 정리.
+          </p>
+
+          <div class="hero-cards">
+            <div class="hcard t" onclick="show('tmux', document.querySelector('[onclick*=tmux]'))">
+              <span class="hcard-icon">⚡</span>
+              <div class="hcard-name" style="color:var(--tmux)">tmux</div>
+              <div class="hcard-desc">터미널 멀티플렉서의 업계 표준. 세션·창·패널 관리. 원격 SSH 작업의 필수 도구.</div>
+              <div class="hcard-meta">★ 42K+ &nbsp;·&nbsp; C &nbsp;·&nbsp; ISC License</div>
+            </div>
+            <div class="hcard c" onclick="show('cmux', document.querySelectorAll('[onclick*=cmux]')[0])">
+              <span class="hcard-icon">🔀</span>
+              <div class="hcard-name" style="color:var(--cmux)">cmux</div>
+              <div class="hcard-desc">동일 포트에서 gRPC·REST·TLS를 동시에 처리하는 Go 커넥션 멀티플렉서. AI 에이전트 터미널(macOS)도 포함.</div>
+              <div class="hcard-meta">★ 2.7K+ &nbsp;·&nbsp; Go / Swift</div>
+            </div>
+            <div class="hcard d" onclick="show('dmux', document.querySelectorAll('[onclick*=dmux]')[0])">
+              <span class="hcard-icon">🤖</span>
+              <div class="hcard-name" style="color:var(--dmux)">dmux</div>
+              <div class="hcard-desc">Git Worktree + AI 코딩 에이전트 병렬 관리 도구. Claude Code, Cursor 등을 여러 브랜치에서 동시에 실행.</div>
+              <div class="hcard-meta">★ 350+ &nbsp;·&nbsp; Rust / TS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TMUX ═══ -->
+    <div id="panel-tmux" class="panel">
+      <div class="section-wrap">
+        <div class="section-hd">
+          <span class="section-num">01</span>
+          <h2 class="section-ttl" style="color:var(--tmux)">tmux</h2>
+        </div>
+
+        <div class="tool-card tc-tmux">
+          <div class="tool-head">
+            <div>
+              <div class="tool-title">tmux</div>
+              <div class="tool-fullname">Terminal Multiplexer — 2007 · BSD/ISC License · GitHub ★42,000+</div>
+            </div>
+            <div class="tool-chips">
+              <div class="chip"><strong>v3.6a</strong>Latest</div>
+              <div class="chip"><strong>C</strong>Language</div>
+              <div class="chip"><strong>Linux / macOS</strong>Platform</div>
+            </div>
+          </div>
+
+          <div class="tool-body">
+            <div>
+              <!-- Terminal Visual -->
+              <div class="terminal">
+                <div class="term-bar">
+                  <div class="tdot r"></div><div class="tdot y"></div><div class="tdot g"></div>
+                  <div class="ttitle">tmux — 세션: my_project</div>
+                </div>
+                <div class="tv-statusbar">
+                  <span>[0] server</span><span>[1] dev ✱</span><span>[2] logs</span>
+                  <span style="margin-left:auto">2026-02-28 · 14:32</span>
+                </div>
+                <div class="tv-panes">
+                  <div class="tv-pane" style="border-right:1px solid var(--border); border-bottom:1px solid var(--border);">
+                    <span class="ts">~/project $</span> git status<br>
+                    <span class="tg">On branch main</span><br>
+                    <span class="tc">nothing to commit</span><br>
+                    <span class="ts">~/project $</span> █
+                  </div>
+                  <div class="tv-pane" style="border-bottom:1px solid var(--border);">
+                    <span class="ts">~/project $</span> npm run dev<br>
+                    <span class="ty">▶</span> <span class="tw">Server running</span><br>
+                    <span class="ty">▶</span> <span class="tw">Port: 3000</span><br>
+                    <span class="tc">Watching files...</span>
+                  </div>
+                  <div class="tv-pane" style="grid-column:1/3; display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
+                    <span><span class="ts" style="font-weight:700">Ctrl+b</span> prefix</span>
+                    <span class="tc">|</span><span><span class="ts">%</span> 수직분할</span>
+                    <span class="tc">|</span><span><span class="ts">"</span> 수평분할</span>
+                    <span class="tc">|</span><span><span class="ts">c</span> 새창</span>
+                    <span class="tc">|</span><span><span class="ts">d</span> 분리</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pc-grid">
+                <ul class="pc-box pc-pro">
+                  <h4>장점</h4>
+                  <li>SSH 끊겨도 세션·프로세스 생존</li>
+                  <li>무제한 커스터마이징 (tmux.conf)</li>
+                  <li>강력한 플러그인 생태계 (TPM)</li>
+                  <li>스크립팅으로 레이아웃 자동화</li>
+                  <li>Copy mode 스크롤백 검색</li>
+                </ul>
+                <ul class="pc-box pc-con">
+                  <h4>단점</h4>
+                  <li>초기 학습 곡선이 가파름</li>
+                  <li>prefix 키 습관 필요</li>
+                  <li>256색 이상 설정 복잡</li>
+                  <li>GUI 환경에서는 과잉 기능</li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <p style="font-size:.82rem; color:var(--muted); line-height:1.9; margin-bottom:1rem;">
+                tmux는 하나의 터미널 창 안에서 여러 <strong style="color:var(--text)">세션·윈도우·패인</strong>을 관리하는 터미널 멀티플렉서입니다. 1990년대 GNU Screen의 현대적 대안으로 개발되어 현재 DevOps·개발자 워크플로우의 표준 도구입니다.
+              </p>
+              <p style="font-size:.82rem; color:var(--muted); line-height:1.9; margin-bottom:1rem;">
+                가장 강력한 특징은 <strong style="color:var(--tmux)">세션 영속성</strong>입니다. SSH 연결이 끊겨도 tmux 세션 안의 프로세스는 계속 실행되며, 재접속 시 그대로 복원됩니다. 서버 장기 작업, CI/CD 실행, 원격 개발에 필수적인 이유입니다.
+              </p>
+              <p style="font-size:.82rem; color:var(--muted); line-height:1.9;">
+                세션 → 윈도우 → 패인의 <strong style="color:var(--text)">3단계 계층 구조</strong>로 하나의 터미널에서 수십 개의 작업을 동시에 관리할 수 있습니다.
+              </p>
+
+              <div class="install">
+                <div class="install-tabs">
+                  <div class="itab active" onclick="switchTab(this,'tu')">Ubuntu</div>
+                  <div class="itab" onclick="switchTab(this,'tm')">macOS</div>
+                  <div class="itab" onclick="switchTab(this,'ta')">Arch</div>
+                </div>
+                <div class="icontent active" id="tu">
+                  <span class="iprompt">$</span><span class="icmd">sudo apt update && sudo apt install tmux</span><br>
+                  <span class="iprompt">$</span><span class="icmd">tmux new -s mysession</span><br>
+                  <span class="icmt"># 설정: ~/.tmux.conf</span>
+                </div>
+                <div class="icontent" id="tm">
+                  <span class="iprompt">$</span><span class="icmd">brew install tmux</span><br>
+                  <span class="icmt"># TPM 플러그인 매니저</span><br>
+                  <span class="iprompt">$</span><span class="icmd">git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm</span>
+                </div>
+                <div class="icontent" id="ta">
+                  <span class="iprompt">$</span><span class="icmd">pacman -S tmux</span><br>
+                  <span class="icmt"># AUR: tmux-git for latest</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CMUX ═══ -->
+    <div id="panel-cmux" class="panel">
+      <div class="section-wrap">
+        <div class="section-hd">
+          <span class="section-num">02</span>
+          <h2 class="section-ttl" style="color:var(--cmux)">cmux</h2>
+        </div>
+
+        <div class="tool-card tc-cmux">
+          <div class="tool-head">
+            <div>
+              <div class="tool-title" style="color:var(--cmux)">cmux</div>
+              <div class="tool-fullname">Connection Multiplexer — 복수의 독립 프로젝트 (Go / Swift / Ruby)</div>
+            </div>
+            <div class="tool-chips">
+              <div class="chip"><strong>soheilhy</strong>Go 네트워크</div>
+              <div class="chip"><strong>manaflow</strong>AI 터미널</div>
+              <div class="chip"><strong>★2,700+</strong>GitHub</div>
+            </div>
+          </div>
+
+          <div class="tool-body">
+            <div>
+              <div class="terminal">
+                <div class="term-bar">
+                  <div class="tdot r"></div><div class="tdot y"></div><div class="tdot g"></div>
+                  <div class="ttitle">cmux — Connection Routing</div>
+                </div>
+                <div class="tv-cmux-body term-body">
+                  <span class="tcs" style="font-weight:700">── cmux: 단일 포트 → 다중 프로토콜 ──</span><br><br>
+                  <span class="ty">:8080</span> → <span class="tw">[matcher]</span><br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ <span class="tcs">HTTP/2</span> ─→ gRPC handler<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ <span class="tcs">HTTP/1.1</span> → REST handler<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ <span class="tcs">TLS</span> ────→ HTTPS handler<br><br>
+                  <span class="tc">m := cmux.New(listener)</span><br>
+                  <span class="tc">grpcL := m.<span class="tcs">Match</span>(cmux.HTTP2...)</span><br>
+                  <span class="tc">httpL := m.<span class="tcs">Match</span>(cmux.HTTP1Fast())</span><br>
+                  <span class="tc">go grpcServer.Serve(grpcL)</span><br>
+                  <span class="tc">m.Serve()</span>
+                </div>
+              </div>
+
+              <div class="pc-grid">
+                <ul class="pc-box pc-pro">
+                  <h4>장점</h4>
+                  <li>단일 포트로 gRPC + REST 동시 서비스</li>
+                  <li>방화벽 규칙 단순화</li>
+                  <li>Go 생태계와 자연스러운 통합</li>
+                  <li>macOS 네이티브 AI 터미널 (manaflow)</li>
+                </ul>
+                <ul class="pc-box pc-con">
+                  <h4>단점</h4>
+                  <li>이름이 같은 프로젝트 혼재 (혼란)</li>
+                  <li>터미널 멀티플렉서 기능은 없음</li>
+                  <li>kakao/cmux는 유지보수 비활성</li>
+                  <li>manaflow cmux는 아직 베타</li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <p style="font-size:.82rem; color:var(--muted); line-height:1.9; margin-bottom:1rem;">
+                <strong style="color:var(--text)">cmux</strong>는 동일한 이름을 가진 여러 독립 프로젝트를 가리킵니다. 가장 널리 알려진 것은 <strong style="color:var(--cmux)">soheilhy/cmux</strong>로, 단일 TCP 포트에서 gRPC, HTTP/1.1, HTTP/2, TLS 등 여러 프로토콜을 동시에 서비스합니다.
+              </p>
+              <p style="font-size:.82rem; color:var(--muted); line-height:1.9; margin-bottom:1rem;">
+                최근에는 <strong style="color:var(--cmux)">manaflow-ai/cmux</strong>가 주목받습니다. "멀티태스킹을 위한 터미널"을 슬로건으로, AI 코딩 에이전트 여러 개를 한 화면에서 관리하는 macOS 네이티브 앱입니다.
+              </p>
+              <p style="font-size:.82rem; color:var(--muted); line-height:1.9;">
+                카카오의 <strong style="color:var(--cmux)">kakao/cmux</strong>는 Ruby 기반으로 CDH 클러스터를 관리하는 전혀 다른 용도의 CLI입니다.
+              </p>
+
+              <div class="install">
+                <div class="install-tabs">
+                  <div class="itab active" onclick="switchTab(this,'cg')">Go (soheilhy)</div>
+                  <div class="itab" onclick="switchTab(this,'ca')">AI Terminal</div>
+                  <div class="itab" onclick="switchTab(this,'ck')">Kakao CDH</div>
+                </div>
+                <div class="icontent active" id="cg">
+                  <span class="icmt"># Go 모듈로 가져오기</span><br>
+                  <span class="iprompt">$</span><span class="icmd">go get github.com/soheilhy/cmux</span><br>
+                  <span class="icmt"># import "github.com/soheilhy/cmux"</span>
+                </div>
+                <div class="icontent" id="ca">
+                  <span class="icmt"># macOS 네이티브 앱</span><br>
+                  <span class="iprompt">$</span><span class="icmd">brew install --cask cmux</span><br>
+                  <span class="icmt"># 또는 cmux.dev 에서 다운로드</span>
+                </div>
+                <div class="icontent" id="ck">
+                  <span class="icmt"># Ruby gem (kakao CDH 클러스터용)</span><br>
+                  <span class="iprompt">$</span><span class="icmd">gem install cmux</span><br>
+                  <span class="iprompt">$</span><span class="icmd">cmux --help</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ DMUX ═══ -->
+    <div id="panel-dmux" class="panel">
+      <div class="section-wrap">
+        <div class="section-hd">
+          <span class="section-num">03</span>
+          <h2 class="section-ttl" style="color:var(--dmux)">dmux</h2>
+        </div>
+
+        <div class="tool-card tc-dmux">
+          <div class="tool-head">
+            <div>
+              <div class="tool-title" style="color:var(--dmux)">dmux</div>
+              <div class="tool-fullname">Dev Agent Multiplexer — Git Worktree + AI Agent 병렬 실행 도구</div>
+            </div>
+            <div class="tool-chips">
+              <div class="chip"><strong>standardagents</strong>AI Agent</div>
+              <div class="chip"><strong>zdcthomas</strong>Workspace</div>
+              <div class="chip"><strong>Rust / TS</strong>Language</div>
+            </div>
+          </div>
+
+          <div class="tool-body">
+            <div>
+              <div class="terminal">
+                <div class="term-bar">
+                  <div class="tdot r"></div><div class="tdot y"></div><div class="tdot g"></div>
+                  <div class="ttitle">dmux — AI Agent Multiplexer</div>
+                </div>
+                <div class="tv-wt-header">
+                  <span>dmux</span><span>│ feature/auth</span><span>│ fix/perf</span><span>│ refactor/db</span>
+                </div>
+                <div class="tv-wt-grid">
+                  <div class="tv-wt-pane">
+                    <span class="tds">feature/auth</span><br>
+                    <span class="ty">▶</span> <span style="color:var(--text)">claude running</span><br>
+                    status: <span class="tg">active</span>
+                  </div>
+                  <div class="tv-wt-pane">
+                    <span class="tds">fix/perf</span><br>
+                    <span class="ty">▶</span> <span style="color:var(--text)">claude running</span><br>
+                    status: <span class="ty">pending</span>
+                  </div>
+                  <div class="tv-wt-pane">
+                    <span class="tds">refactor/db</span><br>
+                    <span class="tc">○ idle</span><br>
+                    status: <span class="tc">ready</span>
+                  </div>
+                  <div class="tv-wt-pane">
+                    <span class="tds">dmux new feat/X</span><br>
+                    worktree + agent<br>
+                    <span class="tg">→ auto created ✓</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pc-grid">
+                <ul class="pc-box pc-pro">
+                  <h4>장점</h4>
+                  <li>Git worktree + AI 에이전트 자동 연결</li>
+                  <li>여러 AI 에이전트 병렬 관리</li>
+                  <li>브랜치별 독립 환경 자동 구성</li>
+                  <li>Rust 구현으로 빠른 성능 (zdcthomas)</li>
+                </ul>
+                <ul class="pc-box pc-con">
+                  <h4>단점</h4>
+                  <li>AI 에이전트 의존성 (비용 발생)</li>
+                  <li>Git worktree 개념 이해 필요</li>
+                  <li>초기 생태계 (★350 수준)</li>
+                  <li>hepsw/dmux (Docker)는 비활성</li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <p style="font-size:.82rem; color:var(--muted); line-height:1.9; margin-bottom:1rem;">
+                <strong style="color:var(--text)">dmux</strong>도 목적이 다른 여러 프로젝트가 존재합니다. 가장 주목받는 것은 <strong style="color:var(--dmux)">standardagents/dmux</strong>로, <strong style="color:var(--text)">Git Worktree와 AI 코딩 에이전트를 결합</strong>한 개발자 멀티플렉서입니다. Claude Code, Cursor 등 여러 AI 에이전트를 각각 독립된 git worktree에서 병렬로 실행·관리합니다.
+              </p>
+              <p style="font-size:.82rem; color:var(--muted); line-height:1.9; margin-bottom:1rem;">
+                <strong style="color:var(--dmux)">zdcthomas/dmux</strong>는 Rust로 작성된 tmux 워크스페이스 매니저로, 프로젝트별 tmux 세션 레이아웃을 선택·자동 생성하는 데 특화되어 있습니다.
+              </p>
+              <p style="font-size:.82rem; color:var(--muted); line-height:1.9;">
+                작업이 완료되면 <code style="background:var(--surface); padding:.1rem .4rem; border-radius:4px; font-size:.75rem;">m</code> 키로 변경사항을 메인 브랜치에 병합하고, AI 기반 커밋 메시지를 자동 생성합니다.
+              </p>
+
+              <div class="install">
+                <div class="install-tabs">
+                  <div class="itab active" onclick="switchTab(this,'ds')">standardagents</div>
+                  <div class="itab" onclick="switchTab(this,'dz')">zdcthomas (Rust)</div>
+                  <div class="itab" onclick="switchTab(this,'dh')">hepsw (Docker)</div>
+                </div>
+                <div class="icontent active" id="ds">
+                  <span class="icmt"># npm으로 설치</span><br>
+                  <span class="iprompt">$</span><span class="icmd">npm install -g @standardagents/dmux</span><br>
+                  <span class="iprompt">$</span><span class="icmd">dmux new feature/my-feature</span><br>
+                  <span class="icmt"># worktree 생성 + 에이전트 실행</span>
+                </div>
+                <div class="icontent" id="dz">
+                  <span class="icmt"># Cargo로 설치 (Rust)</span><br>
+                  <span class="iprompt">$</span><span class="icmd">cargo install dmux</span><br>
+                  <span class="iprompt">$</span><span class="icmd">dmux</span><span class="icmt">  # 대화형 프로젝트 선택 UI</span>
+                </div>
+                <div class="icontent" id="dh">
+                  <span class="icmt"># pip 설치 (Python)</span><br>
+                  <span class="iprompt">$</span><span class="icmd">pip install dmux</span><br>
+                  <span class="icmt"># docker + tmux 통합 (현재 비활성)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ COMPARE ═══ -->
+    <div id="panel-compare" class="panel">
+      <div class="section-wrap">
+        <div class="section-hd">
+          <span class="section-num">04</span>
+          <h2 class="section-ttl">종합 비교표</h2>
+        </div>
+
+        <table class="compare-tbl">
+          <thead>
+            <tr>
+              <th class="feat">항목</th>
+              <th class="tmux-h">⚡ tmux</th>
+              <th class="cmux-h">🔀 cmux (Go)</th>
+              <th class="cmux-h" style="color:#ff9a6b">🖥 cmux (AI)</th>
+              <th class="dmux-h">🤖 dmux (SA)</th>
+              <th class="dmux-h" style="color:#a89aff">🦀 dmux (ZDC)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-feat">목적</td>
+              <td>터미널 멀티플렉서</td>
+              <td>네트워크 연결 멀티플렉스</td>
+              <td>AI 에이전트 터미널</td>
+              <td>AI 에이전트 + Worktree</td>
+              <td>tmux 워크스페이스 관리</td>
+            </tr>
+            <tr>
+              <td class="td-feat">언어</td>
+              <td><span class="badge b-g">C</span></td>
+              <td><span class="badge b-o">Go</span></td>
+              <td><span class="badge b-o">Swift</span></td>
+              <td><span class="badge b-p">TypeScript</span></td>
+              <td><span class="badge b-p">Rust</span></td>
+            </tr>
+            <tr>
+              <td class="td-feat">GitHub ★</td>
+              <td>★ 42,300+</td>
+              <td>★ 2,700+</td>
+              <td>★ 655+</td>
+              <td>★ 356+</td>
+              <td>★ 351+</td>
+            </tr>
+            <tr>
+              <td class="td-feat">라이선스</td>
+              <td><span class="badge b-g">ISC</span></td>
+              <td><span class="badge b-o">MIT</span></td>
+              <td><span class="badge b-gr">Proprietary</span></td>
+              <td><span class="badge b-p">MIT</span></td>
+              <td><span class="badge b-p">MIT</span></td>
+            </tr>
+            <tr>
+              <td class="td-feat">지원 OS</td>
+              <td>Linux, macOS</td>
+              <td>모든 Go 지원 OS</td>
+              <td>macOS 전용</td>
+              <td>Linux, macOS</td>
+              <td>Linux, macOS</td>
+            </tr>
+            <tr>
+              <td class="td-feat">세션 영속성</td>
+              <td><span class="badge b-g">✓ 핵심기능</span></td>
+              <td><span class="badge b-gr">해당없음</span></td>
+              <td><span class="badge b-o">부분적</span></td>
+              <td><span class="badge b-p">worktree 기반</span></td>
+              <td><span class="badge b-p">tmux 위임</span></td>
+            </tr>
+            <tr>
+              <td class="td-feat">AI 에이전트</td>
+              <td><span class="badge b-gr">없음</span></td>
+              <td><span class="badge b-gr">없음</span></td>
+              <td><span class="badge b-g">✓ 전용</span></td>
+              <td><span class="badge b-g">✓ 핵심기능</span></td>
+              <td><span class="badge b-gr">없음</span></td>
+            </tr>
+            <tr>
+              <td class="td-feat">SSH 원격 작업</td>
+              <td><span class="badge b-g">✓ 최적</span></td>
+              <td><span class="badge b-gr">서버 사이드</span></td>
+              <td><span class="badge b-gr">로컬 전용</span></td>
+              <td><span class="badge b-o">부분 지원</span></td>
+              <td><span class="badge b-o">부분 지원</span></td>
+            </tr>
+            <tr>
+              <td class="td-feat">학습 곡선</td>
+              <td><span class="badge b-y">높음</span></td>
+              <td><span class="badge b-g">라이브러리 API</span></td>
+              <td><span class="badge b-g">낮음 (GUI)</span></td>
+              <td><span class="badge b-o">중간</span></td>
+              <td><span class="badge b-o">중간</span></td>
+            </tr>
+            <tr>
+              <td class="td-feat">추천 대상</td>
+              <td>DevOps, 서버 관리자</td>
+              <td>Go 백엔드 개발자</td>
+              <td>AI 활용 Mac 개발자</td>
+              <td>AI 에이전트 헤비 유저</td>
+              <td>Rust + tmux 파워유저</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ CHARTS ═══ -->
+    <div id="panel-charts" class="panel">
+      <div class="section-wrap">
+        <div class="section-hd">
+          <span class="section-num">05</span>
+          <h2 class="section-ttl">데이터 시각화</h2>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+          <div class="chart-section">
+            <div class="chart-title" style="color:var(--tmux)">⚡ 터미널 도구 채택률</div>
+            <div class="chart-sub">백엔드/DevOps 엔지니어 기준 멀티플렉서 사용 현황 (추정)</div>
+            <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+          </div>
+
+          <div class="chart-section">
+            <div class="chart-title" style="color:var(--cmux)">🔀 cmux 포트 트래픽 구성</div>
+            <div class="chart-sub">단일 포트(8080)에서 cmux를 통한 프로토콜 처리 비율</div>
+            <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="chart-section" style="margin-top:1.5rem;">
+          <div class="chart-title">📊 종합 역량 비교 (Radar)</div>
+          <div class="chart-sub">각 도구의 목적성과 계층이 완전히 달라, 함께 사용하면 시너지를 낼 수 있습니다</div>
+          <div class="chart-wrap" style="height:380px; max-width:500px;"><canvas id="radarChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CHEATSHEET ═══ -->
+    <div id="panel-cheat" class="panel">
+      <div class="section-wrap">
+        <div class="section-hd">
+          <span class="section-num">06</span>
+          <h2 class="section-ttl">치트시트</h2>
+        </div>
+
+        <div class="cheat-grid">
+          <div class="cheat-card t">
+            <div class="cheat-head">tmux — 단축키 (prefix: Ctrl+b)</div>
+            <div class="cheat-row"><span class="kbd">Ctrl+b d</span><span class="cheat-desc">세션 분리 (detach)</span></div>
+            <div class="cheat-row"><span class="kbd">Ctrl+b c</span><span class="cheat-desc">새 윈도우 생성</span></div>
+            <div class="cheat-row"><span class="kbd">Ctrl+b %</span><span class="cheat-desc">수직 패인 분할</span></div>
+            <div class="cheat-row"><span class="kbd">Ctrl+b "</span><span class="cheat-desc">수평 패인 분할</span></div>
+            <div class="cheat-row"><span class="kbd">Ctrl+b ↑↓←→</span><span class="cheat-desc">패인 이동</span></div>
+            <div class="cheat-row"><span class="kbd">Ctrl+b z</span><span class="cheat-desc">패인 전체화면 토글</span></div>
+            <div class="cheat-row"><span class="kbd">Ctrl+b [</span><span class="cheat-desc">Copy 모드 (스크롤)</span></div>
+            <div class="cheat-row"><span class="kbd">Ctrl+b $</span><span class="cheat-desc">세션 이름 변경</span></div>
+            <div class="cheat-row"><span class="kbd">Ctrl+b s</span><span class="cheat-desc">세션 목록 보기</span></div>
+            <div class="cheat-row"><span class="kbd">Ctrl+b &amp;</span><span class="cheat-desc">윈도우 삭제</span></div>
+          </div>
+
+          <div class="cheat-card t">
+            <div class="cheat-head">tmux — CLI 명령어</div>
+            <div class="cheat-row"><span class="kbd">tmux new -s name</span><span class="cheat-desc">이름 있는 세션 생성</span></div>
+            <div class="cheat-row"><span class="kbd">tmux ls</span><span class="cheat-desc">세션 목록 조회</span></div>
+            <div class="cheat-row"><span class="kbd">tmux a -t name</span><span class="cheat-desc">세션 재연결</span></div>
+            <div class="cheat-row"><span class="kbd">tmux kill-session -t</span><span class="cheat-desc">세션 종료</span></div>
+            <div class="cheat-row"><span class="kbd">tmux source ~/.tmux.conf</span><span class="cheat-desc">설정 리로드</span></div>
+            <div class="cheat-row"><span class="kbd">tmux split-window -h</span><span class="cheat-desc">수평 분할 (CLI)</span></div>
+            <div class="cheat-row"><span class="kbd">tmux new-window -n name</span><span class="cheat-desc">이름 있는 새 윈도우</span></div>
+            <div class="cheat-row"><span class="kbd">tmux send-keys -t s:w.p</span><span class="cheat-desc">특정 패인에 명령 전송</span></div>
+            <div class="cheat-row"><span class="kbd">tmux select-layout even-h</span><span class="cheat-desc">균등 수평 레이아웃</span></div>
+            <div class="cheat-row"><span class="kbd">tmux set-option -g</span><span class="cheat-desc">전역 옵션 설정</span></div>
+          </div>
+
+          <div class="cheat-card d">
+            <div class="cheat-head">cmux / dmux 명령어</div>
+            <div class="cheat-row"><span class="kbd">cmux new</span><span class="cheat-desc">[AI] 새 에이전트 세션</span></div>
+            <div class="cheat-row"><span class="kbd">cmux list</span><span class="cheat-desc">[AI] 실행 중 에이전트 목록</span></div>
+            <div class="cheat-row"><span class="kbd">dmux new feat/X</span><span class="cheat-desc">[SA] worktree + 에이전트 생성</span></div>
+            <div class="cheat-row"><span class="kbd">dmux list</span><span class="cheat-desc">[SA] worktree 목록</span></div>
+            <div class="cheat-row"><span class="kbd">dmux attach feat/X</span><span class="cheat-desc">[SA] worktree 접속</span></div>
+            <div class="cheat-row"><span class="kbd">dmux remove feat/X</span><span class="cheat-desc">[SA] worktree 삭제</span></div>
+            <div class="cheat-row"><span class="kbd">dmux</span><span class="cheat-desc">[ZDC] 프로젝트 선택 UI</span></div>
+            <div class="cheat-row"><span class="kbd">go get cmux</span><span class="cheat-desc">[GO] 패키지 설치</span></div>
+            <div class="cheat-row"><span class="kbd">cmux.Match()</span><span class="cheat-desc">[GO] 프로토콜 매처 등록</span></div>
+            <div class="cheat-row"><span class="kbd">m.Serve()</span><span class="cheat-desc">[GO] 멀티플렉서 시작</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ USE CASES ═══ -->
+    <div id="panel-usecase" class="panel">
+      <div class="section-wrap">
+        <div class="section-hd">
+          <span class="section-num">07</span>
+          <h2 class="section-ttl">도구 선택 가이드</h2>
+        </div>
+
+        <div class="eco">
+          <div class="eco-label">도구 조합 흐름도</div>
+          <div class="eco-row">
+            <div class="eco-node" style="border-color:var(--tmux); box-shadow:0 0 20px var(--tmux-glow)">
+              <div class="eco-name" style="color:var(--tmux)">tmux</div>
+              <div class="eco-sub">터미널 세션 관리<br>SSH 원격 작업</div>
+            </div>
+            <div class="eco-arr">+</div>
+            <div class="eco-node" style="border-color:var(--dmux); box-shadow:0 0 20px var(--dmux-glow)">
+              <div class="eco-name" style="color:var(--dmux)">dmux</div>
+              <div class="eco-sub">AI 에이전트 관리<br>Worktree 기반</div>
+            </div>
+            <div class="eco-arr">→</div>
+            <div class="eco-node star">
+              <div class="eco-star-name">최강 조합</div>
+              <div class="eco-sub">AI 멀티 에이전트<br>개발 워크플로우</div>
+            </div>
+          </div>
+          <div style="font-size:.72rem; color:var(--muted); margin-top:.5rem;">
+            tmux · cmux · dmux는 서로 <strong style="color:var(--text)">다른 레이어</strong>에서 동작하므로 함께 사용 가능합니다
+          </div>
+        </div>
+
+        <div class="use-grid">
+          <div class="use-card t">
+            <span class="use-icon">🖥️</span>
+            <div class="use-title">서버 / DevOps 엔지니어</div>
+            <div class="use-text"><strong style="color:var(--tmux)">tmux</strong>를 선택하세요. SSH 세션 보존, 여러 서버 동시 모니터링, 배포 스크립트 병렬 실행. 원격 작업의 생명줄입니다.</div>
+          </div>
+          <div class="use-card c">
+            <span class="use-icon">⚙️</span>
+            <div class="use-title">Go 백엔드 개발자</div>
+            <div class="use-text"><strong style="color:var(--cmux)">cmux (soheilhy)</strong>를 선택하세요. 마이크로서비스에서 단일 포트로 gRPC와 REST를 동시에 노출해야 할 때 최적의 라이브러리입니다.</div>
+          </div>
+          <div class="use-card d">
+            <span class="use-icon">🤖</span>
+            <div class="use-title">AI 에이전트 헤비 유저</div>
+            <div class="use-text"><strong style="color:var(--dmux)">dmux (standardagents)</strong>를 선택하세요. Claude Code, Cursor 등을 여러 브랜치에서 동시에 병렬 실행하고 싶은 개발자에게 최적화되어 있습니다.</div>
+          </div>
+          <div class="use-card t">
+            <span class="use-icon">📡</span>
+            <div class="use-title">원격 개발 / 홈랩</div>
+            <div class="use-text"><strong style="color:var(--tmux)">tmux + .tmux.conf</strong> 커스터마이징으로 완성도 높은 워크스페이스를 구성하세요. TPM 플러그인으로 상태바, 테마, 저장 기능을 추가할 수 있습니다.</div>
+          </div>
+          <div class="use-card c">
+            <span class="use-icon">🍎</span>
+            <div class="use-title">macOS + AI 개발자</div>
+            <div class="use-text"><strong style="color:var(--cmux)">cmux (manaflow)</strong>는 macOS 네이티브 앱으로, AI 코딩 에이전트를 GUI에서 편리하게 관리하고 싶은 분께 적합합니다. 터미널 설정 없이 즉시 사용 가능합니다.</div>
+          </div>
+          <div class="use-card d">
+            <span class="use-icon">🦀</span>
+            <div class="use-title">Rust + tmux 파워유저</div>
+            <div class="use-text"><strong style="color:var(--dmux)">dmux (zdcthomas)</strong>는 Rust로 작성된 빠른 tmux 워크스페이스 매니저입니다. 프로젝트 전환 시 레이아웃을 자동 복원하는 기능이 강점입니다.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:2rem; padding:1.2rem 1.5rem; background:var(--surface); border:1px solid var(--border); border-radius:12px; font-size:.75rem; color:var(--muted); line-height:1.8;">
+          <strong style="color:var(--accent); display:block; margin-bottom:.5rem; font-size:.78rem;">📚 참고 자료</strong>
+          <a href="https://github.com/tmux/tmux/wiki" style="color:var(--tmux); text-decoration:none;" target="_blank">tmux 공식 Wiki ↗</a>
+          &nbsp;·&nbsp;
+          <a href="https://github.com/soheilhy/cmux" style="color:var(--cmux); text-decoration:none;" target="_blank">soheilhy/cmux ↗</a>
+          &nbsp;·&nbsp;
+          <a href="https://github.com/standardagents/dmux" style="color:var(--dmux); text-decoration:none;" target="_blank">standardagents/dmux ↗</a>
+          &nbsp;·&nbsp;
+          <a href="https://github.com/zdcthomas/dmux" style="color:var(--dmux); text-decoration:none;" target="_blank">zdcthomas/dmux ↗</a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ─── NAV ─── */
+function show(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'charts') initCharts();
+}
+
+/* ─── TABS ─── */
+function switchTab(tab, contentId) {
+  const block = tab.closest('.install');
+  block.querySelectorAll('.itab').forEach(t => t.classList.remove('active'));
+  block.querySelectorAll('.icontent').forEach(c => c.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById(contentId).classList.add('active');
+}
+
+/* ─── CHARTS ─── */
+let chartsInited = false;
+
+function initCharts() {
+  if (chartsInited) return;
+  chartsInited = true;
+
+  const tick = { color: '#6b7a99' };
+  const grid = { color: '#2a3040' };
+
+  /* Bar Chart */
+  new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: ['tmux', 'GNU Screen', 'Byobu', 'WezTerm (built-in)', 'Zellij'],
+      datasets: [{
+        label: '개발자 채택률 (%)',
+        data: [85, 7, 4, 2, 2],
+        backgroundColor: ['#00d9a6', '#3d4a63', '#3d4a63', '#3d4a63', '#3d4a63'],
+        borderRadius: 6, borderWidth: 0
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#6b7a99' } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.raw}%` } }
+      },
+      scales: {
+        x: { ticks: tick, grid },
+        y: { ticks: tick, grid, max: 100 }
+      }
+    }
+  });
+
+  /* Donut Chart */
+  new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['gRPC (HTTP/2)', 'HTTP REST', 'SSH & 기타'],
+      datasets: [{
+        data: [55, 35, 10],
+        backgroundColor: ['#7c6bff', '#ff6b35', '#00d9a6'],
+        borderWidth: 2, borderColor: '#1a1f2e', hoverOffset: 10
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#6b7a99', padding: 16 } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}%` } }
+      }
+    }
+  });
+
+  /* Radar Chart */
+  new Chart(document.getElementById('radarChart'), {
+    type: 'radar',
+    data: {
+      labels: ['터미널 UI', '네트워크 포트', '세션 영속성', '데이터 스트림 분배', '마이크로서비스'],
+      datasets: [
+        {
+          label: 'tmux',
+          data: [100, 10, 100, 20, 10],
+          fill: true,
+          backgroundColor: 'rgba(0,217,166,.15)',
+          borderColor: '#00d9a6',
+          pointBackgroundColor: '#00d9a6',
+          pointBorderColor: '#0a0c10'
+        },
+        {
+          label: 'cmux',
+          data: [5, 100, 5, 40, 95],
+          fill: true,
+          backgroundColor: 'rgba(255,107,53,.15)',
+          borderColor: '#ff6b35',
+          pointBackgroundColor: '#ff6b35',
+          pointBorderColor: '#0a0c10'
+        },
+        {
+          label: 'dmux',
+          data: [10, 30, 0, 100, 60],
+          fill: true,
+          backgroundColor: 'rgba(124,107,255,.15)',
+          borderColor: '#7c6bff',
+          pointBackgroundColor: '#7c6bff',
+          pointBorderColor: '#0a0c10'
+        }
+      ]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#e2e8f4', padding: 16 } }
+      },
+      scales: {
+        r: {
+          angleLines: { color: '#2a3040' },
+          grid: { color: '#2a3040' },
+          pointLabels: { color: '#94a3b8', font: { size: 12, family: "'Syne', sans-serif", weight: '600' } },
+          ticks: { display: false, max: 100, min: 0 }
+        }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 부산-일본 배편 여행 분석 & AI 플래너</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../js/gemini_config.js"></script>
+    <script src="../js/gemini_config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pretendard', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Base Reset & Colors (Force Visibility) */
+        body {
+            background-color: #0f172a !important;
+            /* Slate 900 */
+            color: #f8fafc !important;
+            /* Slate 50 */
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        /* Glassmorphism Card Utils */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            /* Slate 800 */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            /* Ensure padding even if Tailwind fails */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            color: #ffffff !important;
+            /* Force White Text */
+        }
+
+        /* Ensure Headings are visible */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            color: #ffffff !important;
+        }
+
+        /* Input Styles */
+        .modern-input {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white !important;
+            padding: 0.75rem 1rem;
+            width: 100%;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            margin: auto;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #0ea5e9;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
+
+    <!-- Header with Aurora Gradient -->
+    <header class="relative overflow-hidden pb-20 pt-16">
+        <div class="absolute inset-0 z-0 opacity-30">
+            <div class="absolute top-[-50%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blue-600 blur-[100px]">
+            </div>
+            <div class="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full bg-cyan-500 blur-[100px]">
+            </div>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-6 text-center">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-medium text-cyan-300 mb-6 backdrop-blur-sm">
+                <i data-lucide="ship" class="w-4 h-4"></i>
+                <span>2025 New Year Travel Analytics</span>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-black tracking-tight text-white mb-6">
+                부산 출발 <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">일본 선박
+                    여행</span><br>
+                AI 분석 & 플래너
+            </h1>
+            <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-8 font-light">
+                데이터로 분석하는 최적의 배편과 Gemini AI가 제안하는 맞춤형 일정.<br>
+                후쿠오카, 시모노세키, 대마도 — 당신의 선택은?
+            </p>
+
+            <div class="flex flex-wrap justify-center gap-4 text-sm">
+                <div class="bg-slate-800/80 px-4 py-2 rounded-lg border border-slate-700 flex items-center gap-2">
+                    <i data-lucide="users" class="text-cyan-400 w-4 h-4"></i>
+                    <span>4인 가족 기준</span>
+                </div>
+                <div class="bg-slate-800/80 px-4 py-2 rounded-lg border border-slate-700 flex items-center gap-2">
+                    <i data-lucide="calendar" class="text-cyan-400 w-4 h-4"></i>
+                    <span>12.25 (목) — 12.28 (일)</span>
+                </div>
+                <div class="bg-slate-800/80 px-4 py-2 rounded-lg border border-slate-700 flex items-center gap-2">
+                    <i data-lucide="sparkles" class="text-yellow-400 w-4 h-4"></i>
+                    <span>Gemini Pro 탑재</span>
+                </div>
+                <button onclick="setApiKey()"
+                    class="bg-slate-800/80 hover:bg-slate-700 px-4 py-2 rounded-lg border border-slate-700 flex items-center gap-2 transition-colors cursor-pointer">
+                    <i data-lucide="key" class="text-emerald-400 w-4 h-4"></i>
+                    <span>API Key 설정</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 pb-24 relative z-10 space-y-12">
+
+        <!-- AI Itinerary Generator -->
+        <section class="glass-card p-6 md:p-8 border-t-4 border-t-cyan-500">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <i data-lucide="map" class="text-cyan-400"></i>
+                    AI 맞춤형 일정 생성기
+                </h2>
+                <p class="text-slate-400 mt-2">여행 스타일을 선택하면 완벽한 3박 4일 코스를 설계해드립니다.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <!-- Inputs -->
+                <div class="md:col-span-4 space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">목적지 선택</label>
+                        <div class="relative">
+                            <select id="destination"
+                                class="modern-input w-full p-3 rounded-lg appearance-none cursor-pointer">
+                                <option value="후쿠오카 (뉴카멜리아/비틀)">🇯🇵 후쿠오카 (도심/쇼핑)</option>
+                                <option value="시모노세키 (부관훼리)">♨️ 시모노세키 (온천/시장)</option>
+                                <option value="대마도 (니나/팬스타)">🎣 대마도 (자연/낚시)</option>
+                            </select>
+                            <i data-lucide="chevron-down"
+                                class="absolute right-3 top-3.5 text-slate-500 w-5 h-5 pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-3">여행 테마 (다중 선택)</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label
+                                class="cursor-pointer modern-input p-3 rounded-lg flex items-center gap-2 hover:bg-slate-800/80">
+                                <input type="checkbox" class="interest-check accent-cyan-500 w-4 h-4" value="맛집 탐방">
+                                <span class="text-sm">🍜 맛집 탐방</span>
+                            </label>
+                            <label
+                                class="cursor-pointer modern-input p-3 rounded-lg flex items-center gap-2 hover:bg-slate-800/80">
+                                <input type="checkbox" class="interest-check accent-cyan-500 w-4 h-4" value="쇼핑">
+                                <span class="text-sm">🛍️ 쇼핑</span>
+                            </label>
+                            <label
+                                class="cursor-pointer modern-input p-3 rounded-lg flex items-center gap-2 hover:bg-slate-800/80">
+                                <input type="checkbox" class="interest-check accent-cyan-500 w-4 h-4" value="온천/힐링">
+                                <span class="text-sm">♨️ 온천/힐링</span>
+                            </label>
+                            <label
+                                class="cursor-pointer modern-input p-3 rounded-lg flex items-center gap-2 hover:bg-slate-800/80">
+                                <input type="checkbox" class="interest-check accent-cyan-500 w-4 h-4" value="역사/문화">
+                                <span class="text-sm">🏯 역사/문화</span>
+                            </label>
+                            <label
+                                class="cursor-pointer modern-input p-3 rounded-lg flex items-center gap-2 hover:bg-slate-800/80 col-span-2">
+                                <input type="checkbox" class="interest-check accent-cyan-500 w-4 h-4" value="아이들이 좋아하는">
+                                <span class="text-sm">🎡 아이들과 함께 (키즈존)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button onclick="generateItinerary()"
+                        class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-cyan-900/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                        <span id="itinerary-btn-text">AI 일정 생성 시작</span>
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        <div id="itinerary-loader" class="loader ml-2 hidden"></div>
+                    </button>
+                </div>
+
+                <!-- Result Area -->
+                <div class="md:col-span-8">
+                    <div id="itinerary-result"
+                        class="h-full min-h-[300px] glass-card bg-slate-900/50 p-6 rounded-xl border-dashed border-2 border-slate-700 flex items-center justify-center text-slate-500">
+                        <div class="text-center">
+                            <i data-lucide="bot" class="w-12 h-12 mx-auto mb-3 opacity-20"></i>
+                            <p>좌측에서 옵션을 선택하고 생성 버튼을 눌러주세요.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Grid -->
+        <h3 class="text-xl font-bold text-white pl-2 border-l-4 border-blue-500">📊 데이터로 보는 여행 분석</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Card 1: Cost Comparison -->
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h4 class="font-bold text-lg text-slate-200">💰 4인 가족 총 비용</h4>
+                    <span class="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded">단위: 만원</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="costComparisonChart"></canvas>
+                </div>
+                <p class="mt-4 text-xs text-slate-400 text-center">
+                    대마도가 가장 경제적이나, 숙박비 변동성이 큽니다.<br>
+                    뉴카멜리아/부관훼리는 <strong>'선내 숙박'</strong>으로 2박 비용 절감 효과.
+                </p>
+            </div>
+
+            <!-- Card 2: Time Comparison -->
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h4 class="font-bold text-lg text-slate-200">⏱️ 편도 소요 시간</h4>
+                </div>
+                <div class="chart-container">
+                    <canvas id="timeComparisonChart"></canvas>
+                </div>
+                <p class="mt-4 text-xs text-slate-400 text-center">
+                    시간이 금이라면 <strong>쾌속선</strong>,<br>여유로운 낭만과 부대시설은 <strong>대형 페리</strong>.
+                </p>
+            </div>
+
+            <!-- Card 3: Accommodation -->
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h4 class="font-bold text-lg text-slate-200">🏨 연휴 숙소 현황</h4>
+                </div>
+                <div class="chart-container">
+                    <canvas id="accommodationChart"></canvas>
+                </div>
+                <p class="mt-4 text-xs text-slate-400 text-center">
+                    크리스마스 시즌 대마도 숙소 <strong>조기 마감</strong> 주의.<br>
+                    후쿠오카는 비즈니스 호텔 잔여석 위주.
+                </p>
+            </div>
+
+            <!-- Card 4: Cost Breakdown (Wide) -->
+            <div class="glass-card p-6 md:col-span-2 lg:col-span-3">
+                <div class="flex justify-between items-start mb-4">
+                    <h4 class="font-bold text-lg text-slate-200">🧾 비용 상세 구성 (운임 vs 세금)</h4>
+                </div>
+                <div class="chart-container" style="max-height: 250px;">
+                    <canvas id="costBreakdownChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Assistant Tools Grid -->
+        <h3 class="text-xl font-bold text-white pl-2 border-l-4 border-purple-500 mt-8">🤖 스마트 여행 어시스턴트</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Q&A Tool -->
+            <div class="glass-card p-6 border-t-2 border-t-purple-500">
+                <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <i data-lucide="message-circle-question" class="text-purple-400"></i>
+                    무엇이든 물어보세요
+                </h4>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="ai-question" class="modern-input flex-1 px-4 py-3 rounded-lg"
+                        placeholder="예: 시모노세키 가라토 시장 영업시간?" onkeypress="handleEnter(event)">
+                    <button onclick="askAI()"
+                        class="bg-purple-600 hover:bg-purple-700 text-white px-4 rounded-lg transition-colors flex items-center justify-center min-w-[50px]">
+                        <i data-lucide="send" class="w-5 h-5"></i>
+                        <!-- Loader injected here via JS -->
+                        <div id="ask-loader" class="loader hidden w-4 h-4 border-2"></div>
+                        <span id="ask-btn-text" class="hidden"></span> <!-- Visual placeholder -->
+                    </button>
+                </div>
+                <div id="ask-result"
+                    class="text-sm text-slate-300 bg-slate-900/50 p-4 rounded-lg min-h-[100px] border border-slate-700 hidden">
+                </div>
+            </div>
+
+            <!-- Phrase Tool -->
+            <div class="glass-card p-6 border-t-2 border-t-pink-500">
+                <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <i data-lucide="languages" class="text-pink-400"></i>
+                    실전 일본어 회화
+                </h4>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="phrase-situation" class="modern-input flex-1 px-4 py-3 rounded-lg"
+                        placeholder="예: 멀미약 사고 싶을 때" onkeypress="handlePhraseEnter(event)">
+                    <button onclick="generatePhrases()"
+                        class="bg-pink-600 hover:bg-pink-700 text-white px-4 rounded-lg transition-colors flex items-center justify-center min-w-[50px]">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        <div id="phrase-loader" class="loader hidden w-4 h-4 border-2"></div>
+                        <span id="phrase-btn-text" class="hidden"></span>
+                    </button>
+                </div>
+                <div id="phrase-result"
+                    class="text-sm text-slate-300 bg-slate-900/50 p-4 rounded-lg min-h-[100px] border border-slate-700 hidden">
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Recommendation -->
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-8 border border-slate-700 text-center">
+            <h2 class="text-2xl font-bold text-white mb-6">💡 2025 전문가 추천 가이드</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                <div
+                    class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 hover:border-cyan-500 transition-colors">
+                    <div class="text-yellow-400 font-bold mb-1 text-lg">🥇 추천 1위</div>
+                    <div class="text-white font-bold mb-2 text-xl">시모노세키 부관훼리</div>
+                    <p class="text-slate-400 text-sm">"가성비와 낭만 잡기"<br>선내 1박으로 숙박비 절약, 가라토 시장 초밥으로 시작하는 아침.</p>
+                </div>
+                <div
+                    class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 hover:border-cyan-500 transition-colors">
+                    <div class="text-slate-400 font-bold mb-1">추천 2위</div>
+                    <div class="text-white font-bold mb-2">후쿠오카 뉴카멜리아</div>
+                    <p class="text-slate-400 text-sm">"시티 투어의 정석"<br>하카타역 일루미네이션과 크리스마스 마켓 접근성 최고.</p>
+                </div>
+                <div
+                    class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 hover:border-cyan-500 transition-colors">
+                    <div class="text-slate-400 font-bold mb-1">추천 3위</div>
+                    <div class="text-white font-bold mb-2">대마도 1박 2일</div>
+                    <p class="text-slate-400 text-sm">"짧고 굵은 힐링"<br>면세 쇼핑과 낚시 매니아를 위한 실속형 코스.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="text-center py-8 text-slate-600 text-sm border-t border-slate-800/50">
+        <p>Managed by Chris Lee • Powered by Gemini Pro • 2025 Data Projection</p>
+    </footer>
+
+    <!-- Init Icons -->
+    <script>
+        // -------------------------------------------------------------
+        // LOGIC PRESERVATION (Copy/Paste of original logic with minor tweaks for new styling)
+        // -------------------------------------------------------------
+        // Expose functions globally for HTML event handlers
+        // Expose functions globally for HTML event handlers
+        window.setApiKey = function () {
+            const currentKey = localStorage.getItem('gemini_api_key') || "";
+            const newKey = prompt("Gemini API Key를 입력해주세요 (브라우저 로컬 저장소에 저장됨)", currentKey);
+            if (newKey !== null) {
+                localStorage.setItem('gemini_api_key', newKey);
+                alert("API Key가 저장되었습니다. 다시 시도해주세요.");
+            }
+        };
+
+        window.callGemini = async function (promptText) {
+            const apiKey = typeof GEMINI_CONFIG !== 'undefined' ? GEMINI_CONFIG.API_KEY : "";
+
+            if (!apiKey) {
+                alert("API Key configuration missing.");
+                return null;
+            }
+            // Mock API Call for UI testing if empty (remove in prod)
+            // return "AI 응답 테스트입니다. 실제 API Key가 필요합니다.";
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+                });
+                if (!response.ok) throw new Error('Network response error');
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error(error);
+                return "일시적 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+            }
+        }
+
+        window.generateItinerary = async function () {
+            const dest = document.getElementById('destination').value;
+            const checkboxes = document.querySelectorAll('.interest-check:checked');
+            const interests = Array.from(checkboxes).map(cb => cb.value).join(', ');
+
+            if (!interests) { alert("여행 테마를 하나 이상 선택해주세요!"); return; }
+
+            const loader = document.getElementById('itinerary-loader');
+            const btnText = document.getElementById('itinerary-btn-text');
+            const resultDiv = document.getElementById('itinerary-result');
+
+            loader.classList.remove('hidden');
+            btnText.textContent = "생성 중...";
+
+            // UI Transition
+            resultDiv.innerHTML = '<div class="text-center animate-pulse"><p class="text-cyan-400 mb-2">Gemini가 최적의 경로를 계산하고 있습니다...</p><p class="text-xs text-slate-500">배편 시간표와 동선 최적화 중</p></div>';
+
+            const prompt = `부산 출발 일본 선박 여행 전문가로서, 2025년 12월 25일~28일 (3박 4일) 4인 가족(성인2, 청소년2) 여행 일정을 짜줘.
+            목적지: ${dest}
+            테마: ${interests}
+            
+            출력 형식:
+            HTML 태그 없이 깔끔한 텍스트로. 이모지 적극 활용.
+            1. 💡 추천 포인트 (1줄)
+            2. 🗓️ 일자별 코스 (1일차 ~ 4일차)
+            3. 🍯 꿀팁`;
+
+            const text = await window.callGemini(prompt);
+
+            loader.classList.add('hidden');
+            btnText.textContent = "AI 일정 생성 시작";
+
+            if (text) {
+                resultDiv.innerHTML = `<div class="prose prose-invert prose-sm max-w-none text-left whitespace-pre-line leading-relaxed text-slate-300">${text}</div>`;
+            }
+        }
+
+        window.askAI = async function () {
+            const resultDiv = document.getElementById('ask-result');
+            const input = document.getElementById('ai-question');
+            const loader = document.getElementById('ask-loader');
+
+            if (!input.value.trim()) return;
+
+            loader.classList.remove('hidden');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<span class="animate-pulse">답변 생성 중...</span>';
+
+            const text = await window.callGemini(`부산-일본 배 여행 질문 답변해줘: ${input.value} (한국어로, 짧고 굵게)`);
+
+            loader.classList.add('hidden');
+            if (text) resultDiv.innerHTML = text.replace(/\n/g, '<br>');
+        }
+
+        window.generatePhrases = async function () {
+            const resultDiv = document.getElementById('phrase-result');
+            const input = document.getElementById('phrase-situation');
+            const loader = document.getElementById('phrase-loader');
+
+            if (!input.value.trim()) return;
+
+            loader.classList.remove('hidden');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<span class="animate-pulse">번역 중...</span>';
+
+            const text = await window.callGemini(`일본 여행 상황: "${input.value}". 유용한 일본어 표현 3개 (발음/뜻 포함) 표 형식 말고 리스트로 줘.`);
+
+            loader.classList.add('hidden');
+            if (text) resultDiv.innerHTML = text.replace(/\n/g, '<br>');
+        }
+
+        window.handleEnter = function (e) { if (e.key === 'Enter') window.askAI(); }
+        window.handlePhraseEnter = function (e) { if (e.key === 'Enter') window.generatePhrases(); }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Init Icons
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+
+            // Chart Global Config for Dark Mode
+            Chart.defaults.color = '#94a3b8'; // slate-400
+            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+            Chart.defaults.font.family = 'Pretendard';
+
+            // -------------------------------------------------------------
+            // CHARTS (Data preserved, styling updated)
+            // -------------------------------------------------------------
+
+            // 1. Cost Chart
+            const ctxCost = document.getElementById('costComparisonChart');
+            if (ctxCost) {
+                new Chart(ctxCost.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['대마도', '후쿠오카(L)', '후쿠오카(F)', '시모노세키'],
+                        datasets: [{
+                            label: '4인 총 비용 (만원)',
+                            data: [48, 65, 115, 72],
+                            backgroundColor: ['#2dd4bf', '#3b82f6', '#f43f5e', '#a855f7'],
+                            borderRadius: 6,
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // 2. Time Chart
+            const ctxTime = document.getElementById('timeComparisonChart');
+            if (ctxTime) {
+                new Chart(ctxTime.getContext('2d'), {
+                    type: 'bar',
+                    indexAxis: 'y',
+                    data: {
+                        labels: ['대마도(쾌속)', '후쿠오카(쾌속)', '후쿠오카(야간)', '시모노세키(야간)'],
+                        datasets: [{
+                            label: '소요 시간 (시간)',
+                            data: [1.5, 3.7, 9, 12],
+                            backgroundColor: 'rgba(14, 165, 233, 0.7)',
+                            borderColor: '#0ea5e9',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                            y: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // 3. Accommodation Chart
+            const ctxAcc = document.getElementById('accommodationChart');
+            if (ctxAcc) {
+                new Chart(ctxAcc.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['비즈니스 호텔', '료칸/온천', '게스트하우스', '고급 호텔'],
+                        datasets: [{
+                            data: [50, 20, 20, 10],
+                            backgroundColor: ['#3b82f6', '#f97316', '#10b981', '#8b5cf6'],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10 } } }
+                    }
+                });
+            }
+
+            // 4. Breakdown Chart
+            const ctxBreakdown = document.getElementById('costBreakdownChart');
+            if (ctxBreakdown) {
+                new Chart(ctxBreakdown.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['대마도', '후쿠오카(L)', '후쿠오카(F)', '시모노세키'],
+                        datasets: [
+                            { label: '순수 운임', data: [36, 45, 95, 52], backgroundColor: '#0ea5e9', borderRadius: 4 },
+                            { label: '세금/유류비', data: [12, 20, 20, 20], backgroundColor: '#64748b', borderRadius: 4 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' } } }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

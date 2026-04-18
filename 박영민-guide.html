@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cursor AI 페어 프로그래밍 — AIVE-CONTEST 2025</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    .screenshot-gallery img {
+      cursor: zoom-in; transition: opacity 0.15s;
+    }
+    .screenshot-gallery img:hover { opacity: 0.88; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.88); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; flex-direction: column;
+      cursor: zoom-out;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-img {
+      max-width: 94vw; max-height: 90vh;
+      border-radius: 6px; box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+      object-fit: contain;
+      filter: contrast(1.12) saturate(1.08) brightness(1.02);
+      transform-origin: center center;
+      transition: transform 0.15s ease;
+      cursor: zoom-in;
+      user-select: none;
+    }
+    #lb-close {
+      position: fixed; top: 20px; right: 24px;
+      color: #fff; font-size: 28px; font-weight: 300;
+      cursor: pointer; line-height: 1; opacity: 0.8; z-index: 10001;
+    }
+    #lb-close:hover { opacity: 1; }
+    #lb-prev, #lb-next {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.15); border: none; color: #fff;
+      font-size: 36px; padding: 12px 18px; cursor: pointer;
+      border-radius: 8px; z-index: 10001;
+    }
+    #lb-prev { left: 16px; }
+    #lb-next { right: 16px; }
+    #lb-caption {
+      color: #ddd; margin-top: 10px; font-size: 13px; text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Arrow Lightbox -->
+  <div id="lb-overlay" onclick="closeLb()">
+    <span id="lb-close" onclick="closeLb()">✕</span>
+    <button id="lb-prev" onclick="event.stopPropagation(); moveLb(-1)">‹</button>
+    <img id="lb-img" src="" alt="" onclick="event.stopPropagation()">
+    <div id="lb-caption">
+      <span id="lb-alt"></span>
+      <span id="lb-counter" style="margin-left:12px; opacity:0.6;"></span>
+    </div>
+    <button id="lb-next" onclick="event.stopPropagation(); moveLb(1)">›</button>
+  </div>
+  <script>
+    var _lbImgs = [], _lbIdx = 0;
+    function openLb(idx) {
+      _lbIdx = idx; _updateLb();
+      document.getElementById('lb-overlay').classList.add('open');
+    }
+    function closeLb() {
+      document.getElementById('lb-overlay').classList.remove('open');
+    }
+    function moveLb(dir) {
+      _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
+      _updateLb();
+    }
+    function _updateLb() {
+      var d = _lbImgs[_lbIdx];
+      var img = document.getElementById('lb-img');
+      img.src = d.src;
+      img.alt = d.alt || '';
+      if (typeof _lbZoom !== 'undefined') { _lbZoom = 1; img.style.transform = 'scale(1)'; img.style.cursor = 'zoom-in'; }
+      document.getElementById('lb-alt').textContent = d.alt || '';
+      document.getElementById('lb-counter').textContent = (_lbIdx+1) + ' / ' + _lbImgs.length;
+      document.getElementById('lb-prev').style.display = _lbImgs.length > 1 ? '' : 'none';
+      document.getElementById('lb-next').style.display = _lbImgs.length > 1 ? '' : 'none';
+    }
+    function initGallery(imgs) { _lbImgs = imgs; }
+
+    // 줌 상태
+    var _lbZoom = 1;
+    function _resetZoom() {
+      _lbZoom = 1;
+      var img = document.getElementById('lb-img');
+      img.style.transform = 'scale(1)';
+      img.style.cursor = 'zoom-in';
+    }
+    // 이미지 전환 시 줌 리셋
+    var _origUpdateLb = _updateLb;
+    // 휠 줌 (1~4배)
+    document.addEventListener('wheel', function(e) {
+      var o = document.getElementById('lb-overlay');
+      if (!o.classList.contains('open')) return;
+      e.preventDefault();
+      var img = document.getElementById('lb-img');
+      _lbZoom = Math.min(4, Math.max(1, _lbZoom - e.deltaY * 0.002));
+      img.style.transform = 'scale(' + _lbZoom + ')';
+      img.style.cursor = _lbZoom > 1 ? 'zoom-out' : 'zoom-in';
+    }, { passive: false });
+    // 더블클릭 2.2배 토글
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('lb-img').addEventListener('dblclick', function(e) {
+        e.stopPropagation();
+        if (_lbZoom > 1) { _resetZoom(); return; }
+        _lbZoom = 2.2;
+        this.style.transform = 'scale(2.2)';
+        this.style.cursor = 'zoom-out';
+      });
+    });
+
+    document.addEventListener('keydown', function(e) {
+      var o = document.getElementById('lb-overlay');
+      if (o.classList.contains('open')) {
+        if (e.key === 'Escape') closeLb();
+        if (e.key === 'ArrowLeft') moveLb(-1);
+        if (e.key === 'ArrowRight') moveLb(1);
+      }
+    });
+  </script>
+
+  <!-- ━━━ 고정 헤더 ━━━ -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AIVE-CONTEST 2025</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Cursor AI 페어 프로그래밍</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">MES2팀 · 박영민</span>
+        <span class="mono" style="font-size:14px; font-weight:500; color:#c8622a; background:#fdf0e8; padding:4px 12px; border-radius:7px; border:1px solid #e8b896;">88점</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:920px; margin:0 auto; padding:52px 28px 88px;">
+
+    <!-- ━━━ 히어로 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제 · 🏆 AIVE-CONTEST</p>
+          <h1 style="font-size:36px; font-weight:800; color:#1c1917; line-height:1.15; letter-spacing:-0.02em; margin-bottom:18px;">Cursor AI 페어 프로그래밍</h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">
+            MES 도메인 특화 <strong>MCP 서버를 직접 개발</strong>하고 Ask→Plan→Agent 방법론을 정립하여,
+            1인 연간 <strong>1,152시간</strong>을 절감하고 팀 전체 AI 개발 체계를 구축한 과제입니다.
+          </p>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026. 4. 8</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">MES2팀</span>
+          </div>
+        </div>
+
+        <!-- 점수 패널 -->
+        <div style="background:#ede9e1; border:1px solid #d6d0c4; border-radius:16px; padding:24px; min-width:210px;">
+          <p class="eval-label" style="margin-bottom:14px;">종합 점수</p>
+          <div style="text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d6d0c4;">
+            <span class="mono" style="font-size:52px; font-weight:500; color:#c8622a; line-height:1;">88</span>
+            <span style="font-size:18px; color:#b5895a; font-weight:400;"> / 100</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">33</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">③ 효율성 /35</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">23</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">④ 아이디어 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">19</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑤ 확산성 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">13</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑥ 조직목표 /15</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 문제 정의 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">기존의 어려움</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
+            <li>🔴 <strong>개발 물량 폭증</strong> — SAP 도입·차세대 MES 준비로 대규모 시스템 개편 필요</li>
+            <li style="margin-top:8px;">🔴 <strong>암묵지 의존</strong> — 시스템 지식이 개발자 개인에게 종속, 병목 발생</li>
+            <li style="margin-top:8px;">🔴 <strong>설계 문서 부재</strong> — 선 코딩·후 문서화로 설계 문서 확보율 10%에 불과</li>
+            <li style="margin-top:8px;">🔴 <strong>야근·외부 인력 의존</strong> — 물량 급증 시 ODC 인력 불가피</li>
+          </ul>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:10px; letter-spacing:0.05em;">✨ AI로 해결한 방식</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
+            <li>✅ <strong>Ask → Plan → Agent</strong> 3단계 방법론 수립 — 개발자는 설계 집중, 구현은 AI 위임</li>
+            <li style="margin-top:8px;">✅ <strong>MES SiS Framework MCP 서버 직접 개발</strong> — AI가 도메인 규칙 실시간 참조, 환각 최소화</li>
+            <li style="margin-top:8px;">✅ <strong>PDF 13종 교육 가이드 제작</strong> — 팀 내 전파 완료, 타 팀 "따라 하기 쉽다" 피드백</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 체크리스트 시각화 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
+
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge">런타임 AI</span>
+          <span class="check-badge">노코드 AI</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 개발 프로세스 표준화·자동화</span>
+          <span class="check-badge on">✅ 설계 문서 자동 산출</span>
+          <span class="check-badge on">✅ 코드 생성 자동화</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">33<span style="font-size:12px; color:#b5895a;">/35</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            단위 기능 개발 <strong>6시간 → 2시간</strong>(67% 단축), 월 처리 건수 <strong>15 → 24건</strong>(60% 향상).
+            연간 절감 시간 <strong>1,152시간</strong>(4h/건 × 24건 × 12개월). 실제 26년 2~3월 운영 실적으로 검증.
+          </p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">23<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            AI를 막연히 "기대"하지 않고 단계별로 "활용"하는 방법론 정립. MES 도메인 MCP 서버를 직접 개발해
+            환각을 근본적으로 해결. 문제-해결 논리가 매우 명쾌하고 실용적으로 구현됨.
+          </p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">19<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            팀 내 교육 완료. 타 팀에서 <strong>"보고 따라 하기 쉽다"</strong> 피드백 확보.
+            Ask→Plan→Agent 방법론은 언어·도메인 무관 범용 적용 가능.
+            PDF 13종 가이드로 진입 장벽 최소화.
+          </p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">13<span style="font-size:12px; color:#b5895a;">/15</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            2026년 센터 비전 <strong>"일하는 방식의 변화"</strong> 직접 달성.
+            MES2팀 KPI 50% 직접 부합(운영 문서 자산화·시스템 안정화·역량 고도화).
+            팀 전체 AI 활용 개발 체계 정립.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 주요 기능 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">⚡ 주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🧠 Ask → Plan → Agent</p>
+          <ul style="font-size:13px; color:#44403c; line-height:1.7; padding-left:0; list-style:none;">
+            <li>🔹 <strong>Ask</strong>: 요구사항 명확화, AI에 컨텍스트 전달</li>
+            <li>🔹 <strong>Plan</strong>: AI가 설계 문서 생성 (개발자 검토)</li>
+            <li>🔹 <strong>Agent</strong>: AI가 코드 자동 생성·리팩토링</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🔌 SiS Framework MCP 서버</p>
+          <ul style="font-size:13px; color:#44403c; line-height:1.7; padding-left:0; list-style:none;">
+            <li>🔹 <strong>Resources</strong>: 3-Tier 아키텍처 문서 AI 실시간 제공</li>
+            <li>🔹 <strong>Tools</strong>: 화면 코드로 파일 경로 자동 조회</li>
+            <li>🔹 <strong>Prompts</strong>: 시나리오별 표준 가이드 제공</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📚 AI 페어 프로그래밍 가이드</p>
+          <ul style="font-size:13px; color:#44403c; line-height:1.7; padding-left:0; list-style:none;">
+            <li>🔹 PDF <strong>13종</strong> 교육 자료 (설치~고급 전략)</li>
+            <li>🔹 MES 아키텍처 소개 및 Cursor 연결 방법</li>
+            <li>🔹 AI 환각(Hallucination) 이해와 대응 전략</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">🗂️ 화면 파일 경로 자동 조회</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.7;">
+            화면 코드(예: SPRG700E02) 입력 시 UX/Biz 계층의 Pop, Proc, Tds, Biz, SRD 파일 경로를 자동 반환.
+            파일 검색 시간 제거.
+          </p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">📐 신규 화면 추가 표준 가이드</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.7;">
+            조회/등록/수정 화면 유형별로 생성 순서·노드ID·서비스ID 규칙을 MCP Prompt로 표준화.
+            개발자 실수 방지.
+          </p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:8px;">💡 코드 컨벤션 자동 적용</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.7;">
+            .cursorrules 파일로 SIS Framework 코드 컨벤션을 정의하여 AI가 일관된 스타일로 코드 생성.
+            리뷰 부담 감소.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ AI 활용 방식 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:28px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">AI/IDE 도구</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
+              <li>🔹 <strong>Cursor AI</strong> — Claude 기반 Agent Mode</li>
+              <li>🔹 <strong>MCP (Model Context Protocol)</strong></li>
+              <li>🔹 Ask → Plan → Agent 방법론</li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">MCP 서버 기술 스택</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
+              <li>🔹 <strong>TypeScript</strong> + Node.js 18+</li>
+              <li>🔹 <strong>@modelcontextprotocol/sdk</strong> ^1.27.0</li>
+              <li>🔹 <strong>zod</strong> ^3.23.0 (유효성 검증)</li>
+            </ul>
+          </div>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:10px; padding:18px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:12px;">🔄 개발 흐름 (Cursor + MCP)</p>
+          <div style="font-size:13px; color:#44403c; line-height:1.8;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span style="background:#fdf0e8; border:1px solid #e8b896; padding:4px 12px; border-radius:6px; font-weight:600; color:#c8622a;">① Ask</span>
+              <span style="color:#b5895a;">→</span>
+              <span style="background:#fdf0e8; border:1px solid #e8b896; padding:4px 12px; border-radius:6px; font-weight:600; color:#c8622a;">② Plan</span>
+              <span style="color:#b5895a;">→</span>
+              <span style="background:#fdf0e8; border:1px solid #e8b896; padding:4px 12px; border-radius:6px; font-weight:600; color:#c8622a;">③ Agent</span>
+              <span style="color:#b5895a;">→</span>
+              <span style="background:#ede9e1; border:1px solid #d6d0c4; padding:4px 12px; border-radius:6px; color:#78716c;">MCP 참조</span>
+              <span style="color:#b5895a;">→</span>
+              <span style="background:#ede9e1; border:1px solid #d6d0c4; padding:4px 12px; border-radius:6px; color:#78716c;">MES 코드 생성</span>
+            </div>
+            <p style="margin-top:12px; font-size:13px; color:#78716c;">
+              MCP 서버가 SIS 3-Tier 아키텍처·규칙을 AI에 실시간 공급 → AI 환각(Hallucination) 최소화 → 일관된 고품질 코드 생성
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 기대 효과 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">1,152h</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">연간 절감 시간</p>
+          <p style="font-size:12px; color:#78716c;">4h/건 × 24건/월 × 12개월 = 연 1,152시간 절감</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">100%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">설계 문서 확보율</p>
+          <p style="font-size:12px; color:#78716c;">기존 10%에서 100%로 향상. Plan 단계 강제화로 자산화</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">+60%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">개발 처리 건수 향상</p>
+          <p style="font-size:12px; color:#78716c;">월 15건 → 24건 처리. 야근·ODC 인력 의존 완전 제거</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 시각 증빙 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📸 교육 자료 (PDF 13종)</p>
+      <p style="font-size:14px; color:#78716c; margin-bottom:20px;">설치부터 고급 전략까지 단계별 교육 자료를 제작하여 누구나 따라할 수 있도록 가이드화했습니다. 이미지를 클릭하면 크게 볼 수 있습니다.</p>
+
+      <script>initGallery([
+        {src:"assets/0._교육자료_목차_p1.png", alt:"교육자료 목차"},
+        {src:"assets/2.1설치_및_초기_설정_p1.png", alt:"2.1 설치 및 초기 설정"},
+        {src:"assets/2.2_UI_구성_이해_p1.png", alt:"2.2 UI 구성 이해"},
+        {src:"assets/2.3_Cursor_AI를_100__활용하는_4가지_방식_p1.png", alt:"2.3 Cursor AI 100% 활용 4가지 방식"},
+        {src:"assets/3.1_MES_아키텍처_소개_p1.png", alt:"3.1 MES 아키텍처 소개"},
+        {src:"assets/3.2_Cursor_연결_p1.png", alt:"3.2 Cursor 연결"},
+        {src:"assets/3.3_예제로_배우기_p1.png", alt:"3.3 예제로 배우기"},
+        {src:"assets/3.4_Cursor_사용_전략_(Ask_→_Plan_→_Agent)_p1.png", alt:"3.4 Cursor 사용 전략 (Ask → Plan → Agent)"},
+        {src:"assets/4.1_사용자_프롬프트_p1.png", alt:"4.1 사용자 프롬프트"},
+        {src:"assets/4.2_코드_컨벤션(제약)_p1.png", alt:"4.2 코드 컨벤션(제약)"},
+        {src:"assets/4.3_MCP_등록_p1.png", alt:"4.3 MCP 등록"},
+        {src:"assets/4.5_DataBase_연동_방법_(Oracle)_p1.png", alt:"4.5 DataBase 연동 방법 (Oracle)"},
+        {src:"assets/4.6_AI_환각(Hallucination)_이해와_대응_전략_p1.png", alt:"4.6 AI 환각 이해와 대응 전략"}
+      ]);</script>
+
+      <div class="screenshot-gallery" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px;">
+        <img src="assets/0._교육자료_목차_p1.png" alt="교육자료 목차" onclick="openLb(0)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/2.1설치_및_초기_설정_p1.png" alt="2.1 설치 및 초기 설정" onclick="openLb(1)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/2.3_Cursor_AI를_100__활용하는_4가지_방식_p1.png" alt="2.3 Cursor AI 100% 활용" onclick="openLb(3)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/3.1_MES_아키텍처_소개_p1.png" alt="3.1 MES 아키텍처 소개" onclick="openLb(4)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/3.4_Cursor_사용_전략_(Ask_→_Plan_→_Agent)_p1.png" alt="3.4 Ask → Plan → Agent 전략" onclick="openLb(7)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/4.3_MCP_등록_p1.png" alt="4.3 MCP 등록" onclick="openLb(10)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/4.6_AI_환각(Hallucination)_이해와_대응_전략_p1.png" alt="4.6 AI 환각 대응 전략" onclick="openLb(12)" style="border-radius:8px; width:100%; aspect-ratio:4/3; object-fit:cover; border:1px solid #d6d0c4;">
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ━━━ 푸터 ━━━ -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AIVE-CONTEST 2025 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; MES2팀
+    </p>
+  </footer>
+
+</body>
+</html>

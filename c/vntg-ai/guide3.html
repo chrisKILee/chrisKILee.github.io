@@ -1,0 +1,347 @@
+<!-- Chosen Palette: Modern Tech Blue - Slate-900 (Background), Blue-600 (Primary), Emerald-500 (Success) for a professional, data-centric feel. -->
+
+<!-- Application Structure Plan: 
+    1.  **Overview Dashboard**: RAG 아키텍처의 전체 흐름을 요약하고, 각 용어의 정의를 숫자로 변환되는 과정 중심으로 설명.
+    2.  **Model-Driven Chunking**: AI 모델(Embedding Model)의 토큰 제한에 따라 문서가 어떻게 잘리는지 시각화.
+    3.  **Numerical Vector Space**: 벡터 DB에 실제로 저장되는 [0.12, -0.45, ...] 형태의 숫자 배열과 공간상의 거리를 시각화.
+    4.  **Interactive Query & Template**: 질문 -> 검색 -> 템플릿 적용 -> 최종 답변까지의 과정을 직접 시뮬레이션.
+    
+    Why this structure? 사용자가 "AI 모델이 청크를 결정한다"는 점과 "숫자 배열로 저장된다"는 기술적 핵심을 직접 눈으로 확인하게 하여 추상적인 개념을 구체화함.
+-->
+
+<!-- Visualization & Content Choices:
+    1.  **Chunking Simulator**: 사용자가 슬라이더로 토큰 크기를 조절하면 AI 모델의 관점에서 문장이 어떻게 쪼개지는지 실시간 표시.
+    2.  **Vector Array Display**: 단순한 점이 아니라 실제 다차원 배열 데이터의 일부를 팝업으로 노출하여 "숫자 형태 저장"을 증명.
+    3.  **Chart.js Coordinate Map**: 2D 공간에 데이터 배열들이 어떻게 밀집되는지 표현.
+    4.  **Template Comparison**: 템플릿 적용 전(Raw)과 후(Formatted)의 답변 품질 차이를 비교.
+-->
+
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise AI: RAG 아키텍처 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            height: 350px;
+        }
+
+        .token-block {
+            transition: all 0.3s ease;
+        }
+
+        .numeric-array {
+            font-family: 'Courier New', Courier, monospace;
+            background: #1e293b;
+            color: #10b981;
+        }
+
+        .glow {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white py-12 px-4 shadow-xl">
+        <div class="max-w-6xl mx-auto">
+            <h1 class="text-4xl font-extrabold mb-4">사내 AI(RAG) 구현 기술 가이드</h1>
+            <p class="text-slate-400 text-lg max-w-3xl">
+                단순한 챗봇을 넘어, 기업 내부 데이터를 AI 모델이 이해할 수 있는 <strong>숫자 배열(Vector)</strong>로 변환하고
+                <strong>프롬프트 템플릿</strong>을 통해 정교한 답변을 생성하는 과정을 탐험해보세요.
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-4 md:p-8 space-y-12">
+
+        <!-- SECTION 1: Glossary Grid -->
+        <section id="concepts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="text-blue-600 font-bold mb-2">01. 토큰 (Token)</div>
+                <p class="text-sm text-slate-600">AI가 문장을 읽는 '글자 조각' 단위입니다. 모델마다 처리 가능한 최대 토큰량이 정해져 있습니다.</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="text-blue-600 font-bold mb-2">02. 청크 (Chunk)</div>
+                <p class="text-sm text-slate-600">AI 모델의 성능과 효율을 위해 문서를 적절한 크기로 자른 텍스트 덩어리입니다.</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="text-blue-600 font-bold mb-2">03. 벡터 DB (Vector DB)</div>
+                <p class="text-sm text-slate-600">텍스트를 <strong>숫자 배열(Vector)</strong>로 변환하여 저장하고 의미 기반으로 검색하는 창고입니다.</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="text-blue-600 font-bold mb-2">04. 템플릿 (Template)</div>
+                <p class="text-sm text-slate-600">검색된 정보와 질문을 합쳐 AI에게 전달하는 '작업 지시서'입니다. 결과 형식을 고정합니다.</p>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Model-Driven Chunking -->
+        <section class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span
+                    class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+                AI 모델 기반의 청킹(Chunking) 시뮬레이션
+            </h2>
+            <p class="text-slate-600 mb-8">
+                청크의 크기는 사람이 임의로 정하기도 하지만, 궁극적으로는 <strong>Embedding AI 모델의 Context Window(토큰 제한)</strong>가 결정합니다.
+                너무 크면 핵심 정보가 희석되고, 너무 작으면 문맥이 끊어집니다.
+            </p>
+
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-semibold mb-2">모델 설정: 청크당 최대 토큰 수 (Token Limit)</label>
+                    <input type="range" id="chunk-size-slider" min="10" max="100" value="40"
+                        class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>작은 조각 (빠른 검색)</span>
+                        <span id="slider-val" class="font-bold text-blue-600">40 Tokens</span>
+                        <span>큰 조각 (풍부한 문맥)</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-4 tracking-widest">AI 모델의 텍스트 조각화(Chunking)
+                        결과</h4>
+                    <div id="chunk-display" class="flex flex-wrap gap-4">
+                        <!-- Chunks injected here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Vector Storage (Numerical Array) -->
+        <section class="bg-slate-900 text-white p-8 rounded-3xl shadow-2xl">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span
+                    class="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center mr-3 text-sm">2</span>
+                벡터 DB와 숫자 배열(Numerical Array)
+            </h2>
+            <p class="text-slate-400 mb-8">
+                AI는 텍스트를 직접 비교하지 않습니다. 모든 청크는 AI 모델(Embedding)을 거쳐 수천 개의 <strong>실수 배열(Array)</strong>로 바뀝니다.
+                벡터 DB는 이 숫자들 사이의 '거리'를 계산하여 유사도를 판별합니다.
+            </p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div class="chart-container bg-slate-800 p-4 rounded-2xl border border-slate-700">
+                    <canvas id="vectorSpaceChart"></canvas>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                        <div class="text-emerald-400 text-xs font-bold mb-2">실제 저장 형태 (Vector Data)</div>
+                        <div id="vector-preview"
+                            class="numeric-array p-3 rounded text-xs break-all h-32 overflow-y-auto leading-relaxed">
+                            [ 0.142, -0.091, 0.882, 0.314, -0.551, 0.229, 0.004, -0.118, 0.672, -0.421, 0.901, 0.124,
+                            ... ]
+                        </div>
+                    </div>
+                    <div class="text-sm text-slate-400 italic">
+                        * 각 청크는 모델에 따라 보통 768차원 또는 1536차원의 배열로 변환됩니다.
+                    </div>
+                    <button onclick="simulateNewData()"
+                        class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold transition-all">
+                        새로운 데이터 임베딩 시뮬레이션
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Final Pipeline (Template & Output) -->
+        <section class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span
+                    class="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center mr-3 text-sm">3</span>
+                질의 응답 및 템플릿(Template) 제어
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- User Input -->
+                <div class="space-y-4">
+                    <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+                        <label class="block text-sm font-bold text-indigo-900 mb-2">사용자 질문 입력</label>
+                        <input type="text" id="user-query" value="우리 회사 연차 규정 알려줘"
+                            class="w-full p-3 rounded-xl border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <button onclick="runRAG()"
+                            class="mt-4 w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700">AI
+                            답변 요청</button>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-slate-500 mb-2 uppercase">프롬프트 템플릿 (Prompt Template)</div>
+                        <pre id="template-view"
+                            class="text-xs text-slate-700 font-mono whitespace-pre-wrap leading-tight">
+당신은 사내 지식 도우미입니다.
+다음 [지식 청크]를 참고하여 답변하세요.
+답변은 반드시 JSON 형식으로 리턴하세요.
+{
+  "answer": "내용",
+  "source": "청크 ID"
+}
+[지식 청크]: {context}</pre>
+                    </div>
+                </div>
+
+                <!-- AI Output -->
+                <div class="bg-slate-900 rounded-2xl p-6 text-white overflow-hidden flex flex-col h-[400px]">
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-2">
+                        <span class="text-xs font-bold text-slate-500 uppercase">AI Final Response</span>
+                        <div id="ai-status" class="text-xs text-emerald-400 hidden">● 처리 완료</div>
+                    </div>
+                    <div id="ai-response" class="flex-1 font-mono text-sm leading-relaxed overflow-y-auto">
+                        <span class="text-slate-600 italic">질문을 입력하고 버튼을 눌러주세요.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-50 border-t border-slate-200 py-12 mt-12">
+        <div class="max-w-6xl mx-auto px-4 text-center text-slate-500 text-sm">
+            <p>본 시뮬레이션은 사내 AI(RAG) 구현 시의 핵심 로직인 <strong>모델 기반 청킹 -> 벡터 변환 -> 템플릿 응답</strong> 과정을 교육하기 위해 제작되었습니다.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. Mock Data ---
+        const sampleDoc = "사내 연차 규정 제 12조에 의거하여, 신입 사원은 입사 1년 미만 시 매월 1일의 유급 휴가를 부여받습니다. 입사 1년이 경과한 시점부터는 연간 15일의 연차가 발생하며, 이는 매년 1월 1일 기점으로 갱신됩니다. 연차 미사용 시 수당으로 지급되지 않으며, 차년도 이월은 불가능합니다.";
+
+        // --- 2. Chunking Logic ---
+        const slider = document.getElementById('chunk-size-slider');
+        const sliderVal = document.getElementById('slider-val');
+        const chunkDisplay = document.getElementById('chunk-display');
+
+        function updateChunks() {
+            const limit = parseInt(slider.value);
+            sliderVal.innerText = `${limit} Tokens`;
+            chunkDisplay.innerHTML = '';
+
+            // Simple char-based logic for demo (AI model would use tokenizers)
+            let chunks = [];
+            for (let i = 0; i < sampleDoc.length; i += limit * 2) {
+                chunks.push(sampleDoc.substring(i, i + limit * 2));
+            }
+
+            chunks.forEach((chunk, idx) => {
+                const div = document.createElement('div');
+                div.className = "bg-white p-3 rounded-lg border border-blue-200 text-xs shadow-sm hover:glow cursor-default max-w-xs transition-all";
+                div.innerHTML = `
+                    <div class="text-blue-500 font-bold mb-1 underline">Chunk #${idx + 1}</div>
+                    <div class="text-slate-700 leading-relaxed">${chunk}...</div>
+                `;
+                chunkDisplay.appendChild(div);
+            });
+        }
+
+        slider.oninput = updateChunks;
+
+        // --- 3. Vector Chart Logic ---
+        let vectorChart;
+        function initChart() {
+            const ctx = document.getElementById('vectorSpaceChart').getContext('2d');
+            vectorChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '사내 지식 벡터 (Database)',
+                        data: [
+                            { x: 20, y: 30 }, { x: 25, y: 35 }, { x: 18, y: 28 }, // 관련 데이터 그룹 1
+                            { x: 70, y: 80 }, { x: 75, y: 85 }, { x: 72, y: 78 }, // 관련 데이터 그룹 2
+                            { x: 50, y: 10 }, { x: 55, y: 15 }
+                        ],
+                        backgroundColor: '#3b82f6',
+                        pointRadius: 6
+                    }, {
+                        label: '검색 질문 (Query)',
+                        data: [],
+                        backgroundColor: '#f43f5e',
+                        pointRadius: 10,
+                        pointStyle: 'rectRot'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { display: false, min: 0, max: 100 },
+                        y: { display: false, min: 0, max: 100 }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        function simulateNewData() {
+            const preview = document.getElementById('vector-preview');
+            const newArray = Array.from({ length: 40 }, () => (Math.random() * 2 - 1).toFixed(3));
+            preview.innerText = `[ ${newArray.join(', ')}, ... ]`;
+
+            // Add a temporary point to chart
+            vectorChart.data.datasets[0].data.push({
+                x: Math.random() * 100,
+                y: Math.random() * 100
+            });
+            vectorChart.update();
+        }
+
+        // --- 4. RAG Pipeline Logic ---
+        function runRAG() {
+            const query = document.getElementById('user-query').value;
+            const responseBox = document.getElementById('ai-response');
+            const status = document.getElementById('ai-status');
+
+            responseBox.innerHTML = '<span class="text-blue-400">1. 질문 벡터 변환 중...</span><br>';
+            status.classList.add('hidden');
+
+            setTimeout(() => {
+                responseBox.innerHTML += '<span class="text-emerald-400">2. 벡터 DB 검색 (Top-k: 2) 완료...</span><br>';
+                // Update chart query position
+                vectorChart.data.datasets[1].data = [{ x: 22, y: 32 }];
+                vectorChart.update();
+            }, 800);
+
+            setTimeout(() => {
+                responseBox.innerHTML += '<span class="text-amber-400">3. 템플릿 적용 및 LLM 추론 중...</span><br><br>';
+            }, 1600);
+
+            setTimeout(() => {
+                const finalJson = {
+                    "answer": "신입 사원의 경우 입사 1년 미만 시 매월 1일의 유급 휴가가 부여되며, 1년 경과 시 매년 15일의 연차가 발생합니다.",
+                    "source": "사내_연차_규정_제12조",
+                    "format_type": "JSON_TEMPLATE"
+                };
+                responseBox.innerHTML = `<pre class="text-emerald-400">${JSON.stringify(finalJson, null, 2)}</pre>`;
+                status.classList.remove('hidden');
+            }, 2800);
+        }
+
+        // --- Initialization ---
+        function _init() { updateChunks(); initChart(); }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', _init);
+        } else { _init(); }
+
+    </script>
+</body>
+
+</html>

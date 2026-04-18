@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code 스킬 가이드</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .prose p { margin-bottom: 1rem; color: #52525b; line-height: 1.75; }
+    .prose h2 { font-size: 1.25rem; font-weight: 700; color: #18181b; margin: 2rem 0 1rem; border-bottom: 1px solid #e4e4e7; padding-bottom: 0.5rem; }
+    .prose h3 { font-size: 1rem; font-weight: 600; color: #27272a; margin: 1.5rem 0 0.75rem; }
+    .prose code { background: #f4f4f5; border-radius: 4px; padding: 2px 6px; font-size: 0.875em; color: #7c3aed; }
+    .nav-link { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; font-size: 14px; color: #71717a; transition: all 0.15s; text-decoration: none; }
+    .nav-link:hover { background: #f4f4f5; color: #18181b; }
+    .nav-link.active { background: #f4f4f5; color: #18181b; font-weight: 500; }
+    a { text-decoration: none; }
+    .search-highlight { background: #fef08a; border-radius: 2px; }
+  </style>
+</head>
+<body class="bg-white text-zinc-800 antialiased">
+
+  <!-- 탑 헤더 -->
+  <header class="fixed top-0 inset-x-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-blur h-14 flex items-center px-6">
+    <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <span class="font-semibold text-zinc-900">Claude Code</span>
+        <span class="text-zinc-300">·</span>
+        <span class="text-sm text-zinc-500">스킬 가이드</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <input type="search" id="skill-search" placeholder="스킬 검색..." class="text-sm border border-zinc-200 rounded-lg pl-8 pr-4 py-1.5 w-52 outline-none focus:border-emerald-400" />
+          <svg class="w-4 h-4 text-zinc-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <a href="/gemini_html/claude_skills_guide.html" class="text-xs text-zinc-400 hover:text-zinc-700 border border-zinc-200 rounded-lg px-3 py-1.5 transition-colors">다크 버전</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto pt-14 flex">
+
+    <!-- 왼쪽 사이드바 -->
+    <aside class="fixed top-14 bottom-0 w-60 overflow-y-auto border-r border-zinc-200 py-8 px-4">
+      <div class="space-y-6">
+        <div>
+          <p class="text-xs font-semibold text-zinc-400 uppercase tracking-widest px-3 mb-2">개요</p>
+          <div class="space-y-0.5">
+            <a href="#intro" class="nav-link active">소개</a>
+            <a href="#quickstart" class="nav-link">빠른 참조</a>
+            <a href="#tips" class="nav-link">사용 팁</a>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-zinc-400 uppercase tracking-widest px-3 mb-2">스킬 목록</p>
+          <div class="space-y-0.5">
+            <a href="#pack-skills" class="nav-link">⚡ Power Pack 스킬</a>
+            <a href="#custom-skills" class="nav-link">🔧 커스텀 스킬</a>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-zinc-400 uppercase tracking-widest px-3 mb-2">카테고리</p>
+          <div class="space-y-0.5">
+            <a href="#cat-workflow" class="nav-link">워크플로우</a>
+            <a href="#cat-doc" class="nav-link">문서화</a>
+            <a href="#cat-site" class="nav-link">사이트 관리</a>
+            <a href="#cat-ai" class="nav-link">AI·이메일</a>
+            <a href="#cat-db" class="nav-link">DB·서버</a>
+            <a href="#cat-misc" class="nav-link">기타 유틸</a>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="ml-60 flex-1 px-12 py-10 max-w-3xl">
+      <div class="prose">
+
+        <!-- 히어로 배너 -->
+        <div class="not-prose mb-12 relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 p-8 text-white">
+          <div class="relative z-10">
+            <span class="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">Claude Code Power Pack</span>
+            <h1 class="text-3xl font-extrabold mb-2">스킬 레퍼런스 가이드</h1>
+            <p class="text-emerald-50 text-base">Claude Code에 설치된 모든 스킬의 명령어, 설명, 사용법을 한눈에 확인하세요. Power Pack + 커스텀 스킬 총 85개.</p>
+            <div class="mt-6 flex gap-3">
+              <a href="#pack-skills" class="bg-zinc-900 text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-zinc-700 transition-colors">스킬 목록 보기 →</a>
+              <a href="#quickstart" class="bg-white/20 text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-white/30 transition-colors">빠른 참조</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 소개 -->
+        <section id="intro">
+          <h2>소개</h2>
+          <p>이 가이드는 <code>~/.claude/skills/</code>에 설치된 모든 스킬을 문서화합니다. 스킬은 <strong>Power Pack</strong> (공통 워크플로우 도구)과 <strong>커스텀 스킬</strong> (프로젝트·사이트 특화 도구)로 구분됩니다.</p>
+          <p>스킬을 실행하려면 Claude Code 프롬프트에 <code>/스킬명</code>을 입력하거나, <code>Skill</code> 도구를 통해 호출합니다. 각 스킬은 특정 키워드에도 자동 활성화됩니다.</p>
+          <div class="not-prose bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex gap-3 my-4">
+            <span class="text-emerald-500 text-lg flex-shrink-0">💡</span>
+            <p class="text-sm text-emerald-800">복잡한 작업은 <code>/plan</code>으로 계획을 먼저 수립하고, 구현 후 <code>/verify</code> → <code>/review</code> → <code>/commit-push</code> 순서로 마무리하는 것을 권장합니다.</p>
+          </div>
+        </section>
+
+        <!-- 빠른 참조 -->
+        <section id="quickstart">
+          <h2>빠른 참조</h2>
+          <p>상황별로 가장 자주 사용하는 스킬 조합입니다.</p>
+            <div class="not-prose grid grid-cols-2 gap-3">
+              <div class="bg-zinc-50 rounded-xl p-4 border border-zinc-200">
+                <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">개발 시작</div>
+                <div class="space-y-1.5">
+                  <div class="font-mono text-sm text-violet-600">/plan</div>
+                  <div class="font-mono text-sm text-violet-600">/spec</div>
+                  <div class="font-mono text-sm text-violet-600">/frontend</div>
+                  <div class="font-mono text-sm text-violet-600">/tdd</div>
+                </div>
+              </div>
+              <div class="bg-zinc-50 rounded-xl p-4 border border-zinc-200">
+                <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">마무리</div>
+                <div class="space-y-1.5">
+                  <div class="font-mono text-sm text-emerald-600">/verify</div>
+                  <div class="font-mono text-sm text-emerald-600">/review</div>
+                  <div class="font-mono text-sm text-emerald-600">/commit-push</div>
+                  <div class="font-mono text-sm text-emerald-600">/handoff</div>
+                </div>
+              </div>
+              <div class="bg-zinc-50 rounded-xl p-4 border border-zinc-200">
+                <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">문서화</div>
+                <div class="space-y-1.5">
+                  <div class="font-mono text-sm text-amber-600">/prd</div>
+                  <div class="font-mono text-sm text-amber-600">/trd</div>
+                  <div class="font-mono text-sm text-amber-600">/adr</div>
+                  <div class="font-mono text-sm text-amber-600">/sdd-init</div>
+                </div>
+              </div>
+              <div class="bg-zinc-50 rounded-xl p-4 border border-zinc-200">
+                <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">사이트 관리</div>
+                <div class="space-y-1.5">
+                  <div class="font-mono text-sm text-cyan-600">/add-new-page</div>
+                  <div class="font-mono text-sm text-cyan-600">/page-index-add</div>
+                  <div class="font-mono text-sm text-cyan-600">/display-new</div>
+                  <div class="font-mono text-sm text-cyan-600">/add-skill-to-doc</div>
+                </div>
+              </div>
+            </div>
+        </section>
+
+        <!-- 사용 팁 -->
+        <section id="tips">
+          <h2>사용 팁</h2>
+          <h3>컨텍스트 관리 패턴</h3>
+          <p>토큰 80-100k 이전에 컨텍스트를 정리하면 응답 품질이 유지됩니다.</p>
+          <pre><code>작업 → /compact → 작업 → /compact → 작업
+→ /handoff (HANDOFF.md 생성) → /clear → 새 세션</code></pre>
+          <h3>Red-Green-Refactor (TDD)</h3>
+          <p><code>/tdd</code> 스킬은 Kent Beck의 TDD 원칙을 강제합니다. 구현 전 반드시 실패하는 테스트를 먼저 작성해야 합니다.</p>
+          <div class="not-prose bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 my-4">
+            <span class="text-amber-500 text-lg flex-shrink-0">⚠️</span>
+            <p class="text-sm text-amber-800">main/master 브랜치에 직접 push 금지. <code>/commit-push</code> 실행 시 브랜치를 확인합니다.</p>
+          </div>
+        </section>
+
+        <!-- Power Pack 스킬 -->
+        <section id="pack-skills">
+          <h2>⚡ Power Pack 스킬</h2>
+          <p>Claude Code Power Pack에 포함된 공통 워크플로우 스킬입니다. 모든 프로젝트에서 사용 가능합니다.</p>
+          <div class="not-prose overflow-x-auto rounded-xl border border-zinc-200">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-50 border-b border-zinc-200">
+                <tr>
+                  <th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">명령어</th>
+                  <th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">이름</th>
+                  <th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">설명</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white">
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/plan</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Plan</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">복잡한 작업 전 계획 수립. Plan 모드에서 사용.</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/spec</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Spec</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">SPEC 기반 개발 - 심층 인터뷰로 명세서 생성.</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/frontend</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Frontend</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">빅테크 스타일 UI 개발. 플래닝 → 구현까지.</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/tdd</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">TDD</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">테스트 주도 개발 - 테스트 먼저 작성 후 구현.</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/review</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Review</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">현재 브랜치의 변경사항 코드 리뷰.</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/verify</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Verify</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">작업 완료 후 코드 검증 (타입체크, 린트, 테스트, 빌드).</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/simplify</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Simplify</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">코드 단순화 및 리팩토링.</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/build-fix</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Build Fix</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">TypeScript 및 빌드 에러를 점진적으로 수정.</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/handoff</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Handoff</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">세션 종료 전 HANDOFF.md 작업 인계 문서 생성.</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/compact-guide</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Compact Guide</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">컨텍스트 관리 가이드.</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/techdebt</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Techdebt</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">기술 부채 정리 - 중복 코드, console.log 등 검사.</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/security-review</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Security Review</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">보안 취약점 분석 및 리뷰.</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/nano-banana</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Nano Banana</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">이미지 생성 - Gemini CLI 기반.</td>
+            </tr>
+            <tr class="hover:bg-zinc-50 border-b border-zinc-100 last:border-0">
+              <td class="px-4 py-3 font-mono text-sm text-violet-600 whitespace-nowrap">/dogfood</td>
+              <td class="px-4 py-3 font-semibold text-sm text-zinc-800 whitespace-nowrap">Dogfood</td>
+              <td class="px-4 py-3 text-sm text-zinc-500 leading-relaxed">웹 앱을 탐색하고 테스트해 버그, UX 이슈 발견.</td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 커스텀 스킬 -->
+        <section id="custom-skills">
+          <h2>🔧 커스텀 스킬</h2>
+          <p><code>~/.claude/skills/</code>에 직접 설치한 프로젝트·사이트 특화 스킬입니다. 총 <strong>71개</strong>.</p>
+
+          <h3 id="cat-workflow">워크플로우</h3>
+          <div class="not-prose overflow-x-auto rounded-xl border border-zinc-200 mb-6">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-50 border-b border-zinc-200">
+                <tr>
+                  <th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">명령어</th>
+                  <th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">이름</th>
+                  <th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">설명</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white">
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100">
+                  <td class="px-4 py-3 font-mono text-sm text-emerald-600">/commit-push</td>
+                  <td class="px-4 py-3 font-semibold text-sm text-zinc-800">Commit Push</td>
+                  <td class="px-4 py-3 text-sm text-zinc-500">PR 없이 커밋 + 푸시만 수행. commitlog.md 기반 커밋 규칙 적용.</td>
+                </tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100">
+                  <td class="px-4 py-3 font-mono text-sm text-emerald-600">/using-superpowers</td>
+                  <td class="px-4 py-3 font-semibold text-sm text-zinc-800">Using Superpowers</td>
+                  <td class="px-4 py-3 text-sm text-zinc-500">대화 시작 시 스킬 탐색 및 활용 방법 안내.</td>
+                </tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100">
+                  <td class="px-4 py-3 font-mono text-sm text-emerald-600">/brainstorming</td>
+                  <td class="px-4 py-3 font-semibold text-sm text-zinc-800">Brainstorming</td>
+                  <td class="px-4 py-3 text-sm text-zinc-500">창의적 작업 전 필수 브레인스토밍. 기능 추가, 컴포넌트 구현 전 사용.</td>
+                </tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100">
+                  <td class="px-4 py-3 font-mono text-sm text-emerald-600">/challenge</td>
+                  <td class="px-4 py-3 font-semibold text-sm text-zinc-800">Challenge</td>
+                  <td class="px-4 py-3 text-sm text-zinc-500">구현 계획 사전 실패 분석(Pre-Mortem).</td>
+                </tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100">
+                  <td class="px-4 py-3 font-mono text-sm text-emerald-600">/executing-plans</td>
+                  <td class="px-4 py-3 font-semibold text-sm text-zinc-800">Executing Plans</td>
+                  <td class="px-4 py-3 text-sm text-zinc-500">작성된 구현 계획을 별도 세션에서 실행.</td>
+                </tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100">
+                  <td class="px-4 py-3 font-mono text-sm text-emerald-600">/writing-plans</td>
+                  <td class="px-4 py-3 font-semibold text-sm text-zinc-800">Writing Plans</td>
+                  <td class="px-4 py-3 text-sm text-zinc-500">다단계 작업의 구현 계획 작성.</td>
+                </tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100">
+                  <td class="px-4 py-3 font-mono text-sm text-emerald-600">/requesting-code-review</td>
+                  <td class="px-4 py-3 font-semibold text-sm text-zinc-800">Requesting Code Review</td>
+                  <td class="px-4 py-3 text-sm text-zinc-500">작업 완료 후 코드 리뷰 요청.</td>
+                </tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100">
+                  <td class="px-4 py-3 font-mono text-sm text-emerald-600">/test-driven-development</td>
+                  <td class="px-4 py-3 font-semibold text-sm text-zinc-800">Test Driven Development</td>
+                  <td class="px-4 py-3 text-sm text-zinc-500">구현 전 테스트 먼저 작성하는 TDD 워크플로우.</td>
+                </tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100">
+                  <td class="px-4 py-3 font-mono text-sm text-emerald-600">/verification-before-completion</td>
+                  <td class="px-4 py-3 font-semibold text-sm text-zinc-800">Verification Before Completion</td>
+                  <td class="px-4 py-3 text-sm text-zinc-500">완료 주장 전 검증 명령 실행 필수.</td>
+                </tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100">
+                  <td class="px-4 py-3 font-mono text-sm text-emerald-600">/writing-skills</td>
+                  <td class="px-4 py-3 font-semibold text-sm text-zinc-800">Writing Skills</td>
+                  <td class="px-4 py-3 text-sm text-zinc-500">새 스킬 생성, 기존 스킬 수정, 스킬 동작 검증.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="cat-doc">문서화</h3>
+          <div class="not-prose overflow-x-auto rounded-xl border border-zinc-200 mb-6">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-50 border-b border-zinc-200">
+                <tr>
+                  <th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">명령어</th>
+                  <th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">이름</th>
+                  <th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">설명</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white">
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/sdd-init</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">SDD Init</td><td class="px-4 py-3 text-sm text-zinc-500">Spec-Driven Development 프로젝트 초기화. 인터뷰 → CLAUDE.md + 5개 문서 생성 + tmux 세팅.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/prd</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">PRD</td><td class="px-4 py-3 text-sm text-zinc-500">제품 요구사항 문서(Product Requirements Document) 생성.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/trd</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">TRD</td><td class="px-4 py-3 text-sm text-zinc-500">기술 요구사항 문서(Technical Requirements Document) 생성.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/adr</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">ADR</td><td class="px-4 py-3 text-sm text-zinc-500">아키텍처 결정 기록(Architecture Decision Record) 생성.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/impl-plan</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Impl Plan</td><td class="px-4 py-3 text-sm text-zinc-500">구현 계획(IMPLEMENTATION_PLAN) 생성.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/create-doc-by-code</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Create Doc By Code</td><td class="px-4 py-3 text-sm text-zinc-500">소스코드 분석하여 TRD·SPEC 생성 → AIVE-CONTEST HTML 가이드 자동 생성.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/program-guide</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Program Guide</td><td class="px-4 py-3 text-sm text-zinc-500">Confluence/Google Docs 링크를 받아 비개발자용 프로그램 소개 가이드 HTML 생성.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/project-overview</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Project Overview</td><td class="px-4 py-3 text-sm text-zinc-500">현재 프로젝트 설정을 조사하여 docs/project_overview.md 생성.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/weekly</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Weekly</td><td class="px-4 py-3 text-sm text-zinc-500">이번 주 Confluence 주간 보고 bullet 정리 및 이전 주와 비교 요약.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/table2md</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Table2MD</td><td class="px-4 py-3 text-sm text-zinc-500">이전 대화의 표를 Confluence 붙여넣기용 Markdown으로 변환 후 클립보드 복사.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/read-doc</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Read Doc</td><td class="px-4 py-3 text-sm text-zinc-500">Confluence, Jira, Google Sheets, Google Docs URL 읽기 및 댓글 등록.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/jira-ticket</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Jira Ticket</td><td class="px-4 py-3 text-sm text-zinc-500">Jira 티켓 URL로 버그 수정 또는 기능 문서 + 구현. Jira 댓글 자동 등록.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="cat-site">사이트 관리</h3>
+          <div class="not-prose overflow-x-auto rounded-xl border border-zinc-200 mb-6">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-50 border-b border-zinc-200">
+                <tr><th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">명령어</th><th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">이름</th><th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">설명</th></tr>
+              </thead>
+              <tbody class="bg-white">
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/add-new-page</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Add New Page</td><td class="px-4 py-3 text-sm text-zinc-500">chrisKILee.github.io gemini_html 사이트에 새 HTML 페이지 추가 및 등록.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/page-index-add</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Page Index Add</td><td class="px-4 py-3 text-sm text-zinc-500">AI Tech Feed에 새 아이템 추가.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/page-index-remove</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Page Index Remove</td><td class="px-4 py-3 text-sm text-zinc-500">AI Tech Feed에서 아이템 영구 삭제.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/display-new</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Display New</td><td class="px-4 py-3 text-sm text-zinc-500">site.json의 NEW 배지 동기화. git 최초 커밋일 기준으로 createdAt 자동 설정.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/add-skill-to-doc</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Add Skill To Doc</td><td class="px-4 py-3 text-sm text-zinc-500">~/.claude/skills/ 스캔해 claude_skills_guide.html에 누락된 스킬 카드 자동 추가.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/add-new-rssblog</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Add New RSS Blog</td><td class="px-4 py-3 text-sm text-zinc-500">블로그/뉴스 URL을 AI Tech Feed에 한국어 요약 카드로 자동 추가.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/add-typeui-design</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Add TypeUI Design</td><td class="px-4 py-3 text-sm text-zinc-500">typeui.sh 디자인 시스템 분석 후 add-new-page 템플릿 HTML 생성 및 등록.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/make-icon</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Make Icon</td><td class="px-4 py-3 text-sm text-zinc-500">chrisnolja.dev 서브도메인용 Block C System 3×3 그리드 투톤 SVG 아이콘 & 파비콘 생성.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/logo-icon-favicon</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Logo Icon Favicon</td><td class="px-4 py-3 text-sm text-zinc-500">SVG 로고, 아이콘, 파비콘 생성 전문 스킬. 완료 후 LOGO_DESIGN.md 자동 정리.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="cat-ai">AI · 이메일</h3>
+          <div class="not-prose overflow-x-auto rounded-xl border border-zinc-200 mb-6">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-50 border-b border-zinc-200">
+                <tr><th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">명령어</th><th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">이름</th><th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">설명</th></tr>
+              </thead>
+              <tbody class="bg-white">
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/ai-worker-mail</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">AI Worker Mail</td><td class="px-4 py-3 text-sm text-zinc-500">AI-WORKER 활동 홍보 이메일 초안. 팀원 성과를 겸손하게 자랑하는 캠페인 메일.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/ai-worker-mail-v2</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">AI Worker Mail V2</td><td class="px-4 py-3 text-sm text-zinc-500">AI-WORKER 홍보 이메일 v2. 레이아웃·관점·오프닝을 랜덤 조합해 매번 다른 캠페인 메일.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/board</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Board</td><td class="px-4 py-3 text-sm text-zinc-500">AgentHub 메시지 보드 읽기, 쓰기, 탐색. 에이전트 간 협업 조율.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/business-growth-skills</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Business Growth Skills</td><td class="px-4 py-3 text-sm text-zinc-500">4개 비즈니스 성장 에이전트 스킬 (고객 성공, 세일즈, 수익 운영, 계약 작성).</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/c-level-advisor</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">C-Level Advisor</td><td class="px-4 py-3 text-sm text-zinc-500">10개 C레벨 자문 에이전트 (CEO, CTO, COO, CPO, CMO, CFO, CRO, CISO, CHRO, 멘토).</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/engineering-skills</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Engineering Skills</td><td class="px-4 py-3 text-sm text-zinc-500">23개 엔지니어링 에이전트 스킬 패키지 (아키텍처, 프론트, 백엔드, DevOps 등).</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/engineering-advanced-skills</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Engineering Advanced</td><td class="px-4 py-3 text-sm text-zinc-500">25개 고급 엔지니어링 에이전트 (에이전트 설계, RAG, MCP, CI/CD, 보안 감사).</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/excalidraw-diagram</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Excalidraw Diagram</td><td class="px-4 py-3 text-sm text-zinc-500">워크플로우, 아키텍처, 개념을 시각화하는 Excalidraw 다이어그램 JSON 생성.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/vercel-composition-patterns</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Vercel Composition</td><td class="px-4 py-3 text-sm text-zinc-500">React 컴포넌트 합성 패턴 가이드.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="cat-db">DB · 서버</h3>
+          <div class="not-prose overflow-x-auto rounded-xl border border-zinc-200 mb-6">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-50 border-b border-zinc-200">
+                <tr><th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">명령어</th><th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">이름</th><th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">설명</th></tr>
+              </thead>
+              <tbody class="bg-white">
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/prod-db-access</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Prod DB Access</td><td class="px-4 py-3 text-sm text-zinc-500">itinfosec 운영 DB 접근 및 일회성 마이그레이션 실행.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/itinfosec-get-meta</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">ITInfoSec Get Meta</td><td class="px-4 py-3 text-sm text-zinc-500">DLP 메타 테이블 조회. 프로그램명으로 프로세스명, 사이트명으로 URL 조회.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/itinfo-meta-program-mapping</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Program Mapping</td><td class="px-4 py-3 text-sm text-zinc-500">운영 DB is_dlp_meta_software 테이블에 프로세스명 ↔ 프로그램명 매핑 추가/수정.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/itinfo-meta-web-mapping</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Web Mapping</td><td class="px-4 py-3 text-sm text-zinc-500">운영 DB is_dlp_meta_website 테이블에 URL ↔ 사이트명 매핑 추가/수정.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/validatedata</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Validate Data</td><td class="px-4 py-3 text-sm text-zinc-500">NAC 데이터 정합성 검증. '/validatedata YYYYMM' 형식. 전체 계열사 4개 섹션 PC 카운트 검증.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/deploy-macmini</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Deploy Mac Mini</td><td class="px-4 py-3 text-sm text-zinc-500">Mac mini(192.168.31.63)에 현재 프로젝트를 SSH로 배포.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/sheet-diff</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Sheet Diff</td><td class="px-4 py-3 text-sm text-zinc-500">구글 스프레드시트 두 시트 라인 단위 비교.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="cat-misc">기타 유틸</h3>
+          <div class="not-prose overflow-x-auto rounded-xl border border-zinc-200 mb-6">
+            <table class="w-full text-sm">
+              <thead class="bg-zinc-50 border-b border-zinc-200">
+                <tr><th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">명령어</th><th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">이름</th><th class="text-left px-4 py-3 font-semibold text-zinc-500 text-xs uppercase tracking-wide">설명</th></tr>
+              </thead>
+              <tbody class="bg-white">
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/tmux on | off | status</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Tmux</td><td class="px-4 py-3 text-sm text-zinc-500">개발 tmux 세션 on/off 토글.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/dirtree [경로] [깊이]</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Dir Tree</td><td class="px-4 py-3 text-sm text-zinc-500">프로젝트 디렉토리 구조를 tree 형태로 출력.</td></tr>
+                <tr class="hover:bg-zinc-50 border-b border-zinc-100"><td class="px-4 py-3 font-mono text-sm text-emerald-600">/web-design-guidelines</td><td class="px-4 py-3 font-semibold text-sm text-zinc-800">Web Design Guidelines</td><td class="px-4 py-3 text-sm text-zinc-500">UI 코드의 Web Interface Guidelines 준수 여부 검토.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </section>
+
+      </div>
+    </main>
+
+    <!-- 오른쪽 목차 -->
+    <aside class="hidden xl:block w-56 fixed top-14 right-0 bottom-0 py-8 px-4 overflow-y-auto border-l border-zinc-100">
+      <p class="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-3">이 페이지</p>
+      <div class="space-y-1">
+        <a href="#intro" class="block text-sm text-zinc-500 hover:text-zinc-800 py-0.5 transition-colors">소개</a>
+        <a href="#quickstart" class="block text-sm text-zinc-500 hover:text-zinc-800 py-0.5 transition-colors">빠른 참조</a>
+        <a href="#tips" class="block text-sm text-zinc-500 hover:text-zinc-800 py-0.5 transition-colors">사용 팁</a>
+        <a href="#pack-skills" class="block text-sm text-zinc-500 hover:text-zinc-800 py-0.5 transition-colors font-medium">Power Pack 스킬</a>
+        <a href="#custom-skills" class="block text-sm text-zinc-500 hover:text-zinc-800 py-0.5 transition-colors font-medium">커스텀 스킬</a>
+        <div class="pl-3 space-y-0.5 mt-1">
+          <a href="#cat-workflow" class="block text-xs text-zinc-400 hover:text-zinc-700 py-0.5 transition-colors">· 워크플로우</a>
+          <a href="#cat-doc" class="block text-xs text-zinc-400 hover:text-zinc-700 py-0.5 transition-colors">· 문서화</a>
+          <a href="#cat-site" class="block text-xs text-zinc-400 hover:text-zinc-700 py-0.5 transition-colors">· 사이트 관리</a>
+          <a href="#cat-ai" class="block text-xs text-zinc-400 hover:text-zinc-700 py-0.5 transition-colors">· AI·이메일</a>
+          <a href="#cat-db" class="block text-xs text-zinc-400 hover:text-zinc-700 py-0.5 transition-colors">· DB·서버</a>
+          <a href="#cat-misc" class="block text-xs text-zinc-400 hover:text-zinc-700 py-0.5 transition-colors">· 기타 유틸</a>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <script>
+    // 네비게이션 active 상태
+    const navLinks = document.querySelectorAll('.nav-link');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => link.classList.remove('active'));
+          const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+          if (active) active.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+
+    // 검색 기능
+    const search = document.getElementById('skill-search');
+    search.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll('tbody tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

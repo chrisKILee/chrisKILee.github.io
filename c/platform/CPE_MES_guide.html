@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>세아항공방산소재 CPE(MES) — 개발자 가이드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+  <style>
+    :root {
+      --sidebar-width: 260px;
+      --color-bg: #f8f9fc;
+      --color-surface: #ffffff;
+      --color-border: #e5e7eb;
+      --color-text: #1a1a2e;
+      --color-text-muted: #6b7280;
+      --color-primary: #2563eb;
+      --color-primary-light: #eff6ff;
+      --color-primary-dark: #1e40af;
+      --color-accent: #7c3aed;
+      --color-success: #059669;
+      --color-warning: #d97706;
+      --color-danger: #dc2626;
+      --color-red-tdd: #ef4444;
+      --color-green-tdd: #22c55e;
+      --color-blue-tdd: #3b82f6;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-text-active: #f1f5f9;
+      --sidebar-accent: #3b82f6;
+      --radius: 8px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--color-text);
+      background: var(--color-bg);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ─────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-width);
+      min-height: 100vh;
+      background: var(--sidebar-bg);
+      position: fixed;
+      top: 0; left: 0;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .sidebar-logo .company {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--sidebar-accent);
+      margin-bottom: 4px;
+    }
+
+    .sidebar-logo .title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--sidebar-text-active);
+      line-height: 1.4;
+    }
+
+    .sidebar-logo .badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 2px 8px;
+      background: rgba(59,130,246,.2);
+      color: #93c5fd;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .sidebar-nav { padding: 16px 0; flex: 1; }
+
+    .nav-section { margin-bottom: 4px; }
+
+    .nav-section-label {
+      padding: 6px 20px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: rgba(148,163,184,.5);
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 20px;
+      font-size: 13px;
+      color: var(--sidebar-text);
+      text-decoration: none;
+      transition: all .15s;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-link:hover {
+      color: var(--sidebar-text-active);
+      background: rgba(255,255,255,.04);
+    }
+
+    .nav-link.active {
+      color: var(--sidebar-text-active);
+      border-left-color: var(--sidebar-accent);
+      background: rgba(59,130,246,.08);
+    }
+
+    .nav-link .icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      opacity: .7;
+    }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,.06);
+      font-size: 11px;
+      color: rgba(148,163,184,.5);
+      line-height: 1.6;
+    }
+
+    /* ── Main content ─────────────────────────────── */
+    .main {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      min-width: 0;
+    }
+
+    .content {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 48px 40px 80px;
+    }
+
+    /* ── Hero ─────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 50%, #2563eb 100%);
+      color: white;
+      padding: 48px 40px;
+      margin-bottom: 0;
+    }
+
+    .hero-inner { max-width: 860px; margin: 0 auto; }
+
+    .hero-label {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(255,255,255,.15);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+
+    .hero-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,.8);
+      line-height: 1.7;
+      max-width: 600px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      backdrop-filter: blur(4px);
+    }
+
+    .stat-card .val {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-card .label {
+      font-size: 11px;
+      color: rgba(255,255,255,.65);
+      margin-top: 4px;
+    }
+
+    /* ── Typography ───────────────────────────────── */
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--color-text);
+      margin: 48px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2 .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px; height: 30px;
+      background: var(--color-primary);
+      color: white;
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--color-text);
+      margin: 32px 0 12px;
+    }
+
+    h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin: 24px 0 8px;
+    }
+
+    p { margin-bottom: 14px; }
+
+    strong { font-weight: 600; }
+
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    ul, ol { padding-left: 20px; margin-bottom: 14px; }
+    li { margin-bottom: 4px; }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--color-border);
+      margin: 40px 0;
+    }
+
+    /* ── Callout / blockquote ─────────────────────── */
+    blockquote {
+      background: var(--color-primary-light);
+      border-left: 4px solid var(--color-primary);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 14px 18px;
+      margin: 0 0 20px;
+      color: #1e40af;
+      font-size: 14px;
+    }
+
+    blockquote p { margin: 0; }
+
+    /* ── Code ─────────────────────────────────────── */
+    code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      background: #f1f5f9;
+      color: #dc2626;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    pre {
+      margin: 16px 0;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      border: none;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .hljs { padding: 20px 22px; }
+
+    /* plain pre (no language) */
+    pre.plain {
+      background: #1e293b;
+      padding: 18px 20px;
+      color: #cbd5e1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    /* ── Tables ───────────────────────────────────── */
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      background: #f1f5f9;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--color-text-muted);
+      border-bottom: 2px solid var(--color-border);
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: top;
+    }
+
+    tbody tr:hover td { background: #fafbff; }
+
+    tbody td code {
+      font-size: 12px;
+    }
+
+    /* ── TDD Cycle visual ─────────────────────────── */
+    .tdd-cycle {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: center;
+      gap: 0;
+      margin: 24px 0;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tdd-step {
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    .tdd-step.red { background: #fef2f2; }
+    .tdd-step.green { background: #f0fdf4; }
+    .tdd-step.refactor { background: #eff6ff; }
+
+    .tdd-step .emoji { font-size: 28px; margin-bottom: 8px; display: block; }
+
+    .tdd-step .step-title {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .tdd-step.red .step-title { color: var(--color-red-tdd); }
+    .tdd-step.green .step-title { color: var(--color-success); }
+    .tdd-step.refactor .step-title { color: var(--color-primary); }
+
+    .tdd-step .step-desc {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    .tdd-arrow {
+      font-size: 20px;
+      color: var(--color-text-muted);
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+
+    /* ── Workflow steps ───────────────────────────── */
+    .workflow-flow {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin: 24px 0;
+      background: var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .flow-step {
+      background: var(--color-surface);
+      padding: 18px 16px;
+      text-align: center;
+    }
+
+    .flow-step .cmd {
+      display: inline-block;
+      background: #1e293b;
+      color: #38bdf8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .flow-step .desc {
+      font-size: 12px;
+      color: var(--color-text-muted);
+    }
+
+    .flow-step .output {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--color-success);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Skill cards ──────────────────────────────── */
+    .skill-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .skill-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .15s;
+    }
+
+    .skill-card:hover { box-shadow: var(--shadow-md); }
+
+    .skill-card .skill-cmd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-primary);
+      margin-bottom: 4px;
+    }
+
+    .skill-card .skill-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--color-text);
+      margin-bottom: 6px;
+    }
+
+    .skill-card .skill-desc {
+      font-size: 13px;
+      color: var(--color-text-muted);
+      line-height: 1.55;
+    }
+
+    .skill-card .skill-output {
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: #f8fafb;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--color-success);
+      border-left: 3px solid var(--color-success);
+    }
+
+    /* ── Commit type badges ───────────────────────── */
+    .commit-types {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 16px 0;
+    }
+
+    .commit-card {
+      padding: 16px;
+      border-radius: var(--radius);
+      border: 1px solid;
+    }
+
+    .commit-card.structural {
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+
+    .commit-card.behavioral {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+
+    .commit-card .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .commit-card.structural .badge { background: #fde68a; color: #92400e; }
+    .commit-card.behavioral .badge { background: #bbf7d0; color: #065f46; }
+
+    .commit-card .commit-title {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .commit-card ul {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      padding-left: 16px;
+    }
+
+    /* ── Checklist ────────────────────────────────── */
+    .checklist {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 16px 0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 14px;
+      transition: background .1s;
+    }
+
+    .checklist-item:last-child { border-bottom: none; }
+    .checklist-item:hover { background: #fafbff; }
+
+    .checklist-item .step-num {
+      width: 22px; height: 22px;
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .checklist-item .item-cmd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+
+    .checklist-item .item-output {
+      font-size: 12px;
+      color: var(--color-text-muted);
+    }
+
+    /* ── FAQ ──────────────────────────────────────── */
+    .faq { margin: 16px 0; }
+
+    .faq-item {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    .faq-q {
+      padding: 14px 18px;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .faq-q::before {
+      content: 'Q';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px; height: 22px;
+      background: var(--color-primary);
+      color: white;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .faq-a {
+      padding: 0 18px 14px 50px;
+      font-size: 14px;
+      color: var(--color-text-muted);
+      line-height: 1.65;
+    }
+
+    /* ── Section label ────────────────────────────── */
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    /* ── Conversion diagram ───────────────────────── */
+    .conversion-diagram {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0;
+      align-items: center;
+      margin: 20px 0;
+    }
+
+    .conv-box {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .conv-box.legacy { border-left: 4px solid var(--color-danger); }
+    .conv-box.modern { border-left: 4px solid var(--color-success); }
+
+    .conv-box .box-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 10px;
+    }
+
+    .conv-box.legacy .box-title { color: var(--color-danger); }
+    .conv-box.modern .box-title { color: var(--color-success); }
+
+    .conv-box ul {
+      font-size: 13px;
+      color: var(--color-text-muted);
+      padding-left: 16px;
+      margin: 0;
+    }
+
+    .conv-arrow {
+      text-align: center;
+      padding: 0 16px;
+      font-size: 24px;
+      color: var(--color-text-muted);
+    }
+
+    /* ── Tech stack grid ──────────────────────────── */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .tech-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tech-card .tech-name {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--color-primary);
+      margin-bottom: 4px;
+    }
+
+    .tech-card .tech-reason {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── Migration data bar ───────────────────────── */
+    .migration-stats {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin: 16px 0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .mig-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .mig-row:last-child { margin-bottom: 0; }
+
+    .mig-label {
+      width: 80px;
+      font-size: 12px;
+      color: var(--color-text-muted);
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .mig-bar-wrap {
+      flex: 1;
+      background: #f1f5f9;
+      border-radius: 100px;
+      height: 10px;
+      overflow: hidden;
+    }
+
+    .mig-bar { height: 100%; border-radius: 100px; }
+
+    .mig-val {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text);
+      width: 70px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── Command table ────────────────────────────── */
+    .cmd-table {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 16px 0;
+    }
+
+    .cmd-group-header {
+      background: #f8fafc;
+      padding: 8px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--color-text-muted);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .cmd-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13px;
+    }
+
+    .cmd-row:last-child { border-bottom: none; }
+
+    .cmd-row code {
+      background: #0f172a;
+      color: #7dd3fc;
+      border: none;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .cmd-row .cmd-desc {
+      color: var(--color-text-muted);
+      font-size: 13px;
+    }
+
+    /* ── AS-IS / TO-BE diagram ────────────────────── */
+    .tab-diagram {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 16px 0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-header {
+      background: #f8fafc;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .tab-header .screen-title {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      overflow: hidden;
+    }
+
+    .tab-btn {
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .tab-btn.asis { background: white; color: #6b7280; }
+    .tab-btn.tobe { background: #2563eb; color: white; }
+
+    .tab-content-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .tab-panel {
+      padding: 16px;
+    }
+
+    .tab-panel.asis { border-right: 1px solid var(--color-border); background: #fffbeb; }
+    .tab-panel.tobe { background: #f0fdf4; }
+
+    .tab-panel .panel-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 8px;
+    }
+
+    .tab-panel.asis .panel-label { color: #d97706; }
+    .tab-panel.tobe .panel-label { color: #059669; }
+
+    .tab-panel .panel-desc {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── Session example ──────────────────────────── */
+    .session-box {
+      background: #0f172a;
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 16px 0;
+      box-shadow: var(--shadow-md);
+    }
+
+    .session-bar {
+      background: #1e293b;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+
+    .session-bar .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .session-bar .dot.red { background: #f87171; }
+    .session-bar .dot.yellow { background: #fbbf24; }
+    .session-bar .dot.green { background: #34d399; }
+
+    .session-bar .session-title {
+      margin-left: 6px;
+      font-size: 12px;
+      color: rgba(148,163,184,.7);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .session-content {
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .session-line { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
+    .session-line.input .prompt { color: #38bdf8; }
+    .session-line.input .cmd { color: #a78bfa; }
+    .session-line.output .result { color: #34d399; padding-left: 22px; }
+    .session-line.comment .text { color: rgba(148,163,184,.5); padding-left: 2px; }
+    .session-line.blank { height: 8px; }
+
+    /* ── Responsive ───────────────────────────────── */
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .content { padding: 32px 20px 60px; }
+      .hero { padding: 36px 20px; }
+      .tdd-cycle { grid-template-columns: 1fr; }
+      .tdd-arrow { display: none; }
+      .workflow-flow { grid-template-columns: 1fr; }
+      .skill-grid { grid-template-columns: 1fr; }
+      .commit-types { grid-template-columns: 1fr; }
+      .tab-content-area { grid-template-columns: 1fr; }
+      .tab-panel.asis { border-right: none; border-bottom: 1px solid var(--color-border); }
+      .conversion-diagram { grid-template-columns: 1fr; }
+      .conv-arrow { transform: rotate(90deg); padding: 8px 0; }
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ Sidebar ══════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="company">SEAH Aerospace & Defense</div>
+    <div class="title">CPE(MES)<br>개발자 가이드</div>
+    <span class="badge">v2026.02</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-section-label">목차</div>
+      <a href="#overview" class="nav-link active">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        1. 프로젝트 개요
+      </a>
+      <a href="#architecture" class="nav-link">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/></svg>
+        2. 기술 스택 & 아키텍처
+      </a>
+      <a href="#migration" class="nav-link">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        3. 마이그레이션 전략
+      </a>
+      <a href="#tdd" class="nav-link">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+        4. TDD 방법론
+      </a>
+      <a href="#ai-workflow" class="nav-link">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/></svg>
+        5. AI 협업 워크플로
+      </a>
+      <a href="#setup" class="nav-link">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+        6. 개발 환경 설정
+      </a>
+      <a href="#faq" class="nav-link">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+        부록: FAQ
+      </a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    최종 업데이트: 2026-02-21<br>
+    61화면 · 1,029 테스트 · 4.13M 데이터
+  </div>
+</aside>
+
+<!-- ══ Main ══════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-label">Developer Guide</div>
+      <h1>세아항공방산소재 CPE(MES)<br>마이그레이션 개발자 가이드</h1>
+      <p class="hero-desc">
+        레거시 .NET Framework 4.5 MES를 NestJS + React로 현대화한 프로젝트의 개발 방법론, 아키텍처, AI 협업 워크플로를 설명합니다.
+        이 프로젝트에 합류하거나 유사한 마이그레이션 프로젝트를 시작하는 개발자를 위한 가이드입니다.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-card"><div class="val">61</div><div class="label">구현 화면 수</div></div>
+        <div class="stat-card"><div class="val">1,029</div><div class="label">자동화 테스트</div></div>
+        <div class="stat-card"><div class="val">80</div><div class="label">Prisma 모델</div></div>
+        <div class="stat-card"><div class="val">4.13M</div><div class="label">마이그레이션 건수</div></div>
+        <div class="stat-card"><div class="val">816</div><div class="label">Oracle SP/SF 분석</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ Section 1: Overview ══════════════════════ -->
+    <h2 id="overview"><span class="section-num">1</span> 프로젝트 개요</h2>
+
+    <h3>왜 마이그레이션인가</h3>
+    <p>세아항공방산소재는 약 20년간 .NET Framework 기반 MES(제조실행시스템)를 운영해왔습니다. 이 시스템은 기술 부채, 유지보수 어려움, 클라우드 전환 불가 등의 문제를 가지고 있었습니다.</p>
+
+    <div class="conversion-diagram">
+      <div class="conv-box legacy">
+        <div class="box-title">레거시 .NET 4.5</div>
+        <ul>
+          <li>Windows 전용, On-premise</li>
+          <li>Oracle DB + SP 816개</li>
+          <li>WinForms (두꺼운 클라이언트)</li>
+          <li>전체 패키지 재배포</li>
+          <li>자동화 테스트 없음</li>
+        </ul>
+      </div>
+      <div class="conv-arrow">→</div>
+      <div class="conv-box modern">
+        <div class="box-title">신규 NestJS + React</div>
+        <ul>
+          <li>OS 무관, 클라우드 가능</li>
+          <li>PostgreSQL + Prisma ORM</li>
+          <li>웹 브라우저</li>
+          <li>독립적 롤링 배포</li>
+          <li>1,029개 자동화 테스트</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>마이그레이션 범위</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>모듈</th><th>레거시 경로</th><th>내용</th><th>상태</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>EQ</strong></td><td><code>설비EQ/</code></td><td>설비 관리, 점검, 보수</td><td>✅ 완료 (10화면)</td></tr>
+          <tr><td><strong>PP</strong></td><td><code>생산계획PP/</code></td><td>계획, 생산성</td><td>✅ 완료 (5화면)</td></tr>
+          <tr><td><strong>MD</strong></td><td><code>제조설계MD/</code></td><td>공정, 자재, 규격</td><td>✅ 완료 (41화면)</td></tr>
+          <tr><td><strong>PR</strong></td><td><code>생산PR/</code></td><td>작업지시, 용해 실적</td><td>✅ 완료 (5화면)</td></tr>
+          <tr><td><strong>QA</strong></td><td><code>품질QA/</code></td><td>품질 검사</td><td>🔲 예정</td></tr>
+          <tr><td><strong>LM</strong></td><td><code>물류LM/</code></td><td>물류 관리</td><td>🔲 예정</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>데이터 마이그레이션 현황</h3>
+    <div class="migration-stats">
+      <div class="mig-row">
+        <div class="mig-label">생산 실적</div>
+        <div class="mig-bar-wrap"><div class="mig-bar" style="width:82%;background:#2563eb;"></div></div>
+        <div class="mig-val">~3.38M</div>
+      </div>
+      <div class="mig-row">
+        <div class="mig-label">제조설계</div>
+        <div class="mig-bar-wrap"><div class="mig-bar" style="width:9%;background:#7c3aed;"></div></div>
+        <div class="mig-val">~380K</div>
+      </div>
+      <div class="mig-row">
+        <div class="mig-label">생산계획</div>
+        <div class="mig-bar-wrap"><div class="mig-bar" style="width:6%;background:#059669;"></div></div>
+        <div class="mig-val">~250K</div>
+      </div>
+      <div class="mig-row">
+        <div class="mig-label">설비 관련</div>
+        <div class="mig-bar-wrap"><div class="mig-bar" style="width:3%;background:#d97706;"></div></div>
+        <div class="mig-val">~120K</div>
+      </div>
+    </div>
+
+    <!-- ══ Section 2: Architecture ══════════════════ -->
+    <h2 id="architecture"><span class="section-num">2</span> 기술 스택 &amp; 아키텍처</h2>
+
+    <h3>모노레포 구조 (pnpm workspace)</h3>
+    <pre><code class="language-bash">seah-cpe/
+├── apps/
+│   ├── api-server/          # NestJS 11 + Express 5 (port 3001)
+│   └── user-client/         # React 19 + Vite 7 (port 5174)
+├── packages/                # 공유 패키지 (향후 확장)
+├── docs/                    # PRD, 계획서, 레거시 분석서 (29개 기능)
+├── dotnet_src/              # 레거시 소스 (참조 전용)
+│   ├── mes_source/          # VB.NET / C# 소스 (9솔루션, 144프로젝트)
+│   └── docs/                # Oracle SP 분석 문서
+└── .claude/skills/          # AI 협업 워크플로 스킬 8개</code></pre>
+
+    <p><strong>pnpm 모노레포를 선택한 이유:</strong> 백엔드/프론트엔드 공유 타입 관리 용이, 앱별 독립 명령 실행(<code>pnpm -F @seah-cpe/api-server test</code>), 의존성 중복 없는 효율적 관리.</p>
+
+    <h3>백엔드: NestJS + Prisma</h3>
+    <p>NestJS 모듈 기반 구조로 64개 비즈니스 모듈을 관리합니다. 각 모듈은 4개 파일(<code>module</code>, <code>controller</code>, <code>service</code>, <code>spec</code>)로 구성됩니다.</p>
+    <pre><code class="language-typescript">// codes.controller.ts
+@Controller('codes')
+export class CodesController {
+  constructor(private readonly codesService: CodesService) {}
+
+  @Get()
+  findAll(@Query('search') search?: string) {
+    return this.codesService.findAll(search);
+  }
+}
+
+// codes.service.ts — 트랜잭션 패턴
+@Injectable()
+export class CodesService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(dto: CreateCodeDto, userId: string) {
+    const existing = await this.prisma.codeMaster.findUnique({
+      where: { codeType: dto.codeType },
+    });
+    if (existing) throw new ConflictException('이미 존재하는 코드그룹입니다');
+
+    const { details, ...masterData } = dto;
+
+    // 마스터 + 디테일 원자적 생성
+    return this.prisma.$transaction(async (tx) => {
+      await tx.codeMaster.create({
+        data: { ...masterData, createdBy: userId, updatedBy: userId },
+      });
+      if (details.length > 0) {
+        await tx.codeDetail.createMany({
+          data: details.map((d) => ({
+            codeType: dto.codeType, ...d,
+            createdBy: userId, updatedBy: userId,
+          })),
+        });
+      }
+    });
+  }
+}</code></pre>
+
+    <h3>UI 컨벤션: AS-IS / TO-BE 탭</h3>
+    <p>모든 업무 화면은 두 탭으로 구성됩니다. 기존 사용자가 레거시와 신규 화면을 나란히 비교·검증할 수 있습니다.</p>
+
+    <div class="tab-diagram">
+      <div class="tab-header">
+        <div class="screen-title">공통코드관리</div>
+        <div class="tab-buttons">
+          <div class="tab-btn asis">AS-IS</div>
+          <div class="tab-btn tobe">TO-BE</div>
+        </div>
+      </div>
+      <div class="tab-content-area">
+        <div class="tab-panel asis">
+          <div class="panel-label">AS-IS 탭</div>
+          <div class="panel-desc">레거시 .NET WinForms 화면을 웹에서 그대로 재현. 기존 사용자 검증 및 마이그레이션 비교용.</div>
+        </div>
+        <div class="tab-panel tobe">
+          <div class="panel-label">TO-BE 탭 (기본)</div>
+          <div class="panel-desc">UI/UX를 개선한 신규 화면. 최종 운영 대상. <code>useState('TO-BE')</code>로 기본 활성화.</div>
+        </div>
+      </div>
+    </div>
+
+    <p><strong>페이지 컴포넌트 표준 패턴 (<code>CommonCodePage.tsx</code> 기준):</strong></p>
+    <pre><code class="language-typescript">type TabType = 'AS-IS' | 'TO-BE';
+
+export default function CommonCodePage() {
+  const [activeTab, setActiveTab] = useState&lt;TabType&gt;('TO-BE'); // TO-BE가 기본
+  const { isDirty, setDirty } = useCodeStore();
+
+  const handleTabChange = useCallback(
+    (tab: TabType) => {
+      // dirty-state: 저장하지 않은 변경이 있으면 확인
+      if (isDirty) {
+        const confirmed = window.confirm('저장하지 않은 변경사항이 있습니다. 이동하시겠습니까?');
+        if (!confirmed) return;
+        setDirty(false);
+      }
+      setActiveTab(tab);
+    },
+    [isDirty, setDirty]
+  );
+
+  return (
+    &lt;div className="h-full flex flex-col"&gt;
+      &lt;div className="flex items-center justify-between mb-4"&gt;
+        &lt;h2 className="text-lg font-semibold"&gt;공통코드관리&lt;/h2&gt;
+        &lt;div className="flex rounded-lg border border-gray-300"&gt;
+          {(['AS-IS', 'TO-BE'] as TabType[]).map((tab) =&gt; (
+            &lt;button
+              key={tab}
+              onClick={() =&gt; handleTabChange(tab)}
+              className={activeTab === tab ? 'bg-blue-600 text-white' : 'bg-white text-gray-600'}
+            &gt;
+              {tab}
+            &lt;/button&gt;
+          ))}
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div className="flex-1 overflow-hidden"&gt;
+        {activeTab === 'AS-IS' ? &lt;AsIsTab /&gt; : &lt;ToBeTab /&gt;}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+    <p><strong>Zustand 스토어 패턴 — 모든 모듈에서 <code>isDirty</code> / <code>setDirty</code>가 필수입니다:</strong></p>
+    <pre><code class="language-typescript">// shared/stores/code-store.ts
+interface CodeState {
+  masters: CodeMasterSummary[];
+  isLoading: boolean;
+  isDirty: boolean;           // 필수: 탭 전환 시 dirty-state 체크
+  loadMasters: (search?: string) =&gt; Promise&lt;void&gt;;
+  setDirty: (dirty: boolean) =&gt; void;  // 필수
+}
+
+export const useCodeStore = create&lt;CodeState&gt;((set) =&gt; ({
+  masters: [],
+  isDirty: false,
+  loadMasters: async (search?: string) =&gt; {
+    set({ isLoading: true });
+    try {
+      const { data } = await api.get('/codes', { params: { search } });
+      set({ masters: data, isLoading: false });
+    } catch (err: any) {
+      set({ error: err?.response?.data?.message, isLoading: false });
+    }
+  },
+  setDirty: (dirty) =&gt; set({ isDirty: dirty }),
+}));</code></pre>
+
+    <h3>기술 선택 이유</h3>
+    <div class="tech-grid">
+      <div class="tech-card"><div class="tech-name">NestJS 11</div><div class="tech-reason">의존성 주입, 모듈 시스템으로 64개 모듈 대규모 관리 용이</div></div>
+      <div class="tech-card"><div class="tech-name">Prisma 7</div><div class="tech-reason">타입 안전 ORM, 스키마 기반 마이그레이션, PostgreSQL 최적화</div></div>
+      <div class="tech-card"><div class="tech-name">React 19 + Vite 7</div><div class="tech-reason">빠른 HMR, 최신 React 기능, Tailwind와 조합 최적</div></div>
+      <div class="tech-card"><div class="tech-name">Zustand 5</div><div class="tech-reason">Redux 없이 간단한 전역 상태, 67개 모듈별 스토어</div></div>
+      <div class="tech-card"><div class="tech-name">Tailwind CSS 3</div><div class="tech-reason">유틸리티 클래스로 레거시 WinForms 레이아웃 재현 용이</div></div>
+      <div class="tech-card"><div class="tech-name">Vitest</div><div class="tech-reason">Vite 기반, Jest와 동일 API, 프론트엔드 테스트</div></div>
+    </div>
+
+    <!-- ══ Section 3: Migration ══════════════════════ -->
+    <h2 id="migration"><span class="section-num">3</span> 레거시 마이그레이션 전략</h2>
+
+    <h3>핵심 원칙: 점진적 전환</h3>
+    <p>한 번에 전체를 바꾸지 않고, 화면 단위로 AS-IS(재현) → TO-BE(개선) 검증 후 운영 전환합니다.</p>
+
+    <h3>레거시 소스 구조</h3>
+    <p>레거시 프로젝트 네이밍 규칙: <code>SiS.Dev.&lt;Layer&gt;&lt;Module&gt;&lt;Number&gt;</code></p>
+    <pre><code class="language-bash">dotnet_src/mes_source/설비EQ/
+├── SiS.Dev.UXEQ010/
+│   ├── fEQ01010.vb           ← 이벤트 핸들러 (버튼 클릭, 그리드 선택)
+│   ├── fEQ01010.Designer.vb  ← UI 레이아웃 (컬럼, 버튼 크기, 위치)
+│   └── TdsfEQ01010.xsd       ← DataSet 스키마 (테이블/컬럼 정의)
+└── SiS.Dev.BZEQ010/
+    ├── BizfEQ01010.vb        ← SP 호출, 유효성 검증
+    └── SqlfEQ01010.SRD       ← SQL 쿼리 리소스</code></pre>
+
+    <h3>Oracle SP → NestJS 변환 패턴</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Oracle 패턴</th><th>NestJS 변환</th></tr></thead>
+        <tbody>
+          <tr><td><code>BEGIN TRANSACTION ~ COMMIT</code></td><td><code>prisma.$transaction(async tx =&gt; {...})</code></td></tr>
+          <tr><td><code>RAISE_APPLICATION_ERROR(-20xxx, msg)</code></td><td><code>throw new BadRequestException(msg)</code></td></tr>
+          <tr><td>중복 체크 후 에러</td><td><code>findUnique()</code> → <code>ConflictException</code></td></tr>
+          <tr><td><code>TRIGGER (createdAt/updatedAt)</code></td><td>Prisma <code>@default(now())</code> + <code>@updatedAt</code></td></tr>
+          <tr><td><code>CURSOR</code> 반복</td><td><code>prisma.findMany()</code> + <code>for...of</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>변환 예시 (Oracle SP → Prisma):</strong></p>
+    <pre><code class="language-sql">-- Oracle SP_SAVE_EQUIP (레거시)
+PROCEDURE SP_SAVE_EQUIP(p_equip_cd VARCHAR2, p_equip_nm VARCHAR2) IS
+BEGIN
+  SELECT COUNT(*) INTO v_cnt FROM TB_EQUIP WHERE EQUIP_CD = p_equip_cd;
+  IF v_cnt > 0 THEN
+    RAISE_APPLICATION_ERROR(-20001, '이미 등록된 설비코드입니다.');
+  END IF;
+  INSERT INTO TB_EQUIP (EQUIP_CD, EQUIP_NM, REG_DT)
+    VALUES (p_equip_cd, p_equip_nm, SYSDATE);
+  COMMIT;
+END;</code></pre>
+    <pre><code class="language-typescript">// NestJS 변환 후
+async create(dto: CreateEquipDto, userId: string) {
+  const existing = await this.prisma.equipment.findUnique({
+    where: { equipCd: dto.equipCd },
+  });
+  if (existing) throw new ConflictException('이미 등록된 설비코드입니다.');
+
+  return this.prisma.equipment.create({
+    data: { ...dto, createdBy: userId, updatedBy: userId },
+  });
+}</code></pre>
+
+    <h3>Oracle → PostgreSQL 데이터 마이그레이션</h3>
+    <p>각 화면 구현 후 Python 스크립트로 실데이터를 이전합니다.</p>
+    <pre><code class="language-python"># prisma/migrate-equipment-direct.py (패턴 예시)
+import cx_Oracle, psycopg2
+
+def migrate_equipment():
+    # 1. Oracle에서 데이터 추출
+    oracle_conn = cx_Oracle.connect(ORACLE_DSN)
+    cursor = oracle_conn.cursor()
+    cursor.execute("""
+        SELECT EQUIP_CD, EQUIP_NM, EQUIP_TYPE, REG_DT
+        FROM TB_EQUIP WHERE USE_YN = 'Y' ORDER BY EQUIP_CD
+    """)
+    rows = cursor.fetchall()
+
+    # 2. PostgreSQL에 적재 (트랜잭션)
+    pg_conn = psycopg2.connect(PG_DSN)
+    with pg_conn.cursor() as pg_cur:
+        pg_cur.executemany("""
+            INSERT INTO "Equipment" (equip_cd, equip_nm, equip_type, created_at)
+            VALUES (%s, %s, %s, %s) ON CONFLICT (equip_cd) DO NOTHING
+        """, rows)
+    pg_conn.commit()
+
+    # 3. 건수 검증
+    print(f"마이그레이션 완료: {len(rows)}건")</code></pre>
+
+    <!-- ══ Section 4: TDD ════════════════════════════ -->
+    <h2 id="tdd"><span class="section-num">4</span> TDD 방법론</h2>
+
+    <h3>Red → Green → Refactor 사이클</h3>
+    <p>Kent Beck의 TDD를 엄격하게 따릅니다. 테스트가 먼저, 구현은 나중입니다.</p>
+
+    <div class="tdd-cycle">
+      <div class="tdd-step red">
+        <span class="emoji">🔴</span>
+        <div class="step-title">RED</div>
+        <div class="step-desc">실패하는 테스트<br>먼저 작성</div>
+      </div>
+      <div class="tdd-arrow">→</div>
+      <div class="tdd-step green">
+        <span class="emoji">🟢</span>
+        <div class="step-title">GREEN</div>
+        <div class="step-desc">최소 코드로<br>테스트 통과</div>
+      </div>
+      <div class="tdd-arrow">→</div>
+      <div class="tdd-step refactor">
+        <span class="emoji">🔄</span>
+        <div class="step-title">REFACTOR</div>
+        <div class="step-desc">구조 개선<br>(동작 불변)</div>
+      </div>
+    </div>
+
+    <h3>백엔드 TDD 예시 (NestJS + Jest)</h3>
+    <pre><code class="language-typescript">// codes.spec.ts — Red: 먼저 실패하는 테스트 작성
+describe('CodesService', () => {
+  describe('create', () => {
+    it('중복 코드그룹 생성 시 ConflictException을 던진다', async () => {
+      // Arrange: 이미 존재하는 코드그룹 mock
+      mockPrisma.codeMaster.findUnique.mockResolvedValue({ codeType: 'MAT' });
+
+      // Act & Assert
+      await expect(
+        service.create({ codeType: 'MAT', codeTypeName: '재질', details: [] }, 'user1')
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('신규 코드그룹 생성 시 트랜잭션으로 마스터+디테일을 저장한다', async () => {
+      mockPrisma.codeMaster.findUnique.mockResolvedValue(null);
+      mockPrisma.$transaction.mockImplementation(async (fn) => fn(mockPrisma));
+
+      await service.create({
+        codeType: 'NEW', codeTypeName: '신규',
+        details: [{ code: '01', codeName: '항목1' }],
+      }, 'user1');
+
+      expect(mockPrisma.codeMaster.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ codeType: 'NEW' }) })
+      );
+      expect(mockPrisma.codeDetail.createMany).toHaveBeenCalled();
+    });
+  });
+});</code></pre>
+
+    <h3>프론트엔드 TDD 예시 (Vitest + Testing Library)</h3>
+    <pre><code class="language-typescript">// code-store.spec.ts — Zustand 스토어 테스트
+describe('useCodeStore', () => {
+  beforeEach(() => {
+    useCodeStore.setState({ masters: [], isDirty: false });
+    vi.mocked(api.get).mockResolvedValue({ data: mockMasters });
+  });
+
+  it('loadMasters 호출 시 masters 목록을 채운다', async () => {
+    const { result } = renderHook(() => useCodeStore());
+
+    await act(async () => { await result.current.loadMasters(); });
+
+    expect(result.current.masters).toHaveLength(3);
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('setDirty(true) 호출 시 isDirty가 true가 된다', () => {
+    const { result } = renderHook(() => useCodeStore());
+    act(() => result.current.setDirty(true));
+    expect(result.current.isDirty).toBe(true);
+  });
+});</code></pre>
+
+    <h3>Tidy First: 구조적/행위적 변경 분리</h3>
+    <p>Ward Cunningham의 "Tidy First" 원칙을 커밋 단위로 적용합니다.</p>
+
+    <div class="commit-types">
+      <div class="commit-card structural">
+        <div class="badge">STRUCTURAL</div>
+        <div class="commit-title">동작이 바뀌지 않는다</div>
+        <ul>
+          <li>이름 변경, 파일 이동</li>
+          <li>메서드 추출, 포맷팅</li>
+          <li>커밋: <code>[STRUCTURAL] refactor: ...</code></li>
+        </ul>
+      </div>
+      <div class="commit-card behavioral">
+        <div class="badge">BEHAVIORAL</div>
+        <div class="commit-title">동작이 바뀐다</div>
+        <ul>
+          <li>새 기능 추가, 버그 수정</li>
+          <li>로직 변경, 새 테스트</li>
+          <li>커밋: <code>[BEHAVIORAL] feat: ...</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <p><strong>실제 커밋 이력 예시:</strong></p>
+    <pre><code class="language-bash">edfdac0 [STRUCTURAL] refactor: Prisma 2개 모델 추가 (MeltResult, EquipmentOperation)
+eb42222 [BEHAVIORAL] feat: PR04010 용해 실적 화면 구현
+9d519b4 [BEHAVIORAL] feat: PR03014 공정별 작업조정 화면 구현</code></pre>
+
+    <blockquote>
+      <p><strong>절대로 하지 않는 것:</strong> 리팩토링과 기능 추가를 같은 커밋에 섞는 것 · 테스트 실패 상태에서 커밋하는 것 · <code>git add .</code>로 전체 스테이징하는 것</p>
+    </blockquote>
+
+    <!-- ══ Section 5: AI Workflow ═════════════════════ -->
+    <h2 id="ai-workflow"><span class="section-num">5</span> AI(Claude) 협업 워크플로</h2>
+
+    <p>이 프로젝트의 가장 큰 특징입니다. Claude를 단순 코드 생성 도구가 아닌 <strong>짝 프로그래밍 파트너</strong>로 활용합니다. <code>.claude/skills/</code>에 정의된 8개 스킬이 전체 개발 사이클을 구조화합니다.</p>
+
+    <h3>전체 워크플로</h3>
+    <div class="workflow-flow">
+      <div class="flow-step">
+        <div class="cmd">/analyze-legacy</div>
+        <div class="desc">레거시 화면 분석</div>
+        <div class="output">→ legacy-analysis.md</div>
+      </div>
+      <div class="flow-step">
+        <div class="cmd">/prd</div>
+        <div class="desc">요구사항 정의</div>
+        <div class="output">→ prd.md</div>
+      </div>
+      <div class="flow-step">
+        <div class="cmd">/plan</div>
+        <div class="desc">TDD 계획 수립</div>
+        <div class="output">→ plan.md</div>
+      </div>
+      <div class="flow-step">
+        <div class="cmd">/go-phase N</div>
+        <div class="desc">TDD 구현</div>
+        <div class="output">→ Red→Green→Refactor</div>
+      </div>
+      <div class="flow-step">
+        <div class="cmd">/check-tests</div>
+        <div class="desc">전체 테스트 확인</div>
+        <div class="output">→ 1,029 passing</div>
+      </div>
+      <div class="flow-step">
+        <div class="cmd">/commit-tdd</div>
+        <div class="desc">규율 있는 커밋</div>
+        <div class="output">→ 분리 커밋</div>
+      </div>
+    </div>
+
+    <h3>스킬 상세</h3>
+    <div class="skill-grid">
+      <div class="skill-card">
+        <div class="skill-cmd">/analyze-legacy EQ01010</div>
+        <div class="skill-name">레거시 분석</div>
+        <div class="skill-desc">레거시 .NET 소스에서 화면 구조, SQL 쿼리, SP 로직을 자동으로 추출합니다. PRD 작성 전 필수 단계.</div>
+        <div class="skill-output">→ docs/03-equipment-master/legacy-analysis.md</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-cmd">/prd</div>
+        <div class="skill-name">요구사항 정의</div>
+        <div class="skill-desc">무엇을 해결하는가에 집중. FR(기능 요구사항) + AC(인수 기준) + Edge Cases를 정의합니다.</div>
+        <div class="skill-output">→ docs/{NN}-{feature}/prd.md</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-cmd">/plan</div>
+        <div class="skill-name">TDD 계획 수립</div>
+        <div class="skill-desc">PRD의 FR/AC를 Phase로 분할합니다. 테스트 이름은 /go-phase 실행 시 코드를 보면서 결정.</div>
+        <div class="skill-output">→ docs/{NN}-{feature}/plan.md</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-cmd">/go-phase N</div>
+        <div class="skill-name">TDD 실행 (핵심)</div>
+        <div class="skill-desc">한 Phase씩 Red→Green→Refactor를 실행합니다. 체크포인트 마커(🔴🟢🔄)로 진행 상태를 추적.</div>
+        <div class="skill-output">→ 테스트 추가 + 구현 완료</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-cmd">/check-tests</div>
+        <div class="skill-name">전체 테스트 확인</div>
+        <div class="skill-desc">백엔드 + 프론트엔드 전체 테스트를 실행하고 결과를 보고합니다. 커밋 전 필수 실행.</div>
+        <div class="skill-output">→ 848 BE + 181 FE passing</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-cmd">/commit-tdd</div>
+        <div class="skill-name">규율 있는 커밋</div>
+        <div class="skill-desc">변경을 분석해서 STRUCTURAL/BEHAVIORAL로 자동 분류하고 분리 커밋합니다.</div>
+        <div class="skill-output">→ [STRUCTURAL] + [BEHAVIORAL] 분리</div>
+      </div>
+    </div>
+
+    <h3>실제 사용 세션 예시</h3>
+    <div class="session-box">
+      <div class="session-bar">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+        <div class="session-title">claude-code — EQ01010 설비등록 개발 세션</div>
+      </div>
+      <div class="session-content">
+        <div class="session-line comment"><span class="text"># 새 화면 개발 시작</span></div>
+        <div class="session-line blank"></div>
+        <div class="session-line input"><span class="prompt">&gt;</span>&nbsp;<span class="cmd">/analyze-legacy EQ01010</span></div>
+        <div class="session-line output"><span class="result">✓ docs/03-equipment-master/legacy-analysis.md 생성 (UI구조, SQL 11개, SP 3개 추출)</span></div>
+        <div class="session-line blank"></div>
+        <div class="session-line input"><span class="prompt">&gt;</span>&nbsp;<span class="cmd">/prd</span></div>
+        <div class="session-line output"><span class="result">✓ docs/03-equipment-master/prd.md 생성 (FR 5개, AC 23개)</span></div>
+        <div class="session-line blank"></div>
+        <div class="session-line input"><span class="prompt">&gt;</span>&nbsp;<span class="cmd">/plan</span></div>
+        <div class="session-line output"><span class="result">✓ docs/03-equipment-master/plan.md 생성 (Phase 6개)</span></div>
+        <div class="session-line blank"></div>
+        <div class="session-line input"><span class="prompt">&gt;</span>&nbsp;<span class="cmd">/go-phase 1</span>&nbsp;<span style="color:#64748b"># Prisma 스키마</span></div>
+        <div class="session-line output"><span class="result">✓ Phase 1 완료 — 5 tests added (🔴→🟢→🔄→x)</span></div>
+        <div class="session-line input"><span class="prompt">&gt;</span>&nbsp;<span class="cmd">/go-phase 2</span>&nbsp;<span style="color:#64748b"># 조회 API</span></div>
+        <div class="session-line output"><span class="result">✓ Phase 2 완료 — 8 tests added</span></div>
+        <div class="session-line input"><span class="prompt">&gt;</span>&nbsp;<span class="cmd">/go-phase 3</span>&nbsp;<span style="color:#64748b"># 저장/수정/삭제 API</span></div>
+        <div class="session-line output"><span class="result">✓ Phase 3 완료 — 12 tests added</span></div>
+        <div class="session-line input"><span class="prompt">&gt;</span>&nbsp;<span class="cmd">/go-phase 4</span>&nbsp;<span style="color:#64748b"># Zustand 스토어</span></div>
+        <div class="session-line output"><span class="result">✓ Phase 4 완료 — 6 tests added</span></div>
+        <div class="session-line input"><span class="prompt">&gt;</span>&nbsp;<span class="cmd">/go-phase 5</span>&nbsp;<span style="color:#64748b"># AS-IS 탭 UI [Non-TDD]</span></div>
+        <div class="session-line output"><span class="result">✓ Phase 5 완료</span></div>
+        <div class="session-line input"><span class="prompt">&gt;</span>&nbsp;<span class="cmd">/go-phase 6</span>&nbsp;<span style="color:#64748b"># TO-BE 탭 UI [Non-TDD]</span></div>
+        <div class="session-line output"><span class="result">✓ Phase 6 완료</span></div>
+        <div class="session-line blank"></div>
+        <div class="session-line input"><span class="prompt">&gt;</span>&nbsp;<span class="cmd">/check-tests</span></div>
+        <div class="session-line output"><span class="result">✓ 848 tests passing (BE) + 181 tests passing (FE)</span></div>
+        <div class="session-line blank"></div>
+        <div class="session-line input"><span class="prompt">&gt;</span>&nbsp;<span class="cmd">/commit-tdd</span></div>
+        <div class="session-line output"><span class="result">✓ [STRUCTURAL] refactor: Prisma Equipment 모델 추가</span></div>
+        <div class="session-line output"><span class="result">✓ [BEHAVIORAL] feat: EQ01010 설비등록 화면 구현 (31 tests)</span></div>
+      </div>
+    </div>
+
+    <h3>AI 협업의 핵심 원칙</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>원칙</th><th>의미</th></tr></thead>
+        <tbody>
+          <tr><td><strong>AI는 코드를 쓰고, 개발자는 방향을 결정한다</strong></td><td>구현 방법보다 무엇을 만들지 명확히 정의</td></tr>
+          <tr><td><strong>스킬이 문서화를 강제한다</strong></td><td>prd.md, plan.md가 항상 구현보다 먼저</td></tr>
+          <tr><td><strong>테스트가 AI를 제어한다</strong></td><td>잘못된 구현은 실패하는 테스트가 잡아낸다</td></tr>
+          <tr><td><strong>커밋이 변경을 추적한다</strong></td><td>STRUCTURAL/BEHAVIORAL 분리로 코드 리뷰 용이</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══ Section 6: Setup ══════════════════════════ -->
+    <h2 id="setup"><span class="section-num">6</span> 개발 환경 설정 &amp; 시작하기</h2>
+
+    <h3>로컬 설정</h3>
+    <pre><code class="language-bash"># 1. 저장소 클론
+git clone &lt;repository-url&gt;
+cd seah-cpe
+
+# 2. 의존성 설치 (Node 20+, pnpm 10+ 필요)
+pnpm install
+
+# 3. 환경변수 설정
+# apps/api-server/.env
+DATABASE_URL="postgresql://user:password@localhost:5432/seah_cpe"
+JWT_SECRET="your-secret-key-here"
+JWT_EXPIRES_IN="7d"
+
+# apps/user-client/.env.local
+VITE_API_URL="http://localhost:3001"
+
+# 4. DB 초기화
+cd apps/api-server
+pnpm prisma db push        # 스키마 적용 (80개 모델)
+pnpm prisma generate       # Prisma 클라이언트 생성
+
+# 5. 개발 서버 시작
+cd ../..
+pnpm dev                   # API 3001 + Client 5174 동시 시작</code></pre>
+
+    <h3>개발 명령어 치트시트</h3>
+    <div class="cmd-table">
+      <div class="cmd-group-header">개발 서버</div>
+      <div class="cmd-row"><code>pnpm dev</code><span class="cmd-desc">전체 (API 3001 + Client 5174)</span></div>
+      <div class="cmd-row"><code>pnpm -F @seah-cpe/api-server dev</code><span class="cmd-desc">백엔드만</span></div>
+      <div class="cmd-row"><code>pnpm -F @seah-cpe/user-client dev</code><span class="cmd-desc">프론트엔드만</span></div>
+
+      <div class="cmd-group-header">테스트</div>
+      <div class="cmd-row"><code>pnpm test</code><span class="cmd-desc">전체 테스트 (1,029개)</span></div>
+      <div class="cmd-row"><code>pnpm -F @seah-cpe/api-server test</code><span class="cmd-desc">백엔드 Jest (848개)</span></div>
+      <div class="cmd-row"><code>pnpm -F @seah-cpe/api-server test:watch</code><span class="cmd-desc">파일 변경 감지</span></div>
+      <div class="cmd-row"><code>pnpm -F @seah-cpe/api-server test:cov</code><span class="cmd-desc">커버리지 리포트</span></div>
+      <div class="cmd-row"><code>pnpm -F @seah-cpe/user-client test</code><span class="cmd-desc">프론트엔드 Vitest (181개)</span></div>
+
+      <div class="cmd-group-header">빌드 &amp; 린트</div>
+      <div class="cmd-row"><code>pnpm build</code><span class="cmd-desc">전체 빌드</span></div>
+      <div class="cmd-row"><code>pnpm lint</code><span class="cmd-desc">전체 린트 (--fix 포함)</span></div>
+
+      <div class="cmd-group-header">데이터베이스</div>
+      <div class="cmd-row"><code>pnpm prisma studio</code><span class="cmd-desc">DB GUI 브라우저 (api-server 디렉토리에서)</span></div>
+      <div class="cmd-row"><code>pnpm prisma db push</code><span class="cmd-desc">스키마 → DB 동기화</span></div>
+      <div class="cmd-row"><code>pnpm prisma generate</code><span class="cmd-desc">Prisma 클라이언트 재생성</span></div>
+    </div>
+
+    <h3>새 화면 개발 체크리스트</h3>
+    <div class="checklist">
+      <div class="checklist-item"><div class="step-num">1</div><div><div class="item-cmd">/analyze-legacy {화면코드}</div><div class="item-output">→ legacy-analysis.md (UI, SQL, SP 추출)</div></div></div>
+      <div class="checklist-item"><div class="step-num">2</div><div><div class="item-cmd">/prd</div><div class="item-output">→ prd.md (FR + AC + Edge Cases)</div></div></div>
+      <div class="checklist-item"><div class="step-num">3</div><div><div class="item-cmd">/plan</div><div class="item-output">→ plan.md (Phase 분할)</div></div></div>
+      <div class="checklist-item"><div class="step-num">4</div><div><div class="item-cmd">/go-phase 1</div><div class="item-output">→ Prisma 스키마 추가 (STRUCTURAL 커밋)</div></div></div>
+      <div class="checklist-item"><div class="step-num">5</div><div><div class="item-cmd">/go-phase 2~N</div><div class="item-output">→ API 서비스 구현 (BEHAVIORAL 커밋)</div></div></div>
+      <div class="checklist-item"><div class="step-num">6</div><div><div class="item-cmd">/go-phase N+1</div><div class="item-output">→ Zustand 스토어 (BEHAVIORAL 커밋)</div></div></div>
+      <div class="checklist-item"><div class="step-num">7</div><div><div class="item-cmd">/go-phase N+2</div><div class="item-output">→ AS-IS 탭 UI (Non-TDD, 레거시 재현)</div></div></div>
+      <div class="checklist-item"><div class="step-num">8</div><div><div class="item-cmd">/go-phase N+3</div><div class="item-output">→ TO-BE 탭 UI (Non-TDD, UX 개선)</div></div></div>
+      <div class="checklist-item"><div class="step-num">9</div><div><div class="item-cmd">/check-tests</div><div class="item-output">→ 전체 테스트 통과 확인</div></div></div>
+      <div class="checklist-item"><div class="step-num">10</div><div><div class="item-cmd">/commit-tdd</div><div class="item-output">→ STRUCTURAL/BEHAVIORAL 분리 커밋</div></div></div>
+      <div class="checklist-item"><div class="step-num">11</div><div><div class="item-cmd">데이터 마이그레이션</div><div class="item-output">→ migrate-*.py 작성 + 실행 + 건수 검증</div></div></div>
+    </div>
+
+    <!-- ══ FAQ ══════════════════════════════════════ -->
+    <h2 id="faq"><span class="section-num">?</span> 부록: 자주 묻는 질문</h2>
+
+    <div class="faq">
+      <div class="faq-item">
+        <div class="faq-q">AS-IS 탭은 언제까지 유지하나요?</div>
+        <div class="faq-a">실제 사용자가 TO-BE 탭을 검증·승인하면 AS-IS 탭을 제거합니다. 마이그레이션 기간 동안 병행 운영합니다.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">새 모듈 추가 시 어떤 파일을 만드나요?</div>
+        <div class="faq-a">최소 4개: <code>{name}.module.ts</code>, <code>{name}.service.ts</code>, <code>{name}.controller.ts</code>, <code>{name}.spec.ts</code>. NestJS CLI: <code>nest g module {name}</code>으로 스캐폴딩할 수 있습니다.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Prisma 스키마 변경 시 어떻게 하나요?</div>
+        <div class="faq-a"><code>prisma/schema.prisma</code> 수정 → <code>pnpm prisma db push</code> → <code>pnpm prisma generate</code>. 마이그레이션 파일이 아닌 <code>db push</code> 방식을 사용합니다.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">테스트가 실패하면 어떻게 하나요?</div>
+        <div class="faq-a">절대 커밋하지 않습니다. 실패 원인을 찾아 수정하거나, 스펙이 변경됐으면 테스트도 함께 수정합니다.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Oracle 데이터 마이그레이션은 언제 하나요?</div>
+        <div class="faq-a">화면 구현이 완료된 후, 운영 전환 직전에 실행합니다. 개발 중에는 시드 데이터나 샘플 데이터를 사용합니다.</div>
+      </div>
+    </div>
+
+    <hr />
+    <p style="text-align:center;color:var(--color-text-muted);font-size:13px;">
+      마지막 업데이트: 2026-02-21 &nbsp;|&nbsp; 총 61개 화면, 1,029개 테스트, ~4.13M 마이그레이션 완료
+    </p>
+
+  </div><!-- /content -->
+</main>
+
+<script>
+  // Syntax highlighting
+  document.addEventListener('DOMContentLoaded', () => {
+    hljs.highlightAll();
+
+    // Active sidebar link on scroll
+    const sections = document.querySelectorAll('h2[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    sections.forEach(s => observer.observe(s));
+  });
+</script>
+</body>
+</html>

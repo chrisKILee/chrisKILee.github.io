@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code로 디자인 무드 해킹하는 법</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e11;
+      --surface: #18181c;
+      --surface2: #1f1f25;
+      --border: rgba(255,255,255,0.07);
+      --text: #f0f0f4;
+      --text-muted: #8b8b99;
+      --accent: #a78bfa;
+      --accent2: #f472b6;
+      --accent3: #34d399;
+      --accent-glow: rgba(167,139,250,0.15);
+      --code-bg: #13131a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 16px;
+    }
+
+    /* ── HEADER ── */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 80px 24px 72px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% -10%, rgba(167,139,250,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 60%, rgba(244,114,182,0.10) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(167,139,250,0.12);
+      border: 1px solid rgba(167,139,250,0.25);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      max-width: 600px;
+      margin: 0 auto 32px;
+      color: var(--text-muted);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    .meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+    .meta-row span { display: flex; align-items: center; gap: 5px; }
+
+    /* ── NAV ── */
+    .toc-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(14,14,17,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+    }
+    .toc-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 12px 0;
+    }
+    .toc-inner::-webkit-scrollbar { display: none; }
+    .toc-link {
+      white-space: nowrap;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .toc-link:hover { background: var(--surface2); color: var(--text); }
+    .toc-link.active { background: var(--accent-glow); color: var(--accent); }
+
+    /* ── LAYOUT ── */
+    .main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    /* ── SECTION ── */
+    .section {
+      margin-bottom: 72px;
+      scroll-margin-top: 64px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .section-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .section-icon.purple { background: rgba(167,139,250,0.15); }
+    .section-icon.pink   { background: rgba(244,114,182,0.15); }
+    .section-icon.green  { background: rgba(52,211,153,0.15); }
+    .section-icon.orange { background: rgba(251,146,60,0.15); }
+    .section-icon.blue   { background: rgba(96,165,250,0.15); }
+
+    .section h2 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .section p {
+      font-size: 15px;
+      color: #c8c8d4;
+      line-height: 1.75;
+      margin-bottom: 16px;
+    }
+
+    /* ── CARDS ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .card:hover { border-color: rgba(167,139,250,0.3); transform: translateY(-2px); }
+    .card-icon { font-size: 24px; margin-bottom: 12px; }
+    .card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .card p  { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+
+    /* ── STEP LIST ── */
+    .step-list { display: flex; flex-direction: column; gap: 20px; margin-top: 20px; }
+    .step {
+      display: flex;
+      gap: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      position: relative;
+    }
+    .step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+      color: #fff;
+    }
+    .step-body h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .step-body p  { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+
+    /* ── CODE BLOCK ── */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      margin: 16px 0;
+      overflow: hidden;
+    }
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .code-label { font-size: 12px; color: var(--text-muted); font-family: monospace; }
+    .copy-btn {
+      font-size: 11px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 3px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { background: rgba(167,139,250,0.1); color: var(--accent); }
+    .code-block pre {
+      padding: 18px 20px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #c9d1d9;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .code-block code { font-family: inherit; }
+    .hl-comment { color: #6b737d; }
+    .hl-string  { color: #a5d6ff; }
+    .hl-keyword { color: #ff7b72; }
+    .hl-var     { color: #ffa657; }
+    .hl-accent  { color: #d2a8ff; }
+
+    /* ── CALLOUT ── */
+    .callout {
+      display: flex;
+      gap: 14px;
+      padding: 18px 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .callout.tip   { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); }
+    .callout.info  { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); }
+    .callout.warn  { background: rgba(251,146,60,0.08); border: 1px solid rgba(251,146,60,0.2); }
+    .callout-icon { font-size: 18px; flex-shrink: 0; }
+    .callout.tip  p { color: #6ee7b7; }
+    .callout.info p { color: #c4b5fd; }
+    .callout.warn p { color: #fdba74; }
+
+    /* ── PROMPT BOX ── */
+    .prompt-box {
+      background: linear-gradient(135deg, rgba(167,139,250,0.06), rgba(244,114,182,0.06));
+      border: 1px solid rgba(167,139,250,0.2);
+      border-radius: 14px;
+      padding: 24px;
+      margin: 20px 0;
+    }
+    .prompt-box .prompt-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .prompt-box p {
+      font-size: 14px;
+      color: #d4d4e0;
+      line-height: 1.8;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: pre-wrap;
+    }
+
+    /* ── COMPARISON TABLE ── */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .compare-table th {
+      text-align: left;
+      padding: 12px 16px;
+      background: var(--surface2);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-table th:first-child { border-radius: 10px 0 0 0; }
+    .compare-table th:last-child  { border-radius: 0 10px 0 0; }
+    .compare-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      color: #c8c8d4;
+      vertical-align: top;
+    }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .tag.good { background: rgba(52,211,153,0.15); color: #34d399; }
+    .tag.bad  { background: rgba(251,146,60,0.15); color: #fb923c; }
+    .tag.tip  { background: rgba(167,139,250,0.15); color: #a78bfa; }
+
+    /* ── SITE EXAMPLES ── */
+    .site-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .site-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .site-card:hover { border-color: rgba(167,139,250,0.4); background: var(--surface2); }
+    .site-card .site-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .site-card .site-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+    .site-card .site-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 4px; }
+    .site-tag { font-size: 10px; padding: 2px 7px; border-radius: 5px; background: var(--surface2); color: var(--text-muted); }
+
+    /* ── TEMPLATE RESULT ── */
+    .result-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    .result-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .result-header strong { color: var(--text); }
+    .result-body { padding: 20px; }
+    .result-body p { font-size: 14px; color: #c8c8d4; }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      padding: 48px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .footer a { color: var(--accent); text-decoration: none; }
+
+    @media (max-width: 640px) {
+      .hero { padding: 60px 20px 48px; }
+      .step { flex-direction: column; gap: 14px; }
+      .card-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">✦ Claude Code 꿀팁</div>
+  <h1>Claude Code로<br><em>디자인 무드 해킹</em>하는 법</h1>
+  <p class="hero-sub">
+    매번 뻔한 디자인에서 벗어나, 내가 좋아하는 사이트의 분위기를<br>
+    Claude Code로 추출해서 내 서비스에 이식하는 실전 가이드
+  </p>
+  <div class="meta-row">
+    <span>📅 2026-03-19</span>
+    <span>🤖 AI Study</span>
+    <span>⏱ 10분 읽기</span>
+  </div>
+</div>
+
+<!-- TOC NAV -->
+<nav class="toc-nav">
+  <div class="toc-inner">
+    <a class="toc-link" href="#problem">문제 정의</a>
+    <a class="toc-link" href="#concept">무드 해킹이란</a>
+    <a class="toc-link" href="#step">실전 방법</a>
+    <a class="toc-link" href="#prompt">프롬프트</a>
+    <a class="toc-link" href="#sites">참조 사이트</a>
+    <a class="toc-link" href="#template">템플릿화</a>
+    <a class="toc-link" href="#tips">고급 팁</a>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- 1. PROBLEM -->
+  <section class="section" id="problem">
+    <div class="section-header">
+      <div class="section-icon purple">😩</div>
+      <h2>왜 Claude Code로 만든 UI는 항상 비슷할까?</h2>
+    </div>
+    <p>
+      Claude Code에게 "대시보드 만들어줘"라고 하면 어김없이 나오는 디자인이 있다.
+      어두운 배경, 보라/청록 그라디언트, 카드 그리드, 둥근 모서리…
+      기능적으로는 멀쩡하지만 <strong>분위기가 항상 같다</strong>.
+    </p>
+    <p>
+      이유는 단순하다. Claude는 "좋은 디자인"의 평균값을 학습했기 때문에
+      프롬프트에 스타일 제약이 없으면 항상 그 평균으로 수렴한다.
+      이것을 <strong>디자인 중력(Design Gravity)</strong>이라 부른다.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>평균값 수렴</h3>
+        <p>제약 없는 프롬프트는 항상 학습 데이터의 평균 스타일로 수렴한다.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔁</div>
+        <h3>피드백 루프 없음</h3>
+        <p>"좀 더 세련되게" 같은 주관적 피드백은 Claude가 해석할 기준이 없다.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧱</div>
+        <h3>컨텍스트 부족</h3>
+        <p>원하는 디자인의 실제 코드나 수치가 없으면 레퍼런스를 만들 수 없다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. CONCEPT -->
+  <section class="section" id="concept">
+    <div class="section-header">
+      <div class="section-icon pink">💡</div>
+      <h2>무드 해킹이란?</h2>
+    </div>
+    <p>
+      <strong>디자인 무드 해킹(Design Mood Hacking)</strong>은 내가 좋아하는 사이트의
+      디자인 DNA — 색상 팔레트, 타이포그래피, 여백 패턴, 컴포넌트 스타일 —
+      를 체계적으로 추출해서 내 프로젝트에 이식하는 기법이다.
+    </p>
+
+    <div class="callout info">
+      <div class="callout-icon">✦</div>
+      <p>
+        핵심 아이디어: Claude Code에게 "이 사이트처럼 만들어줘"가 아니라,
+        <strong>그 사이트의 CSS 수치를 직접 분석시켜서 시스템으로 만들어 달라</strong>고 요청하는 것.
+        주관적 형용사 대신 객관적 숫자로 소통한다.
+      </p>
+    </div>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>구분</th>
+          <th>기존 방식</th>
+          <th>무드 해킹</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>지시 방식</td>
+          <td>"세련되게 만들어줘" <span class="tag bad">모호</span></td>
+          <td>참조 URL + CSS 분석 요청 <span class="tag good">구체적</span></td>
+        </tr>
+        <tr>
+          <td>색상</td>
+          <td>Claude 기본 팔레트</td>
+          <td>참조 사이트 실제 hex 코드</td>
+        </tr>
+        <tr>
+          <td>타이포</td>
+          <td>Inter / sans-serif</td>
+          <td>참조 사이트 font-family + weight</td>
+        </tr>
+        <tr>
+          <td>여백</td>
+          <td>암묵적 판단</td>
+          <td>참조 사이트 padding/gap 수치</td>
+        </tr>
+        <tr>
+          <td>반복성</td>
+          <td>매번 비슷 <span class="tag bad">낮음</span></td>
+          <td>설계서 기반 일관성 <span class="tag good">높음</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 3. STEP -->
+  <section class="section" id="step">
+    <div class="section-header">
+      <div class="section-icon green">⚡</div>
+      <h2>실전 3단계 워크플로우</h2>
+    </div>
+
+    <div class="step-list">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>레퍼런스 수집 — 내가 원하는 분위기의 사이트 3~5개</h3>
+          <p>
+            눈에 꽂히는 사이트 URL을 모은다. 디자인 커뮤니티(Dribbble, Awwwards, Godly)나
+            평소 좋아하던 SaaS 사이트면 된다. 완전히 같은 스타일이 아니어도 괜찮다.
+            <strong>색상이 마음에 드는 것, 레이아웃이 마음에 드는 것, 타이포가 마음에 드는 것</strong>
+            을 각각 따로 골라도 좋다.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>Claude Code로 CSS 분석 → 디자인 토큰 추출</h3>
+          <p>
+            레퍼런스 사이트 URL을 Claude Code에 주고 CSS를 분석하게 한다.
+            목표는 <strong>디자인 토큰 파일</strong> 하나를 만드는 것.
+            색상 변수, 폰트 스택, spacing scale, border-radius 패턴을 숫자로 추출한다.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>토큰 파일을 기반으로 내 페이지 생성</h3>
+          <p>
+            추출한 디자인 토큰을 <strong>컨텍스트로 고정</strong>한 뒤 페이지를 생성 요청한다.
+            Claude는 이제 "세련되게"가 무엇인지 수치로 알기 때문에
+            훨씬 원하는 방향에 가깝게 만들어준다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. PROMPT -->
+  <section class="section" id="prompt">
+    <div class="section-header">
+      <div class="section-icon orange">📝</div>
+      <h2>실전 프롬프트 예시</h2>
+    </div>
+
+    <p>아래 프롬프트를 Claude Code에 그대로 복사해서 사용해도 된다.</p>
+
+    <!-- STEP1 PROMPT -->
+    <div style="margin-bottom: 8px; font-size: 13px; color: var(--text-muted); font-weight: 600;">① 디자인 토큰 추출</div>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">Claude Code 프롬프트</span>
+        <button class="copy-btn" onclick="copyCode(this)">복사</button>
+      </div>
+      <pre><code><span class="hl-string">아래 URL 사이트의 CSS를 분석해서 디자인 시스템 토큰을 추출해줘.
+WebFetch로 가져온 뒤 다음 항목을 마크다운으로 정리해줘:
+
+1. 배경색 & 표면색 (hex 코드)
+2. 텍스트 색상 계층 (primary / muted / disabled)
+3. 강조색 (accent / brand color)
+4. 폰트 패밀리 & 웨이트
+5. font-size 스케일 (px 단위)
+6. 주요 border-radius 값
+7. 주요 padding/gap spacing 값
+8. 그림자 (box-shadow) 패턴
+9. 트랜지션 패턴 (duration + easing)
+
+URL: [참조할 사이트 URL]
+
+결과는 CSS :root 변수 블록 형태로도 함께 출력해줘.</span></code></pre>
+    </div>
+
+    <!-- STEP2 PROMPT -->
+    <div style="margin-bottom: 8px; font-size: 13px; color: var(--text-muted); font-weight: 600; margin-top: 24px;">② 토큰 기반 페이지 생성</div>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">Claude Code 프롬프트</span>
+        <button class="copy-btn" onclick="copyCode(this)">복사</button>
+      </div>
+      <pre><code><span class="hl-string">아래 디자인 토큰을 기반으로 [페이지 설명] HTML 페이지를 만들어줘.
+
+[디자인 토큰 — 위에서 추출한 내용 붙여넣기]
+
+:root {
+  --bg: #0f0f13;
+  --surface: #18181c;
+  --text: #f4f4f6;
+  --text-muted: #888898;
+  --accent: #6366f1;
+  --radius: 12px;
+  --font: 'Inter', sans-serif;
+  /* ... */
+}
+
+규칙:
+- 이 토큰 외의 색상은 절대 추가하지 말 것
+- 인라인 스타일 금지, 모두 CSS 변수로
+- 폰트는 위 스택만 사용
+- 여백은 위 spacing scale 기반으로</span></code></pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-icon">💡</div>
+      <p>
+        <strong>핵심 규칙: "이 토큰 외의 색상은 절대 추가하지 말 것"</strong>이 없으면
+        Claude가 슬금슬금 자기 취향을 섞기 시작한다. 제약을 명시적으로 걸어야 한다.
+      </p>
+    </div>
+
+    <!-- STEP3 PROMPT — BLEND -->
+    <div style="margin-bottom: 8px; font-size: 13px; color: var(--text-muted); font-weight: 600; margin-top: 24px;">③ 여러 사이트 무드 믹싱</div>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">Claude Code 프롬프트</span>
+        <button class="copy-btn" onclick="copyCode(this)">복사</button>
+      </div>
+      <pre><code><span class="hl-string">세 가지 사이트의 디자인 요소를 다음과 같이 조합해서 디자인 토큰을 만들어줘:
+
+색상 팔레트: [사이트 A URL] 에서
+타이포그래피: [사이트 B URL] 에서
+컴포넌트 스타일 (카드, 버튼): [사이트 C URL] 에서
+
+각 사이트에서 해당 요소만 WebFetch로 분석하고,
+충돌하는 부분은 A > B > C 우선순위로 결정해줘.
+최종 :root 토큰 블록으로 통합해서 출력해줘.</span></code></pre>
+    </div>
+  </section>
+
+  <!-- 5. SITES -->
+  <section class="section" id="sites">
+    <div class="section-header">
+      <div class="section-icon blue">🌐</div>
+      <h2>분위기별 참조 사이트 목록</h2>
+    </div>
+    <p>무드 해킹에 좋은 레퍼런스 사이트들. 목적에 맞게 골라 쓰자.</p>
+
+    <div class="site-grid">
+      <div class="site-card">
+        <div class="site-name">Linear</div>
+        <div class="site-desc">다크 + 미니멀 + 프로덕티비티 도구 느낌의 최고봉</div>
+        <div class="site-tags">
+          <span class="site-tag">다크</span>
+          <span class="site-tag">미니멀</span>
+          <span class="site-tag">도구</span>
+        </div>
+      </div>
+      <div class="site-card">
+        <div class="site-name">Vercel</div>
+        <div class="site-desc">흑백 대비 + 강한 타이포그래피 + 개발자 감성</div>
+        <div class="site-tags">
+          <span class="site-tag">모노크롬</span>
+          <span class="site-tag">개발자</span>
+          <span class="site-tag">타이포</span>
+        </div>
+      </div>
+      <div class="site-card">
+        <div class="site-name">Stripe</div>
+        <div class="site-desc">보라 그라디언트 + 정교한 그림자 + 신뢰감</div>
+        <div class="site-tags">
+          <span class="site-tag">그라디언트</span>
+          <span class="site-tag">신뢰</span>
+          <span class="site-tag">B2B</span>
+        </div>
+      </div>
+      <div class="site-card">
+        <div class="site-name">Notion</div>
+        <div class="site-desc">크림 배경 + Georgia 폰트 + 문서 편집기 느낌</div>
+        <div class="site-tags">
+          <span class="site-tag">라이트</span>
+          <span class="site-tag">문서</span>
+          <span class="site-tag">따뜻함</span>
+        </div>
+      </div>
+      <div class="site-card">
+        <div class="site-name">Raycast</div>
+        <div class="site-desc">투명 레이어 + 블러 효과 + 앱 런처 감성</div>
+        <div class="site-tags">
+          <span class="site-tag">글래스</span>
+          <span class="site-tag">macOS</span>
+          <span class="site-tag">블러</span>
+        </div>
+      </div>
+      <div class="site-card">
+        <div class="site-name">Craft</div>
+        <div class="site-desc">오프화이트 배경 + 섬세한 그림자 + 콘텐츠 집중</div>
+        <div class="site-tags">
+          <span class="site-tag">오프화이트</span>
+          <span class="site-tag">에디터</span>
+          <span class="site-tag">고급</span>
+        </div>
+      </div>
+      <div class="site-card">
+        <div class="site-name">Framer</div>
+        <div class="site-desc">다크 + 형광 강조색 + 노코드 툴 에너지</div>
+        <div class="site-tags">
+          <span class="site-tag">다크</span>
+          <span class="site-tag">형광</span>
+          <span class="site-tag">에너지</span>
+        </div>
+      </div>
+      <div class="site-card">
+        <div class="site-name">Loom</div>
+        <div class="site-desc">보라+핑크 그라디언트 + 친근함 + 비디오 도구</div>
+        <div class="site-tags">
+          <span class="site-tag">컬러풀</span>
+          <span class="site-tag">친근</span>
+          <span class="site-tag">B2C</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠️</div>
+      <p>
+        디자인 무드를 참조하는 것과 디자인을 복제하는 것은 다르다.
+        색상·폰트·여백 패턴은 참조해도 되지만, 아이콘·일러스트·실제 컴포넌트 코드 그대로를 가져오는 건 저작권 문제가 될 수 있다.
+      </p>
+    </div>
+  </section>
+
+  <!-- 6. TEMPLATE -->
+  <section class="section" id="template">
+    <div class="section-header">
+      <div class="section-icon purple">🗃️</div>
+      <h2>추출한 무드를 템플릿으로 저장하는 법</h2>
+    </div>
+    <p>
+      한 번 좋은 디자인 토큰을 추출했다면, <strong>재사용 가능한 HTML 템플릿</strong>으로 저장해두는 게 핵심이다.
+      Claude Code의 <code>/add-new-page</code> 스킬처럼 템플릿 시스템을 만들어두면
+      다음 페이지부터는 바로 그 분위기로 시작할 수 있다.
+    </p>
+
+    <div class="step-list">
+      <div class="step">
+        <div class="step-num">A</div>
+        <div class="step-body">
+          <h3>DESIGN_SYSTEM.md 파일 만들기</h3>
+          <p>
+            추출한 디자인 토큰을 마크다운 파일로 저장한다.
+            Claude Code 대화 시작 시 이 파일을 컨텍스트로 주입하면
+            항상 같은 분위기로 생성이 시작된다.
+          </p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-label">DESIGN_SYSTEM.md 예시</span></div>
+            <pre><code><span class="hl-comment"># My Design System (Linear 무드 기반)</span>
+
+<span class="hl-var">## Colors</span>
+- Background: <span class="hl-string">#0f0f13</span>
+- Surface:    <span class="hl-string">#18181c</span>
+- Accent:     <span class="hl-string">#6366f1</span> (Indigo)
+- Text:       <span class="hl-string">#f4f4f6</span>
+- Muted:      <span class="hl-string">#888898</span>
+
+<span class="hl-var">## Typography</span>
+- Font: Inter, -apple-system
+- Scale: 12 / 13 / 14 / 16 / 20 / 24 / 32px
+
+<span class="hl-var">## Spacing</span>
+- Gap: 8 / 12 / 16 / 24 / 32 / 48px
+
+<span class="hl-var">## Components</span>
+- Border radius: 8px (small), 12px (card), 20px (pill)
+- Shadow: 0 1px 3px rgba(0,0,0,0.4)
+- Transition: 150ms ease</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">B</div>
+        <div class="step-body">
+          <h3>base-template.html 파일 만들기</h3>
+          <p>
+            CSS :root 변수, 기본 리셋, 공통 컴포넌트(카드, 버튼, 코드블럭)를 포함한
+            빈 HTML 파일을 템플릿으로 저장한다.
+            새 페이지 요청 시 이 파일을 기반으로 콘텐츠만 채우도록 지시한다.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">C</div>
+        <div class="step-body">
+          <h3>Claude Code 스킬에 등록</h3>
+          <p>
+            <code>~/.claude/skills/add-new-page/templates/</code> 에
+            <code>my-mood.html</code>처럼 저장하면 <code>/add-new-page</code> 스킬의
+            템플릿 목록에 추가된다. 이후 "my-mood 템플릿으로 만들어줘"라고 하면 바로 사용 가능.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. TIPS -->
+  <section class="section" id="tips">
+    <div class="section-header">
+      <div class="section-icon green">🎯</div>
+      <h2>고급 팁 & 흔한 실수</h2>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🎨</div>
+        <h3>색상은 5개 이하로</h3>
+        <p>토큰에 색상이 많을수록 Claude가 멋대로 조합한다. bg / surface / text / accent / border 5개면 충분하다.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📐</div>
+        <h3>spacing scale 고정</h3>
+        <p>8의 배수로 고정하자. 8 / 16 / 24 / 32 / 48 / 64. 이 외의 값은 쓰지 말라고 명시하면 여백이 일관해진다.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔤</div>
+        <h3>폰트는 Google Fonts CDN</h3>
+        <p>로컬 폰트 참조는 배포 후 깨질 수 있다. Google Fonts CDN 링크를 명시적으로 지정해줘야 안정적이다.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚫</div>
+        <h3>"더 예쁘게" 금지</h3>
+        <p>주관적 형용사는 쓰지 않는다. 대신 "카드 그림자를 0 4px 16px rgba(0,0,0,0.3)으로 바꿔줘"처럼 수치로 말한다.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💾</div>
+        <h3>토큰 파일 먼저 확정</h3>
+        <p>페이지 생성 전에 디자인 토큰을 먼저 확정하고 파일로 저장한다. 생성 중간에 바꾸면 일관성이 깨진다.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <h3>브라우저 DevTools 활용</h3>
+        <p>참조 사이트에서 F12 → Computed 탭으로 실제 픽셀값을 직접 복사해서 Claude에게 주면 더 정확하다.</p>
+      </div>
+    </div>
+
+    <div class="callout info" style="margin-top: 32px;">
+      <div class="callout-icon">✦</div>
+      <p>
+        <strong>최종 꿀팁:</strong> DESIGN_SYSTEM.md를 프로젝트 루트에 두고
+        CLAUDE.md에 "모든 UI 작업은 DESIGN_SYSTEM.md를 기반으로 할 것"을 추가하면
+        매번 프롬프트에 토큰을 붙여넣지 않아도 자동으로 적용된다.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<div class="footer">
+  <p>Claude Code로 만든 페이지 · <a href="../GDEDSE/">← 목록으로</a></p>
+</div>
+
+<script>
+  // Copy code
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = '복사됨!';
+      setTimeout(() => btn.textContent = '복사', 1500);
+    });
+  }
+
+  // Active TOC
+  const sections = document.querySelectorAll('.section');
+  const links = document.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc-link[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

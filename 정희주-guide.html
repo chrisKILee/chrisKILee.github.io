@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>주간 KPI 자동 취합 시각화 프로그램 — AIVE-CONTEST 2025</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    .screenshot-gallery img {
+      cursor: zoom-in; transition: opacity 0.15s;
+    }
+    .screenshot-gallery img:hover { opacity: 0.88; }
+    #lb-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.82); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; cursor: zoom-out;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-img {
+      max-width: 90vw; max-height: 88vh;
+      border-radius: 10px; box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      object-fit: contain;
+    }
+    #lb-close {
+      position: fixed; top: 20px; right: 24px;
+      color: #fff; font-size: 28px; font-weight: 300;
+      cursor: pointer; line-height: 1; opacity: 0.8;
+    }
+    #lb-close:hover { opacity: 1; }
+    #lb-prev, #lb-next {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.15); border: none; color: #fff;
+      font-size: 36px; padding: 12px 18px; cursor: pointer;
+      border-radius: 8px; z-index: 1001;
+    }
+    #lb-prev { left: 16px; }
+    #lb-next { right: 16px; }
+    #lb-counter {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.7); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ━━━ 고정 헤더 ━━━ -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AIVE-CONTEST 2025</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">주간 KPI 자동 취합 시각화 프로그램</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">ERP3팀 · 정희주</span>
+        <span class="mono" style="font-size:14px; font-weight:500; color:#c8622a; background:#fdf0e8; padding:4px 12px; border-radius:7px; border:1px solid #e8b896;">74점</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:920px; margin:0 auto; padding:52px 28px 88px;">
+
+    <!-- ━━━ 히어로 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제</p>
+          <h1 style="font-size:38px; font-weight:800; color:#1c1917; line-height:1.15; letter-spacing:-0.02em; margin-bottom:18px;">주간 KPI 자동 취합<br>시각화 프로그램</h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">매주 1~2시간 걸리던 ITS·Confluence 수동 취합을 <strong>Google AppScript로 완전 자동화</strong>하고, Web 대시보드로 팀 전체가 KPI를 한눈에 확인할 수 있게 합니다.</p>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026. 4. 9</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">🏆 AIVE-CONTEST</span>
+          </div>
+        </div>
+
+        <!-- 점수 패널 -->
+        <div style="background:#ede9e1; border:1px solid #d6d0c4; border-radius:16px; padding:24px; min-width:210px;">
+          <p class="eval-label" style="margin-bottom:14px;">종합 점수</p>
+          <div style="text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d6d0c4;">
+            <span class="mono" style="font-size:52px; font-weight:500; color:#c8622a; line-height:1;">74</span>
+            <span style="font-size:18px; color:#b5895a; font-weight:400;"> / 100</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">27<span style="font-size:12px; color:#b5895a;">/30</span></div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">③ 효율성</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">21<span style="font-size:12px; color:#b5895a;">/25</span></div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">④ 아이디어</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">22<span style="font-size:12px; color:#b5895a;">/25</span></div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑤ 확산성</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">13<span style="font-size:12px; color:#b5895a;">/20</span></div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑥ 조직목표</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 문제 정의 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">기존의 어려움</p>
+          <ul style="font-size:15px; color:#1c1917; line-height:1.85; list-style:none; padding:0;">
+            <li>🔴 <strong>매주 1~2시간</strong> ITS·Confluence 수동 접속·취합</li>
+            <li>🔴 스프레드시트 수동 관리로 <strong>데이터 누락 위험</strong></li>
+            <li>🔴 스프레드시트로는 <strong>한눈에 파악 어려움</strong></li>
+            <li>🔴 <strong>2개 시스템</strong> 반복 접속 필요</li>
+          </ul>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:10px; letter-spacing:0.05em;">✨ AppScript로 해결한 방식</p>
+          <ul style="font-size:15px; color:#1c1917; line-height:1.85; list-style:none; padding:0;">
+            <li>✅ ITS 자동 로그인 → 데이터 크롤링</li>
+            <li>✅ Confluence API 자동 취합</li>
+            <li>✅ <strong>수작업 0시간</strong>으로 전환</li>
+            <li>✅ Web App 대시보드로 가시성 향상</li>
+          </ul>
+          <div style="margin-top:14px; padding:10px 14px; background:#ede9e1; border-radius:8px; font-size:13px; color:#78716c;">
+            수동 입력 → AppScript 자동화 → 스케줄 JOB → 대시보드
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 체크리스트 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
+
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge">런타임 AI</span>
+          <span class="check-badge on">✅ 노코드 AI (AppScript)</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 반복 보고서 취합·정리</span>
+          <span class="check-badge on">✅ 데이터 수집·분류·가공</span>
+          <span class="check-badge">내부 문의·요청 자동 처리</span>
+          <span class="check-badge">알림·모니터링 자동화</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">28<span style="font-size:12px; color:#b5895a;">/35</span></span>
+          </div>
+          <ul style="font-size:14px; color:#44403c; line-height:1.8; list-style:none; padding:0;">
+            <li>🔹 <strong>주당 1~2시간 → 0시간</strong> 완전 제거</li>
+            <li>🔹 연간 <strong>48시간 이상</strong> 절감 (수치 명확)</li>
+            <li>🔹 2개 시스템 취합 단일 프로세스화</li>
+            <li>🔹 산출물 2종 동시 자동 생성</li>
+          </ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">21<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <ul style="font-size:14px; color:#44403c; line-height:1.8; list-style:none; padding:0;">
+            <li>🔹 문제 3가지 명확히 정의</li>
+            <li>🔹 AppScript vs GitHub 비교 검토 후 선택</li>
+            <li>🔹 기존 환경 내 실용적 구현</li>
+            <li>💡 런타임 AI 미적용이 아쉬움</li>
+          </ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">15<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <ul style="font-size:14px; color:#44403c; line-height:1.8; list-style:none; padding:0;">
+            <li>🔹 <strong>ERP3팀 15명</strong> 전체 사용 중</li>
+            <li>🔹 Web App URL로 비개발자 접근 가능</li>
+            <li>🔹 타 팀 적용 설계 명시</li>
+            <li>💡 현재 일부 설정값 하드코딩 존재</li>
+          </ul>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">10<span style="font-size:12px; color:#b5895a;">/15</span></span>
+          </div>
+          <ul style="font-size:14px; color:#44403c; line-height:1.8; list-style:none; padding:0;">
+            <li>🔹 전사 AI Worker Level5 연결</li>
+            <li>🔹 팀 15명 전체 대상 효율화</li>
+            <li>💡 전사 전략과의 구체적 연결 보완 필요</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 주요 기능 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">⚡ 주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🔐 ITS 자동 로그인</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">ITS 시스템에 자동 로그인(JSESSIONID)하여 부서 처리이력 CH건을 AES 암호화 방식으로 전체 수집</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📊 상세 데이터 추출</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">CH건별 공수·모듈·착수일·완료일·처리내용을 상세 폼 HTML 파싱으로 자동 추출, 중복 제거 후 Sheets 저장</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📝 Confluence 회의록 취합</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">Confluence CQL로 하위 회의록 전체 검색, 담당자·일자·소요시간 파싱 후 고객커뮤니케이션 시트에 Append</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📅 주간칸반 자동 동기화</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">담당자 15명의 주차별 건수·공수를 칸반 시트에 자동 반영, 현재 주차까지 빈칸 0 초기화</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📈 월간 집계 & 차트</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">SAP/MES 분류 기반 요청분류·업무모듈 월간 통계표와 원형·막대 차트를 자동 생성</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🖥️ KPI 대시보드 Web App</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">Bootstrap 5 + Chart.js 기반 6탭 SPA. URL 접근만으로 비개발자도 팀 KPI 실시간 확인 가능</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ AI 활용 방식 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:28px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; flex-wrap:wrap; margin-bottom:24px;">
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px;">🤖 AI 활용 방식</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none; padding:0;">
+              <li>✅ <strong>바이브코딩</strong> — Claude·Gemini로 AppScript 전체 개발</li>
+              <li>✅ <strong>노코드 AI</strong> — Google AppScript 자동화 플랫폼</li>
+              <li>❌ 런타임 AI 없음 (자동화·크롤링 중심)</li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px;">🛠️ 기술 스택</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.8; list-style:none; padding:0;">
+              <li>🔹 <strong>Google Apps Script</strong> (V8 런타임)</li>
+              <li>🔹 <strong>Bootstrap 5.3</strong> + Chart.js</li>
+              <li>🔹 <strong>CryptoJS 4.1.1</strong> (AES-ECB)</li>
+              <li>🔹 Confluence REST API / ITS HTTP</li>
+            </ul>
+          </div>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:10px; padding:16px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:8px;">🔄 자동화 흐름</p>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">
+            ITS 로그인 → AES 암호화 요청 → CH건 수집 → 상세 추출 →<br>
+            Confluence CQL → 회의록 파싱 → Google Sheets 저장 →<br>
+            칸반 동기화 → 월간 집계 → Web App 대시보드 시각화
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 기대 효과 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">0h</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">주간 수작업 시간</p>
+          <p style="font-size:12px; color:#78716c;">기존 1~2시간 → 완전 제거</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">48h+</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">연간 절감 시간</p>
+          <p style="font-size:12px; color:#78716c;">주 1시간 × 48주 기준</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">15명</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">ERP3팀 전원 혜택</p>
+          <p style="font-size:12px; color:#78716c;">팀 전체 KPI 자동 관리</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 시각 증빙 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📸 시각 증빙 자료</p>
+      <p style="font-size:13px; color:#78716c; margin-bottom:16px;">프로젝트 스크린샷 (슬라이드 10장) — 클릭하면 원본 크기로 확인할 수 있습니다.</p>
+      <div class="screenshot-gallery" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px;">
+        <img src="assets/slide_01.png" alt="슬라이드 1" onclick="openLbIdx(0)" style="border-radius:8px; width:100%; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/slide_02.png" alt="슬라이드 2" onclick="openLbIdx(1)" style="border-radius:8px; width:100%; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/slide_03.png" alt="슬라이드 3" onclick="openLbIdx(2)" style="border-radius:8px; width:100%; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/slide_04.png" alt="슬라이드 4" onclick="openLbIdx(3)" style="border-radius:8px; width:100%; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/slide_05.png" alt="슬라이드 5" onclick="openLbIdx(4)" style="border-radius:8px; width:100%; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/slide_06.png" alt="슬라이드 6" onclick="openLbIdx(5)" style="border-radius:8px; width:100%; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/slide_07.png" alt="슬라이드 7" onclick="openLbIdx(6)" style="border-radius:8px; width:100%; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/slide_08.png" alt="슬라이드 8" onclick="openLbIdx(7)" style="border-radius:8px; width:100%; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/slide_09.png" alt="슬라이드 9" onclick="openLbIdx(8)" style="border-radius:8px; width:100%; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+        <img src="assets/slide_10.png" alt="슬라이드 10" onclick="openLbIdx(9)" style="border-radius:8px; width:100%; aspect-ratio:16/9; object-fit:cover; border:1px solid #d6d0c4;">
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ━━━ 푸터 ━━━ -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AIVE-CONTEST 2025 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; ERP3팀
+    </p>
+  </footer>
+
+  <!-- Lightbox (Arrow 지원) -->
+  <div id="lb-overlay" onclick="closeLb()">
+    <span id="lb-close" onclick="closeLb()">✕</span>
+    <button id="lb-prev" onclick="event.stopPropagation(); moveLb(-1)">‹</button>
+    <img id="lb-img" src="" alt="" onclick="event.stopPropagation()">
+    <button id="lb-next" onclick="event.stopPropagation(); moveLb(1)">›</button>
+    <div id="lb-counter"></div>
+  </div>
+  <script>
+    var _lbImgs = [
+      {src:'assets/slide_01.png', alt:'슬라이드 1'},
+      {src:'assets/slide_02.png', alt:'슬라이드 2'},
+      {src:'assets/slide_03.png', alt:'슬라이드 3'},
+      {src:'assets/slide_04.png', alt:'슬라이드 4'},
+      {src:'assets/slide_05.png', alt:'슬라이드 5'},
+      {src:'assets/slide_06.png', alt:'슬라이드 6'},
+      {src:'assets/slide_07.png', alt:'슬라이드 7'},
+      {src:'assets/slide_08.png', alt:'슬라이드 8'},
+      {src:'assets/slide_09.png', alt:'슬라이드 9'},
+      {src:'assets/slide_10.png', alt:'슬라이드 10'}
+    ];
+    var _lbIdx = 0;
+    function openLbIdx(idx) {
+      _lbIdx = idx;
+      _updateLb();
+      document.getElementById('lb-overlay').classList.add('open');
+    }
+    function closeLb() {
+      document.getElementById('lb-overlay').classList.remove('open');
+    }
+    function moveLb(dir) {
+      _lbIdx = (_lbIdx + dir + _lbImgs.length) % _lbImgs.length;
+      _updateLb();
+    }
+    function _updateLb() {
+      var d = _lbImgs[_lbIdx];
+      document.getElementById('lb-img').src = d.src;
+      document.getElementById('lb-img').alt = d.alt;
+      document.getElementById('lb-counter').textContent = (_lbIdx + 1) + ' / ' + _lbImgs.length;
+    }
+    document.addEventListener('keydown', function(e) {
+      var o = document.getElementById('lb-overlay');
+      if (o.classList.contains('open')) {
+        if (e.key === 'Escape') closeLb();
+        if (e.key === 'ArrowLeft') moveLb(-1);
+        if (e.key === 'ArrowRight') moveLb(1);
+      }
+    });
+  </script>
+</body>
+</html>

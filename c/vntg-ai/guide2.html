@@ -1,0 +1,366 @@
+<!-- Chosen Palette: Deep Intelligence - Slate-50 (Background), Indigo-600 (Primary), Rose-500 (Alert/Token), Cyan-500 (Chunk) -->
+
+<!-- Application Structure Plan: 
+    1.  **Visual Definition**: 토큰과 청크의 계층 구조를 시각화. (글자 -> 토큰 -> 청크 -> 문서)
+    2.  **Token-to-Chunk Simulator**: 실시간으로 텍스트를 입력하면 토큰으로 쪼개지고, 설정한 토큰 제한에 따라 청크 바구니에 담기는 과정을 시연.
+    3.  **Vector Pipeline**: 청크 바구니가 숫자 배열(Vector)로 변환되어 DB에 저장되는 과정을 흐름도로 표현.
+    4.  **Template Builder**: 검색된 '청크'가 '템플릿'이라는 틀에 박혀 최종 답변이 되는 과정을 UI로 구현.
+    
+    Why this structure? 사용자가 가장 헷갈려하는 '토큰'과 '청크'의 물리적 포함 관계를 눈으로 직접 확인하게 하여 개념적 혼란을 완전히 제거하기 위함입니다.
+-->
+
+<!-- Visualization & Content Choices: 
+    1.  **Hierarchy View**: CSS Grid를 사용하여 문서 > 청크 > 토큰의 포함 관계를 시각화.
+    2.  **Live Tokenizer**: 자바스크립트로 텍스트를 음절 단위(토큰 대용)로 끊어서 색상별 배지로 표시.
+    3.  **Vector Array Display**: [0.1, -0.2...] 형태의 실제 배열 데이터를 텍스트 영역에 출력.
+    4.  **No SVG/Mermaid**: 모든 화살표와 구조도는 Tailwind CSS의 Border와 레이아웃을 사용하여 구현.
+-->
+
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 핵심 개념: 토큰에서 템플릿까지</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .token-unit {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin: 2px;
+        }
+
+        .chunk-box {
+            border: 2px dashed #94a3b8;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .active-chunk {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+
+        .vector-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            background: #0f172a;
+            color: #22d3ee;
+        }
+
+        strong {
+            font-weight: 700;
+            color: #4338ca;
+        }
+    </style>
+</head>
+
+<body class="pb-20">
+
+    <!-- Hero Section -->
+    <header class="bg-indigo-600 text-white py-16 px-6 text-center shadow-lg">
+        <h1 class="text-4xl font-bold mb-4">토큰(Token)과 청크(Chunk)의 비밀</h1>
+        <p class="text-indigo-100 text-lg max-w-2xl mx-auto">
+            AI가 읽는 최소 단위인 <strong>토큰</strong>이 모여서 <strong>청크</strong>라는 지식 덩어리가 됩니다.
+            이들이 어떻게 숫자 배열로 변하고 템플릿에 담기는지 확인해보세요.
+        </p>
+    </header>
+
+    <main class="max-w-5xl mx-auto mt-12 px-4 space-y-16">
+
+        <!-- 1. The Relationship: Token vs Chunk -->
+        <section class="bg-white p-8 rounded-2xl shadow-md border border-slate-200">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span
+                    class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+                개념 정리: 포함 관계 이해하기
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <div class="p-4 bg-rose-50 rounded-xl border border-rose-100">
+                        <h3 class="font-bold text-rose-700 mb-2">● 토큰 (Token)</h3>
+                        <p class="text-sm leading-relaxed">
+                            AI 모델이 한 번에 처리하는 <strong>가장 작은 단위</strong>입니다.
+                            한글은 보통 한 글자나 형태소 단위로 쪼개집니다.
+                            모델은 "최대 몇 토큰까지 읽을 수 있다"는 한계를 가집니다.
+                        </p>
+                    </div>
+                    <div class="p-4 bg-cyan-50 rounded-xl border border-cyan-100">
+                        <h3 class="font-bold text-cyan-700 mb-2">● 청크 (Chunk)</h3>
+                        <p class="text-sm leading-relaxed">
+                            여러 개의 토큰을 <strong>의미 있는 덩어리</strong>로 묶은 것입니다.
+                            벡터 DB에 저장되는 실제 단위이며, 검색의 대상이 됩니다.
+                            <strong>바구니(청크) 안에 사과(토큰)들이 담겨 있는 꼴</strong>입니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Visual Relationship Diagram -->
+                <div
+                    class="border-2 border-slate-100 rounded-2xl p-6 flex flex-col items-center justify-center bg-slate-50">
+                    <div class="w-full max-w-xs border-2 border-indigo-200 p-4 rounded-xl bg-white relative">
+                        <span
+                            class="absolute -top-3 left-4 bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded">CHUNK
+                            (바구니)</span>
+                        <div class="flex flex-wrap justify-center gap-1 mt-2">
+                            <span class="token-unit bg-rose-200 text-rose-700">안</span>
+                            <span class="token-unit bg-rose-200 text-rose-700">녕</span>
+                            <span class="token-unit bg-rose-200 text-rose-700">하</span>
+                            <span class="token-unit bg-rose-200 text-rose-700">세</span>
+                            <span class="token-unit bg-rose-200 text-rose-700">요</span>
+                            <span class="token-unit bg-rose-200 text-rose-700">AI</span>
+                            <span class="token-unit bg-rose-200 text-rose-700">가</span>
+                            <span class="token-unit bg-rose-200 text-rose-700">읽</span>
+                            <span class="token-unit bg-rose-200 text-rose-700">는</span>
+                            <span class="token-unit bg-rose-200 text-rose-700">말</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-4 text-center">
+                        <strong>청크</strong>는 여러 개의 <strong>토큰</strong>을 포함하는 컨테이너입니다.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Real-time Simulator -->
+        <section class="bg-white p-8 rounded-2xl shadow-md border border-slate-200">
+            <h2 class="text-2xl font-bold mb-6 flex items-center text-indigo-900">
+                <span
+                    class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
+                토큰-청크 생성 시뮬레이터
+            </h2>
+            <p class="text-sm text-slate-600 mb-6">
+                텍스트를 입력하면 AI 모델이 이를 어떻게 <strong>토큰화</strong>하고, 설정된 <strong>토큰 한도</strong>에 맞춰
+                어떻게 <strong>청크</strong>로 나누는지 실시간으로 보여줍니다.
+            </p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Input Control -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">텍스트 입력</label>
+                        <textarea id="sim-input" rows="5"
+                            class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                            placeholder="긴 문장을 입력해보세요...">인공지능 서비스 구축 시 가장 중요한 것은 데이터의 품질입니다. 사내 문서를 잘게 쪼개어 청크로 만들고 이를 벡터화하여 DB에 저장하는 과정이 핵심입니다.</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-2">청크당 최대 토큰 수: <span id="limit-val"
+                                class="text-indigo-600">15</span></label>
+                        <input type="range" id="token-limit" min="5" max="40" value="15"
+                            class="w-full accent-indigo-600">
+                    </div>
+                </div>
+
+                <!-- Simulation View -->
+                <div class="lg:col-span-2 space-y-4">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">AI 모델의 데이터 처리 결과</h3>
+                    <div id="sim-output" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Chunks will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Vectorization & Search Flow -->
+        <section class="bg-slate-900 p-8 rounded-3xl shadow-xl text-white">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span
+                    class="bg-cyan-400 text-slate-900 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">3</span>
+                벡터 DB 저장 및 검색 아키텍처
+            </h2>
+            <p class="text-slate-400 text-sm mb-10 leading-relaxed">
+                생성된 <strong>청크</strong>는 AI 모델을 거쳐 <strong>숫자 배열(Vector)</strong>로 변환됩니다.
+                사용자가 질문을 던지면, 질문 또한 숫자로 변해 가장 유사한 숫자 배열을 가진 청크를 찾아옵니다.
+            </p>
+
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <!-- Data Node -->
+                <div class="w-full md:w-1/4 p-4 border border-slate-700 rounded-xl bg-slate-800 text-center">
+                    <div class="text-xs text-cyan-400 font-bold mb-2 uppercase">Input Chunk</div>
+                    <p class="text-xs text-slate-300">"연차 규정은 입사 1년 후..."</p>
+                </div>
+                <!-- Arrow -->
+                <div class="text-slate-600 hidden md:block text-2xl">➔</div>
+                <!-- Process Node -->
+                <div
+                    class="w-full md:w-1/4 p-4 border-2 border-cyan-500 rounded-xl bg-slate-800 text-center shadow-[0_0_15px_rgba(34,211,238,0.2)]">
+                    <div class="text-xs text-white font-bold mb-2">AI Embedding Model</div>
+                    <div class="flex justify-center space-x-1">
+                        <div class="w-1 h-4 bg-cyan-400 animate-bounce"></div>
+                        <div class="w-1 h-6 bg-cyan-400 animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-1 h-3 bg-cyan-400 animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>
+                <!-- Arrow -->
+                <div class="text-slate-600 hidden md:block text-2xl">➔</div>
+                <!-- Vector Result -->
+                <div
+                    class="w-full md:w-1/3 p-4 border border-slate-700 rounded-xl bg-slate-950 font-mono overflow-hidden">
+                    <div class="text-[10px] text-slate-500 mb-2">STORED AS NUMERIC ARRAY</div>
+                    <div class="text-cyan-400 text-[10px] break-all leading-tight">
+                        [0.1223, -0.4552, 0.8812, 0.3114, -0.1029, 0.5521, 0.9928, -0.2210, 0.0034, 0.7712, ...]
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 p-4 bg-slate-800 rounded-xl border-l-4 border-cyan-400">
+                <p class="text-sm text-slate-300">
+                    <strong>포인트:</strong> 벡터 DB는 텍스트를 저장하는 것이 아니라, 텍스트의 <strong>'의미적 좌표'</strong>인 <strong>숫자들의
+                        모음</strong>을 저장합니다.
+                    따라서 "휴가"라고 물어도 "연차"에 대한 정보를 찾을 수 있는 것입니다.
+                </p>
+            </div>
+        </section>
+
+        <!-- 4. Template Engine -->
+        <section class="bg-white p-8 rounded-2xl shadow-md border border-slate-200">
+            <h2 class="text-2xl font-bold mb-6 flex items-center text-indigo-900">
+                <span
+                    class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">4</span>
+                템플릿(Template)의 마법
+            </h2>
+            <p class="text-sm text-slate-600 mb-8">
+                검색된 청크들을 그대로 보여주는 것이 아니라, <strong>템플릿</strong>이라는 양식에 넣어
+                AI가 질문자의 의도에 맞게 <strong>정해진 포맷</strong>으로 재가공하게 만듭니다.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Template Config -->
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase mb-4">Prompt Template Config</h4>
+                    <div class="space-y-4">
+                        <div class="p-3 bg-white rounded border border-slate-200 text-xs font-mono leading-relaxed">
+                            당신은 <span class="text-indigo-600 font-bold">사내 가이드 봇</span>입니다.<br>
+                            다음 [참고 정보]를 사용하여 질문에 답하세요.<br><br>
+                            [참고 정보]: <strong>{Retrieved_Chunk}</strong><br><br>
+                            [사용자 질문]: <strong>{User_Query}</strong><br><br>
+                            답변 형식: <strong>항상 3줄 이내의 존댓말로 답변할 것.</strong>
+                        </div>
+                        <button onclick="simulateFinalResult()"
+                            class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors">결과
+                            확인하기</button>
+                    </div>
+                </div>
+
+                <!-- Final Response -->
+                <div class="flex flex-col">
+                    <div class="flex-1 p-6 bg-white border-2 border-indigo-100 rounded-2xl relative min-h-[200px]">
+                        <div
+                            class="absolute -top-3 left-4 bg-indigo-100 text-indigo-700 text-[10px] px-2 py-0.5 rounded font-bold">
+                            FINAL AI RESPONSE</div>
+                        <div id="final-ai-text"
+                            class="text-sm leading-relaxed text-slate-700 pt-2 italic text-slate-400">
+                            버튼을 눌러 결과를 생성하세요...
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-4 italic">
+                        ※ 템플릿을 통해 답변의 <strong>톤앤매너, 길이, 형식(JSON/Markdown 등)</strong>을 엄격히 통제할 수 있습니다.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="mt-20 border-t border-slate-200 py-12 bg-white text-center">
+        <p class="text-slate-500 text-sm">사내 AI(RAG) 구현 기술 아키텍처 시각화 가이드</p>
+    </footer>
+
+    <script>
+        const simInput = document.getElementById('sim-input');
+        const tokenLimitSlider = document.getElementById('token-limit');
+        const limitValLabel = document.getElementById('limit-val');
+        const simOutput = document.getElementById('sim-output');
+
+        const tokenColors = ['bg-rose-100 text-rose-700', 'bg-blue-100 text-blue-700', 'bg-emerald-100 text-emerald-700', 'bg-amber-100 text-amber-700', 'bg-purple-100 text-purple-700', 'bg-cyan-100 text-cyan-700'];
+
+        function updateSimulation() {
+            const text = simInput.value;
+            const limit = parseInt(tokenLimitSlider.value);
+            limitValLabel.innerText = limit;
+
+            simOutput.innerHTML = '';
+
+            // Simple char-based tokenization simulation (using single characters as tokens for visual clarity)
+            const tokens = Array.from(text.replace(/\s/g, ' '));
+
+            let currentChunk = [];
+            let chunkCount = 1;
+
+            tokens.forEach((token, index) => {
+                currentChunk.push(token);
+
+                if (currentChunk.length >= limit || index === tokens.length - 1) {
+                    const chunkBox = document.createElement('div');
+                    chunkBox.className = `chunk-box active-chunk`;
+
+                    const title = document.createElement('div');
+                    title.className = 'text-[10px] font-bold text-indigo-600 mb-2 uppercase flex justify-between';
+                    title.innerHTML = `<span>Chunk #${chunkCount}</span> <span class="text-slate-400">${currentChunk.length} tokens</span>`;
+                    chunkBox.appendChild(title);
+
+                    const content = document.createElement('div');
+                    content.className = 'flex flex-wrap gap-0.5';
+
+                    currentChunk.forEach((t, i) => {
+                        const tSpan = document.createElement('span');
+                        tSpan.className = `token-unit ${tokenColors[chunkCount % tokenColors.length]}`;
+                        tSpan.innerText = t === ' ' ? '␣' : t;
+                        content.appendChild(tSpan);
+                    });
+
+                    chunkBox.appendChild(content);
+                    simOutput.appendChild(chunkBox);
+
+                    currentChunk = [];
+                    chunkCount++;
+                }
+            });
+        }
+
+        function simulateFinalResult() {
+            const output = document.getElementById('final-ai-text');
+            output.classList.remove('italic', 'text-slate-400');
+            output.classList.add('text-slate-800');
+
+            const text = "안녕하세요! 사내 가이드 봇입니다.\n\n요청하신 지식 청크를 바탕으로 분석한 결과, 서비스 구축 시 데이터 품질 관리가 가장 중요하며 이를 위해 문서를 적절한 청크로 나누어 벡터화하는 과정이 필수적임을 알려드립니다.\n\n추가 질문이 있으시면 언제든 말씀해주세요!";
+
+            let i = 0;
+            output.innerHTML = "";
+            function typing() {
+                if (i < text.length) {
+                    output.innerHTML += text.charAt(i) === '\n' ? '<br>' : text.charAt(i);
+                    i++;
+                    setTimeout(typing, 30);
+                }
+            }
+            typing();
+        }
+
+        simInput.oninput = updateSimulation;
+        tokenLimitSlider.oninput = updateSimulation;
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateSimulation);
+        } else { updateSimulation(); }
+    </script>
+</body>
+
+</html>

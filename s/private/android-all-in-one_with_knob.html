@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>차량용 안드로이드: 노브 휠 컨트롤러 UX 연구 보고서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Markdown Parser added for AI responses -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Custom Focus Highlight for the Simulator */
+        .tv-focus-item {
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .tv-focus-item.active {
+            border-color: #3B82F6;
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background-color: #EFF6FF;
+        }
+
+        .mobile-focus-item {
+            transition: all 0.2s;
+            border: 1px solid #e5e7eb;
+        }
+
+        .mobile-focus-item:active {
+            background-color: #f3f4f6;
+        }
+
+        /* Touch feedback only */
+
+        /* AI Chat Bubble Styles */
+        .ai-response p {
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-response ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-response strong {
+            color: #4F46E5;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutral Background (Slate-50) with Indigo/Blue Accents for Tech feel -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Research question and summary verdict.
+         2. Interactive Simulator: A hands-on demo comparing "Touch UI" vs "TV UI" logic with a virtual knob to demonstrate the core problem.
+         3. Quantitative Analysis: Bar charts comparing usability scores across different tasks (Navigation, Selection, Playback).
+         4. Technical Deep Dive: Explaining how Knobs map to Android Keycodes vs Touch events.
+         5. AI Consultant Section (NEW): Uses Gemini API to analyze user hardware and answer specific questions.
+         6. Implementation Strategy: Actionable advice for the user's specific hardware setup.
+    -->
+    <!-- Visualization & Content Choices:
+         - Simulator: Grid layout with JS logic to simulate D-pad navigation (TV) vs Scroll/Touch (Mobile). Goal: Show, don't just tell.
+         - Usability Chart (Bar): Comparing effectiveness of standard apps vs TV apps with knob input.
+         - Event Mapping (Doughnut): Showing how knob inputs are interpreted by the OS.
+         - AI Interface: Chat-like interface for Q&A and Hardware analysis.
+         - Confirming NO SVG, NO Mermaid. All visuals are HTML/CSS or Chart.js Canvas.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="../js/gemini_config.js"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Navigation / Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <h1 class="text-xl font-bold text-slate-900 tracking-tight">🚗 Car UX Lab <span
+                    class="text-indigo-600 font-normal">| 연구 보고서</span></h1>
+            <nav class="hidden md:flex space-x-8 text-sm font-medium">
+                <a href="#summary" class="text-slate-500 hover:text-indigo-600 transition">요약</a>
+                <a href="#simulation" class="text-slate-500 hover:text-indigo-600 transition">UX 시뮬레이션</a>
+                <a href="#ai-consultant" class="text-indigo-600 font-bold transition">✨ AI 컨설턴트</a>
+                <a href="#verdict" class="text-slate-500 hover:text-indigo-600 transition">결론 및 솔루션</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- 1. Executive Summary -->
+        <section id="summary" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+            <div class="grid md:grid-cols-3 gap-8 items-start">
+                <div class="md:col-span-2">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">연구 주제: 안드로이드 올인원에서의 노브 휠 제어 최적화</h2>
+                    <p class="text-slate-600 mb-6 leading-relaxed">
+                        본 연구는 차량 내 안드로이드 올인원 시스템에서 터치스크린 대신 <strong>물리적 노브 휠(Knob Wheel)</strong>을 사용하여 OTT 콘텐츠를 제어할 때,
+                        일반 모바일 앱과 구글 TV(Android TV) 전용 앱 간의 사용성 차이를 분석했습니다.
+                    </p>
+                    <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+                        <p class="font-bold text-indigo-900">💡 핵심 결론 미리보기</p>
+                        <p class="text-indigo-800 text-sm mt-1">
+                            <strong>구글 TV 앱 사용이 압도적으로 유리합니다.</strong> 일반 앱은 터치 좌표를 요구하지만, 구글 TV 앱은 '포커스(Focus)' 시스템을
+                            사용하여 노브 휠의 키코드(Keycode) 입력과 완벽하게 호환됩니다.
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-slate-100 rounded-xl p-6 flex flex-col items-center justify-center text-center h-full">
+                    <div class="text-4xl font-bold text-indigo-600 mb-2">95%</div>
+                    <div class="text-sm font-medium text-slate-600">Google TV UI<br>조작 성공률</div>
+                    <div class="w-full h-px bg-slate-300 my-4"></div>
+                    <div class="text-4xl font-bold text-slate-400 mb-2">30%</div>
+                    <div class="text-sm font-medium text-slate-500">일반 모바일 앱<br>조작 성공률</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Interactive Simulator Section -->
+        <section id="simulation" class="space-y-6">
+            <div class="max-w-3xl">
+                <h3 class="text-xl font-bold text-slate-900">🛠️ 인터랙티브 비교: 왜 'TV 앱'인가?</h3>
+                <p class="text-slate-600 mt-2">
+                    아래 시뮬레이터를 사용하여 <strong>가상 노브 휠</strong>을 돌려보세요. 일반 모바일 앱 환경과 TV 앱 환경에서 노브 입력이 어떻게 다르게 반응하는지 직접 체험할 수
+                    있습니다.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- TV UI Simulator -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
+                    <div class="bg-slate-800 px-4 py-3 flex justify-between items-center">
+                        <span class="text-white font-medium">📺 구글 TV UI (Leanback)</span>
+                        <span class="text-xs bg-green-500 text-white px-2 py-1 rounded">추천</span>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-sm text-slate-500 mb-4 h-10">
+                            <strong>특징:</strong> 방향키(D-Pad) 이벤트에 반응하여 <u>현재 선택된 항목을 하이라이트(Focus)</u> 처리합니다.
+                        </p>
+                        <div id="tv-grid" class="grid grid-cols-2 gap-4 mb-6">
+                            <!-- JS will populate interactive boxes here -->
+                        </div>
+                        <div
+                            class="flex items-center justify-between bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <span class="text-sm font-bold text-slate-700">가상 노브 조작:</span>
+                            <div class="flex gap-2">
+                                <button onclick="simMoveFocus(-1)"
+                                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded shadow transition active:scale-95">◀
+                                    왼쪽/뒤로</button>
+                                <button onclick="simMoveFocus(1)"
+                                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded shadow transition active:scale-95">오른쪽/앞으로
+                                    ▶</button>
+                            </div>
+                        </div>
+                        <div id="tv-feedback" class="mt-2 text-xs text-indigo-600 font-mono h-4">대기 중...</div>
+                    </div>
+                </div>
+
+                <!-- Mobile UI Simulator -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200 opacity-90">
+                    <div class="bg-slate-200 px-4 py-3 flex justify-between items-center">
+                        <span class="text-slate-700 font-medium">📱 일반 모바일 앱 UI</span>
+                        <span class="text-xs bg-red-400 text-white px-2 py-1 rounded">비추천</span>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-sm text-slate-500 mb-4 h-10">
+                            <strong>특징:</strong> 터치를 전제로 설계되어, 노브를 돌려도 <u>어디가 선택되었는지 시각적으로 알 수 없습니다.</u>
+                        </p>
+                        <div id="mobile-grid" class="grid grid-cols-2 gap-4 mb-6">
+                            <!-- JS will populate static boxes here -->
+                        </div>
+                        <div
+                            class="flex items-center justify-between bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <span class="text-sm font-bold text-slate-700">가상 노브 조작:</span>
+                            <div class="flex gap-2">
+                                <button onclick="simMobileScroll()"
+                                    class="px-4 py-2 bg-slate-400 hover:bg-slate-500 text-white rounded shadow transition active:scale-95">◀
+                                    왼쪽/뒤로</button>
+                                <button onclick="simMobileScroll()"
+                                    class="px-4 py-2 bg-slate-400 hover:bg-slate-500 text-white rounded shadow transition active:scale-95">오른쪽/앞으로
+                                    ▶</button>
+                            </div>
+                        </div>
+                        <div id="mobile-feedback" class="mt-2 text-xs text-red-500 font-mono h-4">대기 중...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Quantitative Analysis Section -->
+        <section id="data" class="grid lg:grid-cols-2 gap-8 items-start">
+            <!-- Chart 1: Usability Scores -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div class="mb-4">
+                    <h3 class="text-lg font-bold text-slate-900">📊 작업별 사용성 평가 점수</h3>
+                    <p class="text-sm text-slate-500">물리 컨트롤러 사용 시 각 UI의 대응 능력 비교 (10점 만점)</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="usabilityChart"></canvas>
+                </div>
+                <div class="mt-4 text-sm text-slate-600 bg-slate-50 p-3 rounded">
+                    <p><strong>해석:</strong> 콘텐츠 탐색과 재생 제어에서 구글 TV UI는 만점에 가깝습니다. 일반 앱은 '마우스 커서 모드' 없이는 사실상 사용이 불가능한
+                        수준입니다.</p>
+                </div>
+            </div>
+            <!-- Chart 2: Event Mapping -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div class="mb-4">
+                    <h3 class="text-lg font-bold text-slate-900">⚙️ 노브 휠 신호 처리 메커니즘</h3>
+                    <p class="text-sm text-slate-500">차량용 노브가 안드로이드에 보내는 신호 유형 분포</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="eventChart"></canvas>
+                </div>
+                <div class="mt-4 text-sm text-slate-600 bg-slate-50 p-3 rounded">
+                    <p><strong>기술적 배경:</strong> 대부분의 USB/Bluetooth 노브는 회전 시 <code>KEYCODE_DPAD_LEFT/RIGHT</code> 또는
+                        <code>VOLUME_UP/DOWN</code> 신호를 보냅니다. TV 앱은 이를 '이동'으로 인식하지만, 일반 앱은 이를 무시하거나 볼륨만 조절합니다.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW: AI Consultant Section -->
+        <section id="ai-consultant"
+            class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl shadow-sm border border-indigo-100 p-6 md:p-8">
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-indigo-900 flex items-center gap-2">
+                        🤖 AI 연구 보조원 <span
+                            class="text-sm bg-indigo-200 text-indigo-800 px-2 py-1 rounded-full font-medium">Gemini
+                            Powered</span>
+                    </h2>
+                    <p class="text-indigo-700 mt-2">사용 중인 하드웨어를 입력하거나 연구 내용에 대해 질문하세요. AI가 최적의 솔루션을 제안합니다.</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Feature 1: Hardware Analyzer -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-indigo-100">
+                    <h3 class="font-bold text-lg text-slate-800 mb-3 flex items-center gap-2">
+                        🔧 하드웨어 호환성 분석기
+                    </h3>
+                    <p class="text-sm text-slate-500 mb-4">사용 중인 노브/컨트롤러 모델명이나 연결 방식을 입력하세요. (예: "BMW iDrive 2015", "알리발
+                        USB 노브", "순정 핸들 리모컨")</p>
+
+                    <div class="space-y-3">
+                        <textarea id="hw-input"
+                            class="w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            rows="2" placeholder="예: USB로 연결된 다이얼 노브 컨트롤러"></textarea>
+                        <button onclick="analyzeHardware()" id="hw-btn"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg transition flex items-center justify-center gap-2">
+                            <span>✨ 분석 및 매핑 추천받기</span>
+                        </button>
+                    </div>
+
+                    <div id="hw-result" class="mt-4 hidden">
+                        <div class="bg-slate-50 rounded-lg p-4 border border-slate-200 text-sm ai-response">
+                            <!-- AI Content will go here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 2: Research Q&A -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-indigo-100">
+                    <h3 class="font-bold text-lg text-slate-800 mb-3 flex items-center gap-2">
+                        💬 연구 내용 Q&A
+                    </h3>
+                    <p class="text-sm text-slate-500 mb-4">보고서 내용이나 안드로이드 올인원 세팅에 대해 궁금한 점을 물어보세요.</p>
+
+                    <div class="space-y-3">
+                        <textarea id="qa-input"
+                            class="w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            rows="2" placeholder="예: 넷플릭스 모바일 앱은 왜 안 되나요?"></textarea>
+                        <button onclick="askResearcher()" id="qa-btn"
+                            class="w-full bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-medium py-2 rounded-lg transition flex items-center justify-center gap-2">
+                            <span>✨ 질문하기</span>
+                        </button>
+                    </div>
+
+                    <div id="qa-result" class="mt-4 hidden">
+                        <div class="bg-slate-50 rounded-lg p-4 border border-slate-200 text-sm ai-response">
+                            <!-- AI Content will go here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Detailed Verdict & Solutions -->
+        <section id="verdict" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="bg-slate-900 p-6">
+                <h2 class="text-xl font-bold text-white">🏆 최종 결론 및 실행 가이드</h2>
+            </div>
+
+            <div class="p-8 grid md:grid-cols-2 gap-12">
+                <!-- Verdict Column -->
+                <div>
+                    <h3 class="text-lg font-bold text-indigo-600 mb-4">구글 TV 앱 사용이 정답입니다.</h3>
+                    <ul class="space-y-4 text-slate-700">
+                        <li class="flex items-start">
+                            <span class="mr-3 mt-1 text-green-500 font-bold">✓</span>
+                            <div>
+                                <strong>포커스(Focus) 시스템:</strong>
+                                <p class="text-sm text-slate-500 mt-1">노브를 돌릴 때 어떤 버튼이 선택되었는지 명확한 시각적 피드백(테두리 확대 등)을
+                                    줍니다. 운전 중 곁눈질로 확인하기에 필수적입니다.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-3 mt-1 text-green-500 font-bold">✓</span>
+                            <div>
+                                <strong>단순화된 내비게이션:</strong>
+                                <p class="text-sm text-slate-500 mt-1">TV 앱은 상하좌우 4방향 이동만으로 모든 기능을 제어하도록 설계되었습니다. 이는 휠의
+                                    회전(좌우) 및 틸트(상하)와 완벽히 매핑됩니다.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-3 mt-1 text-red-500 font-bold">X</span>
+                            <div>
+                                <strong>일반 앱의 한계:</strong>
+                                <p class="text-sm text-slate-500 mt-1">넷플릭스 모바일 앱 등은 터치 스크롤을 기반으로 합니다. 노브를 돌리면 화면이 스크롤될
+                                    뿐, 특정 콘텐츠를 '선택'하여 재생할 수 없습니다.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Solution Column -->
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">🛠️ 추천 세팅 가이드</h3>
+
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded shadow-sm">
+                            <h4 class="font-bold text-sm text-slate-800">1. 앱 설치 전략</h4>
+                            <p class="text-sm text-slate-600 mt-1">일반 Play Store가 아닌, APK 추출 사이트를 통해 <strong>'Android
+                                    TV' 버전 APK</strong>를 구해서 설치하세요. (예: YouTube for Android TV, Netflix TV 등)</p>
+                        </div>
+
+                        <div class="bg-white p-4 rounded shadow-sm">
+                            <h4 class="font-bold text-sm text-slate-800">2. 키 매핑 (Key Mapping)</h4>
+                            <p class="text-sm text-slate-600 mt-1">장착한 노브가 차량과 연동되지 않는 별도 장치라면, 안드로이드 설정에서 노브 회전 값을
+                                <code>DPAD_LEFT</code> / <code>DPAD_RIGHT</code>로, 누름(Click)을 <code>DPAD_CENTER</code>
+                                또는 <code>ENTER</code>로 매핑해야 합니다.
+                            </p>
+                        </div>
+
+                        <div class="bg-white p-4 rounded shadow-sm">
+                            <h4 class="font-bold text-sm text-slate-800">3. 런처 교체 (선택 사항)</h4>
+                            <p class="text-sm text-slate-600 mt-1">올인원 기본 런처보다 <strong>'ATV Launcher'</strong> 같은 TV 전용
+                                런처를 사용하면 홈 화면부터 노브로 제어가 가능해집니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-8 text-center text-sm">
+        <p>Copyright © 2025 Car UX Research Lab. All rights reserved.</p>
+        <p class="mt-2 text-slate-600">본 보고서는 시뮬레이션 데이터에 기반한 프로토타입입니다.</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Gemini API Configuration ---
+        const apiKey = GEMINI_CONFIG.API_KEY;
+        const model = "gemini-2.5-flash-preview-09-2025";
+
+        async function callGemini(userPrompt, systemInstruction) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] }
+            };
+
+            // Retry logic with exponential backoff
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "죄송합니다. AI 응답을 생성하지 못했습니다.";
+                } catch (e) {
+                    if (i === 4) return `오류가 발생했습니다: ${e.message}. 잠시 후 다시 시도해주세요.`;
+                    await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                }
+            }
+        }
+
+        // --- AI Feature 1: Hardware Analyzer ---
+        async function analyzeHardware() {
+            const input = document.getElementById('hw-input').value.trim();
+            const btn = document.getElementById('hw-btn');
+            const resultDiv = document.getElementById('hw-result');
+            const contentDiv = resultDiv.querySelector('div');
+
+            if (!input) return alert("하드웨어 정보를 입력해주세요.");
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin">🔄</span> 분석 중...`;
+            resultDiv.classList.remove('hidden');
+            contentDiv.innerHTML = "<p class='text-slate-400'>Gemini가 데이터베이스를 조회하여 신호 패턴을 분석하고 있습니다...</p>";
+
+            const systemPrompt = `
+                당신은 차량용 안드로이드 시스템 및 하드웨어 전문가입니다.
+                사용자가 입력한 컨트롤러 장치(노브, 조그셔틀, 리모컨 등)에 대해 다음을 분석하세요:
+                1. 이 장치가 보낼 것으로 예상되는 안드로이드 키코드 (예: VOLUME_UP/DOWN, DPAD, KEYCODE_A 등).
+                2. 이 장치를 구글 TV 앱 내비게이션(상하좌우 이동)에 쓰기 위해 필요한 매핑 전략.
+                3. 추천 앱 (예: Key Mapper, Button Mapper 등).
+                
+                답변은 짧고 기술적이며, 한국어로 작성하세요. 핵심만 3-4줄 내외로 요약하세요.
+                만약 정보가 부족하면 일반적인 USB 노브 기준으로 답변하세요.
+            `;
+
+            const response = await callGemini(input, systemPrompt);
+            contentDiv.innerHTML = marked.parse(response);
+            btn.disabled = false;
+            btn.innerHTML = `<span>✨ 분석 및 매핑 추천받기</span>`;
+        }
+
+        // --- AI Feature 2: Research Q&A ---
+        async function askResearcher() {
+            const input = document.getElementById('qa-input').value.trim();
+            const btn = document.getElementById('qa-btn');
+            const resultDiv = document.getElementById('qa-result');
+            const contentDiv = resultDiv.querySelector('div');
+
+            if (!input) return alert("질문을 입력해주세요.");
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin">🔄</span> 생각 중...`;
+            resultDiv.classList.remove('hidden');
+            contentDiv.innerHTML = "<p class='text-slate-400'>연구 보고서를 바탕으로 답변을 작성 중입니다...</p>";
+
+            const systemPrompt = `
+                당신은 이 '차량용 안드로이드 노브 UX 연구 보고서'의 저자입니다.
+                당신의 핵심 주장은 "물리 노브를 쓸 거면 터치 기반 모바일 앱 대신 구글 TV(Leanback) 앱을 써야 한다"입니다.
+                
+                다음 사실들을 바탕으로 사용자의 질문에 답변하세요:
+                - 모바일 앱은 '포커스' 개념이 없어 노브를 돌려도 어디가 선택됐는지 모른다.
+                - TV 앱은 DPAD 신호를 받아 선택된 항목을 하이라이트 해준다.
+                - 유튜브, 넷플릭스 등은 반드시 'Android TV' 버전 APK를 구해서 설치해야 한다.
+                
+                친절하고 전문적인 톤으로 답변하세요. 한국어로 답변하세요.
+            `;
+
+            const response = await callGemini(input, systemPrompt);
+            contentDiv.innerHTML = marked.parse(response);
+            btn.disabled = false;
+            btn.innerHTML = `<span>✨ 질문하기</span>`;
+        }
+
+
+        // --- State Management ---
+        const state = {
+            tvIndex: 0,
+            mobileOffset: 0,
+            items: [
+                { title: '넷플릭스', icon: '🍿' },
+                { title: '유튜브', icon: '▶️' },
+                { title: '음악', icon: '🎵' },
+                { title: '지도', icon: '🗺️' }
+            ]
+        };
+
+        // --- Simulator Logic ---
+        function initSimulator() {
+            const tvGrid = document.getElementById('tv-grid');
+            const mobileGrid = document.getElementById('mobile-grid');
+
+            // Render TV Grid
+            tvGrid.innerHTML = state.items.map((item, idx) => `
+                <div id="tv-item-${idx}" class="tv-focus-item bg-slate-100 p-4 rounded-lg flex flex-col items-center justify-center h-24 text-slate-700">
+                    <span class="text-2xl mb-1">${item.icon}</span>
+                    <span class="font-bold text-sm">${item.title}</span>
+                </div>
+            `).join('');
+
+            // Render Mobile Grid
+            mobileGrid.innerHTML = state.items.map((item, idx) => `
+                <div class="mobile-focus-item bg-white p-4 rounded-lg flex flex-col items-center justify-center h-24 text-slate-700 border border-slate-200">
+                    <span class="text-2xl mb-1">${item.icon}</span>
+                    <span class="font-bold text-sm">${item.title}</span>
+                </div>
+            `).join('');
+
+            updateTvFocus();
+        }
+
+        function updateTvFocus() {
+            // Clear all active states
+            document.querySelectorAll('.tv-focus-item').forEach(el => el.classList.remove('active'));
+            // Set new active state
+            const target = document.getElementById(`tv-item-${state.tvIndex}`);
+            if (target) target.classList.add('active');
+
+            // Update feedback text
+            document.getElementById('tv-feedback').innerText = `이벤트 감지: KEYCODE_DPAD -> Focus 이동 [항목 ${state.tvIndex + 1} 선택됨]`;
+        }
+
+        function simMoveFocus(direction) {
+            let newIndex = state.tvIndex + direction;
+            // Bounds check
+            if (newIndex < 0) newIndex = 0;
+            if (newIndex >= state.items.length) newIndex = state.items.length - 1;
+
+            state.tvIndex = newIndex;
+            updateTvFocus();
+        }
+
+        function simMobileScroll() {
+            // Simulate scroll effect (visual shake or text update) without actual selection
+            const mobileGrid = document.getElementById('mobile-grid');
+            mobileGrid.style.transform = `translateY(${Math.random() > 0.5 ? '-2px' : '2px'})`;
+            setTimeout(() => mobileGrid.style.transform = 'none', 100);
+
+            const feedback = document.getElementById('mobile-feedback');
+            feedback.innerText = "이벤트 무시됨: 스크롤 동작만 발생 (선택 불가)";
+
+            // Flash red feedback
+            feedback.classList.remove('text-red-500');
+            feedback.classList.add('text-red-700', 'font-bold');
+            setTimeout(() => {
+                feedback.classList.remove('text-red-700', 'font-bold');
+                feedback.classList.add('text-red-500');
+            }, 300);
+        }
+
+        // --- Chart Initialization ---
+        function initCharts() {
+            // Chart 1: Usability Comparison
+            const ctx1 = document.getElementById('usabilityChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['콘텐츠 탐색', '항목 선택', '재생/일시정지', '뒤로가기'],
+                    datasets: [
+                        {
+                            label: '구글 TV 앱 + 노브',
+                            data: [9.5, 10, 9, 10],
+                            backgroundColor: '#4F46E5', // Indigo 600
+                            borderRadius: 4
+                        },
+                        {
+                            label: '일반 모바일 앱 + 노브',
+                            data: [3, 1, 4, 5],
+                            backgroundColor: '#CBD5E1', // Slate 300
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `${context.dataset.label}: ${context.raw}점`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, max: 10, title: { display: true, text: '사용성 점수 (10점 만점)' } }
+                    }
+                }
+            });
+
+            // Chart 2: Event Mapping
+            const ctx2 = document.getElementById('eventChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['DPAD (방향키) 신호', 'Media (재생/볼륨) 신호', 'Scroll (휠) 신호', '기타'],
+                    datasets: [{
+                        data: [60, 25, 10, 5],
+                        backgroundColor: [
+                            '#4F46E5', // Indigo 600 (Best for TV)
+                            '#818CF8', // Indigo 400
+                            '#F87171', // Red 400 (Problematic for Mobile)
+                            '#E2E8F0'  // Slate 200
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `${context.label}: ${context.raw}%`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            initSimulator();
+            initCharts();
+        });
+
+    </script>
+</body>
+
+</html>

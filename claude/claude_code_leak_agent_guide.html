@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code 유출 코드: AI 에이전트 입문</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* Top Bar */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+    .topbar-meta { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    /* Hero */
+    .hero { background: var(--surface); border-bottom: 1px solid var(--border); padding: 72px 28px 60px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-bg); border: 1px solid var(--accent-bdr);
+      color: var(--accent); border-radius: 99px; padding: 5px 14px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900; line-height: 1.08; letter-spacing: -0.025em;
+      color: var(--ink); max-width: 740px; margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
+    .hero-desc { font-size: 17px; color: var(--ink-3); max-width: 600px; line-height: 1.75; margin-bottom: 36px; }
+    .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 6px 12px; font-size: 13px;
+      font-weight: 500; color: var(--ink-2);
+    }
+
+    /* Section */
+    .section { padding: 56px 28px; border-bottom: 1px solid var(--border); }
+    .section-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); max-width: 80px; }
+    .section-title {
+      font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 10px;
+    }
+    .section-desc { font-size: 15px; color: var(--ink-3); max-width: 620px; margin-bottom: 36px; line-height: 1.7; }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card__header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+    .card__icon { font-size: 22px; margin-bottom: 8px; }
+    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__body { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__footer { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+    .card__tag { font-size: 11px; font-weight: 600; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* Callout */
+    .callout { border-left: 3px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; font-size: 14px; line-height: 1.65; }
+    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+    /* Code block */
+    .code-wrap { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 0; }
+    .code-bar { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--bg-2); }
+    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body { padding: 18px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; color: var(--ink-2); }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--surface); margin-top: 2px; }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* Tag */
+    .tag { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+
+    /* Idea block */
+    .idea-block { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px 28px 20px; margin-bottom: 24px; }
+    .idea-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+    .idea-emoji { font-size: 28px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+    .idea-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .idea-subtitle { font-size: 13px; color: var(--accent); font-weight: 600; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em; }
+    .idea-desc { font-size: 15px; color: var(--ink-2); line-height: 1.7; margin-bottom: 14px; }
+    .idea-apply { font-size: 13px; color: var(--ink-3); background: var(--bg-2); border-radius: 6px; padding: 10px 14px; border-left: 3px solid var(--accent); }
+    .idea-apply strong { color: var(--accent); }
+
+    /* SVG diagram */
+    .diagram-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin: 24px 0; overflow-x: auto; }
+    .diagram-title { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 16px; font-family: var(--font-mono); }
+
+    /* Prompt box */
+    .prompt-box { background: #0f1117; border: 1px solid #2a2a35; border-radius: 10px; overflow: hidden; margin: 16px 0; }
+    .prompt-bar { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid #2a2a35; background: #1a1a24; }
+    .prompt-label { font-size: 11px; font-family: var(--font-mono); color: #6b7280; margin-left: auto; }
+    pre.prompt-body { padding: 18px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; color: #c9d1d9; }
+
+    /* Tip grid */
+    .tips { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+    .tip-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; }
+    .tip-num { font-size: 11px; font-weight: 700; font-family: var(--font-mono); color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .tip-title { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+    .tip-body { font-size: 13px; color: var(--ink-3); line-height: 1.6; }
+    .tip-body .bad { color: #ef4444; }
+    .tip-body .good { color: var(--success); }
+
+    footer {
+      padding: 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--ink-4);
+    }
+
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-brand">Claude Code 유출 코드: AI 에이전트 입문</span>
+  <span class="topbar-meta">2026-04-02</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">🔓 바이브코딩 입문 가이드</div>
+    <h1>유출된 설계도로 배우는<br><em>AI 에이전트 만들기</em></h1>
+    <p class="hero-desc">
+      Claude Code의 소스 코드가 공개되면서, 실제로 AI 에이전트가 어떻게 동작하는지 설계도가 드러났습니다.
+      코딩을 처음 접하는 분도 이 가이드 하나로 나만의 AI 에이전트를 만들 수 있습니다.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🧑‍💻 코딩 입문자</span>
+      <span class="chip">🤖 AI 에이전트 개념</span>
+      <span class="chip">⚡ 바이브코딩 실습</span>
+      <span class="chip">🔑 핵심 아이디어 5가지</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 01: 왜 중요한가? + AI 에이전트란? -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 배경</div>
+    <h2 class="section-title">유출된 코드, 왜 중요한가요?</h2>
+    <p class="section-desc">맛집 레시피가 공개된 것과 같습니다. Claude Code가 어떻게 동작하는지 설계도가 드러났고, 이걸 보면 "아, 이렇게 만드는 거구나"를 배울 수 있습니다.</p>
+
+    <div class="callout accent">
+      <div class="callout-title">이 가이드는 이런 분들을 위해 썼어요</div>
+      코드를 처음 접하는 분 · ChatGPT나 Claude로 코딩을 해본 적은 있는 분 · "AI 에이전트"가 뭔지 감은 오는데 어떻게 만드는지 모르는 분
+    </div>
+
+    <h3 style="font-size:1.1rem; font-weight:700; margin: 32px 0 12px; color: var(--ink);">AI 에이전트(Agent)가 뭔가요?</h3>
+    <p style="font-size:15px; color:var(--ink-2); margin-bottom:20px;">일반 AI와 AI 에이전트의 가장 큰 차이는 <strong>"혼자 여러 단계를 실행할 수 있느냐"</strong>입니다.</p>
+
+    <div class="diagram-wrap">
+      <div class="diagram-title">일반 AI vs AI 에이전트</div>
+      <svg viewBox="0 0 700 200" style="width:100%; max-width:700px; display:block;" aria-label="일반 AI와 AI 에이전트 비교 다이어그램">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#A8A8A3"/>
+          </marker>
+          <marker id="arr-acc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#C4522A"/>
+          </marker>
+        </defs>
+
+        <!-- 일반 AI -->
+        <text x="10" y="26" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#A8A8A3" letter-spacing="1">일반 AI</text>
+        <rect x="10" y="36" width="80" height="32" rx="6" fill="#F4F4F1" stroke="#E8E8E4" stroke-width="1"/>
+        <text x="50" y="57" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#3D3D3A">나 (질문)</text>
+        <line x1="90" y1="52" x2="130" y2="52" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <rect x="130" y="36" width="80" height="32" rx="6" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1"/>
+        <text x="170" y="57" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#C4522A">AI</text>
+        <line x1="210" y1="52" x2="250" y2="52" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <rect x="250" y="36" width="80" height="32" rx="6" fill="#F4F4F1" stroke="#E8E8E4" stroke-width="1"/>
+        <text x="290" y="57" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#3D3D3A">대답 (끝)</text>
+
+        <!-- AI 에이전트 -->
+        <text x="10" y="116" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#C4522A" letter-spacing="1">AI 에이전트</text>
+        <rect x="10" y="126" width="80" height="32" rx="6" fill="#F4F4F1" stroke="#E8E8E4" stroke-width="1"/>
+        <text x="50" y="147" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#3D3D3A">나 (목표)</text>
+        <line x1="90" y1="142" x2="130" y2="142" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arr-acc)"/>
+        <rect x="130" y="126" width="80" height="32" rx="6" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="170" y="143" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#C4522A">AI 생각</text>
+        <line x1="210" y1="142" x2="250" y2="142" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arr-acc)"/>
+        <rect x="250" y="126" width="90" height="32" rx="6" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="295" y="143" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#C4522A">도구 사용</text>
+        <line x1="340" y1="142" x2="380" y2="142" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arr-acc)"/>
+        <rect x="380" y="126" width="90" height="32" rx="6" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="425" y="143" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#C4522A">결과 확인</text>
+        <path d="M470,142 Q520,142 520,110 Q520,78 425,78 Q330,78 295,110 Q280,126 295,126" fill="none" stroke="#C4522A" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-acc)"/>
+        <text x="520" y="108" font-family="Inter,sans-serif" font-size="11" fill="#C4522A">반복</text>
+        <line x1="470" y1="142" x2="560" y2="142" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arr-acc)"/>
+        <rect x="560" y="126" width="80" height="32" rx="6" fill="#F0FDF4" stroke="#1A7F5A" stroke-width="1.5"/>
+        <text x="600" y="147" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#1A7F5A">완료!</text>
+
+        <text x="270" y="192" font-family="Inter,sans-serif" font-size="12" fill="#6B6B66" text-anchor="middle">파일 열기, 코드 실행, 검색, 저장... 다 혼자 함</text>
+      </svg>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-title">쉽게 말하면</div>
+      AI 에이전트는 <strong>"심부름을 시킬 수 있는 AI"</strong>입니다. "이 폴더 안에 있는 엑셀 파일들 전부 분석해서 요약 보고서 만들어줘" 같은 걸 혼자 처리해요.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 02: 핵심 아이디어 5가지 개요 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 핵심 발견</div>
+    <h2 class="section-title">유출 코드에서 발견된 핵심 아이디어 5가지</h2>
+    <p class="section-desc">Claude Code의 설계 원리를 쉽게 이해할 수 있는 5개의 개념입니다. 각각 내 서비스에 어떻게 적용할 수 있는지도 함께 살펴봅니다.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔧</div>
+          <div class="card__title">도구 상자 (Tool System)</div>
+        </div>
+        <div class="card__body"><p>AI에게 쓸 수 있는 도구 목록을 주면, AI가 상황에 맞게 골라서 씁니다. 파일 읽기, 코드 실행, 검색 등을 도구로 정의합니다.</p></div>
+        <div class="card__footer"><span class="card__tag">아이디어 01</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔄</div>
+          <div class="card__title">자기가 알아서 반복 (Agentic Loop)</div>
+        </div>
+        <div class="card__body"><p>목표를 달성할 때까지 AI가 생각 → 도구 사용 → 결과 확인을 스스로 반복합니다. 개발자들이 "agentic loop"라고 부르는 핵심 패턴입니다.</p></div>
+        <div class="card__footer"><span class="card__tag">아이디어 02</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🧠</div>
+          <div class="card__title">기억 노트 (Memory System)</div>
+        </div>
+        <div class="card__body"><p>대화가 끝나도 중요한 내용을 파일로 저장하고, 다음 대화 때 읽어서 기억합니다. 정해진 형식의 마크다운 파일로 구현됩니다.</p></div>
+        <div class="card__footer"><span class="card__tag">아이디어 03</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🌙</div>
+          <div class="card__title">자는 동안도 일해요 (AutoDream & Kairos)</div>
+        </div>
+        <div class="card__body"><p>Claude Code를 닫은 뒤에도 오늘 대화를 분석해 기억 파일을 정리하고(AutoDream), 스스로 깨어나 작업을 수행하는 데몬(Kairos)도 포함됩니다.</p></div>
+        <div class="card__footer"><span class="card__tag">아이디어 04 · 미공개</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">💰</div>
+          <div class="card__title">AI가 알아서 결제 (x402)</div>
+        </div>
+        <div class="card__body"><p>AI 에이전트가 유료 서비스를 이용할 때 USDC(암호화폐)로 자동 결제하는 시스템입니다. 사람 개입 없이 유료 API를 쓸 수 있게 됩니다.</p></div>
+        <div class="card__footer"><span class="card__tag">아이디어 05 · 미공개</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 03: 아이디어 상세 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 상세 설명</div>
+    <h2 class="section-title">각 아이디어 자세히 살펴보기</h2>
+    <p class="section-desc">개념과 함께 "내 서비스에 어떻게 쓸 수 있는지"도 함께 설명합니다.</p>
+
+    <!-- 아이디어 1 -->
+    <div class="idea-block">
+      <div class="idea-header">
+        <div class="idea-emoji">🔧</div>
+        <div>
+          <div class="idea-subtitle">아이디어 01</div>
+          <div class="idea-title">도구 상자 (Tool System)</div>
+        </div>
+      </div>
+      <p class="idea-desc">AI 혼자서는 파일을 열거나 프로그램을 실행할 수 없어요. 그래서 Claude Code는 AI에게 <strong>도구 상자(Tool Box)</strong>를 줬습니다. AI에게 "이런 일들은 할 수 있어" 하고 도구 목록을 주면, AI가 알아서 판단해서 씁니다.</p>
+      <div class="code-wrap">
+        <div class="code-bar">
+          <div class="code-dot" style="background:#ef4444;"></div>
+          <div class="code-dot" style="background:#f59e0b;"></div>
+          <div class="code-dot" style="background:#22c55e;"></div>
+          <span class="code-lang">Claude Code 도구 목록</span>
+        </div>
+        <pre class="code-body">AI가 쓸 수 있는 도구들:
+🔨 Bash      → 터미널 명령어 실행
+📖 FileRead  → 파일 읽기
+✏️ FileEdit  → 파일 수정
+🔍 Grep      → 코드 검색
+🤖 Agent     → 다른 AI 호출</pre>
+      </div>
+      <div class="idea-apply"><strong>내 서비스에 적용하면:</strong> 쇼핑몰 운영 AI라면 주문 조회 도구 · 재고 확인 도구 · 문자 발송 도구를 주면, AI가 알아서 판단해서 씁니다.</div>
+    </div>
+
+    <!-- 아이디어 2 -->
+    <div class="idea-block">
+      <div class="idea-header">
+        <div class="idea-emoji">🔄</div>
+        <div>
+          <div class="idea-subtitle">아이디어 02</div>
+          <div class="idea-title">자기가 알아서 반복 (Agentic Loop)</div>
+        </div>
+      </div>
+      <p class="idea-desc">유출 코드에서 가장 중요한 부분입니다. 레고를 맞추는 것처럼 목표를 달성할 때까지 AI가 스스로 반복합니다.</p>
+      <div class="code-wrap">
+        <div class="code-bar">
+          <div class="code-dot" style="background:#ef4444;"></div>
+          <div class="code-dot" style="background:#f59e0b;"></div>
+          <div class="code-dot" style="background:#22c55e;"></div>
+          <span class="code-lang">실제 예시</span>
+        </div>
+        <pre class="code-body">나: "이 폴더에 있는 모든 이미지 파일 이름을 날짜 순서로 정리해줘"
+
+AI: (파일 목록 확인)
+  → (날짜 확인)
+  → (이름 변경)
+  → (완료 확인)
+  → "다 됐습니다!"</pre>
+      </div>
+      <div class="idea-apply"><strong>내 서비스에 적용하면:</strong> 목표를 주면 AI가 스스로 단계를 나눠서 처리합니다. 사람이 중간에 개입할 필요가 없어요.</div>
+    </div>
+
+    <!-- 아이디어 3 -->
+    <div class="idea-block">
+      <div class="idea-header">
+        <div class="idea-emoji">🧠</div>
+        <div>
+          <div class="idea-subtitle">아이디어 03</div>
+          <div class="idea-title">기억 노트 (Memory System)</div>
+        </div>
+      </div>
+      <p class="idea-desc">Claude Code는 대화가 끝나도 중요한 내용을 파일로 저장하고, 다음 대화 때 그 파일을 읽어서 기억하는 척(?)합니다. 기억 파일에는 정해진 형식이 있어요.</p>
+      <div class="code-wrap">
+        <div class="code-bar">
+          <div class="code-dot" style="background:#ef4444;"></div>
+          <div class="code-dot" style="background:#f59e0b;"></div>
+          <div class="code-dot" style="background:#22c55e;"></div>
+          <span class="code-lang">폴더 구조</span>
+        </div>
+        <pre class="code-body">내 컴퓨터/.claude/
+└── memory/
+    ├── MEMORY.md         ← 목차 (가장 먼저 읽는 파일)
+    ├── 내_작업스타일.md
+    ├── 프로젝트_맥락.md
+    └── 자주_쓰는_설정.md</pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-bar">
+          <div class="code-dot" style="background:#ef4444;"></div>
+          <div class="code-dot" style="background:#f59e0b;"></div>
+          <div class="code-dot" style="background:#22c55e;"></div>
+          <span class="code-lang">기억 파일 형식</span>
+        </div>
+        <pre class="code-body">---
+name: 기억 이름
+description: 한 줄 설명
+type: user (나에 대한 정보) 또는 project (프로젝트 정보)
+---
+실제 내용을 여기에 써요</pre>
+      </div>
+      <div class="idea-apply"><strong>내 서비스에 적용하면:</strong> 고객 상담 AI라면 "이 고객은 배송 문제로 3번 연락했음" 같은 걸 기억 파일에 저장하면, 다음에 AI가 먼저 알고 있는 척 대응할 수 있어요.</div>
+    </div>
+
+    <!-- 아이디어 4 -->
+    <div class="idea-block">
+      <div class="idea-header">
+        <div class="idea-emoji">🌙</div>
+        <div>
+          <div class="idea-subtitle">아이디어 04 · 미공개 기능</div>
+          <div class="idea-title">자는 동안도 일해요 (AutoDream & Kairos)</div>
+        </div>
+      </div>
+      <p class="idea-desc">유출 코드에서 발견된 숨겨진 기능 2가지입니다.</p>
+      <div class="callout info" style="margin-bottom:12px;">
+        <div class="callout-title">AutoDream</div>
+        Claude Code를 닫은 뒤에도 백그라운드에서 오늘 대화를 분석해서 중요한 내용을 자동으로 기억 파일에 정리해 둡니다. 마치 자는 동안 뇌가 기억을 정리하는 것처럼요.
+      </div>
+      <div class="callout info">
+        <div class="callout-title">Kairos (tengu_kairos)</div>
+        사용자가 아무것도 안 해도 AI가 스스로 깨어나서 작업을 수행하는 데몬(Daemon, 백그라운드 프로그램)입니다. 아직 일반에게 공개되지 않은 기능이며, Anthropic이 준비 중인 것으로 보입니다.
+      </div>
+      <div class="idea-apply" style="margin-top:14px;"><strong>내 서비스에 적용하면:</strong> 매일 밤 자동으로 "오늘 고객 문의 분석 → 패턴 파악 → 내일 FAQ 업데이트"를 혼자 하는 AI를 만들 수 있어요.</div>
+    </div>
+
+    <!-- 아이디어 5 -->
+    <div class="idea-block">
+      <div class="idea-header">
+        <div class="idea-emoji">💰</div>
+        <div>
+          <div class="idea-subtitle">아이디어 05 · 미공개 기능</div>
+          <div class="idea-title">AI가 알아서 결제 (x402)</div>
+        </div>
+      </div>
+      <p class="idea-desc">제일 충격적인 발견입니다. 유출 코드에 <code style="background:var(--code-bg);padding:1px 6px;border-radius:4px;font-family:var(--font-mono);font-size:13px;">x402</code>라는 폴더가 있는데, AI 에이전트가 유료 서비스를 이용할 때 USDC(암호화폐)로 자동 결제하는 시스템입니다.</p>
+      <div class="code-wrap">
+        <div class="code-bar">
+          <div class="code-dot" style="background:#ef4444;"></div>
+          <div class="code-dot" style="background:#f59e0b;"></div>
+          <div class="code-dot" style="background:#22c55e;"></div>
+          <span class="code-lang">x402 결제 흐름</span>
+        </div>
+        <pre class="code-body">AI 에이전트가 유료 데이터 API 요청
+      ↓
+서버: "이건 0.01달러짜리입니다"
+      ↓
+AI: (한도 내면) 자동으로 암호화폐 결제
+      ↓
+데이터 수신 → 작업 계속</pre>
+      </div>
+      <div class="idea-apply"><strong>의미:</strong> 미래에는 AI가 사람 개입 없이 유료 서비스를 사용하고 결제하는 게 가능해진다는 의미예요. 아직 일반에 공개되지 않은 기능입니다.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SECTION 04: 바이브코딩으로 만들어보기 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 실습</div>
+    <h2 class="section-title">바이브코딩으로 실제로 만들어보기</h2>
+    <p class="section-desc">Claude나 ChatGPT에게 아래 프롬프트를 그대로 붙여넣으면 위 아이디어들을 구현할 수 있어요.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">나만의 AI 비서 (기억 있는 버전)</div>
+          <div class="step-body">대화가 끝나도 기억하는 AI 비서를 만듭니다. Memory System(아이디어 3)을 직접 구현해 볼 수 있어요.</div>
+          <div class="prompt-box" style="margin-top:12px;">
+            <div class="prompt-bar">
+              <span style="font-size:11px; font-family:var(--font-mono); color:#6b7280;">Claude / ChatGPT에게 붙여넣기</span>
+            </div>
+            <pre class="prompt-body">Python으로 간단한 AI 비서를 만들어줘.
+조건:
+1. 대화를 나눌 때마다 중요한 내용을 memory.md 파일에 저장해
+2. 다음에 실행할 때 memory.md를 읽어서 이전 대화를 기억하는 것처럼 행동해
+3. Anthropic API 사용해
+4. 터미널에서 실행할 수 있게 해줘</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">파일 정리 AI 에이전트</div>
+          <div class="step-body">폴더 경로를 알려주면 AI가 스스로 파일 분류부터 이동까지 처리합니다. Agentic Loop(아이디어 2)와 Tool System(아이디어 1)이 결합된 예시예요.</div>
+          <div class="prompt-box" style="margin-top:12px;">
+            <div class="prompt-bar">
+              <span style="font-size:11px; font-family:var(--font-mono); color:#6b7280;">Claude / ChatGPT에게 붙여넣기</span>
+            </div>
+            <pre class="prompt-body">Python으로 파일 정리 AI 에이전트를 만들어줘.
+조건:
+1. 사용자가 폴더 경로를 알려주면 그 안의 파일들을 분석해
+2. AI가 스스로 파일 목록 확인 → 분류 → 폴더 이동을 순서대로 진행해
+3. 각 단계에서 "지금 이걸 하려고 합니다, 괜찮을까요?" 하고 물어보게 해
+4. Anthropic API 사용해</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">매일 자동 실행되는 AI</div>
+          <div class="step-body">AutoDream(아이디어 4)처럼 매일 정해진 시간에 스스로 작업을 수행하는 AI를 만듭니다.</div>
+          <div class="prompt-box" style="margin-top:12px;">
+            <div class="prompt-bar">
+              <span style="font-size:11px; font-family:var(--font-mono); color:#6b7280;">Claude / ChatGPT에게 붙여넣기</span>
+            </div>
+            <pre class="prompt-body">Python으로 매일 오전 9시에 자동 실행되는 AI를 만들어줘.
+조건:
+1. 매일 아침 정해진 폴더의 새 파일들을 확인해
+2. 새 파일이 있으면 내용을 요약해서 summary.md에 추가해
+3. Mac에서 백그라운드로 실행되게 해줘
+4. Anthropic API 사용해</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 05: 꿀팁 -->
+<section class="section" style="border-bottom:none;">
+  <div class="page-wrap">
+    <div class="section-label">05 꿀팁</div>
+    <h2 class="section-title">바이브코딩할 때 꿀팁</h2>
+    <p class="section-desc">처음 AI로 코딩을 시작할 때 알아두면 완성 확률이 크게 올라가는 4가지 팁입니다.</p>
+
+    <div class="tips">
+      <div class="tip-card">
+        <div class="tip-num">팁 01</div>
+        <div class="tip-title">기능을 하나씩 추가하세요</div>
+        <div class="tip-body">
+          <span class="bad">❌ 한 번에 다 만들어달라고 하기</span><br>
+          <span class="good">✅ 가장 기본 버전 먼저 → 동작 확인 → 기능 추가</span>
+        </div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">팁 02</div>
+        <div class="tip-title">에러가 나면 그대로 붙여넣기</div>
+        <div class="tip-body">
+          에러 메시지를 그대로 복사해서 "이런 에러가 났어. 어떻게 고치면 돼? 전/후로 알려줘. 메서드 단위로 알려줘." 라고 물어보세요.
+        </div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">팁 03</div>
+        <div class="tip-title">"이해하기 쉽게 설명해줘"를 자주 쓰세요</div>
+        <div class="tip-body">
+          코드가 왜 이렇게 생겼는지 모르겠으면 물어보세요. 이해해야 나중에 수정할 수 있어요.
+        </div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">팁 04</div>
+        <div class="tip-title">실제로 쓸 것만 만드세요</div>
+        <div class="tip-body">
+          <span class="bad">있으면 좋겠다 싶은 기능</span>보다<br>
+          <span class="good">지금 당장 불편한 것</span>부터 해결하는 게 완성 확률이 높아요.
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip" style="margin-top:32px;">
+      <div class="callout-title">원문 출처</div>
+      이 가이드의 내용은 <strong>biggerthanseoul.ai</strong>의 클로드코드 시리즈를 기반으로 정리했습니다.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Claude Code 유출 코드: AI 에이전트 입문</span>
+  <span>2026-04-02</span>
+</footer>
+
+  <script data-page-hash="KTTUJAK" src="/assets/js/page-footer.js"></script>
+</body>
+</html>

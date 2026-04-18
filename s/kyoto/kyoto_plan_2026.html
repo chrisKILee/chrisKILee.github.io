@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교토 9인 가족 4박 5일 리얼 투어 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Application Plan:
+         1. 5-Day Master Plan: Haruka-based, optimized for 9 people.
+         2. Real Search Swipe Modal: Uses Google Search tool for Jan 2025 context.
+         3. Markdown Parser: Logic to convert **bold** into clean HTML.
+         <!-- Logistic Dashboard: 9-person taxi/van strategies and mart shopping comparisons. -->
+    <script src="kyoto_gallery_config.js"></script>
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #fbfaf9;
+            color: #2d3436;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .tab-active {
+            border-bottom: 4px solid #1e293b;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        /* Timeline UI */
+        .timeline-step {
+            position: relative;
+            padding-left: 2rem;
+            border-left: 2px dashed #e2e8f0;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: -9px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            background: #8b7d6b;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-step:last-child {
+            border-left: none;
+        }
+
+        /* Modal Swipe Layer */
+        #gallery-layer {
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+            overscroll-behavior: contain;
+        }
+
+        #gallery-layer.open {
+            transform: translateY(0);
+        }
+
+        .swipe-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            height: 100%;
+        }
+
+        .swipe-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .swipe-card {
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+            padding: 0.5rem;
+            /* 여백 대폭 축소 */
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Vertical Image Scroll */
+        .img-scroll-container {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            scroll-snap-type: y mandatory;
+            height: 480px;
+            /* 높이 추가 확대하여 세로 액자 느낌 강조 */
+            border-radius: 1.25rem;
+            background: #000;
+            /* 블랙 프레임 액자 느낌 */
+        }
+
+        .img-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .img-scroll-container::-webkit-scrollbar-thumb {
+            background: #ef4444;
+            /* Rojo/Red */
+            border-radius: 10px;
+        }
+
+        .img-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #dc2626;
+        }
+
+        .img-scroll-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .v-scroll-indicator {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            backdrop-filter: blur(4px);
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .img-scroll-item {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 100%;
+            scroll-snap-align: start;
+            object-fit: contain;
+            /* 사진이 잘리지 않도록 함 */
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.05);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border-left-color: #0f172a;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .day-chip-active {
+            background-color: #1e293b !important;
+            color: white !important;
+        }
+
+        .btn-press:active {
+            transform: scale(0.96);
+            opacity: 0.9;
+        }
+
+        .plan-toggle-container {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 16px;
+            margin: 1rem 0 1.5rem 0;
+            border: 1px solid #e2e8f0;
+        }
+
+        .plan-toggle-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #64748b;
+        }
+
+        .plan-toggle-btn.active {
+            background: white;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+            color: #0f172a;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        b,
+        strong {
+            font-weight: 700;
+            color: #111;
+        }
+
+        /* Dark section override */
+        .bg-slate-900 strong,
+        .bg-slate-900 b {
+            color: #fff;
+        }
+
+        /* Subway Line Highlights */
+        .line-karasuma {
+            background: rgb(101, 158, 112);
+            color: white;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .line-tozai {
+            background: rgb(237, 60, 45);
+            color: white;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .line-hankyu {
+            background: #702029;
+            color: white;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .line-nara {
+            background: rgb(182, 124, 43);
+            color: white;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .line-sanin {
+            background: rgb(118, 58, 176);
+            color: white;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .line-randen {
+            background: rgb(182, 47, 54);
+            color: white;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .text-highlight {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        /* Food Tab Styles */
+        .location-btn {
+            transition: all 0.2s ease-in-out;
+            background-color: #ffffff;
+            color: #374151;
+            border: 1px solid #e1e7f0;
+        }
+
+        .location-btn.active {
+            background-color: #111827 !important;
+            color: #ffffff !important;
+            border-color: #111827;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+        }
+
+        .star-gold {
+            color: #fbbf24;
+        }
+
+        .star-green {
+            color: #10b981;
+        }
+
+        /* Transit Tab Styles */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .line-marker {
+            width: 8px;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            border-top-left-radius: 0.5rem;
+            border-bottom-left-radius: 0.5rem;
+        }
+
+        /* Mall Tab Styles */
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .active-venue-tab {
+            background-color: #374151 !important;
+            color: white !important;
+            border-color: #374151 !important;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white/95 backdrop-blur-md border-b sticky top-0 z-50 shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">❄️ 교토 9인 가족 4박 5일</h1>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Jan 23 - Jan 27 | Osaka
+                    Airport Haruka</p>
+            </div>
+            <nav class="flex space-x-4 text-sm font-medium">
+                <button onclick="switchTab('plan')" id="btn-plan" class="tab-active py-1">일정</button>
+                <button onclick="switchTab('shopping')" id="btn-shopping" class="py-1">쇼핑</button>
+                <button onclick="switchTab('malls')" id="btn-malls" class="py-1">몰분석</button>
+                <button onclick="switchTab('spots')" id="btn-spots" class="py-1">장소</button>
+                <button onclick="switchTab('food')" id="btn-food" class="py-1">맛집</button>
+                <button onclick="switchTab('transit')" id="btn-transit" class="py-1">교통카드</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full p-4 flex-grow">
+
+        <!-- Tab: Itinerary -->
+        <section id="plan" class="tab-content block space-y-6">
+
+            <!-- Logistics Summary -->
+            <div class="bg-slate-900 text-white p-5 rounded-3xl shadow-xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <h3 class="font-bold text-sm mb-2 flex items-center">🚐 9인 대가족 이동 핵심 가이드</h3>
+                    <ul class="text-[11px] leading-relaxed opacity-80 space-y-1">
+                        <li>• 숙소는 <strong>산조케이한 역</strong> 도보 3분 거리 (Minn Gion Sanjo).</li>
+                        <li>• 1/25(일) 이네후나야 일정은 9명이 움직이기에 <strong>버스 투어</strong>가 가장 경제적입니다.</li>
+                        <li>• 시내 택시는 3대를 나누어 타는 것이 버스 대기보다 빠르고 쾌적합니다.</li>
+                    </ul>
+                </div>
+                <div class="absolute right-[-10px] bottom-[-10px] text-8xl opacity-10 font-bold italic">9P</div>
+            </div>
+
+            <!-- Day Selector Chips -->
+            <div class="flex space-x-2 overflow-x-auto pb-2 no-scrollbar">
+                <button onclick="renderDay(1)"
+                    class="day-chip shrink-0 px-4 py-2 rounded-full bg-white border text-xs font-bold shadow-sm"
+                    id="chip-1">1/23 금</button>
+                <button onclick="renderDay(2)"
+                    class="day-chip shrink-0 px-4 py-2 rounded-full bg-white border text-xs font-bold shadow-sm"
+                    id="chip-2">1/24 토</button>
+                <button onclick="renderDay(3)"
+                    class="day-chip shrink-0 px-4 py-2 rounded-full bg-white border text-xs font-bold shadow-sm"
+                    id="chip-3">1/25 일</button>
+                <button onclick="renderDay(4)"
+                    class="day-chip shrink-0 px-4 py-2 rounded-full bg-white border text-xs font-bold shadow-sm"
+                    id="chip-4">1/26 월</button>
+                <button onclick="renderDay(5)"
+                    class="day-chip shrink-0 px-4 py-2 rounded-full bg-white border text-xs font-bold shadow-sm"
+                    id="chip-5">1/27 화</button>
+            </div>
+
+            <div id="itinerary-display" class="bg-white rounded-3xl p-6 shadow-sm border min-h-[500px]">
+                <!-- Day content injected here -->
+            </div>
+        </section>
+
+        <!-- Tab: Shopping Strategy -->
+        <section id="shopping" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-3xl border shadow-sm">
+                <h3 class="font-bold text-lg mb-6 flex items-center">🛒 9인을 위한 마트 & 쇼핑 분석</h3>
+                <div class="space-y-4 text-xs">
+                    <div class="p-4 bg-red-50 rounded-2xl border border-red-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-bold text-red-800 text-sm">🥩 로피아 (Lopia) - 식료품 / 가성비 / 현금필수</h4>
+                            <span class="text-[9px] bg-red-200 text-red-800 px-2 py-0.5 rounded font-bold">현금 전용</span>
+                        </div>
+                        <p class="leading-relaxed text-red-900 opacity-90">
+                            9명 대가족 저녁의 정답. <strong>초밥 가성비가 교토 1등</strong> 입니다. 대형 연어/참치 팩 3~4개만 사도 9명이 충분합니다. 와규 스테이크는
+                            한국의 1/4 가격입니다.
+                            '일본의 코스트코'라 불리는 초저가 고퀄리티 슈퍼마켓입니다.
+                            정육점 출신답게 고기 품질이 압도적이며, 도시락과 즉석식품이 매우 저렴합니다.
+                            교토역 요도바시 카메라 지하에 위치해 접근성이 뛰어납니다
+                        </p>
+                    </div>
+                    <div class="p-4 bg-pink-50 rounded-2xl border border-pink-100">
+                        <h4 class="font-bold text-pink-800 text-sm mb-2">🛍️ 이온몰 (Aeon) - 가족 쇼핑 / 종합 쇼핑몰 / 다이소</h4>
+                        <p class="leading-relaxed text-pink-900 opacity-90">
+                            교토역 하치조구치에서 도보 5분 거리의 거대 쇼핑몰입니다.
+                            사쿠라관과 카에데관으로 나뉘며, 슈퍼마켓부터 의류, 장난감, 100엔샵까지 모든 것이 갖춰져 있습니다.
+                            가족 단위 여행객에게 최적입니다.
+                        </p>
+                    </div>
+                    <div class="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                        <h4 class="font-bold text-blue-800 text-sm mb-2">👗 아반티 (Avanti) - 서브컬처 / 캐릭터 / 10-20대 패션</h4>
+                        <p class="leading-relaxed text-blue-900 opacity-90">
+                            교토역 바로 맞은편에 위치한 쇼핑몰입니다.
+                            2층의 돈키호테가 가장 유명하지만, 애니메이션 굿즈(라신반), 캐릭터 상품, 아이돌 관련 샵 등 '덕질'과 젊은 층을 위한 패션 브랜드가 많습니다.
+                        </p>
+                    </div>
+                    <div class="p-4 bg-yellow-50 rounded-2xl border border-yellow-100">
+                        <h4 class="font-bold text-yellow-800 text-sm mb-2">🐧 돈키호테 - 기념품 & 주류</h4>
+                        <p class="leading-relaxed text-yellow-900 opacity-90">
+                            산토리 위스키, 샤론파스 등 한국인이 좋아하는 품목은 여기가 제일 저렴합니다.
+                            일본 여행의 필수 코스. 의약품, 화장품, 과자, 캐리어 등 없는 게 없습니다.
+                            교토에는 주로 아반티점(교토역)과 가와라마치점(시내)을 많이 방문합니다. 텍스 리펀(면세) 카운터가 항상 붐빕니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Kyoto Malls Analysis -->
+        <section id="malls" class="tab-content hidden space-y-10 pb-10">
+            <!-- Intro -->
+            <div class="text-center py-6">
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">교토 쇼핑 완전 정복</h2>
+                <p class="text-xs text-slate-500">로피아, 이온몰, 아반티, 돈키호테 상세 비교</p>
+            </div>
+
+            <!-- Big 4 Explorer -->
+            <div class="space-y-6">
+                <!-- Mall Selector Tabs -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <button onclick="updateVenue('lopia')" id="btn-venue-lopia"
+                        class="venue-btn active-venue-tab py-3 px-2 rounded-2xl text-center font-bold border text-[10px] transition duration-200 bg-white">🥩
+                        로피아</button>
+                    <button onclick="updateVenue('aeon')" id="btn-venue-aeon"
+                        class="venue-btn py-3 px-2 rounded-2xl text-center font-bold border text-[10px] transition duration-200 bg-white text-slate-600">🛍️
+                        이온몰</button>
+                    <button onclick="updateVenue('avanti')" id="btn-venue-avanti"
+                        class="venue-btn py-3 px-2 rounded-2xl text-center font-bold border text-[10px] transition duration-200 bg-white text-slate-600">👗
+                        아반티</button>
+                    <button onclick="updateVenue('donki')" id="btn-venue-donki"
+                        class="venue-btn py-3 px-2 rounded-2xl text-center font-bold border text-[10px] transition duration-200 bg-white text-slate-600">🐧
+                        돈키호테</button>
+                </div>
+
+                <!-- Detail Panel -->
+                <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 grid md:grid-cols-2 gap-8">
+                    <div id="mall-venue-info">
+                        <h3 id="mall-v-title" class="text-2xl font-bold text-slate-800 mb-1">로피아 (Lopia)</h3>
+                        <p id="mall-v-subtitle"
+                            class="text-[10px] text-red-500 font-bold mb-6 uppercase tracking-widest">식료품 / 가성비 / 현금필수
+                        </p>
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="font-bold text-slate-700 flex items-center mb-2 text-xs">
+                                    <span
+                                        class="bg-slate-100 rounded-full w-5 h-5 flex items-center justify-center text-[10px] mr-2">1</span>
+                                    주요 특징
+                                </h4>
+                                <p id="mall-v-desc" class="text-slate-600 text-[11px] leading-relaxed"></p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-700 flex items-center mb-2 text-xs">
+                                    <span
+                                        class="bg-slate-100 rounded-full w-5 h-5 flex items-center justify-center text-[10px] mr-2">2</span>
+                                    인기 품목
+                                </h4>
+                                <ul id="mall-v-items"
+                                    class="list-disc list-inside text-[11px] text-slate-600 space-y-1"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col justify-center items-center bg-slate-50 rounded-3xl p-6">
+                        <h4 class="text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-tighter">쇼핑 성향 분석</h4>
+                        <div class="chart-container h-[250px]">
+                            <canvas id="mallRadarCanvas"></canvas>
+                        </div>
+                        <div id="mall-v-tip"
+                            class="mt-4 text-[10px] bg-amber-50 border border-amber-100 text-amber-900 p-4 rounded-2xl w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Donki Battle -->
+            <div class="bg-white rounded-[2rem] p-8 border border-slate-100 space-y-8">
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-slate-900">돈키호테 3대장 비교 분석</h2>
+                    <p class="text-[10px] text-slate-500 mt-1">여행 동선에 따른 최적 지점 선택</p>
+                </div>
+                <div class="chart-container h-[300px]">
+                    <canvas id="mallDonkiBarCanvas"></canvas>
+                </div>
+                <div class="space-y-4">
+                    <div class="p-4 bg-slate-50 rounded-2xl border-l-4 border-slate-800">
+                        <div class="flex justify-between items-center mb-1">
+                            <h4 class="font-bold text-sm">1. 교토 아반티점 (교토역)</h4>
+                            <span class="text-[9px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">관광객 선호
+                                1위</span>
+                        </div>
+                        <p class="text-[11px] text-slate-600 leading-snug">교토역 바로 뒤 아반티 몰 2층. 한 층을 통째로 써서 동선이 가장 편리하고
+                            에스컬레이터 이동이 없어 쾌적함.</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-2xl border-l-4 border-slate-400">
+                        <h4 class="font-bold text-sm mb-1">2. 가와라마치점 (시내)</h4>
+                        <p class="text-[11px] text-slate-600 leading-snug">번화가 중심. 접근성은 좋으나 좁고 층이 많아(B1~4F) 이동이 불편하고 매우
+                            붐빔. 심야 쇼핑에 적합.</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-2xl border-l-4 border-slate-400">
+                        <h4 class="font-bold text-sm mb-1">3. 가라스마 시치조점</h4>
+                        <p class="text-[11px] text-slate-600 leading-snug">교토역에서 도보 5-7분. 비교적 덜 붐비지만 규모가 애매할 수 있음. 조용히
+                            쇼핑하고 싶다면 추천.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Store Finder -->
+            <div class="bg-slate-50 rounded-[2.5rem] p-8 space-y-6">
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-slate-900">관광객 인기 매장 리스트</h2>
+                    <p class="text-[10px] text-slate-500">어디에 무엇이 있을까?</p>
+                </div>
+                <div class="flex justify-center flex-wrap gap-2" id="mall-filter-container">
+                    <button onclick="filterMallStores('all')"
+                        class="mall-filter-btn active bg-slate-900 text-white px-4 py-1.5 rounded-full text-[10px] font-bold transition">전체</button>
+                    <button onclick="filterMallStores('이온몰')"
+                        class="mall-filter-btn bg-white text-slate-600 px-4 py-1.5 rounded-full text-[10px] font-bold border border-slate-200 transition">이온몰</button>
+                    <button onclick="filterMallStores('아반티')"
+                        class="mall-filter-btn bg-white text-slate-600 px-4 py-1.5 rounded-full text-[10px] font-bold border border-slate-200 transition">아반티</button>
+                    <button onclick="filterMallStores('요도바시')"
+                        class="mall-filter-btn bg-white text-slate-600 px-4 py-1.5 rounded-full text-[10px] font-bold border border-slate-200 transition">요도바시(로피아)</button>
+                </div>
+                <div id="mall-store-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+            </div>
+        </section>
+
+        <!-- Tab: Spots Gallery -->
+        <section id="spots" class="tab-content hidden space-y-4">
+            <div class="mb-4">
+                <button onclick="openRealSearch('ALL')"
+                    class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-lg btn-press flex items-center justify-center space-x-2">
+                    <span>✨ 전체 장소 한눈에 보기</span>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="spot-buttons-grid">
+                <button onclick="openRealSearch('이네노후나야')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">이네노후나야</button>
+                <button onclick="openRealSearch('아마노하시다테')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">아마노하시다테</button>
+                <button onclick="openRealSearch('아라시야마')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">아라시야마</button>
+                <!-- <button onclick="openRealSearch('쿠라마&키부네')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">쿠라마&키부네</button>
+                <button onclick="openRealSearch('우지(Uji)')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">우지(Uji)</button>
+                <button onclick="openRealSearch('철학자의 길')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">철학자의 길</button> -->
+                <button onclick="openRealSearch('기온(Gion)')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">기온(Gion)</button>
+                <button onclick="openRealSearch('후시미')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">후시미</button>
+                <button onclick="openRealSearch('히가시야마')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">히가시야마</button>
+                <button onclick="openRealSearch('돈키호테')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">돈키호테 쇼핑리스트</button>
+                <button onclick="openRealSearch('가라 돈키호테')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">돈키호테 가라스마시치조점</button>
+                <button onclick="openRealSearch('로피아')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">로피아 마트</button>
+                <button onclick="openRealSearch('aeonmall')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">이온몰</button>
+                <button onclick="openRealSearch('교토역')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">교토역</button>
+                <button onclick="openRealSearch('하루카')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">하루카 공항이동</button>
+                <button onclick="openRealSearch('란덴트램')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">란덴트램</button>
+                <button onclick="openRealSearch('아반티')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">아반티/돈키호테</button>
+                <button onclick="openRealSearch('Minn Gion Sanjo')"
+                    class="p-4 bg-white border rounded-2xl font-bold text-xs shadow-sm btn-press">숙소(Minn Gion)</button>
+            </div>
+        </section>
+
+        <!-- Tab: Gourmet Guide -->
+        <section id="food" class="tab-content hidden space-y-10 pb-10">
+            <!-- Header -->
+            <div class="bg-[#111827] text-white py-10 px-6 rounded-[2.5rem] text-center shadow-xl">
+                <h1 class="text-2xl md:text-3xl font-bold mb-2 tracking-tight">교토 미식 완벽 가이드 🥩</h1>
+                <p class="text-gray-400 text-xs max-w-2xl mx-auto font-light leading-relaxed">
+                    규카츠, 와규, 라멘, 우동 - 별점으로 검증된 10개 지역 60개 맛집
+                </p>
+            </div>
+
+            <!-- Budget Analytics -->
+            <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                <h2 class="text-sm font-bold mb-6 flex items-center gap-3">
+                    <span class="w-1.5 h-4 bg-emerald-500 rounded-full"></span>
+                    지역별 메인 요리 최소 예산 분포 (¥)
+                </h2>
+                <div class="chart-container h-[250px]">
+                    <canvas id="priceComparisonChart"></canvas>
+                </div>
+                <p class="text-[9px] text-gray-400 mt-4 text-right">* 와규 제외 메뉴는 대부분 2,000엔 이하로 즐기실 수 있습니다.</p>
+            </div>
+
+            <!-- Region Grid -->
+            <div class="space-y-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-gray-800">어디서 식사하시나요?</h2>
+                    <div class="h-px flex-grow mx-4 bg-gray-100"></div>
+                </div>
+                <div id="regionGrid" class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+                    <!-- Injected via JavaScript -->
+                </div>
+            </div>
+
+            <!-- Restaurant Details -->
+            <div id="resultArea" class="scroll-mt-24 min-h-[400px]">
+                <div id="emptyMsg"
+                    class="text-center py-20 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                    <p class="text-slate-400 text-sm">위의 지역 버튼을 클릭하여 맛집 6선을 확인하세요.</p>
+                </div>
+
+                <div id="detailView" class="hidden space-y-6">
+                    <div
+                        class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-end">
+                        <div class="mb-4 md:mb-0">
+                            <h2 id="targetName" class="text-2xl font-bold text-gray-900 mb-1">지역명</h2>
+                            <p id="targetDesc" class="text-[10px] text-gray-500 font-light">지역 정보 요약</p>
+                        </div>
+                        <div class="flex gap-2 text-[10px] font-bold">
+                            <span class="bg-yellow-50 text-yellow-700 px-3 py-1.5 rounded-xl">★ 추천도</span>
+                            <span class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl">★ 가성비</span>
+                        </div>
+                    </div>
+
+                    <div id="shopGrid" class="grid grid-cols-2 lg:grid-cols-2 gap-4">
+                        <!-- Cards Injected Here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Transit Card Guide -->
+        <section id="transit" class="tab-content hidden space-y-12 pb-10">
+            <!-- 1. Introduction & Context -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border-l-4 border-[#4a7c59]">
+                <h2 class="text-xl font-bold mb-3 flex items-center gap-2">👋 컨택리스 카드 가이드</h2>
+                <p class="text-gray-600 mb-4 leading-relaxed text-xs">
+                    이 가이드는 로고가 있는 컨택리스 신용/체크카드를 개찰구에 직접 태그하여 탑승하는 방법에 대해 안내합니다.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-[10px]">
+                    <div class="bg-blue-50 p-3 rounded-lg">
+                        <span class="font-bold text-blue-800">💳 신용/체크카드</span>
+                        <p class="text-blue-600">Wifi 표시(컨택리스) 실물 카드 사용 가능</p>
+                    </div>
+                    <div class="bg-green-50 p-3 rounded-lg">
+                        <span class="font-bold text-green-800">📱 모바일 페이</span>
+                        <p class="text-green-600">Apple/Google Pay 등록 카드로 태그 가능</p>
+                    </div>
+                    <div class="bg-orange-50 p-3 rounded-lg">
+                        <span class="font-bold text-orange-800">⚠️ 전용 단말기</span>
+                        <p class="text-orange-600">전용 단말기가 설치된 개찰구만 통과 가능</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Main Dashboard: Line Selection -->
+            <div>
+                <div class="flex flex-col md:flex-row justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-[#2c2c2c]">🚅 노선별 현황판</h2>
+                        <p class="text-gray-500 text-[10px] mt-1">카드를 클릭하여 상세 이용 방법을 확인하세요.</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 flex gap-1 overflow-x-auto pb-2 no-scrollbar" id="filter-container">
+                        <button
+                            class="filter-btn active bg-slate-800 text-white px-3 py-1.5 rounded-full text-[10px] font-medium transition whitespace-nowrap"
+                            data-filter="all">전체</button>
+                        <button
+                            class="filter-btn bg-white text-gray-600 border px-3 py-1.5 rounded-full text-[10px] font-medium hover:bg-gray-50 transition whitespace-nowrap"
+                            data-filter="subway">지하철</button>
+                        <button
+                            class="filter-btn bg-white text-gray-600 border px-3 py-1.5 rounded-full text-[10px] font-medium hover:bg-gray-50 transition whitespace-nowrap"
+                            data-filter="jr">JR</button>
+                        <button
+                            class="filter-btn bg-white text-gray-600 border px-3 py-1.5 rounded-full text-[10px] font-medium hover:bg-gray-50 transition whitespace-nowrap"
+                            data-filter="private">사철</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="lines-grid">
+                    <!-- JS Injected Content -->
+                </div>
+            </div>
+
+            <!-- 3. Dynamic Detail View -->
+            <div id="detail-section" class="hidden transition-opacity duration-500">
+                <div class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div id="detail-header" class="p-6 text-white flex justify-between items-start">
+                        <div>
+                            <span id="detail-type"
+                                class="uppercase tracking-widest text-[8px] font-bold opacity-80 mb-1 block">Subway</span>
+                            <h2 id="detail-title" class="text-2xl font-bold">노선 이름</h2>
+                        </div>
+                        <button id="close-detail"
+                            class="text-white opacity-70 hover:opacity-100 text-2xl">&times;</button>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 space-y-4">
+                            <div>
+                                <h3 class="text-sm font-bold text-gray-800 mb-2 border-b pb-1">✅ 이용 가능 여부</h3>
+                                <div id="detail-status-badge"
+                                    class="inline-block px-3 py-1 rounded-lg font-bold text-[10px] mb-2"></div>
+                                <p id="detail-desc" class="text-xs text-gray-600 leading-relaxed"></p>
+                            </div>
+                            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-200">
+                                <h4 class="font-bold text-xs text-gray-700 mb-1">🕵️‍♂️ 개찰구 찾는 법</h4>
+                                <p id="detail-gate-info" class="text-[11px] text-gray-600"></p>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-1 bg-slate-50 p-4 rounded-2xl">
+                            <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-3 tracking-widest">주요 정차역</h3>
+                            <ul id="detail-stations" class="space-y-2 text-[11px] text-slate-600"></ul>
+                            <div class="mt-6">
+                                <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 tracking-widest">편의성 점수
+                                </h3>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl font-bold text-slate-800" id="detail-score">4.5</span>
+                                    <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                        <div id="detail-score-bar" class="h-full bg-slate-800" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Data Visualization Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-3xl border border-gray-100">
+                    <h3 class="text-sm font-bold text-gray-800 mb-1 tracking-tight">📊 교토 주요 노선 도입률</h3>
+                    <p class="text-[10px] text-gray-500 mb-4">컨택리스 지원 현황</p>
+                    <div class="chart-container h-[200px] !max-h-[250px]">
+                        <canvas id="adoptionChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-3xl border border-gray-100">
+                    <h3 class="text-sm font-bold text-gray-800 mb-1 tracking-tight">🚧 이용 편의성 비교</h3>
+                    <p class="text-[10px] text-gray-500 mb-4">전용 리더기 접근성</p>
+                    <div class="chart-container h-[200px] !max-h-[250px]">
+                        <canvas id="accessibilityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Tips Checklist -->
+            <div class="bg-slate-900 text-white rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden">
+                <div class="relative z-10">
+                    <h2 class="text-xl font-bold mb-4">🎒 여행 준비 체크리스트</h2>
+                    <div class="grid grid-cols-1 gap-3 text-xs opacity-90">
+                        <div class="flex items-center gap-3 bg-white/10 p-4 rounded-2xl">
+                            <span class="text-lg">💳</span>
+                            <span>카드에 <strong>컨택리스 심볼</strong>(와이파이 모양)이 있나요?</span>
+                        </div>
+                        <div class="flex items-center gap-3 bg-white/10 p-4 rounded-2xl">
+                            <span class="text-lg">💴</span>
+                            <span>해외 원화 결제(DCC) 차단 확인 (<strong>현지 통화 결제</strong> 권장)</span>
+                        </div>
+                        <div class="flex items-center gap-3 bg-white/10 p-4 rounded-2xl">
+                            <span class="text-lg">🚇</span>
+                            <span>예비용 <strong>IC 카드(이코카 등)</strong> 또는 현금을 챙겼나요?</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute right-[-20px] bottom-[-20px] text-9xl opacity-10 select-none">⛩️</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Real Search Layer (Modal) -->
+    <div id="gallery-layer" class="fixed inset-0 bg-white hidden flex flex-col">
+        <div class="p-4 border-b flex justify-between items-center bg-white sticky top-0 shadow-sm">
+            <h3 id="gallery-title" class="font-bold text-lg text-slate-800">리얼 데이터 정보</h3>
+            <button onclick="closeGallery()" class="text-3xl text-slate-300 px-2">&times;</button>
+        </div>
+
+        <div id="gallery-loader" class="flex-grow flex flex-col items-center justify-center">
+            <div class="spinner mb-4"></div>
+            <p class="text-sm text-slate-400 font-medium animate-pulse text-center">구글 검색을 통해 2025년 1월의<br>실제 현장 정보를 찾는
+                중...</p>
+        </div>
+
+        <div id="gallery-content" class="hidden flex-grow flex flex-col overflow-hidden">
+            <div id="gallery-slider" class="swipe-container flex-grow items-center bg-slate-50 relative scroll-smooth">
+                <!-- Info cards injected here -->
+            </div>
+
+            <!-- PC Navigation Buttons -->
+            <div class="absolute left-4 top-1/2 -translate-y-1/2 z-10 hidden md:block" id="nav-prev-container">
+                <button onclick="moveGallery(-1)"
+                    class="p-3 bg-white/80 backdrop-blur rounded-full shadow-lg border border-slate-100 hover:bg-white transition-all btn-press opacity-50 hover:opacity-100">
+                    <svg class="w-6 h-6 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div class="absolute right-4 top-1/2 -translate-y-1/2 z-10 hidden md:block" id="nav-next-container">
+                <button onclick="moveGallery(1)"
+                    class="p-3 bg-white/80 backdrop-blur rounded-full shadow-lg border border-slate-100 hover:bg-white transition-all btn-press opacity-50 hover:opacity-100">
+                    <svg class="w-6 h-6 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-4 bg-white border-t">
+                <div class="flex justify-center space-x-1.5" id="gallery-dots"></div>
+                <p class="text-[9px] text-center text-slate-400 mt-3 italic tracking-tight">Source: Google Search
+                    Grounding & User Config</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t py-12 text-center text-slate-300 text-[10px] font-bold tracking-widest uppercase">
+        Kyoto 9-People Master Plan 2025
+    </footer>
+
+    <script>
+        const itineraryData = {
+            1: {
+                day: "1/23 (금) | 도착 및 장보기",
+                desc: "오사카 공항 13시 도착 후 하루카 탑승. 도착 시간과 컨디션에 맞춰 유연하게 선택하세요.",
+                common: [
+                    { time: "07:30", spot: "집", note: "집에서 출발" },
+                    { time: "11:10", spot: "인천공항", note: "출발스케쥴(Departure)" },
+                    { time: "13:00", spot: "간사이 공항", note: "- 간사이 공항 도착(Arrival)\n- 환전/이코카\n- 하루카탑승", search: "하루카" },
+                ],
+                plans: [
+                    {
+                        name: "Plan A (일반 코스)",
+                        steps: [
+                            { time: "16:00", spot: "교토역 도착", note: "로피아로 이동하기", search: "교토역" },
+                            { time: "16:30", spot: "로피아", note: "쇼핑, 식사 등 (식료품 준비)-2시간", search: "로피아" },
+                            { time: "19:00", spot: "교토역", note: "교토역 - `가라스마선` - 가라스마오이케역 - `도자이선` - 산조케이한" },
+                            { time: "19:30", spot: "Minn Gion Sanjo", note: "체크인", search: "Minn Gion Sanjo" }
+                        ]
+                    },
+                    {
+                        name: "Plan B (하루카 13:44 차를 탔을경우)",
+                        steps: [
+                            { time: "15:04", spot: "교토역 도착", note: "수화물 맡기고 '여우신사'가기", search: "교토역수화물" },
+                            { time: "15:30", spot: "교토역", note: "교토역 - `나라선` - 이나리역" },
+                            { time: "16:00", spot: "후시미이나리", note: "후시미이나리 관광 (1시간)", search: "후시미" },
+                            { time: "17:30", spot: "이나리역", note: "이나리역 - `나라선` - 교토역" },
+                            { time: "18:00", spot: "로피아", note: "쇼핑, 식사 등 (식료품 준비)-2시간", search: "로피아" },
+                            { time: "20:00", spot: "교토역", note: "교토역 - `가라스마선` - 가라스마오이케역 - `도자이선` - 산조케이한" },
+                            { time: "20:30", spot: "Minn Gion Sanjo", note: "체크인", search: "Minn Gion Sanjo" }
+
+                        ]
+                    }
+                ]
+            },
+            2: {
+                day: "1/24 (토) | 아라시야마 ",
+                desc: "아라시야마 지역을 여유있게 둘러보는 자연 산책의 날",
+                common: [
+                    { time: "08:50", spot: "Minn Gion Sanjo", note: "출발~~" },
+                    { time: "09:00", spot: "산조케이한", note: "산조케이한 - `도자이선` - 우즈마사텐진가와 - `도보` - 란덴텐진가와 - `란덴선` - 아라시야마" },
+                    { time: "10:00", spot: "아라시야마역", note: "아라시야마 투어 / 점심 ", search: "아라시야마" },
+                    { time: "16:00", spot: "아라시야마역", note: "아라시야마 - `란덴선` - 란덴사가 - `도보` - 사가아라시야마 - `산인본선`- 교토역" }
+                ],
+                plans: [
+                    {
+                        name: "Plan A - 아반티 - 다이소, 돈키호테",
+                        steps: [
+                            { time: "17:00", spot: "교토 아반티 / 돈키호테", note: "쇼핑", search: "아반티" },
+                            { time: "20:00", spot: "교토역", note: "교토역 - `가라스마선` - 가라스마오이케역 - `도자이선` - 산조케이한" },
+                            { time: "20:30", spot: "Minn Gion Sanjo", note: "숙소", search: "Minn Gion Sanjo" }
+                        ]
+                    },
+                    {
+                        name: "Plan B - 돈키호테 가라스마시치조점",
+                        steps: [
+                            { time: "17:00", spot: "돈키호테 가라스마시치조점", note: "쇼핑", search: "가라돈키호테" },
+                            { time: "20:00", spot: "교토역", note: "교토역 - `가라스마선` - 가라스마오이케역 - `도자이선` - 산조케이한" },
+                            { time: "20:30", spot: "Minn Gion Sanjo", note: "숙소", search: "Minn Gion Sanjo" }
+                        ]
+                    }
+                ]
+            },
+            3: {
+                day: "1/25 (일) | 북부 바다 원정",
+                desc: "이네후나야와 아마노하시다테 정복. 날씨 신이여.. 도와주소서~~",
+                steps: [
+                    { time: "09:10", spot: "Minn Gion Sanjo", note: "출발~~" },
+                    { time: "09:20", spot: "산조케이한", note: "산조케이한 - `도자이선` - 가라스마오이케역 - `가라스마선` - 교토역" },
+                    { time: "09:50", spot: "교토역 하치조구치—역 앞 관광 버스 주차장", note: "업체미팅", search: "하치조구치" },
+                    { time: "11:20", spot: "아마노하시다테, 치온지, 회전교", note: "- (2시간 30분) 시간과 취향에 따라 지온지, 회전교 등 명소를 자유롭게 관람\n- 케이블카 탑승", search: "아마노하시다테" },
+                    { time: "14:30", spot: "이네후나야", note: "- (1시간 20분) 배를 타고 갈매기에게 먹이를 주기\n 후나야에서는 자유롭게 산책하거나 자전거를 타거나 배를 타고 갈매기에게 먹이를 준다", search: "이네노후나야" },
+                    { time: "19:20", spot: "교토역 하치조구치—역 앞 관광 버스 주차장", note: "투어 종료" },
+                    { time: "19:30", spot: "이온몰", note: "쇼핑" },
+                    { time: "21:00", spot: "교토역", note: "교토역 - `가라스마선` - 가라스마오이케역 - `도자이선` - 산조케이한" },
+                    { time: "22:00", spot: "Minn Gion Sanjo", note: "숙소", search: "Minn Gion Sanjo" }
+
+                ]
+            },
+            4: {
+                day: "1/26 (월) | 교토 클래식 투어",
+                desc: "도보여행~ 힘내라 힘!!!",
+                steps: [
+                    { time: "10:00", spot: "Minn Gion Sanjo", note: "출발~~" },
+                    { time: "10:30", spot: "하나미코지도리 / 기온마치 미나미가와", note: "게이코와 마이코를 볼 수 있는 거리\n게이코는 손님이 지정한 시간에 고급 찻집이나 요정에 가는 것 외에는 오키야(置屋 | 게이샤방)라는 곳에서 기예 연습에 열중하고 있다", search: "히가시야마" },
+                    { time: "11:30", spot: "니넨자카 / 산넨자카", note: "일본의 고도(古都)인 교토. 그런 교토에서도 가장 교토 분위기를 잘 느낄 수 있는 곳", search: "니넨자카" },
+                    { time: "12:30", spot: "기요미즈 데라", note: "사원은 유네스코 세계유산으로 지정된 고도 교토의 문화재의 일부", search: "기요미즈데라" },
+                    { time: "13:00", spot: "어딘가에서 중식", note: "어디가나? " },
+                    { time: "14:00", spot: "가모강", note: "가모강(鴨川, 카모가와)은 일본 교토를 남북으로 가로지르는 상징적인 하천", search: "가모강" },
+                    { time: "15:00", spot: "디즈니스토어 교토 산조", note: "1, 2층 규모로 다양한 디즈니 공식 캐릭터 상품, 의류, 액세서리 등을 판매", search: "디즈니스토어 교토" },
+                    { time: "16:00", spot: "니시키시장", note: "400년 이상의 역사를 지닌 니시키 시장(錦市場)은 '교토의 부엌'이라 불리는 교토 최대 규모의 전통 식품 시장\n약 390미터 길이의 좁은 통로를 따라 130여 개의 상점이 밀집해 있어 현지 식문화와 다양한 길거리 음식을 체험할 수 있다", search: "니시키시장" },
+                    { time: "17:00", spot: "돈키호테 교토 시조가와라마치", note: "지하 1층부터 지상 4층까지 약 5만 개 이상의 상품을 취급하며, 7층에는 무한리필 샤브샤브 전문점인 '타지마야'가 입점", search: "돈키호테 시조카와라마치" },
+                    { time: "18:00", spot: "본토초공원", note: "일본 교토의 번화가인 시조가와라마치 지역에 위치한 작지만 평화로운 공원\n공원길로 산책하면서 귀가", search: "본토초공원" }
+                ]
+            },
+            5: {
+                day: "1/27 (화) | 귀국",
+                desc: "여운이 남는 마지막 날~",
+                steps: [
+                    { time: "09:00", spot: "Minn Gion Sanjo", note: "Check out" },
+                    { time: "09:10", spot: "산조케이한", note: "산조케이한 - `도자이선` - 가라스마오이케역 - `가라스마선` - 교토역" },
+                    { time: "10:00", spot: "교토역", note: "9:30 부터 30분 단위", search: "하루카" },
+                    { time: "11:20", spot: "Kansai International Airport", note: "공항도착" },
+                    { time: "14:30", spot: "Kansai International Airport", note: "Departure" },
+                    { time: "16:40", spot: "Incheon International Airport", note: "Arrival" }
+                ]
+            }
+        };
+
+        // --- Core Logics ---
+        let transitChartsInitialized = false;
+        let mallChartsInitialized = false;
+        let foodChartsInitialized = false;
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById(`btn-${tabId}`).classList.add('tab-active');
+            window.scrollTo(0, 0);
+
+            if (tabId === 'transit' && !transitChartsInitialized) {
+                initTransitLogic();
+                transitChartsInitialized = true;
+            }
+            if (tabId === 'malls' && !mallChartsInitialized) {
+                initMallsLogic();
+                mallChartsInitialized = true;
+            }
+            if (tabId === 'food' && !foodChartsInitialized) {
+                initFoodLogic();
+                foodChartsInitialized = true;
+            }
+        }
+
+        function renderDay(day, planIdx = 0) {
+            const container = document.getElementById('itinerary-display');
+            if (!container) return;
+
+            const data = itineraryData[day];
+            document.querySelectorAll('.day-chip').forEach(c => c.classList.remove('day-chip-active'));
+            const activeChip = document.getElementById(`chip-${day}`);
+            if (activeChip) activeChip.classList.add('day-chip-active');
+
+            let html = `
+                <div class="mb-4 animate-fade-in">
+                    <h2 class="text-2xl font-bold text-slate-800">${data.day}</h2>
+                    <div class="text-xs text-slate-500 mt-2 leading-snug whitespace-pre-wrap">${formatText(data.desc)}</div>
+                </div>
+                <div class="space-y-1">
+            `;
+
+            const renderStep = (s) => `
+                <div class="timeline-step animate-fade-in">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-grow pr-4">
+                            <span class="text-[10px] font-bold text-slate-400 tracking-tighter">${s.time}</span>
+                            <h4 class="font-bold text-sm text-slate-800">${s.spot}</h4>
+                            <div class="text-[11px] text-slate-600 mt-0.5 leading-snug whitespace-pre-wrap">${formatText(s.note)}</div>
+                        </div>
+                        ${s.search ? `<button onclick="openRealSearch('${s.search}')" class="shrink-0 bg-slate-50 border p-2 rounded-xl text-[9px] font-bold shadow-sm btn-press">📸 정보확인</button>` : ''}
+                    </div>
+                </div>
+            `;
+
+            // Common steps first
+            if (data.common) {
+                data.common.forEach(s => html += renderStep(s));
+            }
+
+            // Plan Selector if multiple plans exist
+            if (data.plans) {
+                html += `
+                    <div class="plan-toggle-container animate-fade-in">
+                        ${data.plans.map((p, idx) => `
+                            <div onclick="renderDay(${day}, ${idx})" class="plan-toggle-btn ${idx === planIdx ? 'active' : ''}">
+                                ${p.name}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                // Selected plan steps
+                data.plans[planIdx].steps.forEach(s => html += renderStep(s));
+            } else if (data.steps) {
+                // Regular simple steps
+                data.steps.forEach(s => html += renderStep(s));
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // --- Text Formatter (Markdown, Subway Lines, Bullets & Breaks) ---
+        function formatText(text) {
+            if (!text) return "";
+            // 줄바꿈 보존을 위해 먼저 분리 처리
+            return text.split('\n').map(line => {
+                let formatted = line
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/`가라스마선`/g, '<span class="line-karasuma">가라스마선</span>')
+                    .replace(/`도자이선`/g, '<span class="line-tozai">도자이선</span>')
+                    .replace(/`한큐선`/g, '<span class="line-hankyu">한큐선</span>')
+                    .replace(/`나라선`/g, '<span class="line-nara">나라선</span>')
+                    .replace(/`산인본선`/g, '<span class="line-sanin">산인본선</span>')
+                    .replace(/`란덴선`/g, '<span class="line-randen">란덴선</span>')
+                    .replace(/`(.*?)`/g, '<span class="text-highlight">$1</span>');
+
+                const trimmed = line.trim();
+                if (trimmed.startsWith('- ')) {
+                    return `<div class="flex items-start mt-0.5 ml-1"><span class="mr-1.5 text-slate-400">•</span><span>${line.replace('-', '').trim()}</span></div>`;
+                }
+                return `<div>${formatted}</div>`;
+            }).join(''); // join('')을 사용하여 div 블록 간의 여백 중첩 방지
+        }
+
+        // --- Gallery Engine (Static & Dynamic) ---
+        function openRealSearch(spotKey) {
+            const layer = document.getElementById('gallery-layer');
+            const loader = document.getElementById('gallery-loader');
+            const content = document.getElementById('gallery-content');
+            const slider = document.getElementById('gallery-slider');
+            const dots = document.getElementById('gallery-dots');
+            const titleEl = document.getElementById('gallery-title');
+
+            let photos = [];
+            if (spotKey === 'ALL') {
+                photos = Object.values(window.KYOTO_GALLERY_CONFIG).flat();
+                titleEl.innerText = `전체 장소 한눈에 보기`;
+            } else {
+                photos = window.KYOTO_GALLERY_CONFIG[spotKey] || [];
+                titleEl.innerText = `${spotKey} 상세 정보`;
+            }
+
+            if (photos.length === 0) {
+                alert("해당 장소의 데이터가 준비 중입니다.");
+                return;
+            }
+
+            layer.classList.remove('hidden');
+            setTimeout(() => {
+                layer.classList.add('open');
+                // 보안: 뒤로가기 방지를 위한 상태 추가
+                history.pushState({ gallery: true }, '');
+            }, 10);
+
+            loader.classList.add('hidden');
+            content.classList.remove('hidden');
+
+            slider.innerHTML = '';
+            dots.innerHTML = '';
+            document.body.style.overflow = 'hidden';
+
+            photos.forEach((photo, idx) => {
+                const item = document.createElement('div');
+                item.className = 'swipe-card';
+
+                // Handle single image or multiple images
+                let imgHtml = '';
+                const urls = photo.imgUrls || (photo.imgUrl ? [photo.imgUrl] : []);
+
+                if (urls.length > 0) {
+                    imgHtml = `
+                    <div class="img-scroll-wrapper">
+                        ${urls.length > 1 ? `<div class="v-scroll-indicator" id="v-indicator-${idx}">1 / ${urls.length}</div>` : ''}
+                        <div class="img-scroll-container" onscroll="onVerticalScroll(this, ${idx}, ${urls.length})">
+                    `;
+                    urls.forEach(url => {
+                        imgHtml += `<img src="${url}" class="img-scroll-item" onerror="this.src='https://placehold.co/600x400?text=No+Image'">`;
+                    });
+                    imgHtml += `</div></div>`;
+                } else {
+                    const singleUrl = `https://tse2.mm.bing.net/th?q=${encodeURIComponent(photo.imgKeyword)}&w=600&h=400&c=7&rs=1&p=0`;
+                    imgHtml = `<div class="img-scroll-wrapper"><div class="img-scroll-container">
+                        <img src="${singleUrl}" class="img-scroll-item" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
+                    </div></div>`;
+                }
+
+                item.innerHTML = `
+                    <div class="glass-panel p-4 rounded-[2rem] w-full max-w-lg h-[85vh] flex flex-col overflow-hidden animate-fade-in">
+                        ${imgHtml}
+                        <div class="mt-4 overflow-y-auto pr-1 flex-grow scroll-smooth">
+                            <span class="text-[8px] font-bold text-slate-400 uppercase mb-1 tracking-widest block italic opacity-60">Kyoto 2026 Archive</span>
+                            <h4 class="text-xl font-bold mb-2 text-slate-800 leading-tight">${photo.title}</h4>
+                            <div class="text-[12px] text-slate-600 leading-snug whitespace-pre-wrap">${formatText(photo.desc)}</div>
+                        </div>
+                        <div class="pt-3 mt-auto border-t border-slate-100/50 flex justify-between items-center">
+                            <span class="text-[7px] text-slate-300 font-medium tracking-widest">9-PEOPLE MASTER PLAN</span>
+                            <span class="text-[7px] text-slate-300 font-medium italic">Item ${idx + 1} / ${photos.length}</span>
+                        </div>
+                    </div>
+                `;
+                slider.appendChild(item);
+
+                const dot = document.createElement('div');
+                dot.className = `w-1.5 h-1.5 rounded-full transition-all ${idx === 0 ? 'bg-slate-900 w-4' : 'bg-slate-200'}`;
+                dots.appendChild(dot);
+            });
+
+            updateNavButtons(slider, photos.length);
+
+            let isScrolling = false;
+            slider.onscroll = () => {
+                if (!isScrolling) {
+                    window.requestAnimationFrame(() => {
+                        const active = Math.round(slider.scrollLeft / slider.offsetWidth);
+                        dots.querySelectorAll('div').forEach((d, i) => {
+                            d.className = `w-1.5 h-1.5 rounded-full transition-all ${i === active ? 'bg-slate-900 w-4' : 'bg-slate-200'}`;
+                        });
+                        updateNavButtons(slider, photos.length);
+                        isScrolling = false;
+                    });
+                    isScrolling = true;
+                }
+            };
+        }
+
+        function onVerticalScroll(el, idx, total) {
+            const indicator = document.getElementById(`v-indicator-${idx}`);
+            if (!indicator) return;
+            const scrollPos = el.scrollTop;
+            const itemHeight = el.offsetHeight;
+            const current = Math.min(Math.round(scrollPos / itemHeight) + 1, total);
+            indicator.innerText = `${current} / ${total}`;
+        }
+
+        // --- Transit Tab Logic (Imported from kyoto_subway.html) ---
+        function initTransitLogic() {
+            const transitData = [
+                {
+                    id: 'karasuma', name: '가라스마선', nameEn: 'Karasuma Line', type: 'subway', color: 'rgb(101, 158, 112)', status: 'full',
+                    statusText: '🟢 전 역사 이용 가능',
+                    description: '교토 시영 지하철 가라스마선은 대부분의 역에 최소 1개 이상의 전용 개찰구가 설치되어 있습니다.',
+                    gateInfo: '개찰구 바닥이나 기둥에 <strong>비자/마스터카드 로고</strong>가 붙은 전용 리더기를 찾으세요.',
+                    stations: ['교토역 (K11)', '시조 (K09)', '가라스마오이케 (K08)'], score: 4.8
+                },
+                {
+                    id: 'tozai', name: '도자이선', nameEn: 'Tozai Line', type: 'subway', color: 'rgb(237, 60, 45)', status: 'full',
+                    statusText: '🟢 전 역사 이용 가능',
+                    description: '도자이선은 전 역사에서 신용카드 태그 승차를 지원하여 니조성 등 이동 시 유용합니다.',
+                    gateInfo: '가라스마선과 동일하게 <strong>전용 리더기가 부착된 개찰구</strong>를 이용해야 합니다.',
+                    stations: ['니조조마에 (T14)', '가라스마오이케 (T13)', '산조케이한 (T11)'], score: 4.8
+                },
+                {
+                    id: 'hankyu', name: '한큐 전철', nameEn: 'Hankyu Railway', type: 'private', color: '#702029', status: 'partial',
+                    statusText: '🟡 일부 개찰구 지원',
+                    description: '오사카와 교토를 잇는 핵심 노선으로 주요 역(가와라마치, 아라시야마 등)에 전용 개찰구를 운영 중입니다.',
+                    gateInfo: '<strong>지정된 개찰구</strong>에만 리더기가 있습니다. 흰색의 단말기를 확인하세요.',
+                    stations: ['교토가와라마치 (HK86)', '아라시야마 (HK98)', '가라스마 (HK85)'], score: 3.5
+                },
+                {
+                    id: 'nara', name: 'JR 나라선', nameEn: 'JR Nara Line', type: 'jr', color: 'rgb(182, 124, 43)', status: 'partial',
+                    statusText: '🟡 주요 역 지원',
+                    description: '후시미 이나리와 나라행 노선입니다. 교토역, 이나리역 등 주요 역 위주로 이용 가능합니다.',
+                    gateInfo: 'JR은 보통 개찰구 윗부분에 부착된 형태가 많습니다. 로고를 꼭 확인하세요.',
+                    stations: ['교토역', '이나리 (후시미이나리)', '우지', '나라'], score: 3.0
+                },
+                {
+                    id: 'sanin', name: 'JR 산인본선', nameEn: 'San-in Main Line', type: 'jr', color: 'rgb(118, 58, 176)', status: 'partial',
+                    statusText: '🟡 주요 역 지원',
+                    description: '아라시야마행 노선입니다. 교토역과 사가아라시야마역 등 핵심 역에서 이용 가능합니다.',
+                    gateInfo: '개찰구에 <strong>EMV Contactless</strong> 로고를 찾으세요.',
+                    stations: ['교토역', '사가아라시야마', '니조'], score: 3.2
+                },
+                {
+                    id: 'randen', name: '란덴 (게이후쿠)', nameEn: 'Randen (Keifuku)', type: 'private', color: 'rgb(182, 47, 54)', status: 'full',
+                    statusText: '🟢 차량 내 결제 가능',
+                    description: '노면 전차인 란덴은 개찰구가 아닌 <strong>전차 내 요금함</strong>에서 결제하는 방식입니다.',
+                    gateInfo: '<strong>하차 시</strong> 운전석 옆 요금함에 부착된 검은색 패드에 카드를 태그하세요.',
+                    stations: ['시조오미야', '아라시야마', '기타노하쿠바이초'], score: 4.9
+                }
+            ];
+
+            let currentFilter = 'all';
+            const gridContainer = document.getElementById('lines-grid');
+            const detailSection = document.getElementById('detail-section');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+
+            function renderGrid() {
+                gridContainer.innerHTML = '';
+                const filteredData = currentFilter === 'all' ? transitData : transitData.filter(item => item.type === currentFilter);
+                filteredData.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-2xl shadow-sm p-4 relative overflow-hidden card-hover cursor-pointer border border-slate-100 flex flex-col h-full';
+                    card.onclick = () => showDetail(item);
+                    let statusColorClass = item.status === 'full' ? 'text-green-600 bg-green-50' : 'text-amber-600 bg-amber-50';
+
+                    card.innerHTML = `
+                        <div class="line-marker" style="background-color: ${item.color}"></div>
+                        <div class="pl-2">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-[8px] font-bold uppercase tracking-widest text-slate-400">${item.type.toUpperCase()}</span>
+                                <span class="${statusColorClass} text-[8px] px-2 py-0.5 rounded-full font-bold">${item.status === 'full' ? '지원' : '일부'}</span>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-800">${item.name}</h3>
+                            <p class="text-[9px] text-slate-400 mb-4">${item.nameEn}</p>
+                            <div class="mt-auto text-[8px] text-slate-300 font-bold uppercase tracking-tighter">View Details →</div>
+                        </div>
+                    `;
+                    gridContainer.appendChild(card);
+                });
+            }
+
+            function showDetail(item) {
+                document.getElementById('detail-title').innerText = item.name;
+                document.getElementById('detail-type').innerText = item.type;
+                document.getElementById('detail-header').style.backgroundColor = item.color;
+                const statusBadge = document.getElementById('detail-status-badge');
+                statusBadge.innerText = item.statusText;
+                statusBadge.className = `inline-block px-3 py-1 rounded-lg font-bold text-[10px] mb-2 ${item.status === 'full' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`;
+                document.getElementById('detail-desc').innerHTML = item.description;
+                document.getElementById('detail-gate-info').innerHTML = item.gateInfo;
+                document.getElementById('detail-score').innerText = item.score;
+                document.getElementById('detail-score-bar').style.width = `${(item.score / 5) * 100}%`;
+                const stationList = document.getElementById('detail-stations');
+                stationList.innerHTML = item.stations.map(s => `<li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full bg-slate-300"></span>${s}</li>`).join('');
+                detailSection.classList.remove('hidden');
+                detailSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            filterButtons.forEach(btn => {
+                btn.onclick = (e) => {
+                    filterButtons.forEach(b => { b.classList.remove('bg-slate-800', 'text-white'); b.classList.add('bg-white', 'text-gray-600'); });
+                    e.target.classList.remove('bg-white', 'text-gray-600'); e.target.classList.add('bg-slate-800', 'text-white');
+                    currentFilter = e.target.getAttribute('data-filter');
+                    renderGrid();
+                    detailSection.classList.add('hidden');
+                };
+            });
+
+            document.getElementById('close-detail').onclick = () => detailSection.classList.add('hidden');
+
+            // --- Charts ---
+            const chartFont = { family: "'Noto Sans KR', sans-serif", size: 9 };
+            new Chart(document.getElementById('adoptionChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['전면 도입', '일부 도입', '미지원'],
+                    datasets: [{ data: [3, 3, 0], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: chartFont } } } }
+            });
+
+            new Chart(document.getElementById('accessibilityChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: transitData.map(d => d.name.slice(0, 3)),
+                    datasets: [{ label: '편의성', data: transitData.map(d => d.score), backgroundColor: transitData.map(d => d.color), borderRadius: 8 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 5, ticks: { font: chartFont } }, x: { ticks: { font: chartFont } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            renderGrid();
+        }
+
+        // --- Mall Analysis Tab Logic (Imported from kyoto_malls.html) ---
+        function initMallsLogic() {
+            const mallVenueData = {
+                lopia: {
+                    title: "로피아 (Lopia)", subtitle: "식료품 / 가성비 / 현금필수",
+                    desc: "'일본의 코스트코'라 불리는 초저가 고퀄리티 슈퍼마켓입니다. 정육점 출신답게 고기 품질이 압도적이며, 도시락과 즉석식품이 매우 저렴합니다. 교토역 요도바시 카메라 지하에 위치해 접근성이 뛰어납니다.<br><strong class='text-red-600 mt-1 block'>⚠️ 주의: 오직 현금 결제만 가능합니다.</strong>",
+                    items: [
+                        "가성비 최강 와규 스테이크 및 구이용 고기",
+                        "대용량 장어 덮밥 및 초밥 세트",
+                        "로피아 자체 브랜드(PB) 소스 및 드레싱",
+                        "푸딩 및 일본 디저트류 (편의점보다 저렴)"
+                    ],
+                    tip: "💡 <strong>TIP:</strong> 숙소가 취사가 가능하다면 무조건 저녁 거리를 여기서 사세요. 가성비가 압도적입니다.",
+                    radar: [95, 20, 90, 40]
+                },
+                aeon: {
+                    title: "이온몰 (AEON Mall KYOTO)", subtitle: "가족 쇼핑 / 종합 쇼핑몰 / 다이소",
+                    desc: "교토역 하치조구치에서 도보 5분 거리의 거대 쇼핑몰입니다. 사쿠라관과 카에데관으로 나뉘며, 슈퍼마켓부터 의류, 장난감, 100엔샵까지 모든 것이 갖춰져 있습니다. 가족 단위 여행객에게 최적입니다.",
+                    items: [
+                        "1층 슈퍼마켓 (다양한 식료품 및 기념품 과자)",
+                        "유니클로 & GU (대형 매장)",
+                        "토이저러스 & 베이비저러스 (유아동 용품)",
+                        "다이소 (100엔샵)"
+                    ],
+                    tip: "💡 <strong>TIP:</strong> 1층 인포메이션 센터에서 여권을 제시하면 할인 쿠폰북을 받을 수 있습니다.",
+                    radar: [80, 85, 80, 90]
+                },
+                avanti: {
+                    title: "교토 아반티 (Avanti)", subtitle: "서브컬처 / 캐릭터 / 10-20대 패션",
+                    desc: "교토역 바로 맞은편에 위치한 쇼핑몰입니다. 2층의 돈키호테가 가장 유명하지만, 애니메이션 굿즈(라신반), 캐릭터 상품, 아이돌 관련 샵 등 '덕질'과 젊은 층을 위한 패션 브랜드가 많습니다.",
+                    items: [
+                        "돈키호테 (2층 전체)",
+                        "라신반 (중고 피규어 및 애니 굿즈)",
+                        "GU (저렴한 의류)",
+                        "산큐 마트 (390엔 샵)"
+                    ],
+                    tip: "💡 <strong>TIP:</strong> 오타쿠 문화에 관심이 있다면 4~5층을 집중 공략하세요. 돈키호테 쇼핑 후 같은 건물에서 식사하기도 좋습니다.",
+                    radar: [85, 90, 50, 70]
+                },
+                donki: {
+                    title: "돈키호테 (Don Quijote)", subtitle: "만물상 / 심야 쇼핑 / 기념품",
+                    desc: "일본 여행의 필수 코스. 의약품, 화장품, 과자, 캐리어 등 없는 게 없습니다. 교토에는 주로 아반티점(교토역)과 가와라마치점(시내)을 많이 방문합니다. 텍스 리펀(면세) 카운터가 항상 붐빕니다.",
+                    items: [
+                        "킷캣 등 녹차맛 과자 (교토 한정판)",
+                        "동전 파스, 샤론 파스 등 의약품",
+                        "퍼펙트 휩 등 저렴한 화장품",
+                        "산토리 위스키 등 주류"
+                    ],
+                    tip: "💡 <strong>TIP:</strong> 할인 쿠폰(카카오톡 채널 등)을 미리 준비하고, 면세 줄이 기니 여유 시간을 두세요.",
+                    radar: [90, 60, 70, 60]
+                }
+            };
+
+            const mallStoresList = [
+                { name: "유니클로 (Uniqlo)", mall: "이온몰", type: "패션" },
+                { name: "GU", mall: "이온몰", type: "패션" },
+                { name: "GU", mall: "아반티", type: "패션" },
+                { name: "다이소 (DAISO)", mall: "이온몰", type: "생활" },
+                { name: "토이저러스", mall: "이온몰", type: "장난감" },
+                { name: "무인양품 (MUJI)", mall: "이온몰", type: "생활" },
+                { name: "라신반 (Lashinban)", mall: "아반티", type: "애니" },
+                { name: "돈키호테", mall: "아반티", type: "펭귄" },
+                { name: "산큐마트 (390엔)", mall: "아반티", type: "잡화" },
+                { name: "가챠가챠 (캡슐토이)", mall: "이온몰", type: "캡슐" },
+                { name: "요도바시 카메라", mall: "요도바시", type: "카메라" },
+                { name: "유니클로", mall: "요도바시", type: "패션" },
+                { name: "ABC 마트", mall: "이온몰", type: "신발" },
+                { name: "마츠모토 키요시", mall: "아반티", type: "약" }
+            ];
+
+            let mallRadarChart = null;
+            let mallBarChart = null;
+
+            window.updateVenue = (key) => {
+                const data = mallVenueData[key];
+                const info = document.getElementById('mall-venue-info');
+                info.style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('mall-v-title').innerText = data.title;
+                    document.getElementById('mall-v-subtitle').innerText = data.subtitle;
+                    document.getElementById('mall-v-desc').innerHTML = data.desc;
+                    document.getElementById('mall-v-tip').innerHTML = data.tip;
+                    document.getElementById('mall-v-items').innerHTML = data.items.map(i => `<li>${i}</li>`).join('');
+                    info.style.opacity = '1';
+                }, 200);
+
+                document.querySelectorAll('.venue-btn').forEach(b => b.classList.remove('active-venue-tab'));
+                document.getElementById(`btn-venue-${key}`).classList.add('active-venue-tab');
+
+                mallRadarChart.data.datasets[0].data = data.radar;
+                mallRadarChart.data.datasets[0].label = data.title;
+                mallRadarChart.update();
+            };
+
+            window.filterMallStores = (cat) => {
+                document.querySelectorAll('.mall-filter-btn').forEach(b => {
+                    b.classList.remove('bg-slate-900', 'text-white');
+                    b.classList.add('bg-white', 'text-slate-600');
+                });
+                event.target.classList.remove('bg-white', 'text-slate-600');
+                event.target.classList.add('bg-slate-900', 'text-white');
+                const filtered = cat === 'all' ? mallStoresList : mallStoresList.filter(s => s.mall.includes(cat));
+                renderMallStores(filtered);
+            };
+
+            function renderMallStores(list) {
+                const grid = document.getElementById('mall-store-grid');
+                grid.innerHTML = list.map(s => {
+                    let icon = '🎁';
+                    let nameDisplay = s.name;
+
+                    if (s.name.includes('유니클로') || s.name.includes('GU')) icon = '👕';
+                    else if (s.name.includes('토이저러스')) icon = '🧸';
+                    else if (s.name.includes('ABC')) icon = '👟';
+                    else if (s.name.includes('요도바시 카메라')) icon = '📷';
+                    else if (s.name.includes('돈키호테')) icon = '🐧';
+                    else if (s.name.includes('마츠모토')) icon = '💊';
+                    else if (s.name.includes('라신반')) icon = '🧸';
+                    else if (s.name.includes('가챠')) icon = '🪙';
+                    else if (s.name.includes('무인양품')) {
+                        icon = `<span class="bg-black text-white px-2 py-0.5 rounded-sm font-serif text-sm inline-block mb-1">無</span>`;
+                    } else if (s.name.includes('산큐마트')) icon = '🎀';
+
+                    let mallTagColor = 'bg-slate-100 text-slate-500';
+                    if (s.mall.includes('이온몰')) mallTagColor = 'bg-emerald-100 text-emerald-700'; // Green for AEON
+                    else if (s.mall.includes('아반티')) mallTagColor = 'bg-blue-100 text-blue-600';
+                    else if (s.mall.includes('요도바시')) mallTagColor = 'bg-red-100 text-red-600';
+
+                    return `
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition">
+                            <div class="h-10 flex items-center justify-center mb-1">
+                                <span class="text-2xl">${icon}</span>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-[11px] leading-tight mb-2">${nameDisplay}</h4>
+                            <span class="${mallTagColor} text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-tighter">${s.mall}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const chartFont = { family: "'Noto Sans KR', sans-serif", size: 9 };
+
+            mallRadarChart = new Chart(document.getElementById('mallRadarCanvas').getContext('2d'), {
+                type: 'radar',
+                data: {
+                    labels: ['가격', '패션', '식료품', '쾌적도'],
+                    datasets: [{ label: '로피아', data: mallVenueData.lopia.radar, backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: '#ef4444', borderWidth: 2 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { r: { suggestedMin: 0, suggestedMax: 100, ticks: { display: false }, pointLabels: { font: chartFont } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            mallBarChart = new Chart(document.getElementById('mallDonkiBarCanvas').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['아반티점 (교토역)', '가와라마치점 (시내)', '가라스마점'],
+                    datasets: [
+                        { label: '쇼핑 동선/편의성', data: [95, 60, 75], backgroundColor: '#D65A4F' },
+                        { label: '혼잡도 (낮을수록 좋음)', data: [70, 30, 80], backgroundColor: '#5F7161' },
+                        { label: '제품 다양성', data: [85, 95, 80], backgroundColor: '#374151' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    scales: { x: { max: 100, ticks: { font: chartFont } }, y: { ticks: { font: chartFont } } },
+                    plugins: { legend: { labels: { font: chartFont } } }
+                }
+            });
+
+            updateVenue('lopia');
+            renderMallStores(mallStoresList);
+        }
+
+        // --- Food Tab Logic (Imported from kyoto_food.html) ---
+        const gourmetData = [
+            {
+                id: "kyoto-st", name: "교토역", desc: "여행의 중심지. 지하상가 Porta와 역사 내 10층 라멘 코지가 핵심 명소입니다.", min: 900,
+                items: [
+                    { name: "규카츠 교토카츠규 (교토역전점)", menu: "살치살 규카츠 정식", price: "¥1,780", res: "예약불가/현장대기", rec: 5, val: 4, type: "규카츠" },
+                    { name: "혼케 다이이치 아사히", menu: "특제 소유 라멘", price: "¥900", res: "예약불가/새벽줄서기", rec: 5, val: 5, type: "라멘" },
+                    { name: "야키니쿠 히로 (교토역전점)", menu: "와규 야키니쿠 런치", price: "¥2,500", res: "온라인예약권장", rec: 4.5, val: 4.5, type: "와규" },
+                    { name: "츠루토탄 교토역점", menu: "명란 크림 우동", price: "¥1,450", res: "현장번호표", rec: 4, val: 3.5, type: "우동" },
+                    { name: "동양정 교토역점", menu: "함박 스테이크 세트", price: "¥1,600", res: "현장대기", rec: 4.5, val: 4, type: "양식" },
+                    { name: "나카우 교토역앞", menu: "와규 규동 & 우동 세트", price: "¥980", res: "예약불필요/24시", rec: 3, val: 5, type: "가성비" }
+                ]
+            },
+            {
+                id: "lopia", name: "로피아", desc: "교토역 앞 요도바시 지하. 압도적 가성비의 와규와 규카츠 도시락을 만날 수 있습니다.", min: 550,
+                items: [
+                    { name: "로피아 델리 코너", menu: "수제 규카츠 도시락", price: "¥680", res: "테이크아웃 전용", rec: 4.5, val: 5, type: "규카츠" },
+                    { name: "로피아 정육 코너", menu: "최고급 와규 등심 (생육)", price: "¥3,500", res: "현장구매", rec: 5, val: 5, type: "와규" },
+                    { name: "로피아 초밥 코너", menu: "몬스터 스시 세트", price: "¥1,200", res: "현장구매", rec: 4.5, val: 5, type: "스시" },
+                    { name: "로피아 간편식", menu: "차슈 가득 라멘 밀키트", price: "¥480", res: "현장구매", rec: 3.5, val: 4.5, type: "라멘" },
+                    { name: "로피아 화덕피자", menu: "마르게리따 (1판)", price: "¥580", res: "현장주문", rec: 3, val: 5, type: "양식" },
+                    { name: "로피아 키친", menu: "소고기 볶음 우동", price: "¥550", res: "테이크아웃", rec: 3.5, val: 4, type: "우동" }
+                ]
+            },
+            {
+                id: "fushimi", name: "후시미 이나리", desc: "붉은 토리이의 절경. 전통 우동과 길거리 와규 꼬치 구이가 유명합니다.", min: 950,
+                items: [
+                    { name: "켄도냐 (Kendonya)", menu: "수제 수타 우동", price: "¥950", res: "예약불가/줄서기", rec: 5, val: 5, type: "우동" },
+                    { name: "후시미 규카츠 (인근)", menu: "소고기 카츠 정식", price: "¥1,800", res: "현장대기", rec: 4, val: 3.5, type: "규카츠" },
+                    { name: "와규 꼬치 야타이", menu: "와규 등심 꼬치구이", price: "¥1,000", res: "즉석조리", rec: 4, val: 3, type: "와규" },
+                    { name: "라멘 요우", menu: "토마토 돈코츠 라멘", price: "¥900", res: "현장구매", rec: 4, val: 4, type: "라멘" },
+                    { name: "네자메야", menu: "장어구이 & 유부초밥", price: "¥2,100", res: "현장대기", rec: 4, val: 3, type: "스시" },
+                    { name: "버밀리온 카페", menu: "와규 카레라이스", price: "¥1,500", res: "예약불가", rec: 4.5, val: 3.5, type: "카레" }
+                ]
+            },
+            {
+                id: "arashiyama", name: "아라시야마", desc: "대나무 숲과 강변 뷰. 고급 와규 스테이크와 정갈한 소바/우동이 조화롭습니다.", min: 1200,
+                items: [
+                    { name: "스테이크 오츠카", menu: "로스트비프 덮밥 & 스테이크", price: "¥2,400~", res: "당일 아침 현장예약", rec: 5, val: 4, type: "와규" },
+                    { name: "규카츠 교토카츠규 (아라시야마점)", menu: "안심 규카츠 정식", price: "¥1,900", res: "현장대기", rec: 4.5, val: 4, type: "규카츠" },
+                    { name: "아라시야마 요시무라", menu: "메밀 소바 & 튀김 우동", price: "¥1,800", res: "전화예약권장", rec: 5, val: 4, type: "우동/소바" },
+                    { name: "무스비 라멘", menu: "채소 육수 라멘", price: "¥1,200", res: "현장대기", rec: 4, val: 4, type: "라멘" },
+                    { name: "사가 토후 이네", menu: "유도후(두부) & 우동 세트", price: "¥2,000", res: "예약불필요", rec: 4, val: 4, type: "우동" },
+                    { name: "교토 와규 가이세키 (인근)", menu: "와규 데판야키", price: "¥8,500", res: "예약필수", rec: 4.5, val: 3, type: "와규" }
+                ]
+            },
+            {
+                id: "amano", name: "아마노하시다테", desc: "바다의 절경. 바지락 우동과 해산물 라멘, 지역 소고기 요리가 명물입니다.", min: 1100,
+                items: [
+                    { name: "하시다테 다이마루", menu: "바지락 우동 정식", price: "¥1,200", res: "예약불필요", rec: 4.5, val: 5, type: "우동" },
+                    { name: "쿠스비 (Kusubi)", menu: "해산물 소유 라멘", price: "¥1,300", res: "현장대기", rec: 4, val: 4, type: "라멘" },
+                    { name: "토리키", menu: "지역 와규 스테이크 정식", price: "¥4,800", res: "전화예약가능", rec: 4.5, val: 3, type: "와규" },
+                    { name: "아마노 규카츠 덮밥", menu: "소고기 카츠 덮밥", price: "¥1,500", res: "현장대기", rec: 3.5, val: 4, type: "규카츠" },
+                    { name: "아마노 카레", menu: "와규 카레라이스", price: "¥1,600", res: "예약불필요", rec: 4, val: 3.5, type: "와규/카레" },
+                    { name: "피구레 (Pigurre)", menu: "소고기 함박 세트", price: "¥1,800", res: "예약불필요", rec: 4, val: 4, type: "양식" }
+                ]
+            },
+            {
+                id: "ine", name: "이네노후나야", desc: "수상 가옥의 마을. 예약 가능한 소수의 식당에서 즐기는 해산물과 와규 코스.", min: 1300,
+                items: [
+                    { name: "와다츠미 (海宮)", menu: "와규 & 해산물 가이세키", price: "¥7,500", res: "온라인예약필수", rec: 5, val: 3.5, type: "와규" },
+                    { name: "후나야 식당", menu: "당일 잡은 생선회 정식", price: "¥1,800", res: "현장오픈런", rec: 5, val: 4, type: "스시" },
+                    { name: "이네 카페", menu: "소고기 카레", price: "¥1,300", res: "현장대기", rec: 4, val: 3.5, type: "카레" },
+                    { name: "나기 (Nagi)", menu: "해산물 나베 우동", price: "¥1,100", res: "예약불가", rec: 4, val: 4, type: "우동" },
+                    { name: "이네 야키니쿠", menu: "로컬 와규 구이", price: "¥5,000", res: "전화예약", rec: 4, val: 3, type: "와규" },
+                    { name: "무카이 주조", menu: "사케 안주 세트", price: "¥1,500", res: "예약불필요", rec: 4.5, val: 4.5, type: "안주" }
+                ]
+            },
+            {
+                id: "aeon", name: "이온몰", desc: "쾌적한 실내 쇼핑몰. 규카츠, 라멘, 와규 야키니쿠 등 프랜차이즈 강자들이 모여 있습니다.", min: 800,
+                items: [
+                    { name: "규카츠 교토카츠규 (이온몰점)", menu: "살치살 규카츠 세트", price: "¥1,750", res: "현장번호표", rec: 5, val: 4.5, type: "규카츠" },
+                    { name: "미트 샵 히로", menu: "와규 야키니쿠 도시락/구이", price: "¥1,200", res: "푸드코트/포장", rec: 4.5, val: 5, type: "와규" },
+                    { name: "이치란 라멘", menu: "돈코츠 라멘", price: "¥980", res: "자판기", rec: 4.5, val: 4, type: "라멘" },
+                    { name: "마루가메 제면", menu: "니쿠(고기) 우동", price: "¥800", res: "셀프주문", rec: 4, val: 5, type: "우동" },
+                    { name: "돈카츠 와코", menu: "규(소)카츠 & 돈카츠 세트", price: "¥1,600", res: "예약불필요", rec: 4, val: 4, type: "규카츠" },
+                    { name: "모리모리 스시", menu: "회전 초밥", price: "¥2,500", res: "현장번호표", rec: 5, val: 4, type: "스시" }
+                ]
+            },
+            {
+                id: "kiyomizu", name: "기요미즈데라 주변", desc: "니넨자카/산넨자카의 정취. 인기 규카츠 집과 전통 우동집이 즐비합니다.", min: 1100,
+                items: [
+                    { name: "규카츠 교토카츠규 (기요미즈점)", menu: "교토 스타일 규카츠 정식", price: "¥1,850", res: "현장대기", rec: 5, val: 4, type: "규카츠" },
+                    { name: "히사고", menu: "오야코동 & 우동", price: "¥1,200", res: "현장줄서기", rec: 5, val: 5, type: "우동/덮밥" },
+                    { name: "오멘 (Omen)", menu: "자루 우동 & 야채 세트", price: "¥2,100", res: "예약권장", rec: 4.5, val: 3.5, type: "우동" },
+                    { name: "텐카잇핀", menu: "진한 닭육수 라멘", price: "¥950", res: "자판기", rec: 4, val: 4.5, type: "라멘" },
+                    { name: "기온 규젠", menu: "와규 샤브샤브 런치", price: "¥3,500", res: "온라인예약", rec: 4, val: 4, type: "와규" },
+                    { name: "교토 기요미즈 준세이", menu: "두부 & 우동 코스", price: "¥3,500", res: "전화예약", rec: 4, val: 3, type: "우동" }
+                ]
+            },
+            {
+                id: "kamo", name: "가모강", desc: "강변 산책 후 즐기는 야키니쿠와 라멘. 여름에는 강변 마루 좌석이 명물입니다.", min: 900,
+                items: [
+                    { name: "교토 야키니쿠 히로 (폰토초)", menu: "와규 야키니쿠 코스", price: "¥6,000", res: "온라인예약필수", rec: 5, val: 4, type: "와규" },
+                    { name: "규카츠 교토카츠규 (폰토초점)", menu: "폰토초 한정 규카츠", price: "¥1,900", res: "현장대기", rec: 4.5, val: 4, type: "규카츠" },
+                    { name: "미요시 라멘", menu: "가모강변 돈코츠 라멘", price: "¥900", res: "예약불가", rec: 5, val: 5, type: "라멘" },
+                    { name: "차오차오 교자", menu: "바삭한 교자 & 라멘", price: "¥1,200", res: "현장대기", rec: 4.5, val: 4.5, type: "라멘/교자" },
+                    { name: "무사시 스시", menu: "산조점 회전초밥", price: "¥1,500", res: "예약불필요", rec: 4, val: 5, type: "스시" },
+                    { name: "카와이 (Kawai)", menu: "강변 뷰 우동 세트", price: "¥1,400", res: "현장대기", rec: 4, val: 4, type: "우동" }
+                ]
+            },
+            {
+                id: "nishiki", name: "니시키 시장", desc: "교토의 부엌. 길거리에서 즐기는 와규 꼬치와 소규모 규카츠 가게가 숨어있습니다.", min: 500,
+                items: [
+                    { name: "니시키 규카츠 (시장내)", menu: "소고기 카츠 꼬치/샌드", price: "¥1,200", res: "즉석취식", rec: 4, val: 3.5, type: "규카츠" },
+                    { name: "에비도 (Ebido)", menu: "와규 스테이크 꼬치", price: "¥1,000", res: "예약불가", rec: 4, val: 3, type: "와규" },
+                    { name: "라멘 소노", menu: "시장 골목 라멘", price: "¥950", res: "예약불가", rec: 4, val: 4, type: "라멘" },
+                    { name: "사마루 (Samaru)", menu: "교토식 우동 & 주먹밥", price: "¥1,100", res: "현장대기", rec: 4, val: 4, type: "우동" },
+                    { name: "다이야스", menu: "생굴구이 & 해산물", price: "¥800", res: "예약불필요", rec: 5, val: 4, type: "해산물" },
+                    { name: "카츠쿠라 니시키", menu: "명품 규카츠/돈카츠", price: "¥1,900", res: "현장대기", rec: 4.5, val: 4, type: "규카츠" }
+                ]
+            }
+        ];
+
+        function initFoodLogic() {
+            const ctx = document.getElementById('priceComparisonChart').getContext('2d');
+            const chartFont = { family: "'Noto Sans KR', sans-serif", size: 9 };
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: gourmetData.map(d => d.name),
+                    datasets: [{
+                        label: '메인요리 시작가 (¥)',
+                        data: gourmetData.map(d => d.min),
+                        backgroundColor: '#10b981',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { font: chartFont } }, x: { grid: { display: false }, ticks: { font: chartFont } } }
+                }
+            });
+
+            const container = document.getElementById('regionGrid');
+            container.innerHTML = gourmetData.map(area => `
+                <button onclick="selectFoodRegion('${area.id}', this)" class="location-btn py-3 px-2 rounded-2xl font-bold shadow-sm text-[11px]">
+                    ${area.name}
+                </button>
+            `).join('');
+        }
+
+        window.selectFoodRegion = (id, btnElement) => {
+            document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            const area = gourmetData.find(a => a.id === id);
+            document.getElementById('emptyMsg').classList.add('hidden');
+            const detailView = document.getElementById('detailView');
+            detailView.classList.remove('hidden');
+            document.getElementById('targetName').innerText = area.name;
+            document.getElementById('targetDesc').innerText = area.desc;
+            const grid = document.getElementById('shopGrid');
+            grid.innerHTML = area.items.map(item => {
+                const recStars = '★'.repeat(Math.floor(item.rec)) + (item.rec % 1 !== 0 ? '☆' : '');
+                const valStars = '★'.repeat(Math.floor(item.val)) + (item.val % 1 !== 0 ? '☆' : '');
+                return `
+                    <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">${item.type}</span>
+                                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">${item.price}</span>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-900 mb-1">${item.name}</h3>
+                            <p class="text-slate-500 text-[10px] font-medium mb-3 italic">"${item.menu}"</p>
+                            <div class="space-y-1 mb-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[9px] font-bold text-slate-400 w-10">추천도</span>
+                                    <span class="star-gold text-[10px]">${recStars}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[9px] font-bold text-slate-400 w-10">가성비</span>
+                                    <span class="star-green text-[10px]">${valStars}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t border-slate-50">
+                            <p class="text-[8px] font-bold text-slate-300 mb-0.5">RESERVATION & STATUS</p>
+                            <p class="text-[10px] text-slate-500 leading-tight">${item.res}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            detailView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        // 보안: 브라우저 뒤로가기 버튼 처리
+        window.onpopstate = function (event) {
+            const layer = document.getElementById('gallery-layer');
+            if (layer.classList.contains('open')) {
+                closeGallery();
+            }
+        };
+
+        function moveGallery(direction) {
+            const slider = document.getElementById('gallery-slider');
+            const cardWidth = slider.offsetWidth;
+            slider.scrollBy({ left: direction * cardWidth, behavior: 'smooth' });
+        }
+
+        function updateNavButtons(slider, count) {
+            const active = Math.round(slider.scrollLeft / slider.offsetWidth);
+            const prev = document.getElementById('nav-prev-container');
+            const next = document.getElementById('nav-next-container');
+
+            if (prev) prev.style.display = (active === 0 || count <= 1) ? 'none' : 'block';
+            if (next) next.style.display = (active >= count - 1 || count <= 1) ? 'none' : 'block';
+        }
+
+        function closeGallery() {
+            const layer = document.getElementById('gallery-layer');
+            layer.classList.remove('open');
+            setTimeout(() => layer.classList.add('hidden'), 400);
+            document.body.style.overflow = 'auto';
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDay(1);
+        });
+    </script>
+</body>
+
+</html>

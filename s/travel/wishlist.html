@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>휴양지 심층 분석 보고서: 8개 지역 비교</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <!-- Tailwind Configuration for Custom Colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sand': '#f5f5f0',
+                        'ocean': '#0e7490',
+                        'coral': '#f43f5e',
+                        'palm': '#15803d',
+                        'sky': '#e0f2fe',
+                        'warm-gray': '#a8a29e'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fcfcfc;
+            color: #333;
+        }
+
+        /* Chart Container Styling - MANDATORY REQUIREMENT */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            /* Constraints width for readability */
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 500px;
+        }
+
+        /* Specific height adjustments for mobile */
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-btn.active {
+            background-color: #0e7490;
+            color: white;
+        }
+
+        /* Utility for hiding scrollbar but allowing scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+
+    <!-- Chosen Palette: Warm Neutrals with Ocean Blue Accents (Sand, Ocean, Sky) -->
+    <!-- Application Structure Plan: 
+         1. Header & Navigation: Simple top bar to switch between 'Dashboard' (Overview) and 'Explorer' (Deep Dive).
+         2. Dashboard View: Uses Plotly Scatter for Cost vs. Distance analysis and Chart.js for a comparative precipitation overview.
+         3. Explorer View: The core interaction. A dropdown selects a destination, dynamically updating:
+            - Weather Widget: Combo chart (Temp line + Rain bar).
+            - Logistics Card: Flight time, distance, airport transfer.
+            - Cost Estimator: Breakdown for 4 pax.
+            - Pros/Cons & Culture: Textual insights.
+         4. Comparison Table: A data-dense table for quick reference.
+         Why: This structure allows the user to first see the "Big Picture" (Value/Distance) and then "Zoom In" on specific candidates without navigating away.
+    -->
+    <!-- Visualization & Content Choices:
+         1. Cost vs. Distance (Plotly Scatter): Goal: Inform/Relate. Justification: Best way to see outliers (like Tetiaroa) and value picks (Bangsaen).
+         2. Monthly Weather (Chart.js Combo): Goal: Inform/Change. Justification: Essential for travel planning. Bars for rain (volume), Line for temp (trend).
+         3. Dynamic HTML Cards: Goal: Inform. Justification: Textual data like "Airport Transfer" is best read, not charted.
+         4. Cost Breakdown: Goal: Inform. Calculated via JS based on family size (fixed at 4 for this persona).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+
+<body class="bg-slate-50 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <span class="text-2xl text-ocean font-bold mr-2">✈️</span>
+                    <h1 class="text-xl font-bold text-gray-800">동남아/태평양 휴양지 비교 분석</h1>
+                </div>
+                <nav class="flex space-x-2">
+                    <button onclick="switchTab('dashboard')" id="btn-dashboard"
+                        class="nav-btn active px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">대시보드
+                        (비교)</button>
+                    <button onclick="switchTab('explorer')" id="btn-explorer"
+                        class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">상세
+                        탐색기</button>
+                    <button onclick="switchTab('table')" id="btn-table"
+                        class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">데이터
+                        표</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-6 max-w-7xl">
+
+        <!-- DASHBOARD VIEW -->
+        <section id="view-dashboard" class="space-y-8 animate-fade-in">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">여행지 한눈에 비교하기</h2>
+                <p class="text-gray-600 mb-6">
+                    8개 후보지의 <strong>비용 효율성</strong>과 <strong>접근성</strong>을 분석한 결과입니다.
+                    X축은 거리(접근성), Y축은 4인 가족 기준 예상 총 비용(항공+숙박)을 나타냅니다.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Scatter Plot: Cost vs Distance -->
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4 text-center">거리 vs 비용 (4인 가족/3박 기준)</h3>
+                        <div id="scatterPlot" class="w-full h-96"></div>
+                    </div>
+
+                    <!-- Bar Chart: Average Rainfall -->
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4 text-center">연평균 강수량 비교 (건기/우기 강도)</h3>
+                        <div class="chart-container">
+                            <canvas id="rainfallComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                        <span class="block text-sm text-blue-600 font-bold">최단 거리</span>
+                        <span class="text-xl font-bold text-gray-800">Bangsaen 🇹🇭</span>
+                        <span class="text-xs text-gray-500 block">방콕에서 차량 1시간</span>
+                    </div>
+                    <div class="p-4 bg-green-50 rounded-lg border border-green-100">
+                        <span class="block text-sm text-green-600 font-bold">최저 비용</span>
+                        <span class="text-xl font-bold text-gray-800">Quy Nhon 🇻🇳</span>
+                        <span class="text-xs text-gray-500 block">물가가 가장 저렴</span>
+                    </div>
+                    <div class="p-4 bg-purple-50 rounded-lg border border-purple-100">
+                        <span class="block text-sm text-purple-600 font-bold">최고 럭셔리</span>
+                        <span class="text-xl font-bold text-gray-800">Tetiaroa 🇵🇫</span>
+                        <span class="text-xs text-gray-500 block">프라이빗 아일랜드</span>
+                    </div>
+                    <div class="p-4 bg-orange-50 rounded-lg border border-orange-100">
+                        <span class="block text-sm text-orange-600 font-bold">다이버 천국</span>
+                        <span class="text-xl font-bold text-gray-800">Kota Manado 🇮🇩</span>
+                        <span class="text-xs text-gray-500 block">부나켄 국립공원</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPLORER VIEW -->
+        <section id="view-explorer" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-ocean">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">상세 지역 탐색기</h2>
+                        <p class="text-gray-600 text-sm mt-1">지역을 선택하여 날씨, 물가, 이동 정보를 상세히 확인하세요.</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 w-full md:w-72">
+                        <label for="destinationSelect" class="block text-sm font-medium text-gray-700 mb-1">여행지
+                            선택</label>
+                        <select id="destinationSelect" onchange="renderDestinationDetails()"
+                            class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-ocean focus:border-ocean sm:text-sm rounded-md border bg-gray-50">
+                            <!-- Options populated by JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dynamic Content Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <!-- Column 1: Overview & Logistics -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <!-- Key Stats -->
+                        <div class="card p-5 bg-sand">
+                            <h3 class="font-bold text-lg text-gray-800 mb-4 border-b border-gray-200 pb-2">✈️ 이동 및 거리
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm">한국 기준 직선거리</span>
+                                    <span id="detail-distance" class="font-bold text-ocean"></span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm">평균 비행 시간</span>
+                                    <span id="detail-flightTime" class="font-bold text-gray-800"></span>
+                                </div>
+                                <div class="bg-white p-3 rounded shadow-sm">
+                                    <p class="text-xs text-gray-500 font-bold mb-1">공항 ➡ 시내/숙소 이동</p>
+                                    <p id="detail-transfer" class="text-sm text-gray-700 leading-snug"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Accommodation & Cost -->
+                        <div class="card p-5">
+                            <h3 class="font-bold text-lg text-gray-800 mb-4 border-b border-gray-200 pb-2">💰 4인 가족 예산
+                                (1박 기준)</h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="text-xs text-gray-500">성인 항공권 (평균)</p>
+                                    <p id="detail-flightCost" class="font-medium text-gray-800"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-500">숙소 (4인 가족, 15세/12세)</p>
+                                    <p id="detail-hotelPrice" class="text-xl font-bold text-ocean"></p>
+                                    <p id="detail-hotelType" class="text-xs text-gray-500 mt-1 italic"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-500">현지 물가 수준</p>
+                                    <div id="detail-priceLevel" class="flex space-x-1 mt-1"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Weather Chart -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="card p-5 h-full flex flex-col">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="font-bold text-lg text-gray-800">🌦 월별 날씨 분석</h3>
+                                    <p class="text-sm text-gray-500">막대: 강수량(mm) / 선: 평균기온(°C)</p>
+                                </div>
+                                <div class="text-right">
+                                    <span id="detail-season-tag"
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        건기 정보
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex-grow flex items-center justify-center bg-white rounded-lg">
+                                <div class="chart-container w-full h-80">
+                                    <canvas id="weatherDetailChart"></canvas>
+                                </div>
+                            </div>
+                            <p id="detail-weather-desc" class="text-sm text-gray-600 mt-4 bg-gray-50 p-3 rounded"></p>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Features & Pros/Cons (Full Width) -->
+                    <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="card p-5 border-l-4 border-blue-500">
+                            <h3 class="font-bold text-gray-800 mb-2">✨ 주요 특징 & 관광지</h3>
+                            <p id="detail-features" class="text-gray-700 text-sm leading-relaxed mb-4"></p>
+                            <div class="bg-blue-50 p-3 rounded">
+                                <span class="font-bold text-xs text-blue-800 block mb-1">💡 팁(Tip) 문화</span>
+                                <p id="detail-tipping" class="text-sm text-blue-900"></p>
+                            </div>
+                        </div>
+                        <div class="card p-5 border-l-4 border-gray-500">
+                            <h3 class="font-bold text-gray-800 mb-3">⚖️ 장점 vs 단점</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <span class="text-xs font-bold text-green-600 uppercase tracking-wide">장점
+                                        (Pros)</span>
+                                    <ul id="detail-pros"
+                                        class="list-disc list-inside text-sm text-gray-700 mt-2 space-y-1"></ul>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-bold text-red-500 uppercase tracking-wide">단점
+                                        (Cons)</span>
+                                    <ul id="detail-cons"
+                                        class="list-disc list-inside text-sm text-gray-700 mt-2 space-y-1"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TABLE VIEW -->
+        <section id="view-table" class="hidden animate-fade-in">
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-800">전체 데이터 비교표</h2>
+                    <p class="text-sm text-gray-500">모든 수치는 성인 1인 또는 4인 가족 기준으로 추산된 평균값입니다.</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    지역</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    국가</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    건기</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    비행시간</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    항공권(1인)</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    숙소(4인/1박)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Rows populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-8 py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-500 text-sm">© 2024 Travel Analyzer. Data based on average estimates for research
+                purposes.</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- DATA SOURCE ---
+        const db = {
+            "siargao": {
+                name: "Siargao",
+                country: "Philippines 🇵🇭",
+                coords: { x: 4, y: 3 }, // Abstract for scatter plot (Distance, Cost)
+                distance: "3,100km",
+                flightTime: "약 8~10시간 (경유 1회 필수)",
+                transfer: "Sayak 공항에서 밴으로 45분 (General Luna)",
+                flightCost: 650000,
+                hotelCost: 250000,
+                hotelType: "가족형 빌라 또는 리조트 쿼드룸",
+                priceLevel: 2, // 1-5 scale
+                season: "건기: 3월~10월 / 우기: 11월~2월 (서핑 시즌은 우기)",
+                temps: [27, 27, 28, 29, 30, 30, 30, 30, 30, 29, 28, 27],
+                rain: [450, 350, 250, 150, 100, 80, 80, 70, 90, 180, 300, 500],
+                features: "세계적인 서핑 명소(Cloud 9), 야자수 숲, 마푸푼코 락풀. 자연 친화적이고 힙한 카페 문화.",
+                tipping: "필수 아님. 서비스 만족 시 50-100 PHP 정도.",
+                pros: ["서핑 천국", "저렴한 물가", "젊고 활기찬 분위기"],
+                cons: ["직항 없음(마닐라/세부 경유)", "잦은 정전", "우기에 비가 매우 많이 옴"]
+            },
+            "tetiaroa": {
+                name: "Tetiaroa",
+                country: "French Polynesia 🇵🇫",
+                coords: { x: 10, y: 10 },
+                distance: "10,500km",
+                flightTime: "약 15~20시간 (타히티 경유)",
+                transfer: "타히티 파아아 공항에서 전용기(Air Tetiaroa)로 20분",
+                flightCost: 2500000,
+                hotelCost: 4500000, // Very expensive (The Brando)
+                hotelType: "초호화 프라이빗 풀빌라 (The Brando)",
+                priceLevel: 5,
+                season: "건기: 5월~10월 / 우기: 11월~4월",
+                temps: [27, 27, 28, 28, 26, 25, 25, 25, 26, 27, 27, 27],
+                rain: [200, 180, 150, 120, 90, 60, 50, 40, 50, 80, 120, 220],
+                features: "말론 브란도의 개인 섬. 극강의 프라이빗 럭셔리. 완벽한 환경 보존과 생태 관광.",
+                tipping: "계산서에 포함된 경우가 많음. 추가 팁은 자율.",
+                pros: ["완벽한 프라이버시", "훼손되지 않은 자연", "최상급 서비스"],
+                cons: ["극도로 비싼 비용", "접근성 매우 낮음", "숙소 선택지 사실상 1곳"]
+            },
+            "quynhon": {
+                name: "Quy Nhon",
+                country: "Vietnam 🇻🇳",
+                coords: { x: 2, y: 1 },
+                distance: "3,300km",
+                flightTime: "약 5~7시간 (호치민/하노이 경유)",
+                transfer: "푸캣(Phu Cat) 공항에서 시내까지 택시 40분",
+                flightCost: 450000,
+                hotelCost: 150000,
+                hotelType: "4-5성급 비치프론트 리조트 패밀리룸",
+                priceLevel: 1,
+                season: "건기: 1월~8월 / 우기: 9월~12월",
+                temps: [23, 24, 25, 27, 29, 30, 30, 30, 28, 27, 25, 23],
+                rain: [60, 40, 30, 20, 50, 60, 50, 60, 250, 500, 350, 180],
+                features: "떠오르는 베트남 휴양지. 키코 비치, 에오지오(바람의 언덕). 한국인 적음.",
+                tipping: "의무 아님. 마사지/벨보이 1-2달러 수준.",
+                pros: ["매우 저렴한 물가", "깨끗한 바다", "조용한 분위기"],
+                cons: ["직항편 부족(전세기 제외)", "영어 소통 어려움", "시내 관광지 부족"]
+            },
+            "kohlipe": {
+                name: "Koh Lipe",
+                country: "Thailand 🇹🇭",
+                coords: { x: 5, y: 4 },
+                distance: "4,500km",
+                flightTime: "약 9~11시간 (핫야이 공항 + 차 + 배)",
+                transfer: "핫야이 공항 → 팍바라 선착장(차 2시간) → 꼬리뻬(배 1.5시간)",
+                flightCost: 600000,
+                hotelCost: 280000,
+                hotelType: "비치 방갈로 또는 중급 리조트 커넥팅룸",
+                priceLevel: 3,
+                season: "건기: 11월~4월 (성수기) / 우기: 5월~10월",
+                temps: [28, 29, 29, 30, 30, 29, 29, 29, 28, 28, 28, 28],
+                rain: [50, 30, 60, 100, 250, 220, 230, 250, 300, 320, 200, 100],
+                features: "태국의 몰디브. 워킹 스트리트, 스노클링 포인트 다수. 차량 없는 섬.",
+                tipping: "일반 식당 불필요. 고급 서비스 이용 시 10% 내외.",
+                pros: ["환상적인 수중 환경", "도보로 이동 가능", "낭만적인 분위기"],
+                cons: ["이동이 매우 험난함 (배 멀미 주의)", "섬 내 물가가 태국 본토보다 비쌈", "의료 시설 부족"]
+            },
+            "palawan": {
+                name: "Palawan (El Nido)",
+                country: "Philippines 🇵🇭",
+                coords: { x: 3, y: 4 },
+                distance: "3,000km",
+                flightTime: "약 6~9시간 (마닐라 경유)",
+                transfer: "마닐라 → 엘니도 공항(리오 공항) 직항 이용 시 트라이시클 20분",
+                flightCost: 550000,
+                hotelCost: 300000,
+                hotelType: "부티크 호텔 또는 아일랜드 리조트",
+                priceLevel: 3,
+                season: "건기: 12월~5월 / 우기: 6월~11월",
+                temps: [27, 27, 28, 29, 30, 29, 29, 29, 29, 29, 28, 27],
+                rain: [30, 20, 30, 40, 120, 250, 300, 280, 290, 260, 180, 80],
+                features: "라군 투어(빅라군/스몰라군), 기암괴석, 호핑투어의 성지. 유네스코 자연유산.",
+                tipping: "50-100 PHP 정도가 일반적.",
+                pros: ["압도적인 자연 경관", "다양한 투어 프로그램", "깨끗한 환경"],
+                cons: ["이동 시간 김", "인터넷/전기 불안정할 수 있음", "물가 상승세"]
+            },
+            "gili": {
+                name: "Gili Islands",
+                country: "Indonesia 🇮🇩",
+                coords: { x: 6, y: 3 },
+                distance: "5,300km",
+                flightTime: "약 9~12시간 (발리/롬복 경유)",
+                transfer: "발리 파당바이 항구에서 스피드보트 1.5~2시간",
+                flightCost: 700000,
+                hotelCost: 200000,
+                hotelType: "개인 풀빌라 또는 4인 코티지",
+                priceLevel: 2,
+                season: "건기: 4월~10월 / 우기: 11월~3월",
+                temps: [27, 27, 27, 27, 27, 26, 26, 26, 27, 28, 28, 28],
+                rain: [300, 280, 200, 120, 80, 50, 40, 20, 40, 100, 180, 280],
+                features: "3개의 섬(트라왕안, 메노, 에어). 거북이 스노클링. 자동차 없음(마차/자전거).",
+                tipping: "의무 아님. 잔돈을 남겨주는 정도.",
+                pros: ["매연/소음 없는 환경", "거북이와 수영", "저렴하고 예쁜 숙소"],
+                cons: ["배 이동 필수", "담수 부족(짠물 샤워 가능성)", "이슬람 기도 소리"]
+            },
+            "bangsaen": {
+                name: "Bangsaen",
+                country: "Thailand 🇹🇭",
+                coords: { x: 3, y: 1 }, // Close, Cheap
+                distance: "3,700km",
+                flightTime: "약 5.5시간 (방콕 수완나품)",
+                transfer: "수완나품 공항에서 택시/그랩으로 약 1시간 (가까움)",
+                flightCost: 400000,
+                hotelCost: 120000,
+                hotelType: "현대적인 호텔 커넥팅룸 또는 레지던스",
+                priceLevel: 1,
+                season: "건기: 11월~4월 / 우기: 5월~10월",
+                temps: [26, 28, 29, 30, 30, 30, 29, 29, 29, 28, 27, 26],
+                rain: [10, 20, 30, 60, 180, 150, 160, 180, 250, 200, 50, 10],
+                features: "방콕 현지인들의 휴양지. 지옥 사원(Wang Saen Suk). 힙한 오션뷰 카페.",
+                tipping: "20-40 THB. 로컬 식당은 불필요.",
+                pros: ["공항 접근성 최고", "매우 저렴한 물가", "로컬 감성 충만"],
+                cons: ["바다색이 탁함(서해안 느낌)", "외국인 대상 인프라 부족", "영어 메뉴판 적음"]
+            },
+            "manado": {
+                name: "Kota Manado",
+                country: "Indonesia 🇮🇩",
+                coords: { x: 5, y: 2 },
+                distance: "4,600km",
+                flightTime: "약 8~10시간 (자카르타/싱가포르 경유)",
+                transfer: "삼 라툴랑이 공항에서 시내까지 택시 30분",
+                flightCost: 600000,
+                hotelCost: 180000,
+                hotelType: "4성급 호텔 스위트룸",
+                priceLevel: 2,
+                season: "건기: 5월~10월 / 우기: 11월~4월",
+                temps: [26, 26, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27], // Equatorial
+                rain: [300, 250, 200, 180, 160, 140, 110, 90, 100, 150, 220, 280],
+                features: "부나켄 해양 국립공원(다이빙). 탕코코 국립공원(안경원숭이). 매운 음식(리카리카).",
+                tipping: "10,000-20,000 IDR 정도.",
+                pros: ["세계 최고의 다이빙 포인트", "독특한 생태계", "저렴한 물가"],
+                cons: ["직항 없음", "교통 체증", "종교적/문화적 차이(음식 등)"]
+            }
+        };
+
+        // --- STATE MANAGEMENT ---
+        let currentChart = null;
+        let selectedDest = 'siargao';
+
+        // --- DOM ELEMENTS ---
+        const viewDashboard = document.getElementById('view-dashboard');
+        const viewExplorer = document.getElementById('view-explorer');
+        const viewTable = document.getElementById('view-table');
+        const destinationSelect = document.getElementById('destinationSelect');
+
+        // --- INITIALIZATION ---
+        window.onload = function () {
+            populateDropdown();
+            renderDashboardCharts();
+            renderComparisonTable();
+            // Default render for explorer
+            renderDestinationDetails();
+        };
+
+        // --- NAVIGATION LOGIC ---
+        function switchTab(tabName) {
+            // Hide all
+            viewDashboard.classList.add('hidden');
+            viewExplorer.classList.add('hidden');
+            viewTable.classList.add('hidden');
+
+            // Remove active class
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+            // Show selected & add active class
+            if (tabName === 'dashboard') {
+                viewDashboard.classList.remove('hidden');
+                document.getElementById('btn-dashboard').classList.add('active');
+            } else if (tabName === 'explorer') {
+                viewExplorer.classList.remove('hidden');
+                document.getElementById('btn-explorer').classList.add('active');
+                renderDestinationDetails(); // Refresh chart just in case
+            } else {
+                viewTable.classList.remove('hidden');
+                document.getElementById('btn-table').classList.add('active');
+            }
+        }
+
+        // --- HELPER FUNCTIONS ---
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
+        }
+
+        function populateDropdown() {
+            Object.keys(db).forEach(key => {
+                const option = document.createElement('option');
+                option.value = key;
+                option.text = db[key].name;
+                destinationSelect.appendChild(option);
+            });
+        }
+
+        function getPriceSymbols(level) {
+            return '💰'.repeat(level) + '⬜'.repeat(5 - level);
+        }
+
+        // --- CHART RENDERING ---
+
+        // 1. Dashboard: Scatter Plot (Plotly)
+        function renderDashboardCharts() {
+            // Plotly Scatter
+            const trace1 = {
+                x: Object.values(db).map(d => d.distance.replace(/[^\d]/g, '') / 100), // Approximate generic distance score
+                y: Object.values(db).map(d => (d.flightCost * 4) + (d.hotelCost * 3)), // Total cost estimate for 4 pax, 3 nights
+                mode: 'markers+text',
+                type: 'scatter',
+                text: Object.values(db).map(d => d.name),
+                textposition: 'top center',
+                marker: { size: 14, color: '#0e7490' },
+                hoverinfo: 'text+y',
+                hovertext: Object.values(db).map(d => `${d.name}<br>예상비용(4인/3박): ${formatCurrency((d.flightCost * 4) + (d.hotelCost * 3))}`)
+            };
+
+            const layout = {
+                xaxis: { title: '거리 / 이동 난이도 (우측일수록 멀고 험난함)' },
+                yaxis: { title: '4인 가족 3박 총 예상 비용 (원)' },
+                margin: { t: 20, r: 20, b: 50, l: 80 },
+                hovermode: 'closest'
+            };
+
+            Plotly.newPlot('scatterPlot', [trace1], layout, { responsive: true, displayModeBar: false });
+
+            // Chart.js Comparison (Average Rainfall)
+            const ctx = document.getElementById('rainfallComparisonChart').getContext('2d');
+
+            // Calculate yearly avg rain for simplified comparison
+            const labels = Object.values(db).map(d => d.name);
+            const data = Object.values(db).map(d => d.rain.reduce((a, b) => a + b, 0) / 12);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '월 평균 강수량 (mm)',
+                        data: data,
+                        backgroundColor: '#60a5fa',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'mm' } }
+                    }
+                }
+            });
+        }
+
+        // 2. Explorer: Detail Chart (Chart.js Combo)
+        function renderDestinationDetails() {
+            const key = destinationSelect.value;
+            const data = db[key];
+
+            // Text Updates
+            document.getElementById('detail-distance').textContent = data.distance;
+            document.getElementById('detail-flightTime').textContent = data.flightTime;
+            document.getElementById('detail-transfer').textContent = data.transfer;
+            document.getElementById('detail-flightCost').textContent = `${formatCurrency(data.flightCost)} / 1인 (왕복)`;
+            document.getElementById('detail-hotelPrice').textContent = `${formatCurrency(data.hotelCost)} / 1박`;
+            document.getElementById('detail-hotelType').textContent = data.hotelType;
+            document.getElementById('detail-priceLevel').textContent = getPriceSymbols(data.priceLevel);
+            document.getElementById('detail-season-tag').textContent = data.season.split('/')[0];
+            document.getElementById('detail-weather-desc').textContent = `🗓 시즌 정보: ${data.season}`;
+            document.getElementById('detail-features').textContent = data.features;
+            document.getElementById('detail-tipping').textContent = data.tipping;
+
+            // Pros/Cons Lists
+            const prosList = document.getElementById('detail-pros');
+            prosList.innerHTML = '';
+            data.pros.forEach(p => {
+                const li = document.createElement('li');
+                li.textContent = p;
+                prosList.appendChild(li);
+            });
+
+            const consList = document.getElementById('detail-cons');
+            consList.innerHTML = '';
+            data.cons.forEach(c => {
+                const li = document.createElement('li');
+                li.textContent = c;
+                consList.appendChild(li);
+            });
+
+            // Chart Update
+            const ctx = document.getElementById('weatherDetailChart').getContext('2d');
+
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                    datasets: [
+                        {
+                            label: '강수량 (mm)',
+                            data: data.rain,
+                            backgroundColor: '#93c5fd',
+                            yAxisID: 'y',
+                            order: 2
+                        },
+                        {
+                            label: '평균 기온 (°C)',
+                            data: data.temps,
+                            borderColor: '#f43f5e',
+                            backgroundColor: '#f43f5e',
+                            type: 'line',
+                            yAxisID: 'y1',
+                            order: 1,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + (context.datasetIndex === 0 ? ' mm' : ' °C');
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: '강수량 (mm)' },
+                            grid: { drawOnChartArea: false }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: '기온 (°C)' },
+                            min: 20,
+                            max: 35
+                        }
+                    }
+                }
+            });
+        }
+
+        // 3. Table Render
+        function renderComparisonTable() {
+            const tbody = document.getElementById('comparisonTableBody');
+            Object.values(db).forEach(d => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">${d.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${d.country}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs" title="${d.season}">${d.season.split('/')[0]}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs" title="${d.flightTime}">${d.flightTime}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatCurrency(d.flightCost)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-bold text-ocean">${formatCurrency(d.hotelCost)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+    </script>
+</body>
+
+</html>

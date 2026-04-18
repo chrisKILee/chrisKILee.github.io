@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karpathy LLM Wiki — RAG를 넘어선 지식 베이스</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F7F7F4;
+      --surface: #FFFFFF;
+      --dark: #09090B;
+      --dark-card: #111113;
+      --ink: #18181B;
+      --muted: #71717A;
+      --subtle: #A1A1AA;
+      --border: #E4E4E7;
+      --accent: #C0392B;
+      --accent-soft: #FEF2F2;
+      --accent-border: #FECACA;
+      --teal: #0F766E;
+      --teal-soft: #F0FDFA;
+      --step-active: #C0392B;
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── 헤더 ── */
+    .page-header {
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      padding: 48px 24px 40px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .header-meta {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .header-meta span { color: var(--subtle); }
+
+    .header-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+      font-weight: 900;
+      line-height: 1.15;
+      color: var(--ink);
+      margin-bottom: 16px;
+    }
+    .header-title em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .header-desc {
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.6;
+    }
+
+    /* ── 메인 ── */
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 56px;
+    }
+
+    /* ── 섹션 제목 ── */
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      margin-bottom: 28px;
+    }
+
+    /* ── RAG vs LLM Wiki 비교 카드 ── */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .compare-col {
+      padding: 32px;
+    }
+    .compare-col.rag {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+    }
+    .compare-col.wiki {
+      background: var(--dark-card);
+      color: #F4F4F5;
+    }
+
+    .compare-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .compare-col.rag .compare-tag { color: var(--muted); }
+    .compare-col.wiki .compare-tag { color: var(--accent); }
+
+    .compare-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.3rem, 2.5vw, 1.75rem);
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+    .compare-col.wiki .compare-title { color: #F4F4F5; }
+    .compare-col.wiki .compare-title em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .compare-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .compare-list li {
+      font-size: 14px;
+      padding-left: 16px;
+      position: relative;
+      line-height: 1.55;
+    }
+    .compare-list li::before {
+      content: '·';
+      position: absolute;
+      left: 0;
+    }
+    .compare-col.rag .compare-list li { color: var(--muted); }
+    .compare-list li::before { color: var(--subtle); }
+    .compare-col.wiki .compare-list li { color: #A1A1AA; }
+
+    .compare-callout {
+      margin-top: 20px;
+      padding: 16px;
+      background: #1C1C1F;
+      border-left: 3px solid var(--accent);
+      font-size: 13px;
+      color: #71717A;
+      line-height: 1.6;
+      border-radius: 0 2px 2px 0;
+    }
+    .compare-callout-wiki {
+      margin-top: 20px;
+      padding: 16px;
+      background: rgba(192, 57, 43, 0.12);
+      border-left: 3px solid var(--accent);
+      font-size: 13px;
+      color: #F4F4F5;
+      line-height: 1.6;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ── 파이프라인 다이어그램 ── */
+    .pipeline-wrap {
+      overflow-x: auto;
+    }
+
+    .pipeline {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      min-width: 700px;
+    }
+
+    .pipeline-step {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-right: none;
+      padding: 20px 18px;
+      background: var(--surface);
+      position: relative;
+    }
+    .pipeline-step:last-child { border-right: 1px solid var(--border); }
+    .pipeline-step.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .step-num {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .pipeline-step.active .step-num { color: rgba(255,255,255,0.65); }
+
+    .step-name {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .pipeline-step.active .step-name { color: #fff; }
+
+    .step-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .pipeline-step.active .step-desc { color: rgba(255,255,255,0.75); }
+
+    .step-arrow {
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      background: var(--bg);
+      padding: 2px 4px;
+      border-radius: 2px;
+    }
+
+    /* ── 아이디어 파일 원본 이미지 ── */
+    .image-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 640px) {
+      .image-pair { grid-template-columns: 1fr; }
+    }
+
+    .image-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .img-box {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .img-box img, .img-box svg {
+      width: 100%;
+      display: block;
+    }
+    .img-box-inner { padding: 12px; }
+
+    .lightbox-trigger {
+      cursor: zoom-in;
+      transition: opacity 0.15s ease;
+    }
+    .lightbox-trigger:hover { opacity: 0.85; }
+
+    /* ── CORE INSIGHT ── */
+    .insight-box {
+      border: 1px solid var(--accent-border);
+      background: var(--accent-soft);
+      border-radius: 4px;
+      padding: 24px 28px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .insight-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      white-space: nowrap;
+      padding-top: 2px;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+    }
+
+    .insight-text {
+      font-size: 14px;
+      color: #3F1515;
+      line-height: 1.7;
+    }
+    .insight-text strong { color: var(--accent); font-weight: 700; }
+
+    /* ── 세 가지 핵심 변화 ── */
+    .change-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--border);
+    }
+
+    .change-card {
+      background: var(--surface);
+      padding: 28px 24px;
+    }
+
+    .change-num {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--subtle);
+      margin-bottom: 12px;
+    }
+
+    .change-title {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    .change-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .change-badge {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: var(--ink);
+      color: #fff;
+    }
+
+    /* ── RAG vs Wiki 빠른 비교 (SVG 대신 텍스트 테이블) ── */
+    .compare-table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 10px 16px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+      background: var(--bg);
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    tr:last-child td { border-bottom: none; }
+    .td-rag { color: var(--muted); }
+    .td-wiki { color: var(--teal); font-weight: 500; }
+    .td-label { font-weight: 600; color: var(--ink); }
+
+    /* ── 푸터 ── */
+    .page-footer {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 24px 48px;
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-note {
+      font-size: 12px;
+      color: var(--subtle);
+    }
+    .footer-link {
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .footer-link:hover { color: var(--ink); }
+
+    /* ── 반응형 ── */
+    @media (max-width: 700px) {
+      .compare-grid { grid-template-columns: 1fr; }
+      .compare-col.rag { border-right: none; border-bottom: 1px solid var(--border); }
+      .change-grid { grid-template-columns: 1fr; }
+      .insight-box { flex-direction: column; gap: 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── 헤더 ── -->
+  <header>
+    <div class="page-header">
+      <div class="header-meta">
+        ANDREJ KARPATHY
+        <span>·</span>
+        GITHUB GIST
+        <span>·</span>
+        APRIL 4, 2026
+      </div>
+      <h1 class="header-title">
+        RAG는 매번 처음부터 시작합니다<br>
+        <em>LLM Wiki</em>는 지식이 쌓입니다
+      </h1>
+      <p class="header-desc">
+        LLM으로 개인 지식 베이스를 구축하는 패턴 — 전체 아이디어 파일 공개
+      </p>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ── 1. RAG vs LLM Wiki 비교 ── -->
+    <section>
+      <div class="section-label">RAG VS LLM WIKI — 핵심 차이</div>
+      <div class="compare-grid">
+
+        <div class="compare-col rag">
+          <div class="compare-tag">기존 방식</div>
+          <div class="compare-title">RAG</div>
+          <ul class="compare-list">
+            <li>파일 업로드 → 질문마다 청크 검색</li>
+            <li>매번 원본에서 처음부터 발견</li>
+            <li>축적 없음, 정제 없음</li>
+            <li>복잡한 질문은 조각 찾기부터 시작</li>
+            <li>NotebookLM, ChatGPT 업로드 방식</li>
+          </ul>
+          <div class="compare-callout">
+            아무것도 쌓이지 않습니다.<br>
+            질문할수록 지식 베이스는 그대로거든요.
+          </div>
+        </div>
+
+        <div class="compare-col wiki">
+          <div class="compare-tag">KARPATHY 방식</div>
+          <div class="compare-title"><em>LLM Wiki</em></div>
+          <ul class="compare-list">
+            <li>원본 자료 → LLM이 위키로 컴파일</li>
+            <li>개념별 아티클, 역링크, 인덱스 생성</li>
+            <li>에이전트가 Q&amp;A하며 위키를 보강</li>
+            <li>탐색할수록 지식 베이스가 강해짐</li>
+            <li>Obsidian + Claude Code 조합</li>
+          </ul>
+          <div class="compare-callout-wiki">
+            탐색과 질문이 쌓일수록<br>
+            위키가 점점 똑똑해집니다.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── 2. LLM Wiki 파이프라인 ── -->
+    <section>
+      <div class="section-label">LLM WIKI 파이프라인</div>
+      <div class="pipeline-wrap">
+        <div class="pipeline">
+
+          <div class="pipeline-step">
+            <div class="step-num">STEP 1</div>
+            <div class="step-name">Sources</div>
+            <div class="step-desc">
+              아티클·논문<br>
+              레포·데이터셋<br>
+              이미지·다이어그램
+            </div>
+            <div class="step-arrow">index →</div>
+          </div>
+
+          <div class="pipeline-step">
+            <div class="step-num">STEP 2</div>
+            <div class="step-name">raw/</div>
+            <div class="step-desc">
+              원본 파일 그대로<br>
+              .md 변환 저장<br>
+              로컬 이미지 포함
+            </div>
+            <div class="step-arrow">LLM →</div>
+          </div>
+
+          <div class="pipeline-step active">
+            <div class="step-num">STEP 3</div>
+            <div class="step-name">WIKI</div>
+            <div class="step-desc">
+              .md 지식 베이스<br>
+              요약 + 역링크<br>
+              개념 카테고리<br>
+              자동 유지 인덱스
+            </div>
+            <div class="step-arrow">query →</div>
+          </div>
+
+          <div class="pipeline-step">
+            <div class="step-num">STEP 4</div>
+            <div class="step-name">Q&amp;A Agent</div>
+            <div class="step-desc">
+              위키 전체 대상<br>
+              복잡한 질문 가능<br>
+              RAG 불필요
+            </div>
+            <div class="step-arrow">render →</div>
+          </div>
+
+          <div class="pipeline-step" style="border-right:1px solid var(--border);">
+            <div class="step-num">STEP 5</div>
+            <div class="step-name">Output</div>
+            <div class="step-desc">
+              마크다운 파일<br>
+              Marp 슬라이드<br>
+              결과는 위키로 귀환
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3. 이미지: 원본 + 한글 SVG ── -->
+    <section>
+      <div class="section-label">아이디어 파일 — 전체 아키텍처 도식</div>
+      <div class="image-pair">
+
+        <!-- 왼쪽: 원본 이미지 -->
+        <div>
+          <div class="image-label">원본 (Karpathy 공개 이미지)</div>
+          <div class="img-box">
+            <img
+              src="/mnt/c/Users/CHRIS LEE/Downloads/llm_wiki.jpg"
+              alt="Karpathy LLM Wiki 아키텍처 원본 이미지"
+              class="lightbox-trigger"
+              style="max-width:100%; cursor:zoom-in;"
+              onerror="this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;color:#71717a;font-size:13px;\'>원본 이미지는 로컬 경로에 있어 배포 후 표시되지 않습니다</div>'"
+            >
+          </div>
+        </div>
+
+        <!-- 오른쪽: 한글화 SVG -->
+        <div>
+          <div class="image-label">한글화 — 핵심 구조 재현</div>
+          <div class="img-box">
+            <svg viewBox="0 0 440 520" class="lightbox-trigger" style="width:100%; cursor:zoom-in; display:block;" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <style>
+                  .svg-bg { fill: #F7F7F4; }
+                  .box-dark { fill: #111113; }
+                  .box-white { fill: #FFFFFF; }
+                  .box-red { fill: #C0392B; }
+                  .box-gray { fill: #F4F4F5; }
+                  .t-label { font: 700 9px 'Inter', sans-serif; fill: #71717A; letter-spacing: 0.12em; text-transform: uppercase; }
+                  .t-title { font: 700 15px 'Playfair Display', Georgia, serif; fill: #18181B; }
+                  .t-title-w { font: 700 15px 'Playfair Display', Georgia, serif; fill: #F4F4F5; }
+                  .t-body { font: 400 11px 'Inter', sans-serif; fill: #71717A; }
+                  .t-body-w { font: 400 11px 'Inter', sans-serif; fill: #A1A1AA; }
+                  .t-body-r { font: 400 11px 'Inter', sans-serif; fill: #F4F4F5; }
+                  .t-red { fill: #C0392B; }
+                  .t-green { fill: #0F766E; }
+                  .arrow { stroke: #A1A1AA; stroke-width: 1.5; fill: none; marker-end: url(#arr); }
+                </style>
+                <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L6,3 z" fill="#A1A1AA"/>
+                </marker>
+              </defs>
+
+              <!-- 배경 -->
+              <rect width="440" height="520" class="svg-bg"/>
+
+              <!-- 상단 타이틀 -->
+              <text x="20" y="30" class="t-label">RAG vs LLM WIKI</text>
+              <line x1="20" y1="36" x2="420" y2="36" stroke="#E4E4E7" stroke-width="1"/>
+
+              <!-- RAG 박스 -->
+              <rect x="20" y="46" width="185" height="165" class="box-white" rx="2" stroke="#E4E4E7" stroke-width="1"/>
+              <text x="32" y="65" class="t-label">기존 방식</text>
+              <text x="32" y="84" class="t-title">RAG</text>
+              <text x="32" y="103" class="t-body">· 파일 업로드 → 청크 검색</text>
+              <text x="32" y="118" class="t-body">· 매번 처음부터 발견</text>
+              <text x="32" y="133" class="t-body">· 축적 없음, 정제 없음</text>
+              <text x="32" y="148" class="t-body">· 복잡한 질문: 조각부터 시작</text>
+              <rect x="32" y="160" width="163" height="38" fill="#F7F7F4" rx="2"/>
+              <text x="40" y="174" class="t-body">아무것도 쌓이지 않습니다.</text>
+              <text x="40" y="189" class="t-body">질문할수록 그대로거든요.</text>
+
+              <!-- LLM Wiki 박스 -->
+              <rect x="215" y="46" width="205" height="165" class="box-dark" rx="2"/>
+              <text x="227" y="65" class="t-label" fill="#C0392B">KARPATHY 방식</text>
+              <text x="227" y="84" class="t-title-w">LLM Wiki</text>
+              <text x="227" y="103" class="t-body-w">· 원본 → LLM이 위키로 컴파일</text>
+              <text x="227" y="118" class="t-body-w">· 개념별 아티클, 역링크, 인덱스</text>
+              <text x="227" y="133" class="t-body-w">· 에이전트가 Q&amp;A → 위키 보강</text>
+              <text x="227" y="148" class="t-body-w">· 탐색할수록 지식 베이스 강화</text>
+              <rect x="227" y="158" width="181" height="38" fill="rgba(192,57,43,0.15)" rx="2"/>
+              <text x="236" y="172" class="t-body-r">탐색과 질문이 쌓일수록</text>
+              <text x="236" y="187" class="t-body-r">위키가 점점 똑똑해집니다.</text>
+
+              <!-- 파이프라인 제목 -->
+              <text x="20" y="235" class="t-label">LLM WIKI 파이프라인</text>
+              <line x1="20" y1="241" x2="420" y2="241" stroke="#E4E4E7" stroke-width="1"/>
+
+              <!-- 파이프라인 5단계 -->
+              <!-- Step 1: Sources -->
+              <rect x="20" y="251" width="68" height="80" class="box-white" rx="2" stroke="#E4E4E7" stroke-width="1"/>
+              <text x="28" y="265" class="t-label">STEP 1</text>
+              <text x="28" y="280" style="font:700 12px 'Playfair Display',serif; fill:#18181B;">Sources</text>
+              <text x="28" y="295" class="t-body">아티클</text>
+              <text x="28" y="308" class="t-body">레포</text>
+              <text x="28" y="321" class="t-body">이미지</text>
+              <text x="89" y="295" class="t-body">index→</text>
+
+              <!-- Step 2: raw/ -->
+              <rect x="100" y="251" width="68" height="80" class="box-white" rx="2" stroke="#E4E4E7" stroke-width="1"/>
+              <text x="108" y="265" class="t-label">STEP 2</text>
+              <text x="108" y="280" style="font:700 12px 'Playfair Display',serif; fill:#18181B;">raw/</text>
+              <text x="108" y="295" class="t-body">원본 .md</text>
+              <text x="108" y="308" class="t-body">변환 저장</text>
+              <text x="108" y="321" class="t-body">이미지 포함</text>
+              <text x="169" y="295" class="t-body">LLM→</text>
+
+              <!-- Step 3: WIKI (강조) -->
+              <rect x="180" y="251" width="68" height="80" class="box-red" rx="2"/>
+              <text x="188" y="265" class="t-label" fill="rgba(255,255,255,0.6)">STEP 3</text>
+              <text x="188" y="280" style="font:700 13px 'Playfair Display',serif; fill:#fff;">WIKI</text>
+              <text x="188" y="295" class="t-body-r">.md 지식</text>
+              <text x="188" y="308" class="t-body-r">역링크</text>
+              <text x="188" y="321" class="t-body-r">인덱스</text>
+              <text x="249" y="295" class="t-body">query→</text>
+
+              <!-- Step 4: Q&A Agent -->
+              <rect x="260" y="251" width="80" height="80" class="box-white" rx="2" stroke="#E4E4E7" stroke-width="1"/>
+              <text x="268" y="265" class="t-label">STEP 4</text>
+              <text x="268" y="280" style="font:700 12px 'Playfair Display',serif; fill:#18181B;">Q&amp;A Agent</text>
+              <text x="268" y="295" class="t-body">위키 전체</text>
+              <text x="268" y="308" class="t-body">복잡한 질문</text>
+              <text x="268" y="321" class="t-body">RAG 불필요</text>
+              <text x="341" y="295" class="t-body">render→</text>
+
+              <!-- Step 5: Output -->
+              <rect x="352" y="251" width="68" height="80" class="box-white" rx="2" stroke="#E4E4E7" stroke-width="1"/>
+              <text x="360" y="265" class="t-label">STEP 5</text>
+              <text x="360" y="280" style="font:700 12px 'Playfair Display',serif; fill:#18181B;">Output</text>
+              <text x="360" y="295" class="t-body">마크다운</text>
+              <text x="360" y="308" class="t-body">슬라이드</text>
+              <text x="360" y="321" class="t-body">위키로 귀환</text>
+
+              <!-- Core Insight -->
+              <rect x="20" y="348" width="400" height="80" fill="#FEF2F2" rx="2" stroke="#FECACA" stroke-width="1"/>
+              <text x="32" y="365" style="font:700 9px 'JetBrains Mono',monospace; fill:#C0392B; letter-spacing:0.12em;">CORE INSIGHT</text>
+              <text x="32" y="384" class="t-body" fill="#3F1515">Karpathy는 토큰의 상당 부분을 코드 조작이 아닌</text>
+              <text x="32" y="398" style="font:600 11px 'Inter',sans-serif; fill:#C0392B;">지식 조작</text>
+              <text x="115" y="398" class="t-body" fill="#3F1515">에 씁니다.</text>
+              <text x="32" y="413" class="t-body" fill="#3F1515">LLM이 위키를 직접 쓰고 관리합니다.</text>
+
+              <!-- 핵심 변화 3가지 -->
+              <text x="20" y="450" class="t-label">세 가지 핵심 변화</text>
+              <line x1="20" y1="456" x2="420" y2="456" stroke="#E4E4E7" stroke-width="1"/>
+
+              <!-- 변화1 -->
+              <rect x="20" y="466" width="122" height="42" class="box-white" rx="2" stroke="#E4E4E7" stroke-width="1"/>
+              <text x="30" y="481" style="font:700 12px 'Playfair Display',serif; fill:#18181B;">컴파일 → 축적</text>
+              <text x="30" y="496" class="t-body">RAG와 가장 큰 차이</text>
+
+              <!-- 변화2 -->
+              <rect x="152" y="466" width="122" height="42" class="box-white" rx="2" stroke="#E4E4E7" stroke-width="1"/>
+              <text x="162" y="481" style="font:700 12px 'Playfair Display',serif; fill:#18181B;">에이전트가 쓴다</text>
+              <text x="162" y="496" class="t-body">사람은 방향만 잡음</text>
+
+              <!-- 변화3 -->
+              <rect x="284" y="466" width="136" height="42" class="box-white" rx="2" stroke="#E4E4E7" stroke-width="1"/>
+              <text x="294" y="481" style="font:700 12px 'Playfair Display',serif; fill:#18181B;">출력이 귀환한다</text>
+              <text x="294" y="496" class="t-body">복리 효과</text>
+            </svg>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── 4. CORE INSIGHT ── -->
+    <section>
+      <div class="insight-box">
+        <div class="insight-label">Core<br>Insight</div>
+        <div class="insight-text">
+          Karpathy는 이제 토큰의 상당 부분을 <strong>코드 조작이 아닌 지식 조작</strong>에 씁니다.
+          LLM이 위키를 직접 쓰고 관리합니다. 사람은 방향만 잡으면 됩니다.
+          전체 아이디어 파일은 GitHub Gist에 공개됐고, 본인의 LLM 에이전트에 복붙하면 바로 시작할 수 있습니다.
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 5. 비교 테이블 ── -->
+    <section>
+      <div class="section-label">상세 비교</div>
+      <div class="compare-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:22%">항목</th>
+              <th style="width:39%">RAG (기존 방식)</th>
+              <th style="width:39%">LLM Wiki (Karpathy 방식)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-label">지식 처리 방식</td>
+              <td class="td-rag">질문마다 원본 청크를 검색해서 답변</td>
+              <td class="td-wiki">원본을 한 번 컴파일 → 위키로 축적</td>
+            </tr>
+            <tr>
+              <td class="td-label">지식 축적</td>
+              <td class="td-rag">없음. 매번 처음부터</td>
+              <td class="td-wiki">탐색·질문이 쌓일수록 위키가 강화</td>
+            </tr>
+            <tr>
+              <td class="td-label">복잡한 질문</td>
+              <td class="td-rag">여러 청크를 매번 조합해야 함</td>
+              <td class="td-wiki">이미 컴파일된 위키에서 바로 응답</td>
+            </tr>
+            <tr>
+              <td class="td-label">누가 쓰는가</td>
+              <td class="td-rag">LLM이 검색만 함</td>
+              <td class="td-wiki">LLM 에이전트가 위키를 직접 작성·유지</td>
+            </tr>
+            <tr>
+              <td class="td-label">대표 도구</td>
+              <td class="td-rag">NotebookLM, ChatGPT 파일 업로드</td>
+              <td class="td-wiki">Obsidian + Claude Code / OpenAI Codex</td>
+            </tr>
+            <tr>
+              <td class="td-label">Karpathy의 평가</td>
+              <td class="td-rag">매번 처음부터 발견, 정제 없음</td>
+              <td class="td-wiki">지금 자신이 직접 쓰는 워크플로우</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 6. 세 가지 핵심 변화 ── -->
+    <section>
+      <div class="section-label">세 가지 핵심 변화</div>
+      <div class="change-grid">
+
+        <div class="change-card">
+          <div class="change-num">변화 01</div>
+          <div class="change-title">컴파일 → 축적</div>
+          <div class="change-desc">
+            원본을 한 번 컴파일하면 지식이 위키에 쌓입니다.
+            질문마다 다시 검색하지 않거든요.
+          </div>
+          <span class="change-badge">RAG와 가장 큰 차이</span>
+        </div>
+
+        <div class="change-card">
+          <div class="change-num">변화 02</div>
+          <div class="change-title">에이전트가 쓴다</div>
+          <div class="change-desc">
+            사람이 위키를 직접 편집하지 않습니다.
+            LLM 에이전트가 쓰고 유지합니다.
+            사람은 방향만 잡으면 됩니다.
+          </div>
+          <span class="change-badge">핵심 원칙</span>
+        </div>
+
+        <div class="change-card">
+          <div class="change-num">변화 03</div>
+          <div class="change-title">출력이 귀환한다</div>
+          <div class="change-desc">
+            Q&amp;A 결과물을 다시 위키에 넣습니다.
+            탐색할수록 지식 베이스가 강해지는 구조거든요.
+          </div>
+          <span class="change-badge">복리 효과</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── 7. 후속 링크 ── -->
+    <section style="font-size:14px; color:var(--muted); line-height:1.7; border-top:1px solid var(--border); padding-top:24px;">
+      <strong style="color:var(--ink);">후속 아이디어 파일:</strong>
+      트위터 바이럴 이후 Karpathy가 전체 아키텍처를 담은 GitHub Gist를 공개했습니다.
+      Claude Code, OpenAI Codex 등 어떤 LLM 에이전트에든 복붙해서 바로 시작할 수 있습니다.
+      <br><br>
+      <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f"
+         target="_blank" rel="noopener"
+         style="color:var(--teal); text-decoration:none; font-weight:600;">
+        → GitHub Gist 전체 아이디어 파일 보기 ↗
+      </a>
+    </section>
+
+  </main>
+
+  <!-- ── 푸터 ── -->
+  <footer class="page-footer">
+    <span class="footer-note">출처: Karpathy X 스레드 / GitHub Gist — 2026-04-04</span>
+    <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f"
+       target="_blank" rel="noopener" class="footer-link">
+      GitHub Gist ↗
+    </a>
+  </footer>
+
+  <!-- ── Lightbox ── -->
+  <div id="lightbox"
+       onclick="this.style.display='none'"
+       style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; cursor:zoom-out; align-items:center; justify-content:center; padding:24px;">
+    <div id="lightbox-content" style="max-width:90vw; max-height:90vh; overflow:auto;"></div>
+  </div>
+
+  <script>
+  (function() {
+    var lb = document.getElementById('lightbox');
+    var lbContent = document.getElementById('lightbox-content');
+
+    document.querySelectorAll('.lightbox-trigger').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        lbContent.innerHTML = '';
+        var clone = el.cloneNode(true);
+        clone.removeAttribute('class');
+        clone.style.cursor = 'default';
+        if (clone.tagName === 'IMG') {
+          clone.style.maxWidth = '90vw';
+          clone.style.maxHeight = '90vh';
+          clone.style.display = 'block';
+          clone.style.borderRadius = '8px';
+        } else if (clone.tagName.toLowerCase() === 'svg') {
+          clone.style.width = 'min(90vw, 1200px)';
+          clone.style.height = 'auto';
+          clone.style.display = 'block';
+        }
+        lbContent.appendChild(clone);
+        lb.style.display = 'flex';
+      });
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') lb.style.display = 'none';
+    });
+  })();
+  </script>
+
+  <script data-page-hash="P6EEYNU" src="/assets/js/page-footer.js"></script>
+</body>
+</html>

@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Harness: AI 에이전트 팀 자동 설계</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* ── Top Bar ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .topbar-meta {
+      font-size: 12px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .topbar-link {
+      color: var(--ink-3);
+      text-decoration: none;
+      font-size: 12px;
+    }
+    .topbar-link:hover { color: var(--accent); }
+
+    /* ── Hero ── */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 28px 60px;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-bdr);
+      color: var(--accent);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      max-width: 740px;
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--accent);
+    }
+    .hero-desc {
+      font-size: 17px;
+      color: var(--ink-3);
+      max-width: 620px;
+      line-height: 1.75;
+      margin-bottom: 36px;
+    }
+    .hero-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-2);
+    }
+    .chip.accent {
+      background: var(--accent-bg);
+      border-color: var(--accent-bdr);
+      color: var(--accent);
+    }
+
+    /* ── Section ── */
+    .section {
+      padding: 56px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      max-width: 80px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .section-desc {
+      font-size: 15px;
+      color: var(--ink-3);
+      max-width: 680px;
+      margin-bottom: 36px;
+      line-height: 1.7;
+    }
+
+    /* ── Cards ── */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .cards-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card__header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card__icon { font-size: 22px; margin-bottom: 8px; }
+    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__subtitle { font-size: 12px; color: var(--ink-4); margin-top: 3px; font-family: var(--font-mono); }
+    .card__body { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .card__tag {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--ink-4);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ── Stat Rows ── */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 36px;
+    }
+    .stat-item {
+      background: var(--surface);
+      padding: 24px 20px;
+    }
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .stat-value.accent { color: var(--accent); }
+    .stat-value.success { color: var(--success); }
+    .stat-label {
+      font-size: 13px;
+      color: var(--ink-4);
+      margin-top: 6px;
+    }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:hover td { background: var(--bg); }
+
+    /* ── Callouts ── */
+    .callout {
+      border-left: 3px solid;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+    /* ── Code block ── */
+    .code-wrap {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+    .code-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-2);
+    }
+    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body {
+      padding: 18px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink-2);
+    }
+
+    /* ── Step list ── */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--surface);
+      margin-top: 2px;
+    }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* ── Tag / Badge ── */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+
+    /* ── SVG Diagram ── */
+    .diagram-wrap {
+      overflow-x: auto;
+      margin: 28px 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px 20px;
+      text-align: center;
+    }
+
+    /* ── Pattern Grid ── */
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .pattern-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      transition: border-color 0.2s;
+    }
+    .pattern-card:hover { border-color: var(--accent-bdr); }
+    .pattern-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pattern-badge {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      color: var(--ink-4);
+      padding: 1px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.05em;
+    }
+    .pattern-desc { font-size: 13px; color: var(--ink-3); line-height: 1.6; }
+    .pattern-use {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ── Use Cases ── */
+    .usecase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .usecase-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: border-color 0.2s;
+    }
+    .usecase-item:hover { border-color: var(--border-2); }
+    .usecase-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .usecase-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+    .usecase-desc { font-size: 13px; color: var(--ink-3); line-height: 1.5; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--ink-4);
+    }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">Harness</span>
+  <span class="topbar-meta">
+    <a href="https://github.com/revfactory/harness" target="_blank" class="topbar-link">GitHub ↗</a>
+    <span>v1.0.1 · 2026-03-30</span>
+  </span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">❋ Claude Code Plugin</div>
+    <h1>도메인별 에이전트 팀을<br><em>자동으로 설계한다</em></h1>
+    <p class="hero-desc">
+      Harness는 Claude Code 메타-스킬(meta-skill)입니다. 프로젝트 도메인을 분석해
+      최적의 에이전트 팀 구조를 설계하고, <code style="font-family:var(--font-mono);font-size:14px;background:var(--bg-2);padding:2px 6px;border-radius:4px;">.claude/agents/</code>와
+      <code style="font-family:var(--font-mono);font-size:14px;background:var(--bg-2);padding:2px 6px;border-radius:4px;">.claude/skills/</code>를 자동 생성합니다.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">⭐ 337 Stars</span>
+      <span class="chip">🍴 56 Forks</span>
+      <span class="chip">📄 Apache 2.0</span>
+      <span class="chip accent">🚀 2026-03-26 출시</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: 연구 성과 지표 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 연구 성과</div>
+    <h2 class="section-title">검증된 품질 향상 효과</h2>
+    <p class="section-desc">
+      15개 소프트웨어 엔지니어링 태스크에 대한 A/B 테스트 결과입니다.
+      Harness 적용 전후를 비교한 공식 논문(<em>Hwang, M. 2026</em>)에 기반합니다.
+    </p>
+
+    <div class="stat-row">
+      <div class="stat-item">
+        <div class="stat-value accent">+60%</div>
+        <div class="stat-label">평균 품질 점수 향상<br><span style="font-family:var(--font-mono);font-size:11px;">49.5 → 79.3</span></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value success">15/15</div>
+        <div class="stat-label">승률 (100%)<br><span style="font-family:var(--font-mono);font-size:11px;">전 태스크 Harness 우세</span></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">−32%</div>
+        <div class="stat-label">출력 분산 감소<br><span style="font-family:var(--font-mono);font-size:11px;">결과 일관성 향상</span></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value accent">Expert</div>
+        <div class="stat-label">복잡도별 향상폭<br><span style="font-family:var(--font-mono);font-size:11px;">Basic +23.8 / Expert +36.2</span></div>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">복잡도가 높을수록 효과가 크다</div>
+      Basic 태스크 +23.8, Advanced +29.6, Expert +36.2 — 단순 작업보다 복잡한 전문 작업일수록 Harness의 에이전트 팀 구조가 더 큰 차이를 만듭니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: Harness란? -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 개념</div>
+    <h2 class="section-title">Harness가 하는 일</h2>
+    <p class="section-desc">
+      Claude Code의 실험적 Agent Teams 시스템을 활용해 복잡한 작업을
+      전문화된 에이전트 협업 팀으로 분해합니다.
+    </p>
+
+    <!-- SVG 아키텍처 다이어그램 -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 700 160" style="width:100%;max-width:700px;" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#A8A8A3"/>
+          </marker>
+        </defs>
+        <!-- 사용자 -->
+        <rect x="10" y="56" width="110" height="48" rx="8" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="65" y="77" text-anchor="middle" fill="#1C1C1A" font-size="11" font-family="Inter,sans-serif" font-weight="700">사용자 프롬프트</text>
+        <text x="65" y="93" text-anchor="middle" fill="#6B6B66" font-size="10" font-family="JetBrains Mono,monospace">/harness</text>
+
+        <line x1="120" y1="80" x2="160" y2="80" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Harness 메타-스킬 -->
+        <rect x="160" y="46" width="130" height="68" rx="8" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="225" y="73" text-anchor="middle" fill="#C4522A" font-size="11" font-family="Inter,sans-serif" font-weight="700">Harness</text>
+        <text x="225" y="89" text-anchor="middle" fill="#C4522A" font-size="10" font-family="JetBrains Mono,monospace">Meta-Skill</text>
+        <text x="225" y="104" text-anchor="middle" fill="#A8A8A3" font-size="9" font-family="Inter,sans-serif">도메인 분석 + 팀 설계</text>
+
+        <!-- 화살표 두 방향 -->
+        <line x1="290" y1="68" x2="340" y2="50" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="290" y1="92" x2="340" y2="110" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- agents 출력 -->
+        <rect x="340" y="28" width="155" height="44" rx="8" fill="#F0FDF4" stroke="#86efac" stroke-width="1.5"/>
+        <text x="418" y="49" text-anchor="middle" fill="#1A7F5A" font-size="11" font-family="Inter,sans-serif" font-weight="700">.claude/agents/</text>
+        <text x="418" y="63" text-anchor="middle" fill="#1A7F5A" font-size="10" font-family="JetBrains Mono,monospace">에이전트 정의 파일</text>
+
+        <!-- skills 출력 -->
+        <rect x="340" y="88" width="155" height="44" rx="8" fill="#EFF6FF" stroke="#93c5fd" stroke-width="1.5"/>
+        <text x="418" y="109" text-anchor="middle" fill="#1e40af" font-size="11" font-family="Inter,sans-serif" font-weight="700">.claude/skills/</text>
+        <text x="418" y="123" text-anchor="middle" fill="#1e40af" font-size="10" font-family="JetBrains Mono,monospace">스킬 파일 자동 생성</text>
+
+        <!-- 수렴 화살표 -->
+        <line x1="495" y1="50" x2="540" y2="68" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="495" y1="110" x2="540" y2="92" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- 최종 결과 -->
+        <rect x="540" y="56" width="150" height="48" rx="8" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="615" y="77" text-anchor="middle" fill="#1C1C1A" font-size="11" font-family="Inter,sans-serif" font-weight="700">에이전트 팀</text>
+        <text x="615" y="93" text-anchor="middle" fill="#6B6B66" font-size="10" font-family="Inter,sans-serif">협업 실행 준비 완료</text>
+      </svg>
+      <p style="font-size:12px;color:#A8A8A3;margin-top:12px;font-family:var(--font-mono);">Harness 실행 흐름: 프롬프트 → 도메인 분석 → 에이전트/스킬 파일 생성 → 팀 구동</p>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🧠</div>
+          <div class="card__title">에이전트 팀 설계</div>
+        </div>
+        <div class="card__body">
+          <p>프로젝트 도메인을 분석해 6가지 팀 아키텍처 패턴 중 최적을 선택, 전문화된 에이전트 역할을 자동으로 정의합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">Agent Teams</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">⚡</div>
+          <div class="card__title">스킬 자동 생성</div>
+        </div>
+        <div class="card__body">
+          <p>Progressive Disclosure 방식으로 컨텍스트 창을 효율적으로 활용하는 스킬 파일을 자동으로 작성합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">Skill Generation</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔗</div>
+          <div class="card__title">오케스트레이션</div>
+        </div>
+        <div class="card__body">
+          <p>에이전트 간 데이터 전달, 에러 처리, 팀 협업 프로토콜을 체계적으로 구성합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">Orchestration</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">✅</div>
+          <div class="card__title">검증 & 테스트</div>
+        </div>
+        <div class="card__body">
+          <p>트리거 검증, 드라이런 테스트, 스킬 적용 전후 비교 테스트로 생성된 팀의 품질을 보장합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">Validation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: 6가지 팀 아키텍처 패턴 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 아키텍처</div>
+    <h2 class="section-title">6가지 팀 구성 패턴</h2>
+    <p class="section-desc">
+      Harness는 작업 성격에 따라 6가지 에이전트 팀 구조 중 최적을 선택합니다.
+    </p>
+
+    <!-- SVG 패턴 비교 다이어그램 -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 680 200" style="width:100%;max-width:680px;" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#A8A8A3"/>
+          </marker>
+        </defs>
+        <!-- Pipeline -->
+        <text x="60" y="20" text-anchor="middle" fill="#6B6B66" font-size="10" font-family="Inter,sans-serif" font-weight="700">PIPELINE</text>
+        <rect x="10" y="30" width="40" height="24" rx="4" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1"/>
+        <text x="30" y="46" text-anchor="middle" fill="#C4522A" font-size="9" font-family="Inter">A</text>
+        <line x1="50" y1="42" x2="62" y2="42" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <rect x="62" y="30" width="40" height="24" rx="4" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1"/>
+        <text x="82" y="46" text-anchor="middle" fill="#C4522A" font-size="9" font-family="Inter">B</text>
+        <line x1="102" y1="42" x2="114" y2="42" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <rect x="114" y="30" width="40" height="24" rx="4" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1"/>
+        <text x="134" y="46" text-anchor="middle" fill="#C4522A" font-size="9" font-family="Inter">C</text>
+
+        <!-- Fan-out/Fan-in -->
+        <text x="260" y="20" text-anchor="middle" fill="#6B6B66" font-size="10" font-family="Inter,sans-serif" font-weight="700">FAN-OUT/IN</text>
+        <rect x="220" y="30" width="40" height="24" rx="4" fill="#EFF6FF" stroke="#93c5fd" stroke-width="1"/>
+        <text x="240" y="46" text-anchor="middle" fill="#1e40af" font-size="9" font-family="Inter">IN</text>
+        <line x1="260" y1="34" x2="280" y2="25" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <line x1="260" y1="42" x2="280" y2="42" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <line x1="260" y1="50" x2="280" y2="59" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <rect x="280" y="18" width="35" height="18" rx="3" fill="#EFF6FF" stroke="#93c5fd" stroke-width="1"/>
+        <rect x="280" y="36" width="35" height="18" rx="3" fill="#EFF6FF" stroke="#93c5fd" stroke-width="1"/>
+        <rect x="280" y="54" width="35" height="18" rx="3" fill="#EFF6FF" stroke="#93c5fd" stroke-width="1"/>
+        <line x1="315" y1="27" x2="335" y2="36" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <line x1="315" y1="45" x2="335" y2="42" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <line x1="315" y1="63" x2="335" y2="50" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <rect x="335" y="30" width="40" height="24" rx="4" fill="#EFF6FF" stroke="#93c5fd" stroke-width="1"/>
+        <text x="355" y="46" text-anchor="middle" fill="#1e40af" font-size="9" font-family="Inter">OUT</text>
+
+        <!-- Expert Pool -->
+        <text x="490" y="20" text-anchor="middle" fill="#6B6B66" font-size="10" font-family="Inter,sans-serif" font-weight="700">EXPERT POOL</text>
+        <rect x="450" y="30" width="40" height="24" rx="4" fill="#F0FDF4" stroke="#86efac" stroke-width="1"/>
+        <text x="470" y="46" text-anchor="middle" fill="#1A7F5A" font-size="8" font-family="Inter">요청</text>
+        <line x1="490" y1="34" x2="510" y2="25" stroke="#A8A8A3" stroke-width="1" stroke-dasharray="3,2"/>
+        <line x1="490" y1="42" x2="510" y2="42" stroke="#A8A8A3" stroke-width="1"/>
+        <line x1="490" y1="50" x2="510" y2="59" stroke="#A8A8A3" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="510" y="18" width="38" height="18" rx="3" fill="#F0FDF4" stroke="#86efac" stroke-width="1"/>
+        <text x="529" y="31" text-anchor="middle" fill="#1A7F5A" font-size="8" font-family="Inter">미선택</text>
+        <rect x="510" y="36" width="38" height="18" rx="3" fill="#1A7F5A" stroke="#1A7F5A" stroke-width="1"/>
+        <text x="529" y="49" text-anchor="middle" fill="#FFFFFF" font-size="8" font-family="Inter">선택됨</text>
+        <rect x="510" y="54" width="38" height="18" rx="3" fill="#F0FDF4" stroke="#86efac" stroke-width="1"/>
+        <text x="529" y="67" text-anchor="middle" fill="#1A7F5A" font-size="8" font-family="Inter">미선택</text>
+
+        <!-- 구분선 -->
+        <line x1="190" y1="10" x2="190" y2="90" stroke="#E8E8E4" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="420" y1="10" x2="420" y2="90" stroke="#E8E8E4" stroke-width="1" stroke-dasharray="4,3"/>
+
+        <!-- 하단 3패턴 -->
+        <!-- Producer-Reviewer -->
+        <text x="80" y="115" text-anchor="middle" fill="#6B6B66" font-size="10" font-family="Inter,sans-serif" font-weight="700">PRODUCER-REVIEWER</text>
+        <rect x="20" y="125" width="60" height="28" rx="4" fill="#FFFBEB" stroke="#fcd34d" stroke-width="1"/>
+        <text x="50" y="143" text-anchor="middle" fill="#92400E" font-size="9" font-family="Inter">Producer</text>
+        <line x1="80" y1="139" x2="100" y2="139" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <rect x="100" y="125" width="60" height="28" rx="4" fill="#FFFBEB" stroke="#fcd34d" stroke-width="1"/>
+        <text x="130" y="143" text-anchor="middle" fill="#92400E" font-size="9" font-family="Inter">Reviewer</text>
+        <path d="M 130 125 Q 130 105 50 105 Q 50 125 50 125" fill="none" stroke="#fcd34d" stroke-width="1" stroke-dasharray="3,2"/>
+
+        <!-- Supervisor -->
+        <text x="310" y="115" text-anchor="middle" fill="#6B6B66" font-size="10" font-family="Inter,sans-serif" font-weight="700">SUPERVISOR</text>
+        <rect x="270" y="125" width="80" height="28" rx="4" fill="#F5F3FF" stroke="#c4b5fd" stroke-width="1"/>
+        <text x="310" y="143" text-anchor="middle" fill="#5b21b6" font-size="9" font-family="Inter">Supervisor</text>
+        <line x1="285" y1="153" x2="265" y2="173" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <line x1="310" y1="153" x2="310" y2="173" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <line x1="335" y1="153" x2="355" y2="173" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <rect x="245" y="173" width="40" height="20" rx="3" fill="#F5F3FF" stroke="#c4b5fd" stroke-width="1"/>
+        <rect x="290" y="173" width="40" height="20" rx="3" fill="#F5F3FF" stroke="#c4b5fd" stroke-width="1"/>
+        <rect x="335" y="173" width="40" height="20" rx="3" fill="#F5F3FF" stroke="#c4b5fd" stroke-width="1"/>
+
+        <!-- Hierarchical -->
+        <text x="560" y="115" text-anchor="middle" fill="#6B6B66" font-size="10" font-family="Inter,sans-serif" font-weight="700">HIERARCHICAL</text>
+        <rect x="520" y="125" width="80" height="24" rx="4" fill="#FFF1F2" stroke="#fda4af" stroke-width="1"/>
+        <text x="560" y="141" text-anchor="middle" fill="#9f1239" font-size="9" font-family="Inter">Top-level</text>
+        <line x1="545" y1="149" x2="530" y2="163" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <line x1="575" y1="149" x2="590" y2="163" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <rect x="510" y="163" width="55" height="20" rx="3" fill="#FFF1F2" stroke="#fda4af" stroke-width="1"/>
+        <rect x="570" y="163" width="55" height="20" rx="3" fill="#FFF1F2" stroke="#fda4af" stroke-width="1"/>
+        <line x1="520" y1="183" x2="515" y2="193" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <line x1="548" y1="183" x2="548" y2="193" stroke="#A8A8A3" stroke-width="1" marker-end="url(#arr2)"/>
+        <rect x="505" y="193" width="35" height="16" rx="2" fill="#FFF1F2" stroke="#fda4af" stroke-width="1"/>
+        <rect x="545" y="193" width="35" height="16" rx="2" fill="#FFF1F2" stroke="#fda4af" stroke-width="1"/>
+
+        <line x1="210" y1="100" x2="210" y2="200" stroke="#E8E8E4" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="420" y1="100" x2="420" y2="200" stroke="#E8E8E4" stroke-width="1" stroke-dasharray="4,3"/>
+      </svg>
+      <p style="font-size:12px;color:#A8A8A3;margin-top:12px;font-family:var(--font-mono);">6가지 팀 아키텍처 패턴 — 실선: 데이터 흐름 / 점선: 선택적 흐름</p>
+    </div>
+
+    <div class="pattern-grid">
+      <div class="pattern-card">
+        <div class="pattern-name">⛓️ Pipeline <span class="pattern-badge">순차</span></div>
+        <div class="pattern-desc">에이전트가 일렬로 연결되어 이전 결과를 다음 에이전트가 이어받습니다.</div>
+        <div class="pattern-use">→ 데이터 가공, 번역→검수→배포 등 의존 순서가 고정된 작업</div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-name">🔀 Fan-out / Fan-in <span class="pattern-badge">병렬</span></div>
+        <div class="pattern-desc">독립적인 여러 작업을 병렬로 처리하고 결과를 하나로 합칩니다.</div>
+        <div class="pattern-use">→ 다국어 번역, 멀티-소스 조사, 병렬 코드 분석</div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-name">🎓 Expert Pool <span class="pattern-badge">선택</span></div>
+        <div class="pattern-desc">요청 내용에 따라 전문 에이전트를 선택적으로 호출합니다.</div>
+        <div class="pattern-use">→ 도메인별 전문가 풀, 질의 라우팅</div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-name">🔍 Producer-Reviewer <span class="pattern-badge">검토</span></div>
+        <div class="pattern-desc">생성 에이전트가 초안을 만들고, 검토 에이전트가 품질을 확인합니다.</div>
+        <div class="pattern-use">→ 코드 생성+리뷰, 문서 작성+검수</div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-name">🎛️ Supervisor <span class="pattern-badge">중앙집중</span></div>
+        <div class="pattern-desc">중앙 에이전트가 상황에 따라 동적으로 작업을 분배합니다.</div>
+        <div class="pattern-use">→ 복잡한 프로젝트 관리, 동적 태스크 할당</div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-name">🏛️ Hierarchical Delegation <span class="pattern-badge">위임</span></div>
+        <div class="pattern-desc">상위 에이전트가 하위 에이전트에게 하향식으로 위임합니다.</div>
+        <div class="pattern-use">→ 대규모 프로젝트, 조직 계층 구조 모방</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: 6단계 워크플로우 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 워크플로우</div>
+    <h2 class="section-title">6단계 실행 흐름</h2>
+    <p class="section-desc">
+      <code style="font-family:var(--font-mono);font-size:13px;background:var(--bg-2);padding:2px 6px;border-radius:4px;">/harness</code> 또는
+      <code style="font-family:var(--font-mono);font-size:13px;background:var(--bg-2);padding:2px 6px;border-radius:4px;">"build a harness for this project"</code> 입력 시 아래 6단계가 자동으로 진행됩니다.
+    </p>
+
+    <div class="callout accent">
+      <div class="callout-title">사전 요건</div>
+      Claude Code 실험적 Agent Teams 기능 활성화가 필요합니다:<br>
+      <code style="font-family:var(--font-mono);font-size:12px;">CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">도메인 분석 (Domain Analysis)</div>
+          <div class="step-body">프로젝트 구조, 기술 스택, 작업 패턴을 파악합니다. 어떤 전문성이 필요한지 식별합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">팀 아키텍처 설계 (Team Architecture Design)</div>
+          <div class="step-body">Agent Teams vs Subagents 중 선택, 6가지 패턴 중 최적 구조를 결정합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">에이전트 정의 생성 (Agent Definition Generation)</div>
+          <div class="step-body">각 전문 에이전트의 역할, 능력, 트리거 조건을 담은 파일을 <code style="font-family:var(--font-mono);font-size:12px;">.claude/agents/</code>에 생성합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title">스킬 생성 (Skill Generation)</div>
+          <div class="step-body">에이전트가 사용할 스킬을 Progressive Disclosure 방식으로 <code style="font-family:var(--font-mono);font-size:12px;">.claude/skills/</code>에 자동 작성합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div>
+          <div class="step-title">통합 & 오케스트레이션 (Integration & Orchestration)</div>
+          <div class="step-body">에이전트 간 데이터 전달 방식, 에러 처리, 협업 프로토콜을 연결합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div>
+          <div class="step-title">검증 & 테스트 (Validation & Testing)</div>
+          <div class="step-body">트리거 검증, 드라이런 테스트, Harness 유무 비교 테스트로 팀 품질을 확인합니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: 설치 방법 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 설치</div>
+    <h2 class="section-title">설치 방법</h2>
+    <p class="section-desc">두 가지 방법으로 설치할 수 있습니다.</p>
+
+    <div class="cards-2">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🛒</div>
+          <div class="card__title">Claude Code 마켓플레이스 (권장)</div>
+          <div class="card__subtitle">MARKETPLACE</div>
+        </div>
+        <div class="card__body">
+          <div class="code-wrap">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body">/plugin marketplace add revfactory/harness
+/plugin install harness@harness</pre>
+          </div>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">자동 업데이트 지원</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">📁</div>
+          <div class="card__title">직접 복사 (글로벌 스킬)</div>
+          <div class="card__subtitle">DIRECT INSTALL</div>
+        </div>
+        <div class="card__body">
+          <div class="code-wrap">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body">cp -r skills/harness ~/.claude/skills/harness</pre>
+          </div>
+          <p style="font-size:13px;color:var(--ink-3);margin-top:10px;">저장소를 clone한 뒤 스킬 파일을 글로벌 Claude 디렉토리에 복사합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">오프라인 환경용</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip" style="margin-top:24px;">
+      <div class="callout-title">설치 후 사용법</div>
+      Claude Code에서 <code style="font-family:var(--font-mono);font-size:12px;">/harness</code> 또는
+      <code style="font-family:var(--font-mono);font-size:12px;">"build a harness for this project"</code>라고 입력하면 자동으로 6단계 워크플로우가 시작됩니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: 실행 모드 비교 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">06 실행 모드</div>
+    <h2 class="section-title">Agent Teams vs Subagents</h2>
+    <p class="section-desc">Harness는 작업 성격에 따라 두 가지 실행 방식을 선택합니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>Agent Teams (기본)</th>
+            <th>Subagents</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>메커니즘</strong></td>
+            <td>TeamCreate + SendMessage + TaskCreate</td>
+            <td>Agent 도구 직접 호출</td>
+          </tr>
+          <tr>
+            <td><strong>에이전트 수</strong></td>
+            <td><span class="tag green">2개 이상 협업</span></td>
+            <td><span class="tag gray">단독 or 비협업</span></td>
+          </tr>
+          <tr>
+            <td><strong>에이전트 간 통신</strong></td>
+            <td><span class="tag green">✓ 지원</span></td>
+            <td><span class="tag gray">미지원</span></td>
+          </tr>
+          <tr>
+            <td><strong>적합한 작업</strong></td>
+            <td>복잡한 협업 필요 태스크</td>
+            <td>독립적 일회성 태스크</td>
+          </tr>
+          <tr>
+            <td><strong>요구 환경변수</strong></td>
+            <td><code style="font-family:var(--font-mono);font-size:12px;">CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code></td>
+            <td>불필요</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 7: 활용 사례 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">07 활용 사례</div>
+    <h2 class="section-title">8가지 도메인 활용 예시</h2>
+    <p class="section-desc">공식 README에서 제공하는 실제 사용 가능한 프롬프트 모음입니다.</p>
+
+    <div class="usecase-grid">
+      <div class="usecase-item">
+        <div class="usecase-icon">🔭</div>
+        <div>
+          <div class="usecase-title">딥 리서치</div>
+          <div class="usecase-desc">다수 에이전트가 병렬로 출처를 탐색하고 종합 리포트를 작성합니다.</div>
+        </div>
+      </div>
+      <div class="usecase-item">
+        <div class="usecase-icon">🌐</div>
+        <div>
+          <div class="usecase-title">웹사이트 개발</div>
+          <div class="usecase-desc">기획·디자인·코딩·QA 에이전트가 역할 분담하여 사이트를 구축합니다.</div>
+        </div>
+      </div>
+      <div class="usecase-item">
+        <div class="usecase-icon">🎨</div>
+        <div>
+          <div class="usecase-title">웹툰/만화 제작</div>
+          <div class="usecase-desc">스토리 작가·그림체 설계·패널 구성 에이전트가 협업합니다.</div>
+        </div>
+      </div>
+      <div class="usecase-item">
+        <div class="usecase-icon">📹</div>
+        <div>
+          <div class="usecase-title">YouTube 콘텐츠 기획</div>
+          <div class="usecase-desc">주제 선정·스크립트·썸네일·SEO 최적화를 전담 에이전트가 처리합니다.</div>
+        </div>
+      </div>
+      <div class="usecase-item">
+        <div class="usecase-icon">🧹</div>
+        <div>
+          <div class="usecase-title">코드 리뷰 & 리팩토링</div>
+          <div class="usecase-desc">분석·개선·테스트 에이전트가 순서대로 코드 품질을 높입니다.</div>
+        </div>
+      </div>
+      <div class="usecase-item">
+        <div class="usecase-icon">📖</div>
+        <div>
+          <div class="usecase-title">기술 문서 작성</div>
+          <div class="usecase-desc">코드 분석·초안 작성·검수 에이전트가 문서화를 자동화합니다.</div>
+        </div>
+      </div>
+      <div class="usecase-item">
+        <div class="usecase-icon">🔄</div>
+        <div>
+          <div class="usecase-title">데이터 파이프라인 설계</div>
+          <div class="usecase-desc">수집·변환·저장·모니터링 에이전트가 파이프라인을 구성합니다.</div>
+        </div>
+      </div>
+      <div class="usecase-item">
+        <div class="usecase-icon">📣</div>
+        <div>
+          <div class="usecase-title">마케팅 캠페인</div>
+          <div class="usecase-desc">타깃 분석·카피라이팅·채널 전략 에이전트가 캠페인을 기획합니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 8: 관련 리소스 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">08 리소스</div>
+    <h2 class="section-title">관련 프로젝트 & 문서</h2>
+    <p class="section-desc">Harness 생태계와 공식 자료입니다.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🏭</div>
+          <div class="card__title">harness-100</div>
+        </div>
+        <div class="card__body">
+          <p>10개 도메인 × 100개 프로덕션 에이전트 팀 패키지. Harness로 자동 생성된 1,808개 마크다운 파일 포함.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">revfactory/harness-100</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">📊</div>
+          <div class="card__title">연구 논문</div>
+        </div>
+        <div class="card__body">
+          <p>15개 태스크 A/B 테스트 결과를 담은 공식 논문. 품질 점수 49.5→79.3 향상, 100% 승률 검증.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">revfactory/claude-code-harness</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🌐</div>
+          <div class="card__title">공식 랜딩 페이지</div>
+        </div>
+        <div class="card__body">
+          <p>Harness 공식 GitHub Pages 사이트. 설치 가이드, 아키텍처 설명, 사용 사례 포함.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">revfactory.github.io/harness</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>Harness: AI 에이전트 팀 자동 설계 · Apache 2.0</span>
+  <span>
+    <a href="https://github.com/revfactory/harness" target="_blank">GitHub ↗</a>
+    &nbsp;·&nbsp; 2026-03-30
+  </span>
+</footer>
+
+</body>
+</html>

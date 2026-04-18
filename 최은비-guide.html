@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vision-autofill — AIVE-CONTEST 2025</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f3ee; color: #1c1917; line-height: 1.6;
+    }
+    .mono { font-family: 'DM Mono', ui-monospace, 'Courier New', monospace; }
+    .eval-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #b5895a; text-transform: uppercase;
+    }
+    .divider { border: none; border-top: 1px solid #d6d0c4; }
+    .eval-card {
+      background: #fffaf6; border: 1px solid #e8d5c0;
+      border-radius: 12px; padding: 22px;
+    }
+    .check-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: #ede9e1; border: 1px solid #d6d0c4; color: #a8a29e;
+    }
+    .check-badge.on {
+      background: #fdf0e8; border-color: #e8b896; color: #c8622a;
+    }
+    .feature-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px;
+    }
+    .effect-card {
+      background: #ede9e1; border-radius: 10px; padding: 20px; text-align: center;
+    }
+    section { scroll-margin-top: 64px; }
+    .screenshot-gallery img {
+      cursor: zoom-in; transition: opacity 0.15s;
+    }
+    .screenshot-gallery img:hover { opacity: 0.88; }
+  </style>
+</head>
+<body>
+
+  <!-- Arrow Lightbox -->
+  <div id="lb-overlay"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;
+           align-items:center;justify-content:center;flex-direction:column;">
+    <button onclick="closeLb()" style="position:absolute;top:16px;right:20px;
+      background:none;border:none;color:#fff;font-size:28px;cursor:pointer;z-index:10001;">✕</button>
+    <button id="lb-prev" onclick="moveLb(-1)"
+      style="position:absolute;left:16px;top:50%;transform:translateY(-50%);
+             background:rgba(255,255,255,.15);border:none;color:#fff;font-size:36px;
+             padding:12px 18px;cursor:pointer;border-radius:8px;z-index:10001;">‹</button>
+    <img id="lb-img" src="" alt=""
+      style="max-width:90vw;max-height:82vh;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.6);object-fit:contain;">
+    <div style="color:#ddd;margin-top:10px;font-size:13px;text-align:center;">
+      <span id="lb-alt"></span>
+      <span id="lb-counter" style="margin-left:12px;opacity:.6;"></span>
+    </div>
+    <button id="lb-next" onclick="moveLb(1)"
+      style="position:absolute;right:16px;top:50%;transform:translateY(-50%);
+             background:rgba(255,255,255,.15);border:none;color:#fff;font-size:36px;
+             padding:12px 18px;cursor:pointer;border-radius:8px;z-index:10001;">›</button>
+  </div>
+  <script>
+    var _lbImgs=[], _lbIdx=0;
+    function openLb(idx){
+      _lbIdx=idx; _updateLb();
+      var o=document.getElementById('lb-overlay');
+      o.style.display='flex';
+    }
+    function closeLb(){
+      document.getElementById('lb-overlay').style.display='none';
+    }
+    function moveLb(dir){
+      _lbIdx=(_lbIdx+dir+_lbImgs.length)%_lbImgs.length;
+      _updateLb();
+    }
+    function _updateLb(){
+      var img=document.getElementById('lb-img');
+      var d=_lbImgs[_lbIdx];
+      img.src=d.src; img.alt=d.alt||'';
+      document.getElementById('lb-alt').textContent=d.alt||'';
+      document.getElementById('lb-counter').textContent=(_lbIdx+1)+' / '+_lbImgs.length;
+      document.getElementById('lb-prev').style.display=_lbImgs.length>1?'':'none';
+      document.getElementById('lb-next').style.display=_lbImgs.length>1?'':'none';
+    }
+    function initGallery(imgs){ _lbImgs=imgs; }
+    document.addEventListener('keydown',function(e){
+      var o=document.getElementById('lb-overlay');
+      if(o.style.display==='flex'){
+        if(e.key==='Escape') closeLb();
+        if(e.key==='ArrowLeft') moveLb(-1);
+        if(e.key==='ArrowRight') moveLb(1);
+      }
+    });
+  </script>
+
+  <!-- ━━━ 고정 헤더 ━━━ -->
+  <header style="position:sticky; top:0; z-index:50; background:rgba(245,243,238,0.94); backdrop-filter:blur(12px); border-bottom:1px solid #d6d0c4;">
+    <div style="max-width:920px; margin:0 auto; padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <path d="M6 3h12v9a6 6 0 01-12 0V3z" fill="#c8622a" fill-opacity="0.18" stroke="#c8622a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M3 4h3M21 4h-3" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3 4c0 3.5 1.5 5.5 3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M21 4c0 3.5-1.5 5.5-3 6.5" stroke="#c8622a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M9 18.5v2M15 18.5v2M7 20.5h10" stroke="#c8622a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:11px; font-weight:800; color:#c8622a; letter-spacing:0.07em; white-space:nowrap;">AIVE-CONTEST 2025</span>
+        <span style="color:#d6d0c4; font-size:14px;">|</span>
+        <span style="font-size:14px; font-weight:600; color:#1c1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Vision-AI 화면 인식 자동입력</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+        <span style="font-size:12px; color:#a8a29e;">PC2팀 · 최은비</span>
+        <span class="mono" style="font-size:14px; font-weight:500; color:#c8622a; background:#fdf0e8; padding:4px 12px; border-radius:7px; border:1px solid #e8b896;">74점</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:920px; margin:0 auto; padding:52px 28px 88px;">
+
+    <!-- ━━━ 히어로 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <div style="display:flex; align-items:flex-start; gap:28px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:280px;">
+          <p class="eval-label" style="margin-bottom:14px;">AI-WORKER 인증 과제 · 🏆 AIVE-CONTEST</p>
+          <h1 style="font-size:34px; font-weight:800; color:#1c1917; line-height:1.15; letter-spacing:-0.02em; margin-bottom:18px;">Vision-AI 기반<br>범용 화면 인식 자동입력</h1>
+          <p style="font-size:16px; color:#44403c; line-height:1.75; max-width:540px;">
+            고객사·시스템별 화면이 달라도 <strong>1회 학습</strong>만 하면,<br>
+            ORB 기하 정합 + Gemini Vision AI로 어떤 화면에서든<br>
+            데이터를 <strong>3.6배 빠르게</strong> 자동 입력합니다.
+          </p>
+          <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; background:#ede9e1; color:#78716c; padding:4px 12px; border-radius:6px; border:1px solid #d6d0c4;">2026-04-07 제출</span>
+            <span style="font-size:12px; background:#fdf0e8; color:#c8622a; padding:4px 12px; border-radius:6px; border:1px solid #e8b896;">PC2팀</span>
+          </div>
+        </div>
+
+        <!-- 점수 패널 -->
+        <div style="background:#ede9e1; border:1px solid #d6d0c4; border-radius:16px; padding:24px; min-width:210px;">
+          <p class="eval-label" style="margin-bottom:14px;">🏆 종합 점수</p>
+          <div style="text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d6d0c4;">
+            <span class="mono" style="font-size:52px; font-weight:500; color:#c8622a; line-height:1;">74</span>
+            <span style="font-size:18px; color:#b5895a; font-weight:400;"> / 100</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">18</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">③ 효율성 /35</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">23</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">④ 아이디어 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">22</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑤ 확산성 /25</div>
+            </div>
+            <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:8px; padding:10px; text-align:center;">
+              <div class="mono" style="font-size:19px; font-weight:500; color:#c8622a; line-height:1;">11</div>
+              <div style="font-size:10px; color:#b5895a; margin-top:3px; font-weight:600;">⑥ 조직목표 /15</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 문제 정의 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:18px;">😣 문제 정의 · 배경</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#ede9e1; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px; letter-spacing:0.05em;">❗ 기존의 어려움</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
+            <li>🔹 고객사마다 <strong>화면 구조가 달라</strong> 매번 수기 입력</li>
+            <li>🔹 22개 필드 입력에 <strong>평균 1분 40초</strong> 소요</li>
+            <li>🔹 오탈자·누락 등 <strong>휴먼에러</strong> 빈번 발생</li>
+            <li>🔹 DOM/API 기반 자동화는 <strong>화면별 개별 개발</strong> 필요 — 유지보수 부담 과중</li>
+          </ul>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:12px; padding:24px;">
+          <p style="font-size:11px; font-weight:700; color:#c8622a; margin-bottom:10px; letter-spacing:0.05em;">✨ AI로 해결한 방식</p>
+          <ul style="font-size:14px; color:#1c1917; line-height:1.8; padding-left:0; list-style:none;">
+            <li>✅ <strong>1회 학습</strong>으로 화면 구조 등록</li>
+            <li>✅ ORB 기하 정합으로 <strong>창 이동·배율 변화 자동 보정</strong></li>
+            <li>✅ 정합 실패 시 <strong>Gemini Vision AI</strong>가 위치 추정</li>
+            <li>✅ Google Sheets 데이터 → <strong>AI 필드 매핑</strong> 후 자동 입력</li>
+            <li>✅ exe 더블클릭으로 <strong>비개발자도 즉시 사용</strong></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 체크리스트 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">✅ 평가 체크리스트</p>
+
+      <div style="margin-bottom:20px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">① AI 활용 유형</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge on">✅ 바이브코딩</span>
+          <span class="check-badge on">✅ 런타임 AI</span>
+          <span class="check-badge">노코드 AI</span>
+        </div>
+      </div>
+      <div style="margin-bottom:32px;">
+        <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:10px;">② 자동화 대상</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="check-badge">반복 보고서 취합</span>
+          <span class="check-badge on">✅ 데이터 수집·분류·가공</span>
+          <span class="check-badge">내부 문의·요청 처리</span>
+          <span class="check-badge">알림·모니터링</span>
+          <span class="check-badge on">✅ 기타: Vision 화면 인식 자동 입력</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">③ 업무 효율성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">18<span style="font-size:12px; color:#b5895a;">/35</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">3인 실측 비교로 <strong>72.5% 시간 단축</strong>(100초→27.5초) 수치 확인. 오탈자·재작업 비용까지 절감 효과 논리적으로 뒷받침됨.</p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">④ 아이디어 적절성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">23<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">DOM 불가 문제 → Vision AI 범용 자동화라는 <strong>명쾌한 문제-해결 연결</strong>. MVP 재설계로 현실 제약 내 구현 완료.</p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑤ 확산 가능성</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">22<span style="font-size:12px; color:#b5895a;">/25</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">exe 패키징·GUI 완비로 <strong>비개발자 실사용 확인</strong>. 설치 없이 더블클릭 실행, 고객사 환경까지 확장 가능 구조.</p>
+        </div>
+        <div class="eval-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span class="eval-label">⑥ 조직 목표 연결</span>
+            <span class="mono" style="font-size:20px; color:#c8622a; font-weight:500; line-height:1;">11<span style="font-size:12px; color:#b5895a;">/15</span></span>
+          </div>
+          <p style="font-size:14px; color:#44403c; line-height:1.7;">디지털 전환·AI 활용 역량 강화와 직결. 특정 요청 대응 → <strong>범용 서비스 전환</strong>으로 조직 업무 표준화 기여.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 동작 흐름 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">⚡ 동작 흐름</p>
+      <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:14px; padding:24px; margin-bottom:24px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; font-size:14px; color:#44403c; font-weight:600; line-height:2;">
+          <span style="background:#fdf0e8; border:1px solid #e8b896; border-radius:8px; padding:6px 14px; color:#c8622a;">① 기준 화면 학습</span>
+          <span style="color:#b5895a; font-size:18px;">→</span>
+          <span style="background:#ede9e1; border-radius:8px; padding:6px 14px;">② 화면 캡처</span>
+          <span style="color:#b5895a; font-size:18px;">→</span>
+          <span style="background:#ede9e1; border-radius:8px; padding:6px 14px;">③ ORB 정합<br><small style="font-weight:400; color:#a8a29e;">실패 시 Gemini Vision</small></span>
+          <span style="color:#b5895a; font-size:18px;">→</span>
+          <span style="background:#ede9e1; border-radius:8px; padding:6px 14px;">④ Sheets 데이터 추출<br><small style="font-weight:400; color:#a8a29e;">AI 필드 매핑</small></span>
+          <span style="color:#b5895a; font-size:18px;">→</span>
+          <span style="background:#fdf0e8; border:1px solid #e8b896; border-radius:8px; padding:6px 14px; color:#c8622a;">⑤ 자동 클릭·입력</span>
+        </div>
+      </div>
+      <p style="font-size:13px; color:#78716c; text-align:center;">① 학습은 1회만 — 이후 실행은 완전 자동 | 정합 실패 시에만 Gemini Vision API 호출 (비용 최소화)</p>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 주요 기능 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🛠️ 주요 기능</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🎯 화면 템플릿 학습</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;"><strong>1회만 하면 됩니다.</strong> 기준 화면에서 각 입력 필드를 클릭하면 라벨 좌표와 입력칸 오프셋이 자동 저장됩니다.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🔍 ORB 기하 정합</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">창이 이동하거나 배율이 달라져도 <strong>특징점 매칭</strong>으로 실제 클릭 위치를 자동 보정합니다. (Homography + Affine fallback)</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🤖 Gemini Vision Fallback</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">정합 실패 시 <strong>Gemini Vision API</strong>가 화면을 직접 보고 라벨 위치를 추정합니다. 화면 변화에도 자동 복구.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🧠 AI 필드 매핑</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">비정형 Google Sheets에서 <strong>대상 필드값을 AI가 의미 기반으로 추출</strong>합니다. 복잡한 양식도 자동 파싱.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">🖥️ 비개발자용 GUI</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;">Flet 기반 GUI로 <strong>설정·학습·실행·결과</strong> 탭 제공. 툴팁 안내 포함, exe 더블클릭으로 즉시 실행.</p>
+        </div>
+        <div class="feature-card">
+          <p style="font-size:13px; font-weight:700; color:#c8622a; margin-bottom:6px;">📊 결과 검증</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.6;"><strong>디버그 클릭 이미지</strong>(빨간점)와 JSON 로그로 입력 결과를 즉시 확인. 실행 이력 요약도 제공.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 시각 증빙 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">📸 시각 증빙 자료</p>
+
+      <script>
+        initGallery([
+          {src:"assets/1-1-setting-singlerow.png", alt:"설정 화면 - 단일행"},
+          {src:"assets/1-2-setting-multirow.png", alt:"설정 화면 - 다중행"},
+          {src:"assets/1-3-setting-advanced.png", alt:"설정 - 고급 옵션"},
+          {src:"assets/1-4-setting-template.png", alt:"설정 - 템플릿"},
+          {src:"assets/2-1-learning.png", alt:"학습 화면"},
+          {src:"assets/3-1-run.png", alt:"실행 화면"},
+          {src:"assets/4-1-result.png", alt:"결과 확인"},
+          {src:"assets/1-5-setting-template.gif", alt:"설정 - 템플릿 GIF"},
+          {src:"assets/2-2-learning-singlerow.gif", alt:"학습 - 단일행 GIF"},
+          {src:"assets/2-3-learning-multirow.gif", alt:"학습 - 다중행 GIF"},
+          {src:"assets/2-4-reset_label.gif", alt:"레이블 초기화 GIF"},
+          {src:"assets/3-2-run-singlerow.gif", alt:"실행 - 단일행 GIF"},
+          {src:"assets/3-3-run-multirow.gif", alt:"실행 - 다중행 GIF"},
+          {src:"assets/5-1-user.gif", alt:"실사용자 사용 장면 GIF 1"},
+          {src:"assets/5-2-user.gif", alt:"실사용자 사용 장면 GIF 2"}
+        ]);
+      </script>
+
+      <!-- PNG 스크린샷 그리드 -->
+      <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:12px;">GUI 화면 스크린샷</p>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin-bottom:28px;">
+        <div>
+          <img src="assets/1-1-setting-singlerow.png" alt="설정 화면 - 단일행"
+            onclick="openLb(0)" style="cursor:zoom-in;border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
+          <p style="font-size:11px; color:#78716c; margin-top:5px; text-align:center;">설정 · 단일행</p>
+        </div>
+        <div>
+          <img src="assets/1-2-setting-multirow.png" alt="설정 화면 - 다중행"
+            onclick="openLb(1)" style="cursor:zoom-in;border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
+          <p style="font-size:11px; color:#78716c; margin-top:5px; text-align:center;">설정 · 다중행</p>
+        </div>
+        <div>
+          <img src="assets/1-3-setting-advanced.png" alt="설정 - 고급 옵션"
+            onclick="openLb(2)" style="cursor:zoom-in;border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
+          <p style="font-size:11px; color:#78716c; margin-top:5px; text-align:center;">설정 · 고급 옵션</p>
+        </div>
+        <div>
+          <img src="assets/2-1-learning.png" alt="학습 화면"
+            onclick="openLb(4)" style="cursor:zoom-in;border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
+          <p style="font-size:11px; color:#78716c; margin-top:5px; text-align:center;">학습 화면</p>
+        </div>
+        <div>
+          <img src="assets/3-1-run.png" alt="실행 화면"
+            onclick="openLb(5)" style="cursor:zoom-in;border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
+          <p style="font-size:11px; color:#78716c; margin-top:5px; text-align:center;">실행 화면</p>
+        </div>
+        <div>
+          <img src="assets/4-1-result.png" alt="결과 확인"
+            onclick="openLb(6)" style="cursor:zoom-in;border-radius:8px;width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #d6d0c4;">
+          <p style="font-size:11px; color:#78716c; margin-top:5px; text-align:center;">결과 확인</p>
+        </div>
+      </div>
+
+      <!-- GIF 애니메이션 갤러리 -->
+      <p style="font-size:12px; font-weight:700; color:#78716c; margin-bottom:12px;">🎬 동작 시연 GIF (animated)</p>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px;">
+        <div>
+          <img src="assets/2-2-learning-singlerow.gif" alt="학습 - 단일행"
+            onclick="openLb(8)" style="cursor:zoom-in;border-radius:8px;width:100%;border:1px solid #d6d0c4;">
+          <p style="font-size:11px; color:#78716c; margin-top:5px; text-align:center;">📍 단일행 학습 과정</p>
+        </div>
+        <div>
+          <img src="assets/3-2-run-singlerow.gif" alt="실행 - 단일행"
+            onclick="openLb(11)" style="cursor:zoom-in;border-radius:8px;width:100%;border:1px solid #d6d0c4;">
+          <p style="font-size:11px; color:#78716c; margin-top:5px; text-align:center;">⚡ 단일행 자동 입력 실행</p>
+        </div>
+        <div>
+          <img src="assets/3-3-run-multirow.gif" alt="실행 - 다중행"
+            onclick="openLb(12)" style="cursor:zoom-in;border-radius:8px;width:100%;border:1px solid #d6d0c4;">
+          <p style="font-size:11px; color:#78716c; margin-top:5px; text-align:center;">⚡ 다중행 자동 입력 실행</p>
+        </div>
+        <div>
+          <img src="assets/5-1-user.gif" alt="실사용자 사용 장면"
+            onclick="openLb(13)" style="cursor:zoom-in;border-radius:8px;width:100%;border:1px solid #d6d0c4;">
+          <p style="font-size:11px; color:#78716c; margin-top:5px; text-align:center;">👤 실사용자 사용 장면 #1</p>
+        </div>
+        <div>
+          <img src="assets/5-2-user.gif" alt="실사용자 사용 장면 2"
+            onclick="openLb(14)" style="cursor:zoom-in;border-radius:8px;width:100%;border:1px solid #d6d0c4;">
+          <p style="font-size:11px; color:#78716c; margin-top:5px; text-align:center;">👤 실사용자 사용 장면 #2</p>
+        </div>
+        <div>
+          <img src="assets/2-3-learning-multirow.gif" alt="학습 - 다중행"
+            onclick="openLb(9)" style="cursor:zoom-in;border-radius:8px;width:100%;border:1px solid #d6d0c4;">
+          <p style="font-size:11px; color:#78716c; margin-top:5px; text-align:center;">📍 다중행 학습 과정</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ AI 활용 방식 ━━━ -->
+    <section style="margin-bottom:52px;">
+      <p class="eval-label" style="margin-bottom:20px;">🧠 AI 활용 방식 · 기술 스택</p>
+      <div style="background:#ede9e1; border-radius:14px; padding:28px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:20px;">
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px;">🤖 런타임 AI 모델</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.9; list-style:none;">
+              <li>✅ <strong>Gemini Vision API</strong> — 정합 실패 시 화면 인식 fallback</li>
+              <li>✅ <strong>Gemini Text API</strong> — 비정형 시트 AI 필드 매핑</li>
+              <li>🔹 EasyOCR (선택) — 스크롤 영역 라벨 탐색</li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:11px; font-weight:700; color:#78716c; margin-bottom:10px;">🔧 핵심 기술 스택</p>
+            <ul style="font-size:14px; color:#1c1917; line-height:1.9; list-style:none;">
+              <li>🔹 <strong>OpenCV</strong> — ORB 특징점 + Homography/Affine 정합</li>
+              <li>🔹 <strong>Flet</strong> — 크로스플랫폼 GUI</li>
+              <li>🔹 <strong>pyautogui</strong> — 화면 캡처 + 클릭·입력 자동화</li>
+              <li>🔹 <strong>PyInstaller</strong> — exe 단일 파일 패키징</li>
+            </ul>
+          </div>
+        </div>
+        <div style="background:#fffaf6; border:1px solid #e8d5c0; border-radius:10px; padding:16px;">
+          <p style="font-size:12px; font-weight:700; color:#c8622a; margin-bottom:8px;">🏗️ 3단계 하이브리드 AI 구조</p>
+          <p style="font-size:13px; color:#44403c; line-height:1.7;">
+            <strong>① ORB 기하 정합</strong>(비용 없음, 빠름) → 실패 시 <strong>② Gemini Vision API</strong>(정확도 보강) → 스크롤 영역은 <strong>③ EasyOCR</strong>(선택 적용)<br>
+            → 성능과 비용의 균형을 코드 레벨에서 직접 설계
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" style="margin-bottom:52px;">
+
+    <!-- ━━━ 기대 효과 ━━━ -->
+    <section>
+      <p class="eval-label" style="margin-bottom:20px;">📈 기대 효과 · 성과</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">-72.5%</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">입력 시간 단축</p>
+          <p style="font-size:12px; color:#78716c;">100초 → 27.5초<br>22필드 동일 조건 실측</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">3.6×</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">처리 속도 향상</p>
+          <p style="font-size:12px; color:#78716c;">수기 대비 자동화<br>기존 속도 대비 3.6배</p>
+        </div>
+        <div class="effect-card">
+          <div class="mono" style="font-size:32px; font-weight:500; color:#c8622a; margin-bottom:6px; line-height:1;">0</div>
+          <p style="font-size:12px; font-weight:600; color:#1c1917; margin-bottom:4px;">휴먼에러 목표</p>
+          <p style="font-size:12px; color:#78716c;">오탈자·누락 제거<br>재작업 시간 추가 절감</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ━━━ 푸터 ━━━ -->
+  <footer style="border-top:1px solid #d6d0c4; padding:22px 28px; text-align:center; background:#ede9e1;">
+    <p style="font-size:11px; color:#a8a29e; letter-spacing:0.05em; font-weight:500;">
+      AIVE-CONTEST 2025 &nbsp;·&nbsp; AI-WORKER 인증 과제 &nbsp;·&nbsp; PC2팀
+    </p>
+  </footer>
+
+</body>
+</html>

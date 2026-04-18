@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026년 1월 여행 리포트: Final Fixed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+
+        /* 차트 높이 확보 */
+        .modal-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .modal-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Table Styles */
+        .comparison-table th {
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: 800;
+            font-size: 0.8rem;
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .comparison-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+            vertical-align: middle;
+        }
+
+        .comparison-table tr:hover {
+            background-color: #f0f9ff;
+            cursor: pointer;
+        }
+
+        .star-on {
+            color: #fbbf24;
+        }
+
+        .star-off {
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div
+                    class="bg-indigo-600 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold text-lg">
+                    V</div>
+                <h1 class="text-xl font-bold text-slate-800">Voyage 2026 <span
+                        class="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded ml-1">Jan Analysis</span></h1>
+            </div>
+            <div class="hidden md:flex gap-6 text-sm font-bold text-slate-500">
+                <a href="#summary" class="hover:text-indigo-600 transition">종합 비교표</a>
+                <a href="#analytics" class="hover:text-indigo-600 transition">날씨 분석</a>
+                <a href="#grid" class="hover:text-indigo-600 transition">상세 리스트</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow">
+
+        <!-- Intro -->
+        <section class="bg-slate-900 text-white py-12 text-center">
+            <div class="max-w-4xl mx-auto px-4">
+                <h2 class="text-3xl font-black mb-4">2026년 1월, 최적의 여행지는?</h2>
+                <p class="text-slate-400 mb-8 text-sm md:text-base">
+                    <span class="text-blue-300 font-bold"><i class="fas fa-snowflake"></i> 일본 (6박 7일)</span> 설국과 미식, 온천
+                    힐링<br>
+                    <span class="text-orange-300 font-bold"><i class="fas fa-sun"></i> 동남아 (9박 10일)</span> 건기의 맑은 바다와 휴양
+                </p>
+                <div class="flex justify-center gap-3">
+                    <button onclick="renderAll('all')"
+                        class="bg-white text-slate-900 px-6 py-2 rounded-full text-sm font-bold hover:bg-slate-200 transition">전체
+                        보기</button>
+                    <button onclick="renderAll('snow')"
+                        class="border border-slate-600 text-slate-300 px-6 py-2 rounded-full text-sm font-bold hover:bg-slate-800 hover:text-white transition">일본
+                        보기</button>
+                    <button onclick="renderAll('sun')"
+                        class="border border-slate-600 text-slate-300 px-6 py-2 rounded-full text-sm font-bold hover:bg-slate-800 hover:text-white transition">동남아
+                        보기</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 1. Comparison Table -->
+        <section id="summary" class="max-w-7xl mx-auto px-4 py-12">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-12">
+                <div class="p-6 bg-slate-50 border-b border-slate-200">
+                    <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-list-ul text-indigo-500"></i> 여행지 종합 비교표
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">지역별 기준: 일본 6박 7일 / 동남아 9박 10일 (항공+숙박+경비 포함 1인 견적)</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full comparison-table text-left">
+                        <thead>
+                            <tr>
+                                <th class="w-20">지역</th>
+                                <th class="w-32">여행지</th>
+                                <th class="min-w-[200px]">핵심 포인트</th>
+                                <th class="w-16 text-center">추천</th>
+                                <th class="w-20 text-center">휴양</th>
+                                <th class="w-20 text-center">관광</th>
+                                <th class="w-20 text-center">활동</th>
+                                <th class="w-20 text-center">미식</th>
+                                <th class="w-20 text-center">가성비</th>
+                                <th class="w-28 text-right pr-6">총 비용</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- JS Generated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Weather Analytics (Restored) -->
+        <section id="analytics" class="max-w-7xl mx-auto px-4 pb-12">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h3 class="font-bold text-lg text-slate-800 mb-2 flex items-center gap-2">
+                    <i class="fas fa-chart-line text-blue-500"></i> 기온 및 강수량 비교 (1월 평균)
+                </h3>
+                <p class="text-xs text-slate-500 mb-6">막대그래프: 기온(°C) / 꺾은선: 강수량(mm) - 날씨가 여행의 질을 좌우합니다.</p>
+                <div class="chart-container">
+                    <canvas id="weatherChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Grid Cards -->
+        <section id="grid" class="max-w-7xl mx-auto px-4 pb-12">
+            <h3 class="font-bold text-xl text-slate-800 mb-6 flex items-center gap-2">
+                <i class="fas fa-th-large text-indigo-500"></i> 상세 리스트 (<span id="count-view">0</span>곳)
+            </h3>
+            <div id="grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- JS Generated -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+        <div class="fixed inset-0 overflow-y-auto z-10 p-4 flex items-center justify-center">
+            <div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+
+                <!-- Hero Image -->
+                <div class="relative h-60 sm:h-80 bg-slate-200 shrink-0">
+                    <img id="modal-img" src="" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+
+                    <button onclick="closeModal()"
+                        class="absolute top-4 right-4 bg-black/20 hover:bg-black/40 text-white rounded-full p-2 backdrop-blur transition z-20">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <div class="absolute bottom-6 left-6 text-white z-10">
+                        <div class="flex gap-2 mb-2">
+                            <span id="modal-badge"
+                                class="px-2 py-0.5 bg-white/20 backdrop-blur rounded text-xs font-bold uppercase border border-white/30">TAG</span>
+                            <span id="modal-duration"
+                                class="px-2 py-0.5 bg-indigo-500/80 backdrop-blur rounded text-xs font-bold">DURATION</span>
+                        </div>
+                        <h2 id="modal-title" class="text-4xl font-black mb-1 drop-shadow-md">TITLE</h2>
+                        <p id="modal-subtitle" class="text-slate-300 font-medium text-sm"></p>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-grow overflow-y-auto bg-white p-6 md:p-8 modal-scroll">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                        <!-- Left Info -->
+                        <div class="lg:col-span-2 space-y-8">
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-lg mb-2">여행지 소개</h4>
+                                <p id="modal-desc" class="text-slate-600 leading-relaxed text-sm"></p>
+                                <!-- Warning -->
+                                <div id="modal-warning"
+                                    class="hidden mt-4 bg-red-50 border border-red-100 rounded-lg p-4 flex gap-3">
+                                    <i class="fas fa-exclamation-triangle text-red-500 mt-0.5"></i>
+                                    <div>
+                                        <span class="block text-xs font-bold text-red-700 uppercase">1월 여행 주의사항</span>
+                                        <p id="modal-warning-text" class="text-xs text-red-600 mt-1"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                                <h4 class="font-bold text-indigo-900 mb-4 flex items-center"><i
+                                        class="fas fa-route mr-2"></i>추천 코스</h4>
+                                <ul id="modal-course" class="space-y-4 text-sm text-slate-700"></ul>
+                            </div>
+
+                            <div class="bg-yellow-50 rounded-xl p-4 border border-yellow-100 flex gap-3">
+                                <i class="fas fa-lightbulb text-yellow-500 mt-1"></i>
+                                <div>
+                                    <span class="text-xs font-bold text-yellow-800 uppercase block">Pro Tip</span>
+                                    <p id="modal-tip" class="text-sm text-slate-700"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Stats -->
+                        <div class="space-y-6">
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
+                                <span class="text-xs font-bold text-slate-400 uppercase mb-2 block">여행 스타일 분석</span>
+                                <div class="chart-container" style="height: 200px;">
+                                    <canvas id="radarChart"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-xs text-slate-500 font-bold">총 예상 비용 (1인)</span>
+                                    <span id="modal-cost" class="text-lg font-bold text-indigo-600"></span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-1.5 rounded-full mb-2">
+                                    <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 100%"></div>
+                                </div>
+                                <div class="text-[10px] text-slate-400 space-y-1">
+                                    <div class="flex justify-between"><span>항공 (직항/경유)</span><span
+                                            id="cost-flight"></span></div>
+                                    <div class="flex justify-between"><span>숙박 (4성급)</span><span id="cost-hotel"></span>
+                                    </div>
+                                    <div class="flex justify-between"><span>식비/경비</span><span id="cost-daily"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <a id="link-blog" href="#" target="_blank"
+                                    class="block w-full text-center py-3 bg-[#03C75A] text-white rounded-lg text-sm font-bold hover:bg-[#02b351] transition">네이버
+                                    블로그 검색</a>
+                                <a id="link-youtube" href="#" target="_blank"
+                                    class="block w-full text-center py-3 bg-[#FF0000] text-white rounded-lg text-sm font-bold hover:bg-[#cc0000] transition">유튜브
+                                    브이로그</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Source
+        // Note: Using AI-generated images via Pollinations for stability.
+
+        const destinations = [
+            // === JAPAN (6 Nights 7 Days) ===
+            {
+                id: 'aomori', name: '아오모리', region: 'snow', duration: '6박 7일',
+                subtitle: '눈의 왕국', weather: -2, rain: 150, weatherDesc: '-2°C (폭설)', flightTime: '2h 30m',
+                costs: { flight: 450000, hotelPerNight: 150000, daily: 80000 },
+                scores: { relax: 4, sight: 5, activity: 3, food: 5, cost: 3 },
+                comment: '압도적인 설경과 온천',
+                desc: '일본 최고의 적설량을 자랑하는 아오모리. 핫코다 산의 거대한 수빙(스노우 몬스터)과 히바나무 향기 가득한 온천은 겨울 여행의 백미입니다.',
+                course: ['공항 도착 -> 네부타 와랏세', '핫코다 로프웨이 수빙', '스카유 온천 (천인 혼욕탕)', '아오모리 미술관 -> A-Factory', '히로사키 성 설경', '아침 시장 -> 이자카야', '쇼핑 -> 귀국'],
+                tip: '방한 부츠 필수. 폭설로 인한 교통 지연 가능성 염두.',
+                imgKeyword: 'Aomori,winter', warning: null
+            },
+            {
+                id: 'yamagata', name: '긴잔 온천', region: 'snow', duration: '6박 7일',
+                subtitle: '센과 치히로의 야경', weather: -4, rain: 120, weatherDesc: '-4°C (눈)', flightTime: '2h 20m',
+                costs: { flight: 420000, hotelPerNight: 200000, daily: 80000 },
+                scores: { relax: 5, sight: 5, activity: 4, food: 4, cost: 2 },
+                comment: '가스등이 켜지는 낭만 거리',
+                desc: '다이쇼 시대의 풍경을 간직한 온천 마을. 밤이 되면 켜지는 가스등과 눈 내리는 풍경은 동화 그 자체입니다.',
+                course: ['센다이 공항 -> 야마가타 이동', '긴잔 온천 야경 산책', '자오 온천 이동 -> 수빙', '자오 스키/보드', '야마데라 설경 등반', '모가미강 뱃놀이', '센다이 시내 -> 귀국'],
+                tip: '긴잔 온천 숙박은 6개월 전 마감. 야마가타 역 근처 숙박 추천.',
+                imgKeyword: 'Ginzan Onsen,winter', warning: null
+            },
+            {
+                id: 'sendai', name: '센다이', region: 'snow', duration: '6박 7일',
+                subtitle: '미식과 겨울 도시', weather: 2, rain: 50, weatherDesc: '2°C (쌀쌀함)', flightTime: '2h 20m',
+                costs: { flight: 380000, hotelPerNight: 100000, daily: 90000 },
+                scores: { relax: 3, sight: 4, activity: 2, food: 5, cost: 4 },
+                comment: '규탄(우설)의 본고장',
+                desc: '동북 여행의 중심지. 일본 3대 절경 마츠시마의 설경을 보고 질 좋은 우설 구이를 즐길 수 있습니다.',
+                course: ['공항 -> 규탄 거리', '마츠시마 해안 유람선', '즈이간지 -> 엔츠인', '아키우 온천 당일치기', '센다이 성터 야경', '아케이드 쇼핑', '귀국'],
+                tip: '도심이라 교통이 편리하고 쇼핑하기 좋습니다.',
+                imgKeyword: 'Matsushima,winter', warning: null
+            },
+            {
+                id: 'kanazawa', name: '가나자와', region: 'snow', duration: '6박 7일',
+                subtitle: '교토 감성과 미식', weather: 3, rain: 130, weatherDesc: '3°C (눈/비)', flightTime: '2h',
+                costs: { flight: 350000, hotelPerNight: 120000, daily: 90000 },
+                scores: { relax: 3, sight: 5, activity: 2, food: 5, cost: 3 },
+                comment: '겐로쿠엔 정원의 설경',
+                desc: '전통과 현대가 공존하는 예술의 도시. 겨울철 겐로쿠엔 정원의 유키츠리(눈吊り) 풍경이 장관이며 게 요리가 제철입니다.',
+                course: ['오미초 시장(해산물)', '겐로쿠엔 정원', '21세기 미술관', '히가시 차야 거리', '닌자데라', '나가마치 무사마을', '귀국'],
+                tip: '겨울에 비나 진눈깨비가 잦으니 우산을 꼭 챙기세요.',
+                imgKeyword: 'Kanazawa,Kenrokuen', warning: null
+            },
+            {
+                id: 'takamatsu', name: '다카마쓰', region: 'snow', duration: '6박 7일',
+                subtitle: '우동과 예술 섬', weather: 6, rain: 40, weatherDesc: '6°C (맑음)', flightTime: '1h 40m',
+                costs: { flight: 300000, hotelPerNight: 80000, daily: 70000 },
+                scores: { relax: 4, sight: 4, activity: 2, food: 5, cost: 5 },
+                comment: '우동 투어와 나오시마',
+                desc: '우동의 본고장이자 예술의 섬 나오시마로 가는 관문. 겨울에도 비교적 따뜻합니다.',
+                course: ['우동 버스 투어', '리쓰린 공원', '나오시마 (지중 미술관)', '테시마 미술관', '쇼도시마 엔젤로드', '효고마치 쇼핑', '귀국'],
+                tip: '미술관들은 사전 예약이 필수입니다.',
+                imgKeyword: 'Setouchi,Japan', warning: null
+            },
+            {
+                id: 'okinawa', name: '오키나와', region: 'sun', duration: '6박 7일', // Japan rule
+                subtitle: '벚꽃과 고래', weather: 19, rain: 60, weatherDesc: '19°C (선선)', flightTime: '2h 15m',
+                costs: { flight: 350000, hotelPerNight: 150000, daily: 80000 },
+                scores: { relax: 3, sight: 5, activity: 4, food: 4, cost: 3 },
+                comment: '혹등고래를 만나는 시즌',
+                desc: '해수욕은 춥지만 1월은 혹등고래 투어와 벚꽃 축제가 열리는 특별한 시기입니다.',
+                course: ['우미가지 테라스', '츄라우미 수족관', '코우리 대교', '웨일 워칭 투어', '아메리칸 빌리지', '슈리성', '국제거리 -> 귀국'],
+                tip: '바람이 강하니 바람막이를 챙기세요.',
+                imgKeyword: 'Okinawa,ocean', warning: '해수욕 불가 (추움)'
+            },
+            {
+                id: 'miyakojima', name: '미야코지마', region: 'sun', duration: '6박 7일',
+                subtitle: '미야코 블루', weather: 21, rain: 50, weatherDesc: '21°C (선선)', flightTime: '5h (경유)',
+                costs: { flight: 550000, hotelPerNight: 180000, daily: 80000 },
+                scores: { relax: 5, sight: 4, activity: 4, food: 3, cost: 2 },
+                comment: '일본 최고의 투명한 바다',
+                desc: '오키나와 본섬보다 훨씬 투명한 바다색을 자랑합니다. 1월에도 슈트를 입고 거북이 스노클링이 가능합니다.',
+                course: ['스나야마 비치', '이라부 대교 드라이브', '17END 해변', '요나하 마에하마', '시기라 황금 온천', '거북이 스노클링', '귀국'],
+                tip: '직항이 없어 오키나와를 경유해야 합니다.',
+                imgKeyword: 'Miyakojima', warning: null
+            },
+            // === SE ASIA (9 Nights 10 Days) ===
+            {
+                id: 'phuket', name: '푸켓', region: 'sun', duration: '9박 10일',
+                subtitle: '완벽한 휴양', weather: 28, rain: 30, weatherDesc: '28°C (맑음)', flightTime: '6h 20m',
+                costs: { flight: 650000, hotelPerNight: 120000, daily: 70000 },
+                scores: { relax: 4, sight: 4, activity: 5, food: 4, cost: 3 },
+                comment: '시밀란 군도 오픈 시즌',
+                desc: '건기의 푸켓은 파도가 잔잔해 시밀란 군도 투어를 가기에 최적입니다. 가족 리조트, 풀빌라, 밤문화까지 모든 것이 갖춰져 있습니다.',
+                course: ['빠통 비치 & 야시장', '시밀란 군도 투어', '올드타운 카페 투어', '피피섬 투어', '마사지 & 스파', '카타 비치 서핑/휴식', '왓 찰롱 사원', '쇼핑', '귀국'],
+                tip: '시밀란 투어는 미리 예약하세요.',
+                imgKeyword: 'Phuket,beach', warning: null
+            },
+            {
+                id: 'chiangmai', name: '치앙마이', region: 'sun', duration: '9박 10일',
+                subtitle: '북방의 장미', weather: 22, rain: 10, weatherDesc: '22°C (쾌적)', flightTime: '6h',
+                costs: { flight: 600000, hotelPerNight: 80000, daily: 60000 },
+                scores: { relax: 5, sight: 4, activity: 2, food: 5, cost: 5 },
+                comment: '여행하기 가장 좋은 쾌적한 날씨',
+                desc: '바다는 없지만 숲과 카페가 주는 힐링. 아침저녁으로 선선해 걷기 좋고 야시장이 활발합니다.',
+                course: ['타패 게이트 & 올드타운', '도이수텝 사원', '님만해민 카페', '반캉왓 예술마을', '쿠킹 클래스', '나이트 바자', '징짜이 마켓', '도이인타논 국립공원', '귀국'],
+                tip: '일교차가 크니 겉옷 필수.',
+                imgKeyword: 'Chiang Mai,temple', warning: null
+            },
+            {
+                id: 'khaolak', name: '카오락', region: 'sun', duration: '9박 10일',
+                subtitle: '조용한 휴식', weather: 28, rain: 20, weatherDesc: '28°C (맑음)', flightTime: '7h (이동)',
+                costs: { flight: 650000, hotelPerNight: 100000, daily: 60000 },
+                scores: { relax: 5, sight: 3, activity: 5, food: 3, cost: 4 },
+                comment: '다이버들의 성지',
+                desc: '푸켓보다 조용하고 자연 친화적입니다. 시밀란/수린섬 다이빙의 거점입니다.',
+                course: ['리조트 휴식', '시밀란 다이빙', '방니앙 시장', '수린섬 스노클링', '메모리얼 비치', '대나무 래프팅', '람루 국립공원', '선셋 디너', '귀국'],
+                tip: '푸켓 공항에서 차로 1시간 북쪽으로 이동해야 합니다.',
+                imgKeyword: 'Khao Lak', warning: null
+            },
+            {
+                id: 'kohlipe', name: '꼬리뻬', region: 'sun', duration: '9박 10일',
+                subtitle: '태국의 몰디브', weather: 29, rain: 10, weatherDesc: '29°C (맑음)', flightTime: '8h+',
+                costs: { flight: 700000, hotelPerNight: 130000, daily: 60000 },
+                scores: { relax: 5, sight: 3, activity: 5, food: 4, cost: 3 },
+                comment: '이동은 힘들지만 바다는 최고',
+                desc: '이동이 힘들지만 그만큼 맑은 바다를 만날 수 있습니다. 해변 바로 앞에서 니모를 봅니다.',
+                course: ['대장정 입도', '선라이즈 비치', '스노클링 투어', '워킹스트리트', '카약 탐험', '선셋 비치 일몰', '파타야 비치', '마사지 & 휴식', '귀국'],
+                tip: '현금을 넉넉히 챙기세요. 아쿠아슈즈 필수.',
+                imgKeyword: 'Koh Lipe', warning: '이동 시간 매우 김'
+            },
+            {
+                id: 'cebu', name: '세부/보홀', region: 'sun', duration: '9박 10일',
+                subtitle: '고래상어와 거북이', weather: 29, rain: 60, weatherDesc: '29°C (맑음)', flightTime: '4h 30m',
+                costs: { flight: 450000, hotelPerNight: 110000, daily: 70000 },
+                scores: { relax: 3, sight: 4, activity: 5, food: 3, cost: 5 },
+                comment: '물놀이와 액티비티 천국',
+                desc: '오슬롭 고래상어와 보홀 발리카삭 거북이는 아이들에게 최고의 추억입니다.',
+                course: ['세부 도착', '오슬롭 고래상어', '모알보알 정어리떼', '보홀 이동', '알로나 비치', '발리카삭 호핑', '초콜릿 힐', '반딧불 투어', '귀국'],
+                tip: '세부-보홀 페리는 에어컨이 매우 춥습니다.',
+                imgKeyword: 'Cebu,ocean', warning: null
+            },
+            {
+                id: 'palawan', name: '팔라완', region: 'sun', duration: '9박 10일',
+                subtitle: '마지막 비경', weather: 29, rain: 30, weatherDesc: '29°C (맑음)', flightTime: '경유',
+                costs: { flight: 600000, hotelPerNight: 100000, daily: 60000 },
+                scores: { relax: 5, sight: 5, activity: 5, food: 3, cost: 4 },
+                comment: '환상적인 라군 투어',
+                desc: '기암괴석 사이 에메랄드 라군을 누비는 호핑투어는 세계 최고 수준입니다.',
+                course: ['마닐라 경유 엘니도', '투어 A (라군)', '낙판 비치', '투어 C (히든비치)', '타운 산책', '코론 이동 (페리)', '카양안 호수', '난파선 다이빙', '귀국'],
+                tip: '엘니도와 코론을 묶어서 여행하려면 9박 10일이 딱 좋습니다.',
+                imgKeyword: 'El Nido', warning: null
+            },
+            {
+                id: 'siargao', name: '시아르가오', region: 'sun', duration: '9박 10일',
+                subtitle: '서핑 성지', weather: 27, rain: 300, weatherDesc: '27°C (우기)', flightTime: '경유',
+                costs: { flight: 650000, hotelPerNight: 80000, daily: 50000 },
+                scores: { relax: 4, sight: 3, activity: 5, food: 4, cost: 5 },
+                comment: '힙하지만 1월은 비가 옴',
+                desc: '야자수 숲과 서핑. 단 1월은 필리핀 동부 우기로 비가 오고 파도가 높습니다.',
+                course: ['클라우드9 서핑', '마푸푼코 락풀', '수그바 라군', '코코넛 로드', '파시픽오 섬', '서핑 강습', '카페 투어', '야간 파티', '귀국'],
+                tip: '서핑이 목적이 아니라면 비 추천.',
+                imgKeyword: 'Siargao,surfing', warning: '우기 (비/높은 파도)'
+            },
+            {
+                id: 'phuquoc', name: '푸꾸옥', region: 'sun', duration: '9박 10일',
+                subtitle: '가족 파라다이스', weather: 27, rain: 40, weatherDesc: '27°C (맑음)', flightTime: '5h 30m',
+                costs: { flight: 550000, hotelPerNight: 130000, daily: 60000 },
+                scores: { relax: 5, sight: 3, activity: 3, food: 4, cost: 4 },
+                comment: '사파리와 리조트 호캉스',
+                desc: '베트남 1월 유일한 건기 휴양지. 빈펄 사파리와 테마파크가 있어 가족 여행에 완벽합니다.',
+                course: ['리조트 휴식', '빈펄 사파리', '빈원더스', '그랜드월드', '혼똔섬 케이블카', '선셋 타운', '사오 비치', '야시장', '귀국'],
+                tip: '북부(빈펄)와 남부(케이블카) 숙소를 나누세요.',
+                imgKeyword: 'Phu Quoc,beach', warning: null
+            },
+            {
+                id: 'quynhon', name: '꾸이년', region: 'sun', duration: '9박 10일',
+                subtitle: '숨은 보석', weather: 24, rain: 80, weatherDesc: '24°C (바람)', flightTime: '경유',
+                costs: { flight: 500000, hotelPerNight: 90000, daily: 50000 },
+                scores: { relax: 4, sight: 4, activity: 3, food: 4, cost: 5 },
+                comment: '한국인 없는 로컬 여행',
+                desc: '아직 덜 알려진 휴양지. 절벽 풍경이 아름답지만 1월은 바람이 강합니다.',
+                course: ['시내 구경', '키코 비치', '에오지오 절벽', '참파 유적', 'FLC 골프', '로컬 해산물', '서핑 바', '휴식', '귀국'],
+                tip: '영어가 잘 안 통할 수 있습니다.',
+                imgKeyword: 'Ky Co Beach,Quy Nhon', warning: '바람이 강함'
+            },
+            {
+                id: 'danang', name: '다낭/호이안', region: 'sun', duration: '9박 10일',
+                subtitle: '관광과 미식', weather: 20, rain: 100, weatherDesc: '20°C (흐림)', flightTime: '4h 40m',
+                costs: { flight: 400000, hotelPerNight: 90000, daily: 60000 },
+                scores: { relax: 3, sight: 5, activity: 2, food: 5, cost: 5 },
+                comment: '수영은 춥지만 관광은 최고',
+                desc: '덥지 않아 바나힐과 호이안을 관광하기 좋습니다. 10일이면 후에(Hue)까지 다녀오세요.',
+                course: ['한시장 & 핑크성당', '바나힐 테마파크', '호이안 올드타운', '안방 비치', '바구니 배', '후에 당일치기', '미케비치 산책', '마사지', '귀국'],
+                tip: '해수욕 불가. 긴팔 옷 필수.',
+                imgKeyword: 'Hoi An,lanterns', warning: '추워서 수영 불가'
+            },
+            {
+                id: 'kotakinabalu', name: '코타키나발루', region: 'sun', duration: '9박 10일',
+                subtitle: '선셋과 반딧불', weather: 27, rain: 80, weatherDesc: '27°C (건기)', flightTime: '5h',
+                costs: { flight: 500000, hotelPerNight: 120000, daily: 70000 },
+                scores: { relax: 4, sight: 3, activity: 3, food: 3, cost: 4 },
+                comment: '세계 3대 석양',
+                desc: '가족 휴양지로 인기. 섬 투어, 선셋, 반딧불 투어가 메인입니다.',
+                course: ['웰컴 씨푸드', '마누칸섬 호핑', '탄중아루 선셋', '블루 모스크', '반딧불 투어', '마리마리 민속촌', '쇼핑몰', '마사지', '귀국'],
+                tip: '그랩이 잘 잡힙니다. 반딧불 투어 시 모기 조심.',
+                imgKeyword: 'Kota Kinabalu', warning: null
+            },
+            {
+                id: 'langkawi', name: '랑카위', region: 'sun', duration: '9박 10일',
+                subtitle: '대자연과 면세', weather: 28, rain: 20, weatherDesc: '28°C (맑음)', flightTime: '경유',
+                costs: { flight: 600000, hotelPerNight: 130000, daily: 70000 },
+                scores: { relax: 5, sight: 4, activity: 4, food: 3, cost: 4 },
+                comment: '유네스코 지질공원',
+                desc: '맹그로브 숲 탐험과 스카이 브릿지가 유명합니다. 섬 전체가 면세 구역입니다.',
+                course: ['체낭 비치', '맹그로브 투어', '스카이 브릿지', '독수리 광장', '면세 쇼핑', '선셋 크루즈', '탄중루 비치', '휴식', '귀국'],
+                tip: '쿠알라룸푸르 경유 필요.',
+                imgKeyword: 'Langkawi', warning: null
+            }
+        ];
+
+        // Calc Total Cost based on Duration Rules
+        destinations.forEach(d => {
+            const nights = d.region === 'snow' ? 6 : 9;
+            const days = d.region === 'snow' ? 7 : 10;
+            d.totalCost = d.costs.flight + (d.costs.hotelPerNight * nights) + (d.costs.daily * days);
+        });
+
+        // App Logic
+        function init() {
+            renderAll('all');
+        }
+
+        function renderAll(filter) {
+            const filtered = filter === 'all' ? destinations : destinations.filter(d => d.region === filter);
+            renderTable(filtered);
+            renderWeatherChart(filtered);
+            renderGrid(filtered);
+            document.getElementById('count-view').innerText = filtered.length;
+        }
+
+        // 1. Render Table
+        function renderTable(data) {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            data.forEach(d => {
+                const tr = document.createElement('tr');
+                tr.onclick = () => openModal(d.id);
+                const regionBadge = d.region === 'snow' ? '<span class="text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded text-xs">JP (6박)</span>' : '<span class="text-orange-500 font-bold bg-orange-50 px-2 py-1 rounded text-xs">SEA (9박)</span>';
+
+                // Recommendation Logic
+                let recIcon = '';
+                // Thumb Down: Warning exists OR High Rain (>150mm)
+                if (d.warning || d.rain > 150) {
+                    recIcon = '<i class="fas fa-thumbs-down text-red-400"></i>';
+                }
+                // Thumb Up: No Warning AND High Cost Efficiency (Score 4+) AND Food Score 4+
+                // OR specific "Great Weather" keywords in subtitle?
+                // Let's go with: No Warning & (Cost Score >= 4 OR Relax Score >= 5)
+                else if (!d.warning && (d.scores.cost >= 4 || d.scores.relax >= 5)) {
+                    recIcon = '<i class="fas fa-thumbs-up text-green-500 text-lg"></i>';
+                }
+
+                tr.innerHTML = `
+                    <td class="text-center">${regionBadge}</td>
+                    <td class="font-bold text-slate-700">${d.name}</td>
+                    <td class="text-xs text-slate-500 truncate max-w-[150px]">${d.comment}</td>
+                    <td class="text-center">${recIcon}</td>
+                    <td class="text-center">${getStars(d.scores.relax)}</td>
+                    <td class="text-center">${getStars(d.scores.sight)}</td>
+                    <td class="text-center">${getStars(d.scores.activity)}</td>
+                    <td class="text-center">${getStars(d.scores.food)}</td>
+                    <td class="text-center">${getStars(d.scores.cost)}</td>
+                    <td class="text-right pr-6 font-bold text-indigo-600">${(d.totalCost / 10000).toLocaleString()}만</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 2. Render Weather Chart
+        let weatherChart = null;
+        function renderWeatherChart(data) {
+            const ctx = document.getElementById('weatherChart').getContext('2d');
+            if (weatherChart) weatherChart.destroy();
+
+            // Sort by Temp
+            const sorted = [...data].sort((a, b) => b.weather - a.weather);
+
+            weatherChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(d => d.name),
+                    datasets: [
+                        {
+                            label: '기온 (°C)',
+                            data: sorted.map(d => d.weather),
+                            backgroundColor: sorted.map(d => d.weather > 15 ? 'rgba(249, 115, 22, 0.6)' : 'rgba(59, 130, 246, 0.6)'),
+                            borderColor: sorted.map(d => d.weather > 15 ? 'rgb(249, 115, 22)' : 'rgb(59, 130, 246)'),
+                            borderWidth: 1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '강수량 (mm)',
+                            data: sorted.map(d => d.rain),
+                            type: 'line',
+                            borderColor: '#64748b',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#fff',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { position: 'left', title: { display: true, text: '기온 (°C)' } },
+                        y1: { position: 'right', title: { display: true, text: '강수량 (mm)' }, grid: { drawOnChartArea: false } }
+                    }
+                }
+            });
+        }
+
+        // 3. Render Grid
+        function renderGrid(data) {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+            data.forEach(d => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl overflow-hidden card-shadow cursor-pointer group flex flex-col h-full border border-slate-100';
+                card.onclick = () => openModal(d.id);
+
+                // Using Bing Image Search Thumbnails (Reliable Real Photos)
+                // c=7: Smart Crop, w/h: dimensions
+                const imgUrl = `https://tse2.mm.bing.net/th?q=${encodeURIComponent(d.name + ' ' + d.imgKeyword)}&w=800&h=600&c=7&rs=1&p=0`;
+
+                card.innerHTML = `
+                    <div class="h-40 bg-slate-200 relative overflow-hidden">
+                        <img src="${imgUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="${d.name}" loading="lazy" onerror="this.src='https://placehold.co/400x300?text=No+Image'">
+                        <div class="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur">
+                            ${d.weatherDesc}
+                        </div>
+                    </div>
+                    <div class="p-4 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-1">
+                            <h4 class="font-bold text-gray-800">${d.name}</h4>
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${d.region === 'snow' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}">${d.duration}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3 line-clamp-1">${d.comment}</p>
+                        <div class="mt-auto pt-3 border-t border-slate-50 flex justify-between items-center text-sm">
+                            <span class="text-gray-400 text-xs"><i class="fas fa-plane mr-1"></i>${d.flightTime}</span>
+                            <span class="font-bold text-indigo-600 text-sm">${(d.totalCost / 10000).toLocaleString()}만~</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function getStars(n) {
+            return Array(5).fill(0).map((_, i) => `<i class="fas fa-star text-[10px] ${i < n ? 'star-on' : 'star-off'}"></i>`).join('');
+        }
+
+        // Modal
+        let radarChart = null;
+        function openModal(id) {
+            const d = destinations.find(x => x.id === id);
+            if (!d) return;
+
+            document.getElementById('modal-title').innerText = d.name;
+            document.getElementById('modal-subtitle').innerText = d.comment;
+            document.getElementById('modal-badge').innerText = d.subtitle;
+            document.getElementById('modal-duration').innerText = d.duration;
+            document.getElementById('modal-desc').innerText = d.desc;
+            document.getElementById('modal-tip').innerText = d.tip;
+            document.getElementById('modal-cost').innerText = `약 ${(d.totalCost).toLocaleString()}원`;
+
+            // Modal Image (High Res)
+            document.getElementById('modal-img').src = `https://tse2.mm.bing.net/th?q=${encodeURIComponent(d.name + ' travel ' + d.imgKeyword)}&w=1200&h=600&c=7&rs=1&p=0`;
+            document.getElementById('modal-img').onerror = function () { this.src = 'https://placehold.co/800x400?text=Image+Not+Found'; };
+
+            const warningEl = document.getElementById('modal-warning');
+            if (d.warning) {
+                warningEl.classList.remove('hidden');
+                document.getElementById('modal-warning-text').innerText = d.warning;
+            } else {
+                warningEl.classList.add('hidden');
+            }
+
+            // Cost Details
+            const nights = d.region === 'snow' ? 6 : 9;
+            const days = d.region === 'snow' ? 7 : 10;
+            document.getElementById('cost-flight').innerText = `${(d.costs.flight).toLocaleString()}원`;
+            document.getElementById('cost-hotel').innerText = `${(d.costs.hotelPerNight).toLocaleString()}원 x ${nights}박`;
+            document.getElementById('cost-daily').innerText = `${(d.costs.daily).toLocaleString()}원 x ${days}일`;
+
+            // Course
+            const courseEl = document.getElementById('modal-course');
+            courseEl.innerHTML = d.course.map((c, i) => `<li class="flex gap-3"><span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center shrink-0">${i + 1}</span><span>${c}</span></li>`).join('');
+
+            // Links
+            document.getElementById('link-blog').href = `https://search.naver.com/search.naver?where=blog&query=2026년+1월+${d.name}+여행`;
+            document.getElementById('link-youtube').href = `https://www.youtube.com/results?search_query=${d.name}+여행+브이로그`;
+
+            // Radar Chart
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            if (radarChart) radarChart.destroy();
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['휴양', '관광', '액티비티', '미식', '가성비'],
+                    datasets: [{
+                        label: d.name,
+                        data: [d.scores.relax, d.scores.sight, d.scores.activity, d.scores.food, d.scores.cost],
+                        backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                        borderColor: '#4f46e5',
+                        pointBackgroundColor: '#4f46e5'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { r: { min: 0, max: 5, ticks: { display: false } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            document.getElementById('modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function runDiagnostics() {
+            console.group('Diagnostics: Visual & Data Check');
+
+            // 1. Check Data integrity
+            console.log(`Checking ${destinations.length} destinations...`);
+            let missingImages = 0;
+
+            destinations.forEach(d => {
+                if (!d.imgKeyword) {
+                    console.warn(`[Missing Keyword] ${d.name}`);
+                    missingImages++;
+                }
+            });
+
+            if (missingImages === 0) {
+                console.log("%c[PASS] All destinations have image keywords.", "color:green");
+            } else {
+                console.error(`[FAIL] ${missingImages} destinations missing keywords.`);
+            }
+
+            // 2. Check DOM Elements (Images)
+            const images = document.querySelectorAll('img');
+            console.log(`Found ${images.length} images on page.`);
+
+            // Verify if any image is broken (simple check)
+            let brokenImages = 0;
+            images.forEach((img, idx) => {
+                if (!img.src || img.src === "") {
+                    console.warn(`Image #${idx} has no source.`);
+                    brokenImages++;
+                }
+            });
+
+            if (brokenImages === 0) {
+                console.log("%c[PASS] All image tags have sources.", "color:green");
+            } else {
+                console.error(`[FAIL] ${brokenImages} images are missing sources.`);
+            }
+
+            console.groupEnd();
+            alert("Visual Verification Complete. Check Console (F12) for detailed logs.");
+        }
+
+        init();
+
+        // Auto-run diagnostics if requested via URL param ?debug=true
+        if (new URLSearchParams(window.location.search).get('debug') === 'true') {
+            window.addEventListener('load', runDiagnostics);
+        }
+    </script>
+</body>
+
+</html>

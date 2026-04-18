@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code v2.1.92 이후 릴리즈 노트 (∼v2.1.108)</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── CSS 변수 ───────────────────────────────────────────── */
+    :root {
+      --bg:            #F8F8FC;
+      --surface:       #FFFFFF;
+      --surface2:      #F2F2F8;
+      --border:        rgba(0,0,0,0.08);
+      --border-strong: rgba(0,0,0,0.14);
+      --text-primary:  #18181C;
+      --text-secondary:#4B4B5E;
+      --text-muted:    #8B8B99;
+      --accent:        #6C47FF;
+      --accent-soft:   rgba(108,71,255,0.08);
+      --accent-border: rgba(108,71,255,0.25);
+      --nav-bg:        rgba(248,248,252,0.92);
+      --code-bg:       #EEF0F6;
+      --code-text:     #3B3B55;
+      --tag-new-bg:    #EEF5FF;
+      --tag-new-text:  #2563EB;
+      --tag-fix-bg:    #F0FDF4;
+      --tag-fix-text:  #15803D;
+      --tag-imp-bg:    #FFF7ED;
+      --tag-imp-text:  #C2410C;
+      --tag-sec-bg:    #FEF2F2;
+      --tag-sec-text:  #DC2626;
+      --tag-hot-bg:    #FFF1F2;
+      --tag-hot-text:  #E11D48;
+      --callout-bg:    rgba(108,71,255,0.06);
+      --callout-border:rgba(108,71,255,0.3);
+      --tip-bg:        rgba(16,185,129,0.07);
+      --tip-border:    rgba(16,185,129,0.3);
+      --warn-bg:       rgba(245,158,11,0.07);
+      --warn-border:   rgba(245,158,11,0.3);
+    }
+    [data-theme="dark"] {
+      --bg:            #0F0F14;
+      --surface:       #18181C;
+      --surface2:      #1E1E26;
+      --border:        rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.14);
+      --text-primary:  #F0F0F4;
+      --text-secondary:#B0B0C0;
+      --text-muted:    #6B6B7B;
+      --accent:        #8B6FFF;
+      --accent-soft:   rgba(139,111,255,0.12);
+      --accent-border: rgba(139,111,255,0.3);
+      --nav-bg:        rgba(15,15,20,0.92);
+      --code-bg:       #23232E;
+      --code-text:     #C4C4D8;
+      --tag-new-bg:    rgba(37,99,235,0.15);
+      --tag-new-text:  #93C5FD;
+      --tag-fix-bg:    rgba(21,128,61,0.15);
+      --tag-fix-text:  #6EE7B7;
+      --tag-imp-bg:    rgba(194,65,12,0.15);
+      --tag-imp-text:  #FED7AA;
+      --tag-sec-bg:    rgba(220,38,38,0.15);
+      --tag-sec-text:  #FCA5A5;
+      --tag-hot-bg:    rgba(225,29,72,0.15);
+      --tag-hot-text:  #FDA4AF;
+      --callout-bg:    rgba(139,111,255,0.08);
+      --callout-border:rgba(139,111,255,0.25);
+      --tip-bg:        rgba(16,185,129,0.08);
+      --tip-border:    rgba(16,185,129,0.25);
+      --warn-bg:       rgba(245,158,11,0.08);
+      --warn-border:   rgba(245,158,11,0.25);
+    }
+
+    /* ── 기본 ───────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.7;
+      font-size: 16px;
+      word-break: keep-all;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    /* ── 상단 Nav ────────────────────────────────────────────── */
+    .top-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 52px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .nav-brand {
+      font-size: 14px; font-weight: 600;
+      color: var(--text-primary);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .nav-brand-icon {
+      width: 22px; height: 22px; border-radius: 6px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-brand-icon svg { width: 13px; height: 13px; }
+    .nav-spacer { flex: 1; }
+    .nav-badge {
+      font-size: 12px; font-weight: 600;
+      padding: 3px 8px;
+      background: var(--accent-soft); color: var(--accent);
+      border-radius: 20px; border: 1px solid var(--accent-border);
+    }
+    .theme-toggle {
+      width: 34px; height: 34px; border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary);
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .theme-toggle:hover { background: var(--surface2); color: var(--accent); }
+    .icon-sun { display: none; }
+    [data-theme="dark"] .icon-moon { display: none; }
+    [data-theme="dark"] .icon-sun  { display: block; }
+
+    /* ── 레이아웃 ─────────────────────────────────────────── */
+    .page-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 24px; gap: 40px; align-items: start;
+    }
+    @media (max-width: 768px) {
+      .page-layout { grid-template-columns: 1fr; padding: 0 16px; }
+      .sidebar { display: none; }
+    }
+
+    /* ── 사이드바 ─────────────────────────────────────────── */
+    .sidebar { position: sticky; top: 68px; padding: 24px 0; }
+    .sidebar-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 10px;
+    }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav li { margin-bottom: 2px; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: 7px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-secondary); text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      background: var(--accent-soft); color: var(--accent);
+    }
+    .sidebar-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent); flex-shrink: 0; opacity: 0.5;
+    }
+    .sidebar-nav a.active .sidebar-dot,
+    .sidebar-nav a:hover .sidebar-dot { opacity: 1; }
+
+    /* ── 메인 ─────────────────────────────────────────────── */
+    .main-content { padding: 48px 0 80px; }
+
+    /* ── 페이지 헤더 ─────────────────────────────────────── */
+    .page-header { margin-bottom: 48px; }
+    .page-header-meta {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .ver-badge {
+      font-size: 12px; font-weight: 700; padding: 3px 9px;
+      background: var(--accent); color: #fff;
+      border-radius: 20px; letter-spacing: 0.02em;
+    }
+    .date-badge {
+      font-size: 12px; color: var(--text-muted); font-weight: 500;
+    }
+    .page-title {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700; line-height: 1.25;
+      color: var(--text-primary); margin-bottom: 12px;
+    }
+    .page-title span { color: var(--accent); }
+    .page-desc {
+      font-size: 15px; color: var(--text-secondary);
+      max-width: 640px; line-height: 1.7;
+    }
+
+    /* ── 하이라이트 그리드 ───────────────────────────────── */
+    .highlights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px; margin-bottom: 48px;
+    }
+    .highlight-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .highlight-card:hover {
+      border-color: var(--accent-border);
+      box-shadow: 0 4px 16px rgba(108,71,255,0.08);
+    }
+    .highlight-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      background: var(--accent-soft); border: 1px solid var(--accent-border);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 12px; font-size: 18px;
+    }
+    .highlight-title {
+      font-size: 13px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 4px;
+    }
+    .highlight-desc {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+    }
+
+    /* ── 릴리즈 섹션 ─────────────────────────────────────── */
+    .release-section { margin-bottom: 48px; scroll-margin-top: 72px; }
+    .release-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 18px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border); border-radius: 12px;
+      margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .release-version {
+      font-size: 18px; font-weight: 700; color: var(--text-primary);
+    }
+    .release-date {
+      font-size: 13px; color: var(--text-muted); font-weight: 500;
+    }
+    .release-badge-hot {
+      font-size: 11px; font-weight: 700; padding: 2px 8px;
+      background: var(--tag-hot-bg); color: var(--tag-hot-text);
+      border-radius: 20px;
+    }
+    .release-badge-sec {
+      font-size: 11px; font-weight: 700; padding: 2px 8px;
+      background: var(--tag-sec-bg); color: var(--tag-sec-text);
+      border-radius: 20px;
+    }
+    .release-badge-cache {
+      font-size: 11px; font-weight: 700; padding: 2px 8px;
+      background: rgba(245,158,11,0.12); color: #B45309;
+      border-radius: 20px;
+    }
+    [data-theme="dark"] .release-badge-cache { color: #FCD34D; }
+
+    /* ── 변경사항 리스트 ─────────────────────────────────── */
+    .change-group { margin-bottom: 20px; }
+    .change-group-title {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 8px;
+    }
+    .change-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .change-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 14px; line-height: 1.6;
+    }
+    .change-item:hover { border-color: var(--accent-border); }
+    .tag {
+      display: inline-flex; align-items: center;
+      font-size: 10px; font-weight: 700;
+      padding: 2px 6px; border-radius: 4px;
+      flex-shrink: 0; margin-top: 2px;
+      letter-spacing: 0.04em;
+    }
+    .tag-new  { background: var(--tag-new-bg);  color: var(--tag-new-text); }
+    .tag-fix  { background: var(--tag-fix-bg);  color: var(--tag-fix-text); }
+    .tag-imp  { background: var(--tag-imp-bg);  color: var(--tag-imp-text); }
+    .tag-sec  { background: var(--tag-sec-bg);  color: var(--tag-sec-text); }
+    .tag-cache { background: rgba(245,158,11,0.12); color: #B45309; }
+    [data-theme="dark"] .tag-cache { color: #FCD34D; }
+    .change-text { color: var(--text-secondary); flex: 1; }
+    .change-text strong { color: var(--text-primary); font-weight: 600; }
+    .change-text code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 12px; padding: 1px 5px;
+      background: var(--code-bg); color: var(--code-text);
+      border-radius: 4px;
+    }
+
+    /* ── 딥다이브 섹션 ─────────────────────────────────── */
+    .deep-dive { scroll-margin-top: 72px; margin-bottom: 48px; }
+    .section-heading {
+      font-size: 20px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-heading-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--warn-bg); border: 1px solid var(--warn-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+
+    /* ── Callout ─────────────────────────────────────────── */
+    .callout {
+      padding: 16px 20px; border-radius: 10px;
+      border-left: 3px solid var(--accent);
+      background: var(--callout-bg);
+      margin-bottom: 16px;
+    }
+    .callout-warn {
+      border-left-color: #F59E0B;
+      background: var(--warn-bg);
+    }
+    .callout-tip {
+      border-left-color: #10B981;
+      background: var(--tip-bg);
+    }
+    .callout-title {
+      font-size: 13px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 6px;
+    }
+    .callout-body {
+      font-size: 14px; color: var(--text-secondary); line-height: 1.65;
+    }
+    .callout-body code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 12px; padding: 1px 5px;
+      background: var(--code-bg); color: var(--code-text);
+      border-radius: 4px;
+    }
+
+    /* ── 버그 타임라인 ────────────────────────────────── */
+    .bug-timeline { display: flex; flex-direction: column; gap: 0; }
+    .bug-entry {
+      display: flex; gap: 20px; align-items: flex-start;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .bug-entry:last-child { border-bottom: none; }
+    .bug-ver-col {
+      flex-shrink: 0; width: 90px;
+    }
+    .bug-ver-badge {
+      display: inline-block;
+      font-size: 11px; font-weight: 700;
+      padding: 3px 8px;
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--accent-border);
+      border-radius: 20px;
+    }
+    .bug-content { flex: 1; }
+    .bug-title {
+      font-size: 15px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 6px;
+    }
+    .bug-desc {
+      font-size: 14px; color: var(--text-secondary); line-height: 1.65;
+      margin-bottom: 8px;
+    }
+    .bug-desc code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 12px; padding: 1px 5px;
+      background: var(--code-bg); color: var(--code-text);
+      border-radius: 4px;
+    }
+    .bug-impact {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; padding: 3px 10px;
+      border-radius: 6px;
+    }
+    .impact-high { background: rgba(220,38,38,0.1); color: #DC2626; }
+    [data-theme="dark"] .impact-high { color: #FCA5A5; }
+    .impact-med  { background: rgba(245,158,11,0.1); color: #B45309; }
+    [data-theme="dark"] .impact-med { color: #FCD34D; }
+    .impact-low  { background: rgba(16,185,129,0.1); color: #059669; }
+    [data-theme="dark"] .impact-low { color: #6EE7B7; }
+
+    /* ── 요약 테이블 ─────────────────────────────────── */
+    .summary-table { scroll-margin-top: 72px; margin-bottom: 48px; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table th {
+      padding: 10px 14px; text-align: left;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border-strong);
+      font-size: 12px; font-weight: 700;
+      color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .data-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+    .data-table tr:hover td { background: var(--surface2); }
+    .data-table td code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 11px; padding: 1px 5px;
+      background: var(--code-bg); color: var(--code-text);
+      border-radius: 4px;
+    }
+
+    /* ── 환경변수 카드 ───────────────────────────────── */
+    .env-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px; margin-bottom: 24px;
+    }
+    .env-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px;
+    }
+    .env-card:hover { border-color: var(--accent-border); }
+    .env-name {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 12px; font-weight: 700;
+      color: var(--accent); margin-bottom: 6px;
+      word-break: break-all;
+    }
+    .env-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ── divider ─────────────────────────────────────── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 상단 내비게이션 -->
+<nav class="top-nav">
+  <div class="nav-brand">
+    <div class="nav-brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    Claude Code Changelog
+  </div>
+  <div class="nav-spacer"></div>
+  <span class="nav-badge">v2.1.92 → v2.1.108</span>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="테마 전환">
+    <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <svg class="icon-sun"  width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+  </button>
+</nav>
+
+<div class="page-layout">
+
+  <!-- 사이드바 -->
+  <aside class="sidebar">
+    <p class="sidebar-label">릴리즈 목록</p>
+    <ul class="sidebar-nav">
+      <li><a href="#summary"><span class="sidebar-dot"></span>버전 요약</a></li>
+      <li><a href="#v2108"><span class="sidebar-dot"></span>v2.1.108 🔥</a></li>
+      <li><a href="#v2105"><span class="sidebar-dot"></span>v2.1.105</a></li>
+      <li><a href="#v2101"><span class="sidebar-dot"></span>v2.1.101</a></li>
+      <li><a href="#v2198"><span class="sidebar-dot"></span>v2.1.98 🔒</a></li>
+      <li><a href="#v2197"><span class="sidebar-dot"></span>v2.1.97</a></li>
+      <li><a href="#v2196"><span class="sidebar-dot"></span>v2.1.96</a></li>
+      <li><a href="#v2194"><span class="sidebar-dot"></span>v2.1.94</a></li>
+      <li><a href="#cache-deepdive"><span class="sidebar-dot"></span>⚠️ 캐시 버그 심층</a></li>
+      <li><a href="#env-vars"><span class="sidebar-dot"></span>새 환경변수</a></li>
+    </ul>
+  </aside>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="main-content">
+
+    <!-- 페이지 헤더 -->
+    <header class="page-header">
+      <div class="page-header-meta">
+        <span class="ver-badge">v2.1.92 → v2.1.108</span>
+        <span class="date-badge">2026-04-04 ~ 2026-04-14</span>
+      </div>
+      <h1 class="page-title">Claude Code <span>릴리즈 노트</span></h1>
+      <p class="page-desc">
+        v2.1.92 이후 11일간 배포된 10개 이상의 릴리즈 핵심을 정리합니다.
+        프롬프트 캐시 1시간 TTL 확장, 구독자 캐시 TTL 버그 수정,
+        보안 패치, 성능 개선이 주요 내용입니다.
+      </p>
+    </header>
+
+    <!-- 핵심 하이라이트 -->
+    <section id="summary" class="release-section">
+      <div class="highlights-grid">
+        <div class="highlight-card">
+          <div class="highlight-icon">🕐</div>
+          <div class="highlight-title">프롬프트 캐시 1시간 TTL</div>
+          <div class="highlight-desc">API key·Bedrock·Vertex·Foundry 사용자가 1시간 캐시 TTL을 활성화할 수 있습니다. 비용 절감 직결.</div>
+        </div>
+        <div class="highlight-card">
+          <div class="highlight-icon">🐛</div>
+          <div class="highlight-title">구독자 캐시 버그 수정</div>
+          <div class="highlight-desc">DISABLE_TELEMETRY 설정 시 5분 TTL로 폴백되던 버그가 v2.1.108에서 수정. 구독자는 1시간 TTL 정상 적용.</div>
+        </div>
+        <div class="highlight-card">
+          <div class="highlight-icon">🔒</div>
+          <div class="highlight-title">Bash 권한 우회 보안 패치</div>
+          <div class="highlight-desc">백슬래시 이스케이프 플래그·복합 명령으로 권한 프롬프트를 우회할 수 있던 취약점 수정 (v2.1.98).</div>
+        </div>
+        <div class="highlight-card">
+          <div class="highlight-icon">⚡</div>
+          <div class="highlight-title">기본 노력 수준 high 변경</div>
+          <div class="highlight-desc">API key·Bedrock·Vertex 등에서 기본 노력(effort) 수준이 medium → high로 격상 (v2.1.94).</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 버전별 요약 테이블 -->
+    <section class="summary-table">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>버전</th>
+            <th>날짜</th>
+            <th>주요 내용</th>
+            <th>특이점</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>v2.1.108</strong></td>
+            <td>2026-04-14</td>
+            <td>캐시 1시간 TTL, 구독자 캐시 버그 수정, recap 기능</td>
+            <td><span class="tag tag-cache">CACHE</span> <span class="tag tag-fix">HOT</span></td>
+          </tr>
+          <tr>
+            <td>v2.1.107</td>
+            <td>2026-04-14</td>
+            <td>생각 힌트 표시 속도 개선</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>v2.1.105</strong></td>
+            <td>2026-04-13</td>
+            <td>PreCompact 훅, 스트림 타임아웃, MCP 캐시 누수 수정</td>
+            <td><span class="tag tag-fix">BUG</span></td>
+          </tr>
+          <tr>
+            <td><strong>v2.1.101</strong></td>
+            <td>2026-04-10</td>
+            <td>/team-onboarding, OS CA 인증서, API 타임아웃 5분 제한 수정</td>
+            <td><span class="tag tag-new">NEW</span></td>
+          </tr>
+          <tr>
+            <td><strong>v2.1.98</strong></td>
+            <td>2026-04-09</td>
+            <td>Bash 보안 취약점 수정, Vertex AI 마법사, Monitor 도구</td>
+            <td><span class="tag tag-sec">보안</span></td>
+          </tr>
+          <tr>
+            <td><strong>v2.1.97</strong></td>
+            <td>2026-04-08</td>
+            <td>Focus 뷰 토글, --resume 캐시 미스, MCP 메모리 누수 수정</td>
+            <td><span class="tag tag-cache">CACHE</span></td>
+          </tr>
+          <tr>
+            <td>v2.1.96</td>
+            <td>2026-04-08</td>
+            <td>Bedrock 403 에러 수정 (v2.1.94 회귀)</td>
+            <td><span class="tag tag-fix">HOTFIX</span></td>
+          </tr>
+          <tr>
+            <td><strong>v2.1.94</strong></td>
+            <td>2026-04-07</td>
+            <td>기본 노력 high, Bedrock Mantle, 토큰 추적 버그 수정</td>
+            <td><span class="tag tag-imp">IMP</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── v2.1.108 ──────────────────────────────────── -->
+    <section id="v2108" class="release-section">
+      <div class="release-header">
+        <span class="release-version">v2.1.108</span>
+        <span class="release-date">2026-04-14</span>
+        <span class="release-badge-hot">🔥 주목 릴리즈</span>
+        <span class="release-badge-cache">⚠️ 캐시 버그 수정</span>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">이번 릴리즈가 중요한 이유</div>
+        <div class="callout-body">
+          구독(claude.ai) 사용자가 <code>DISABLE_TELEMETRY=1</code>을 설정하면 5분짜리 단기 캐시 TTL로 폴백되던 버그가 수정되었습니다.
+          더불어 API 사용자는 <code>ENABLE_PROMPT_CACHING_1H=1</code> 환경변수로 1시간 캐시를 활성화할 수 있습니다.
+          캐시 TTL이 길수록 동일 컨텍스트 반복 요청 시 토큰 비용이 크게 절감됩니다.
+        </div>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">신규 기능</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong><code>ENABLE_PROMPT_CACHING_1H</code> 환경변수 추가</strong> — API key, Bedrock, Vertex, Foundry에서 1시간 프롬프트 캐시 TTL 지원. 기존 5분에서 대폭 연장.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong>Recap 기능 추가</strong> — 세션 복귀 시 이전 작업 컨텍스트를 요약 제공하여 흐름 파악 용이.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-imp">IMP</span>
+            <span class="change-text"><strong><code>/model</code> 명령 개선</strong> — 대화 도중 모델 전환 시 경고 표시. 전환하면 다음 응답에서 전체 히스토리를 재읽기하므로 캐시 미스가 발생함을 안내.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-imp">IMP</span>
+            <span class="change-text"><strong>에러 메시지 개선</strong> — 서버 레이트 제한과 플랜 사용량 제한을 별도 메시지로 구분 표시.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-imp">IMP</span>
+            <span class="change-text"><strong><code>/resume</code> 개선</strong> — 현재 작업 디렉토리의 세션을 목록 최상단에 우선 표시.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-imp">IMP</span>
+            <span class="change-text"><strong>메모리 사용량 감소</strong> — 파일 읽기·편집·구문 강조에 사용하는 언어 문법을 온디맨드(필요시)로 로딩하여 메모리 절약.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">버그 수정</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-cache">CACHE</span>
+            <span class="change-text"><strong>구독자 캐시 TTL 폴백 버그 수정 (핵심!)</strong> — <code>DISABLE_TELEMETRY=1</code> 설정 시 1시간 TTL이 적용되어야 하지만 5분 TTL로 폴백되던 문제 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-imp">IMP</span>
+            <span class="change-text"><strong>캐시 비활성화 환경변수 경고 추가</strong> — <code>DISABLE_PROMPT_CACHING*</code> 변수 사용 시 시작 시점에 경고 메시지 출력.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong>Bash 도구: <code>CLAUDE_ENV_FILE</code> 주석 버그</strong> — 파일 끝에 <code>#</code> 주석이 있을 때 출력이 없던 문제 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong>세션 복구 시 커스텀 이름/색상 손실</strong> — <code>/rename</code>으로 설정한 이름과 색상이 세션 복구 후 초기화되던 버그 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong>악센트·움라우트 문자 손실</strong> — 언어 설정 변경 시 à, ö, ç 등 특수 문자가 응답에서 누락되던 버그 수정.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── v2.1.105 ──────────────────────────────────── -->
+    <section id="v2105" class="release-section">
+      <div class="release-header">
+        <span class="release-version">v2.1.105</span>
+        <span class="release-date">2026-04-13</span>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">신규 기능</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong>PreCompact 훅 지원</strong> — 훅에서 exit code 2로 종료하면 컨텍스트 압축(compact)을 차단 가능. 압축 전 처리 로직 삽입 활용.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong><code>EnterWorktree</code> <code>path</code> 파라미터 추가</strong> — 기존 worktree로 전환할 수 있는 파라미터 지원.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong>플러그인 배경 모니터 지원</strong> — MCP 플러그인의 백그라운드 모니터링 기능 추가.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-imp">IMP</span>
+            <span class="change-text"><strong>스트림 유휴 타임아웃 개선</strong> — 5분 이상 데이터 없는 경우 자동 중단 후 스트리밍 재시도. 장시간 작업 안정성 향상.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-imp">IMP</span>
+            <span class="change-text"><strong>WebFetch 개선</strong> — <code>&lt;style&gt;</code>·<code>&lt;script&gt;</code> 태그 내용 제거하여 컨텍스트 예산 절감.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">버그 수정</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong>큐 메시지 첨부 이미지 손실</strong> — 대기열에 있는 메시지에 첨부된 이미지가 사라지던 버그 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-cache">CACHE</span>
+            <span class="change-text"><strong>MCP 도구 캐시 누수 수정</strong> — MCP 도구 결과 캐시가 해제되지 않던 메모리 누수 버그 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong>Alt+Enter / Ctrl+J 줄바꿈 버그 수정</strong> — v2.1.100에서 도입된 회귀 버그.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong>스케줄된 작업 반복 실행 버그</strong> — 동일 작업이 중복 실행되던 문제 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong>마켓플레이스 플러그인 의존성 자동 설치 안 됨</strong> — 플러그인 설치 시 의존 패키지가 누락되던 문제 수정.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── v2.1.101 ──────────────────────────────────── -->
+    <section id="v2101" class="release-section">
+      <div class="release-header">
+        <span class="release-version">v2.1.101</span>
+        <span class="release-date">2026-04-10</span>
+        <span class="release-badge-hot">엔터프라이즈 환경 지원</span>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">신규 기능</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong><code>/team-onboarding</code> 명령 추가</strong> — 신규 팀원을 위한 온보딩 가이드를 자동 생성.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong>OS CA 인증서 저장소 기본 신뢰</strong> — 기업 내 TLS 프록시(인트라넷) 환경에서 별도 설정 없이 인증서 신뢰. 엔터프라이즈 네트워크 환경 필수 지원.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-imp">IMP</span>
+            <span class="change-text"><strong>레이트 제한 재시도 메시지 개선</strong> — 제한 종류(서버/플랜)와 리셋 시간을 명확히 표시하여 사용자가 대기 시간을 예측 가능.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">버그 수정</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong>API 타임아웃 5분 제한 버그 수정</strong> — 로컬 LLM이나 확장 생각(extended thinking) 사용 시 5분 초과 요청이 강제 종료되던 문제 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong><code>--resume</code> 후 세션 컨텍스트 손실</strong> — 대형 세션에서 재개 시 컨텍스트가 날아가던 회귀 버그 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-sec">보안</span>
+            <span class="change-text"><strong>명령 주입 취약점 수정</strong> — POSIX <code>which</code> fallback 경로에서 발생 가능한 명령 주입 취약점 패치.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong>관리 설정 <code>deny</code> 규칙이 훅 결정 무시</strong> — 관리자 정책의 deny 설정이 훅의 <code>ask</code> 결정을 우선해야 하는데 무시되던 버그 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong>Bedrock/Vertex 무효 모델 ID 저장</strong> — 모델 선택 UI에서 잘못된 모델 ID가 설정 파일에 저장되던 버그 수정.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── v2.1.98 ──────────────────────────────────── -->
+    <section id="v2198" class="release-section">
+      <div class="release-header">
+        <span class="release-version">v2.1.98</span>
+        <span class="release-date">2026-04-09</span>
+        <span class="release-badge-sec">🔒 보안 패치</span>
+      </div>
+
+      <div class="callout callout-warn">
+        <div class="callout-title">⚠️ 중요 보안 수정 포함</div>
+        <div class="callout-body">
+          Bash 도구에서 백슬래시 이스케이프 및 복합 명령을 이용해 권한 프롬프트를 우회할 수 있던 취약점이 수정되었습니다.
+          보안 환경에서 Claude Code를 사용한다면 이 버전 이상으로 즉시 업데이트를 권장합니다.
+        </div>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">신규 기능</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong>Google Vertex AI 대화형 설정 마법사</strong> — <code>claude /login</code> 스타일의 인터랙티브 Vertex AI 설정 가이드 추가.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong>Monitor 도구 추가</strong> — 백그라운드 스크립트에서 발생하는 이벤트를 실시간 스트리밍으로 수신하는 도구.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong><code>CLAUDE_CODE_PERFORCE_MODE</code> 환경변수</strong> — Perforce SCM 환경에서 읽기 전용 파일 감지 지원.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">보안 수정</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-sec">보안</span>
+            <span class="change-text"><strong>Bash 백슬래시 이스케이프 권한 우회 수정</strong> — 명령에 백슬래시 이스케이프 플래그를 추가해 권한 확인을 우회할 수 있던 취약점 패치.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-sec">보안</span>
+            <span class="change-text"><strong>복합 명령 권한 우회 수정</strong> — 허가된 명령과 미허가 명령을 하나의 복합 명령으로 묶어 우회하던 취약점 패치.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-sec">보안</span>
+            <span class="change-text"><strong><code>/dev/tcp</code>, <code>/dev/udp</code> 리다이렉트 누락 수정</strong> — 소켓 리다이렉트를 이용한 네트워크 접근 시 권한 프롬프트가 표시되지 않던 문제 수정.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">성능 개선</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-imp">IMP</span>
+            <span class="change-text"><strong>429 재시도 개선</strong> — 지수 백오프(exponential backoff) 최솟값 적용. 이전 13초 고정 대기에서 적절한 대기 시간으로 개선.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-imp">IMP</span>
+            <span class="change-text"><strong>스트림 타임아웃 개선</strong> — 5분 이상 비활성 스트림 자동 중단 후 비스트리밍 방식으로 재시도.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── v2.1.97 ──────────────────────────────────── -->
+    <section id="v2197" class="release-section">
+      <div class="release-header">
+        <span class="release-version">v2.1.97</span>
+        <span class="release-date">2026-04-08</span>
+        <span class="release-badge-cache">캐시 미스 수정</span>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">신규 기능</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong>Focus 뷰 토글 (<code>Ctrl+O</code>)</strong> — 프롬프트 + 도구 요약 + 최종 응답만 표시하는 집중 모드. 긴 대화에서 요점 파악에 유용.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong><code>refreshInterval</code> 상태줄 설정 추가</strong> — 상태 표시줄 새로 고침 간격 설정 지원.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">버그 수정</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-cache">CACHE</span>
+            <span class="change-text"><strong><code>--resume</code> 캐시 미스 수정</strong> — 대형 세션에서 지연된 도구 입력으로 인해 캐시 미스가 발생하던 버그 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-cache">CACHE</span>
+            <span class="change-text"><strong>MCP HTTP/SSE 메모리 누수 수정</strong> — 재연결 시 ~50MB/hr 규모의 메모리가 해제되지 않던 누수 버그 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong><code>DISABLE_COMPACT</code> 시 <code>CLAUDE_CODE_MAX_CONTEXT_TOKENS</code> 무시 수정</strong> — compact 비활성 환경에서 최대 컨텍스트 토큰 설정이 반영되지 않던 버그 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong>Edit/Write "파일 변경됨" 오류 수정</strong> — PostToolUse 훅이 파일 형식을 재작성할 때 발생하던 거짓 오류 수정.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── v2.1.96 ──────────────────────────────────── -->
+    <section id="v2196" class="release-section">
+      <div class="release-header">
+        <span class="release-version">v2.1.96</span>
+        <span class="release-date">2026-04-08</span>
+      </div>
+      <ul class="change-list">
+        <li class="change-item">
+          <span class="tag tag-fix">HOTFIX</span>
+          <span class="change-text"><strong>Bedrock 요청 403 에러 수정</strong> — v2.1.94에서 도입된 회귀 버그로 <code>"Authorization header is missing"</code> 오류 발생. 즉시 핫픽스 배포.</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ── v2.1.94 ──────────────────────────────────── -->
+    <section id="v2194" class="release-section">
+      <div class="release-header">
+        <span class="release-version">v2.1.94</span>
+        <span class="release-date">2026-04-07</span>
+        <span class="release-badge-hot">기본값 변경</span>
+      </div>
+
+      <div class="callout callout-tip">
+        <div class="callout-title">기본 노력 수준 medium → high</div>
+        <div class="callout-body">
+          API key, Bedrock, Vertex, Foundry, Team, Enterprise 사용자의 기본 추론 노력(effort)이
+          <code>medium</code>에서 <code>high</code>로 상향 변경되었습니다. 별도 설정 없이도 더 높은 품질의 응답을 받게 됩니다.
+        </div>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">신규 기능 및 개선</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-new">NEW</span>
+            <span class="change-text"><strong>Amazon Bedrock Mantle 지원</strong> — <code>CLAUDE_CODE_USE_MANTLE=1</code> 환경변수로 Mantle 엔드포인트 사용.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-imp">IMP</span>
+            <span class="change-text"><strong>기본 노력 수준 high로 변경</strong> — API key·Bedrock·Vertex·Foundry·Team·Enterprise 전 플랫폼 적용.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-imp">IMP</span>
+            <span class="change-text"><strong>Slack 메시지 도구 호출 compact 헤더 추가</strong> — AI-Worker 등에서 Slack 메시지 도구 사용 시 헤더 표시 개선.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="change-group">
+        <div class="change-group-title">버그 수정</div>
+        <ul class="change-list">
+          <li class="change-item">
+            <span class="tag tag-fix">FIX</span>
+            <span class="change-text"><strong>429 에러 후 에이전트 stuck 수정</strong> — 레이트 제한 오류 발생 시 에이전트가 멈추던 문제. 오류 즉시 표시로 수정.</span>
+          </li>
+          <li class="change-item">
+            <span class="tag tag-cache">CACHE</span>
+            <span class="change-text"><strong>토큰 사용량 추적 누락 수정</strong> — 비스트리밍 fallback 경로에서 토큰 사용량이 집계되지 않던 버그 수정. <code>/cost</code> 명령의 정확성 향상.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── 캐시 버그 심층 분석 ──────────────────────── -->
+    <section id="cache-deepdive" class="deep-dive">
+      <div class="section-heading">
+        <div class="section-heading-icon">⚠️</div>
+        캐시 및 사용량 버그 심층 분석
+      </div>
+
+      <div class="callout callout-warn">
+        <div class="callout-title">왜 캐시 버그가 중요한가?</div>
+        <div class="callout-body">
+          프롬프트 캐시(Prompt Caching)는 동일한 컨텍스트(대화 히스토리, 시스템 프롬프트)를 반복 요청할 때
+          캐시된 토큰은 <strong>입력 비용의 10%만 과금</strong>합니다. 긴 세션일수록 효과가 크며,
+          캐시 TTL(유효 시간)이 짧으면 매 요청마다 전체 비용을 내야 합니다.
+          캐시 버그가 있으면 사용자가 체감하는 비용이 예상보다 10배 가까이 늘어날 수 있습니다.
+        </div>
+      </div>
+
+      <!-- SVG: 캐시 TTL 구조 다이어그램 -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px;overflow-x:auto;">
+        <p style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">프롬프트 캐시 TTL 비교</p>
+        <svg viewBox="0 0 640 160" style="width:100%;max-width:640px;display:block;">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#8B8B99"/>
+            </marker>
+          </defs>
+
+          <!-- 5분 TTL 바 -->
+          <rect x="140" y="30" width="60" height="28" rx="5" fill="#EF4444" opacity="0.8"/>
+          <text x="170" y="49" text-anchor="middle" fill="#fff" font-size="12" font-family="Pretendard" font-weight="700">5분</text>
+          <text x="10" y="49" fill="#8B8B99" font-size="13" font-family="Pretendard">구버전(버그)</text>
+
+          <!-- 1시간 TTL 바 -->
+          <rect x="140" y="82" width="480" height="28" rx="5" fill="#6C47FF" opacity="0.85"/>
+          <text x="380" y="101" text-anchor="middle" fill="#fff" font-size="12" font-family="Pretendard" font-weight="700">1시간 (60분)</text>
+          <text x="10" y="101" fill="#8B8B99" font-size="13" font-family="Pretendard">수정 후</text>
+
+          <!-- 시간 눈금 -->
+          <line x1="140" y1="120" x2="628" y2="120" stroke="#8B8B99" stroke-width="1"/>
+          <text x="140" y="138" text-anchor="middle" fill="#8B8B99" font-size="11" font-family="Pretendard">0</text>
+          <text x="200" y="138" text-anchor="middle" fill="#8B8B99" font-size="11" font-family="Pretendard">5분</text>
+          <text x="380" y="138" text-anchor="middle" fill="#8B8B99" font-size="11" font-family="Pretendard">30분</text>
+          <text x="620" y="138" text-anchor="middle" fill="#8B8B99" font-size="11" font-family="Pretendard">60분</text>
+
+          <!-- 비용 비교 노트 -->
+          <text x="210" y="49" fill="#EF4444" font-size="11" font-family="Pretendard">← 캐시 미스 다수 발생</text>
+          <text x="622" y="101" fill="#6C47FF" font-size="11" font-family="Pretendard"> ✓</text>
+        </svg>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">* 5분 TTL 버그 상태에서는 캐시가 자주 만료되어 토큰 비용이 최대 10배 증가할 수 있음</p>
+      </div>
+
+      <!-- 버그 타임라인 -->
+      <div class="bug-timeline">
+
+        <div class="bug-entry">
+          <div class="bug-ver-col">
+            <span class="bug-ver-badge">v2.1.108</span>
+          </div>
+          <div class="bug-content">
+            <div class="bug-title">구독자 DISABLE_TELEMETRY 시 캐시 TTL 폴백 버그</div>
+            <div class="bug-desc">
+              <strong>증상:</strong> 구독(claude.ai) 플랜 사용자가 <code>DISABLE_TELEMETRY=1</code>을 설정하면 프롬프트 캐시 TTL이 1시간이 아닌 5분으로 폴백되었습니다.
+              구독 플랜에서는 텔레메트리 설정과 무관하게 1시간 TTL이 적용되어야 합니다.<br><br>
+              <strong>영향:</strong> 텔레메트리를 비활성화한 프라이버시 지향 사용자들이 불필요하게 높은 토큰 비용을 지불하거나, 캐시 효율이 크게 저하되었습니다.<br><br>
+              <strong>수정:</strong> 텔레메트리 설정과 캐시 TTL 결정 로직을 분리. 구독 플랜은 항상 1시간 TTL 적용.
+            </div>
+            <span class="bug-impact impact-high">🔴 높음 — 구독 사용자 비용 직접 영향</span>
+          </div>
+        </div>
+
+        <div class="bug-entry">
+          <div class="bug-ver-col">
+            <span class="bug-ver-badge">v2.1.108</span>
+          </div>
+          <div class="bug-content">
+            <div class="bug-title">ENABLE_PROMPT_CACHING_1H — 1시간 캐시 TTL 신규 지원</div>
+            <div class="bug-desc">
+              <strong>배경:</strong> 기존 프롬프트 캐시의 기본 TTL은 5분이었습니다. API 사용자는 매 요청 후 5분이 지나면 동일 컨텍스트라도 전체 토큰 비용을 다시 지불해야 했습니다.<br><br>
+              <strong>신기능:</strong> <code>ENABLE_PROMPT_CACHING_1H=1</code> 환경변수로 1시간 TTL을 활성화할 수 있습니다. 긴 세션, 반복 작업, 동일 코드베이스 탐색 등에서 비용 절감 효과가 큽니다.<br><br>
+              <strong>지원 플랫폼:</strong> API key, Bedrock, Vertex, Foundry (claude.ai 구독 사용자는 이미 기본 적용).
+            </div>
+            <span class="bug-impact impact-med">🟡 사용자 선택 — 환경변수 활성화 필요</span>
+          </div>
+        </div>
+
+        <div class="bug-entry">
+          <div class="bug-ver-col">
+            <span class="bug-ver-badge">v2.1.105</span>
+          </div>
+          <div class="bug-content">
+            <div class="bug-title">MCP 도구 캐시 누수</div>
+            <div class="bug-desc">
+              <strong>증상:</strong> MCP(Model Context Protocol) 도구의 결과 캐시가 사용 후 메모리에서 해제되지 않았습니다. 장시간 실행 세션에서 메모리가 지속 증가했습니다.<br><br>
+              <strong>영향:</strong> 여러 MCP 도구를 반복 호출하는 워크플로우에서 메모리 사용량이 비정상적으로 증가.<br><br>
+              <strong>수정:</strong> 도구 캐시 항목의 생명주기(lifecycle) 관리 로직 수정.
+            </div>
+            <span class="bug-impact impact-med">🟡 중간 — 장시간 세션에서 메모리 영향</span>
+          </div>
+        </div>
+
+        <div class="bug-entry">
+          <div class="bug-ver-col">
+            <span class="bug-ver-badge">v2.1.101</span>
+          </div>
+          <div class="bug-content">
+            <div class="bug-title">--resume 후 세션 컨텍스트 손실 (대형 세션)</div>
+            <div class="bug-desc">
+              <strong>증상:</strong> 대형 세션(컨텍스트가 많은 대화)에서 <code>--resume</code>으로 재개 시 이전 컨텍스트 일부가 소실되었습니다. 이전 대화 내용을 참조하지 못하거나 엉뚱한 응답이 나타났습니다.<br><br>
+              <strong>원인:</strong> 지연된 도구 입력 스키마(deferred tool schema)가 세션 직렬화/역직렬화 과정에서 누락되어 캐시 미스가 발생하거나 컨텍스트가 잘렸습니다.<br><br>
+              <strong>수정:</strong> 세션 재개 시 지연된 도구 스키마 포함 여부 검증 로직 추가.
+            </div>
+            <span class="bug-impact impact-high">🔴 높음 — 작업 연속성 직접 영향</span>
+          </div>
+        </div>
+
+        <div class="bug-entry">
+          <div class="bug-ver-col">
+            <span class="bug-ver-badge">v2.1.98</span>
+          </div>
+          <div class="bug-content">
+            <div class="bug-title">429 재시도 지수 백오프 개선</div>
+            <div class="bug-desc">
+              <strong>배경:</strong> API 429(Too Many Requests) 오류 발생 시 재시도 대기 시간이 13초로 고정되어 있어 서버 부하나 플랜 제한 해제를 기다리는 데 비효율적이었습니다.<br><br>
+              <strong>개선:</strong> 지수 백오프(exponential backoff) 최솟값을 적용하여 초기 재시도를 빠르게, 반복 실패 시 점진적으로 대기 시간을 늘립니다.<br><br>
+              <strong>효과:</strong> 일시적인 레이트 제한 해소 시 더 빠른 재시도, 지속적인 제한 상황에서는 서버 부하 최소화.
+            </div>
+            <span class="bug-impact impact-low">🟢 낮음 — 성능 개선, 기능 정상 작동</span>
+          </div>
+        </div>
+
+        <div class="bug-entry">
+          <div class="bug-ver-col">
+            <span class="bug-ver-badge">v2.1.97</span>
+          </div>
+          <div class="bug-content">
+            <div class="bug-title">MCP HTTP/SSE 재연결 메모리 누수 (~50MB/hr)</div>
+            <div class="bug-desc">
+              <strong>증상:</strong> MCP를 HTTP/SSE 방식으로 연결한 환경에서 재연결(reconnect) 발생 시마다 약 50MB 규모의 메모리가 해제되지 않았습니다. 24시간 운용 시 약 1.2GB 누수.<br><br>
+              <strong>원인:</strong> SSE 재연결 시 이전 연결의 이벤트 리스너와 버퍼가 GC(가비지 컬렉션)에 의해 회수되지 않는 참조 순환 문제.<br><br>
+              <strong>수정:</strong> 재연결 시 이전 연결 객체 명시적 해제 및 이벤트 리스너 제거.
+            </div>
+            <span class="bug-impact impact-high">🔴 높음 — 장기 실행 환경(서버, CI) 필수 수정</span>
+          </div>
+        </div>
+
+        <div class="bug-entry">
+          <div class="bug-ver-col">
+            <span class="bug-ver-badge">v2.1.94</span>
+          </div>
+          <div class="bug-content">
+            <div class="bug-title">비스트리밍 fallback 시 토큰 사용량 추적 누락</div>
+            <div class="bug-desc">
+              <strong>증상:</strong> 스트리밍 오류로 비스트리밍 방식으로 fallback되어 응답을 받으면 해당 요청의 토큰 사용량이 <code>/cost</code> 명령에 집계되지 않았습니다.<br><br>
+              <strong>영향:</strong> 실제 사용량보다 적게 표시된 <code>/cost</code> 결과. 비용 추적 목적으로 사용 시 잘못된 수치 제공.<br><br>
+              <strong>수정:</strong> 비스트리밍 응답 경로에서도 토큰 카운트를 사용량 추적기에 기록하도록 수정.
+            </div>
+            <span class="bug-impact impact-med">🟡 중간 — /cost 통계 정확성 영향</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── 새 환경변수 ─────────────────────────────── -->
+    <section id="env-vars" class="release-section">
+      <div class="section-heading">
+        <div class="section-heading-icon" style="background:var(--accent-soft);border-color:var(--accent-border);">🔧</div>
+        이번 릴리즈에서 추가된 환경변수
+      </div>
+
+      <div class="env-grid">
+        <div class="env-card">
+          <div class="env-name">ENABLE_PROMPT_CACHING_1H=1</div>
+          <div class="env-desc">프롬프트 캐시 TTL을 1시간으로 활성화. API key, Bedrock, Vertex, Foundry 사용자 대상. 비용 절감 효과 큼.</div>
+        </div>
+        <div class="env-card">
+          <div class="env-name">FORCE_PROMPT_CACHING_5M=1</div>
+          <div class="env-desc">프롬프트 캐시 TTL을 5분으로 강제. 특수한 테스트/디버깅 환경에서 활용.</div>
+        </div>
+        <div class="env-card">
+          <div class="env-name">CLAUDE_CODE_USE_MANTLE=1</div>
+          <div class="env-desc">Amazon Bedrock Mantle 엔드포인트 사용. AWS 엔터프라이즈 환경 전용.</div>
+        </div>
+        <div class="env-card">
+          <div class="env-name">CLAUDE_CODE_PERFORCE_MODE=1</div>
+          <div class="env-desc">Perforce SCM 환경에서 읽기 전용 파일 자동 감지. Perforce 사용 조직 대상.</div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">환경변수 설정 방법</div>
+        <div class="callout-body">
+          쉘 프로필(<code>~/.zshrc</code>, <code>~/.bashrc</code>)에 추가하거나 Claude Code 설정 파일에서 관리할 수 있습니다.<br>
+          Claude Code의 <code>claudeEnv</code> 설정 블록에 환경변수를 넣으면 모든 세션에 자동 적용됩니다.
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script data-page-hash="HTAYHSW" src="/assets/js/page-footer.js"></script>
+<script>
+  // 테마 토글
+  function toggleTheme() {
+    const html = document.documentElement;
+    html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', html.dataset.theme);
+  }
+  (function() {
+    const saved = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = saved || (prefersDark ? 'dark' : 'light');
+  })();
+
+  // 사이드바 활성화
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.sidebar-nav a');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id);
+        });
+      }
+    });
+  }, { rootMargin: '-60px 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

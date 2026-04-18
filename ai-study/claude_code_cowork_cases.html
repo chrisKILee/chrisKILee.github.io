@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code &amp; 코워크 사용사례 110선</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif; }
+    .prose p { margin-bottom: 1rem; color: #475569; line-height: 1.8; font-size: 15px; }
+    .prose h2 { font-size: 1.375rem; font-weight: 700; color: #0f172a; margin: 2.5rem 0 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+    .prose h3 { font-size: 1.0625rem; font-weight: 600; color: #1e293b; margin: 1.75rem 0 0.75rem; }
+    .prose ul { margin: 1rem 0; padding-left: 1.5rem; }
+    .prose ul li { color: #475569; margin-bottom: 0.375rem; font-size: 15px; }
+    .prose code { background: #f1f5f9; border-radius: 4px; padding: 2px 6px; font-size: 0.85em; color: #7c3aed; font-family: monospace; }
+    .prose pre { background: #0f172a; color: #e2e8f0; border-radius: 12px; padding: 1.25rem; overflow-x: auto; font-size: 0.875rem; margin: 1.25rem 0; }
+    .prose a { color: #0ea5e9; }
+    a { text-decoration: none; }
+
+    /* 사이드바 nav */
+    .nav-section { margin-bottom: 1.5rem; }
+    .nav-item { display: block; padding: 4px 12px; font-size: 13px; color: #64748b; border-radius: 6px; transition: all 0.15s; margin-bottom: 1px; cursor: pointer; }
+    .nav-item:hover, .nav-item.active { background: #f1f5f9; color: #0f172a; }
+
+    /* callout */
+    .callout-info { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+    .callout-warn { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+
+    /* 사례 카드 */
+    .case-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      background: #fff;
+    }
+    .case-card:hover {
+      border-color: #bae6fd;
+      box-shadow: 0 2px 8px rgba(14,165,233,0.07);
+    }
+    .case-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px; height: 26px;
+      border-radius: 8px;
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .case-title { font-size: 15px; font-weight: 600; color: #1e293b; }
+    .case-detail { font-size: 13px; color: #64748b; line-height: 1.65; }
+    .case-detail strong { color: #475569; font-weight: 600; }
+
+    /* 섹션 뱃지 */
+    .section-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.04em; margin-bottom: 16px;
+    }
+
+    /* 오른쪽 목차 */
+    .toc-link { display: block; font-size: 12px; color: #94a3b8; padding: 3px 0 3px 12px; border-left: 2px solid transparent; transition: all 0.15s; }
+    .toc-link:hover, .toc-link.active { color: #0ea5e9; border-left-color: #0ea5e9; }
+
+    /* stat */
+    .stat-card { background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; }
+
+    @media (max-width: 1024px) {
+      .sidebar-left { display: none; }
+      main.ml-64 { margin-left: 0 !important; }
+    }
+    @media (max-width: 1280px) {
+      .sidebar-right { display: none; }
+      main.mr-52 { margin-right: 0 !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-700 antialiased">
+
+  <!-- 헤더 -->
+  <header class="fixed top-0 inset-x-0 z-50 h-14 border-b border-slate-200 bg-white flex items-center px-6">
+    <div class="max-w-7xl mx-auto w-full flex items-center gap-6">
+      <a href="/" class="flex items-center gap-2.5 font-bold text-slate-900">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">C</div>
+        Claude 가이드
+      </a>
+      <div class="h-5 w-px bg-slate-200"></div>
+      <nav class="flex items-center gap-1 text-sm">
+        <a href="#overview" class="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-600 font-medium">110 사례</a>
+        <a href="#cowork" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors">코워크</a>
+        <a href="#claudecode" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors">클로드 코드</a>
+      </nav>
+      <div class="ml-auto flex items-center gap-3">
+        <span class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded">110선</span>
+        <a href="https://kimkj.com/ai-board/?mod=document&uid=198&execute_uid=198" target="_blank" class="text-xs text-sky-500 hover:text-sky-700 transition-colors">원문 ↗</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto pt-14 flex">
+
+    <!-- 왼쪽 사이드바 -->
+    <aside class="sidebar-left fixed top-14 bottom-0 w-64 overflow-y-auto border-r border-slate-200 py-8 px-5">
+      <div class="nav-section">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-3">개요</p>
+        <a href="#overview" class="nav-item active">소개 &amp; 구성</a>
+        <a href="#difference" class="nav-item">코워크 vs 코드</a>
+      </div>
+      <div class="nav-section">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-3">Part 1 · 코워크</p>
+        <a href="#sec-a" class="nav-item">A. 일상 업무 자동화 (1–15)</a>
+        <a href="#sec-b" class="nav-item">B. 고급 자동화·연동 (16–30)</a>
+      </div>
+      <div class="nav-section">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-3">Part 2 · 클로드 코드</p>
+        <a href="#sec-c" class="nav-item">C. 워크플로우 구축 (31–50)</a>
+        <a href="#sec-d" class="nav-item">D. 세션 관리·최적화 (51–70)</a>
+        <a href="#sec-e" class="nav-item">E. 웹/앱 개발·배포 (71–85)</a>
+        <a href="#sec-f" class="nav-item">F. 책 집필·편집 (86–95)</a>
+        <a href="#sec-g" class="nav-item">G. 동영상 제작 (96–110)</a>
+      </div>
+      <div class="nav-section">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-3">기타</p>
+        <a href="#principles" class="nav-item">핵심 원칙</a>
+      </div>
+    </aside>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="ml-64 mr-0 xl:mr-52 px-10 py-10 min-w-0">
+
+      <!-- 히어로 -->
+      <div class="mb-12" id="overview">
+        <div class="inline-flex items-center gap-2 text-xs font-semibold text-sky-600 bg-sky-50 border border-sky-200 px-3 py-1 rounded-full mb-4">
+          📋 김경진 변호사 · kimkj.com · 실전 가이드
+        </div>
+        <h1 class="text-4xl font-extrabold text-slate-900 mb-3">Claude Code &amp; 코워크<br>실전 사용사례 110선</h1>
+        <p class="text-lg text-slate-500 leading-relaxed">비개발자를 위한 <strong class="text-slate-700">코워크(Cowork)</strong>부터 개발자용 <strong class="text-slate-700">클로드 코드(Claude Code)</strong>까지, 업무 자동화 110가지 실무 활용 방법을 섹션별로 정리했습니다.</p>
+
+        <!-- 통계 카드 -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8">
+          <div class="stat-card text-center">
+            <div class="text-2xl font-extrabold text-sky-600">110</div>
+            <div class="text-xs text-slate-500 mt-1">총 사용사례</div>
+          </div>
+          <div class="stat-card text-center">
+            <div class="text-2xl font-extrabold text-indigo-600">7</div>
+            <div class="text-xs text-slate-500 mt-1">섹션 (A–G)</div>
+          </div>
+          <div class="stat-card text-center">
+            <div class="text-2xl font-extrabold text-violet-600">30</div>
+            <div class="text-xs text-slate-500 mt-1">코워크 사례</div>
+          </div>
+          <div class="stat-card text-center">
+            <div class="text-2xl font-extrabold text-emerald-600">80</div>
+            <div class="text-xs text-slate-500 mt-1">클로드 코드 사례</div>
+          </div>
+        </div>
+
+        <!-- 퀵링크 -->
+        <div class="grid sm:grid-cols-2 gap-3 mt-6">
+          <a href="#sec-a" class="group border border-slate-200 rounded-xl p-4 hover:border-sky-300 hover:bg-sky-50/50 transition-all">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-sky-500">🤝</span>
+              <span class="text-sm font-semibold text-slate-800 group-hover:text-sky-600">Part 1 · 코워크</span>
+            </div>
+            <p class="text-xs text-slate-500">비개발자용 · 자연어로 파일 자동 처리 (사례 1–30)</p>
+          </a>
+          <a href="#sec-c" class="group border border-slate-200 rounded-xl p-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-indigo-500">💻</span>
+              <span class="text-sm font-semibold text-slate-800 group-hover:text-indigo-600">Part 2 · 클로드 코드</span>
+            </div>
+            <p class="text-xs text-slate-500">개발자용 · 코드 생성·실행·배포 자동화 (사례 31–110)</p>
+          </a>
+        </div>
+      </div>
+
+      <div class="prose max-w-none">
+
+        <!-- 코워크 vs 클로드 코드 비교 -->
+        <section id="difference">
+          <h2>코워크 vs 클로드 코드</h2>
+          <p>두 도구는 같은 Claude AI 엔진을 사용하지만 <strong>진입 난이도와 제어 범위</strong>가 다릅니다.</p>
+
+          <!-- SVG 비교 다이어그램 -->
+          <div class="not-prose my-6 border border-slate-200 rounded-xl p-6 bg-slate-50">
+            <svg viewBox="0 0 680 160" style="width:100%;max-width:680px;" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arr" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
+                </marker>
+              </defs>
+              <!-- 사용자 -->
+              <rect x="10" y="60" width="110" height="40" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+              <text x="65" y="76" text-anchor="middle" font-size="11" fill="#475569" font-weight="600" font-family="sans-serif">👤 사용자</text>
+              <text x="65" y="92" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">자연어 지시</text>
+              <!-- 화살표 -->
+              <line x1="120" y1="80" x2="155" y2="80" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#arr)"/>
+              <!-- 코워크 -->
+              <rect x="155" y="45" width="160" height="70" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+              <text x="235" y="68" text-anchor="middle" font-size="12" fill="#3b82f6" font-weight="700" font-family="sans-serif">🤝 코워크</text>
+              <text x="235" y="84" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">Claude Desktop 탭</text>
+              <text x="235" y="100" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">비개발자 · 폴더 지정</text>
+              <!-- 화살표 -->
+              <line x1="315" y1="80" x2="350" y2="80" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#arr)"/>
+              <!-- Claude AI -->
+              <rect x="350" y="55" width="130" height="50" rx="10" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5"/>
+              <text x="415" y="76" text-anchor="middle" font-size="12" fill="#7c3aed" font-weight="700" font-family="sans-serif">✦ Claude AI</text>
+              <text x="415" y="93" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">동일 엔진</text>
+              <!-- 화살표 -->
+              <line x1="480" y1="80" x2="515" y2="80" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#arr)"/>
+              <!-- 클로드 코드 -->
+              <rect x="515" y="45" width="155" height="70" rx="10" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
+              <text x="592" y="68" text-anchor="middle" font-size="12" fill="#16a34a" font-weight="700" font-family="sans-serif">💻 클로드 코드</text>
+              <text x="592" y="84" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">터미널 / VS Code</text>
+              <text x="592" y="100" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">개발자 · 직접 제어</text>
+              <!-- 레이블 -->
+              <text x="65" y="140" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">입력</text>
+              <text x="235" y="140" text-anchor="middle" font-size="10" fill="#3b82f6" font-family="sans-serif">비개발자 인터페이스</text>
+              <text x="415" y="140" text-anchor="middle" font-size="10" fill="#7c3aed" font-family="sans-serif">공통 AI 엔진</text>
+              <text x="592" y="140" text-anchor="middle" font-size="10" fill="#16a34a" font-family="sans-serif">개발자 도구</text>
+            </svg>
+          </div>
+
+          <div class="not-prose overflow-x-auto">
+            <table class="w-full text-sm border-collapse">
+              <thead>
+                <tr class="bg-slate-50">
+                  <th class="text-left px-4 py-3 border border-slate-200 font-semibold text-slate-700 text-xs uppercase tracking-wide">구분</th>
+                  <th class="text-left px-4 py-3 border border-slate-200 font-semibold text-blue-700 text-xs uppercase tracking-wide">🤝 코워크 (Cowork)</th>
+                  <th class="text-left px-4 py-3 border border-slate-200 font-semibold text-green-700 text-xs uppercase tracking-wide">💻 클로드 코드 (Claude Code)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="px-4 py-3 border border-slate-200 font-medium text-slate-700">대상</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">비개발자, 일반 업무 사용자</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">개발자, 기술 사용자</td>
+                </tr>
+                <tr class="bg-slate-50/50">
+                  <td class="px-4 py-3 border border-slate-200 font-medium text-slate-700">실행 환경</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">Claude Desktop 탭</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">터미널, VS Code 확장</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 border border-slate-200 font-medium text-slate-700">작업 방식</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">폴더 지정 + 자연어 지시</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">코드 생성·실행·배포 직접 제어</td>
+                </tr>
+                <tr class="bg-slate-50/50">
+                  <td class="px-4 py-3 border border-slate-200 font-medium text-slate-700">강점</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">설치 쉬움, 파일 자동 처리</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">에이전트 팀, CI/CD, 배포까지</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout-info not-prose mt-4">
+            <div class="flex gap-2.5">
+              <span class="text-sky-500">💡</span>
+              <p class="text-sm text-sky-800">코워크의 모든 기능은 클로드 코드에서도 사용 가능합니다. 코워크는 Claude Code의 비개발자용 인터페이스입니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== PART 1 ===== -->
+        <section id="cowork" class="mt-12">
+          <h2 class="!text-2xl !border-0 !pb-0">Part 1 · 클로드 코워크 사용사례</h2>
+        </section>
+
+        <!-- Section A -->
+        <section id="sec-a" class="mt-8">
+          <div class="not-prose">
+            <span class="section-badge bg-blue-50 text-blue-700 border border-blue-200">A · 일상 업무 자동화 (사례 1–15)</span>
+          </div>
+          <p class="!mt-2">폴더 지정 후 자연어로 지시하는 것만으로 반복 업무를 자동화합니다.</p>
+
+          <div class="not-prose space-y-3 mt-4">
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">1</span>
+                <div>
+                  <div class="case-title">회의 녹취록 요약 &amp; 액션 아이템 추출</div>
+                  <div class="case-detail mt-1">텍스트 파일 업로드 → <strong>"10줄 요약, 결정사항, 담당자별 액션 아이템"</strong> 요청 → Word 문서 자동 생성. 처리 시간 약 1–2분.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">2</span>
+                <div>
+                  <div class="case-title">파일/폴더 자동 정리</div>
+                  <div class="case-detail mt-1">다운로드 폴더 연결 → <strong>"문서·이미지·스프레드시트·영상으로 서브폴더 생성 후 정리"</strong> → 186개 파일 90–120초 처리. 중복 파일은 "검토 필요" 폴더로 이동.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">3</span>
+                <div>
+                  <div class="case-title">이메일 요약 &amp; 답장 초안 자동 생성</div>
+                  <div class="case-detail mt-1">Gmail 연결 → 미읽은 이메일 긴급/일반/참고로 분류 → 발신 이메일 20개 분석으로 <code>my_email_tone.md</code> 프로필 생성 → 사용자 문체로 답장 초안 작성 (실제 전송은 항상 수동).</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">4</span>
+                <div>
+                  <div class="case-title">내용 기반 파일 일괄 이름 변경</div>
+                  <div class="case-detail mt-1">영수증·계약서 등 혼재된 파일 → <strong>"각 파일 읽고 YYYY-MM-DD_거래처_금액.pdf 형식으로 변경"</strong> → 변경 전/후 기록 <code>changelog.txt</code> 생성.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">5</span>
+                <div>
+                  <div class="case-title">영수증/세금계산서 데이터 자동 추출</div>
+                  <div class="case-detail mt-1">스캔 PDF → 거래처·날짜·금액·카테고리 추출 → SUMIF 수식 포함 Excel 생성. OCR 불확실 항목은 "검증 필요" 표시.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">6</span>
+                <div>
+                  <div class="case-title">다중 문서 병합</div>
+                  <div class="case-detail mt-1">PDF·텍스트·마크다운·CSV 혼합 파일 → 날짜 형식·통화 통일 후 단일 Word 문서로 병합. 대용량은 병렬 서브에이전트 처리.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">7</span>
+                <div>
+                  <div class="case-title">주간/월간 보고서 자동 생성</div>
+                  <div class="case-detail mt-1">Notion + Slack + Google Drive 커넥터 동시 연결 → 각 소스에서 데이터 수집 → Word 종합 보고서 자동 작성.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">8</span>
+                <div>
+                  <div class="case-title">경쟁사 뉴스 모니터링</div>
+                  <div class="case-detail mt-1">경쟁사 웹 검색 → 신규 서비스·정책 변경 요약 마크다운 파일 생성. 구조화된 트렌드 분석 문서 출력.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">9</span>
+                <div>
+                  <div class="case-title">매일 아침 브리핑 자동 생성</div>
+                  <div class="case-detail mt-1"><code>/schedule</code> 명령 → 매일 오전 8시 AI 뉴스 3건·날짜·업무 체크리스트 포함 <code>Morning_Briefing.md</code> 자동 생성. 컴퓨터 켜져 있어야 동작.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">10</span>
+                <div>
+                  <div class="case-title">흩어진 메모 → 정돈된 초안</div>
+                  <div class="case-detail mt-1">텍스트 조각·마크다운 메모·Word 파일 혼재 → 주제별 분류 → 논리적으로 재구성한 구조화 문서 생성.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">11</span>
+                <div>
+                  <div class="case-title">CSV/엑셀 데이터 정제</div>
+                  <div class="case-detail mt-1">컬럼명 정규화 → 이상값 감지 → 파생 지표 추가 → 조건부 서식 포함 Excel 출력. 원시 거래 데이터에서 전환율 자동 계산 가능.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">12</span>
+                <div>
+                  <div class="case-title">프레젠테이션 자동 제작</div>
+                  <div class="case-detail mt-1">요약 문서·노트·녹취록 → <strong>"이 자료로 10슬라이드 PPT 만들어줘"</strong> → 내부에서 python-pptx 활용 → 편집 가능한 .pptx 파일 생성.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">13</span>
+                <div>
+                  <div class="case-title">고객 온보딩 패키지 자동 생성</div>
+                  <div class="case-detail mt-1">고객 정보(이름·서비스·금액·기간) + 템플릿 파일 입력 → 제안서·계약서·청구서·타임라인·환영 이메일·체크리스트 6종 동시 생성.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">14</span>
+                <div>
+                  <div class="case-title">채용 이력서 1차 평가 자동화</div>
+                  <div class="case-detail mt-1">평가 기준 + 지원자 PDF 업로드 → 항목별 1–5점 채점 → 총점 기준 정렬 Excel + 추천 의견 생성. 조직 정책 검토 필수.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-blue-100 text-blue-700 mt-0.5">15</span>
+                <div>
+                  <div class="case-title">학술 문헌 검토</div>
+                  <div class="case-detail mt-1">연구 PDF 업로드 → 방법론·결과·한계 추출 → 비교 분석 테이블 생성. 핵심 5–10편 DOI는 PubMed 교차 검증 권장.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Section B -->
+        <section id="sec-b" class="mt-10">
+          <div class="not-prose">
+            <span class="section-badge bg-indigo-50 text-indigo-700 border border-indigo-200">B · 고급 자동화 &amp; 외부 연동 (사례 16–30)</span>
+          </div>
+          <p class="!mt-2">MCP 커넥터·플러그인·서브에이전트를 활용한 복잡한 자동화입니다.</p>
+
+          <div class="not-prose space-y-3 mt-4">
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">16</span>
+                <div>
+                  <div class="case-title">의사결정 봇 구축</div>
+                  <div class="case-detail mt-1">과거 캠페인 데이터 CSV 입력 → 성공/실패 변수 분석 → 시장 분석가·재무 모델러·악마의 변호인 3개 서브에이전트 병렬 실행 → 다중 시나리오 분석.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">17</span>
+                <div>
+                  <div class="case-title">법률사무소 사건 기록 정리</div>
+                  <div class="case-detail mt-1">수천 개 PDF/Word → 사건번호·문서유형·날짜 추출 → 사건별 폴더 이동. 병렬 서브에이전트로 대용량 처리. 분류 불가 파일은 "미분류" 폴더로.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">18</span>
+                <div>
+                  <div class="case-title">상품 이미지 분석 &amp; 데이터 자동 입력</div>
+                  <div class="case-detail mt-1">의류 상품 사진 → 상품명·카테고리·색상·소재·태그 추출 → Excel 저장. 넥라인 유형·색상 미세 차이까지 구분 가능.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">19</span>
+                <div>
+                  <div class="case-title">SEO 감사 보고서 생성</div>
+                  <div class="case-detail mt-1">Chrome 커넥터로 브라우저 접근 → 페이지별 메타태그·헤딩 구조·CTA 배치 분석 → 즉시 수정/권장 개선/장기 과제 분류 → Word 감사 보고서.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">20</span>
+                <div>
+                  <div class="case-title">MCP 커넥터 통합</div>
+                  <div class="case-detail mt-1">설정 → 사용자 지정 → 커넥터 (OAuth 인증) → Notion·Slack·Drive 자연어 접근. Zapier MCP로 8,000+ 앱 연결 가능. 예: <strong>"Notion에서 3분기 보고서 찾아 요약해줘"</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">21</span>
+                <div>
+                  <div class="case-title">폴더별 고유 지침 설정</div>
+                  <div class="case-detail mt-1">설정 → 코워크 → 폴더 지침 → 규칙 예: <strong>"들어오는 파일은 '고객명_보고서유형_날짜'로 자동 이름 변경"</strong> → 해당 폴더 작업에 자동 적용.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">22</span>
+                <div>
+                  <div class="case-title">계약서 조항 검토 자동화</div>
+                  <div class="case-detail mt-1">법률 플러그인 + 리스크 허용 기준 설정 → <code>/audit</code> 명령 → 독소 조항 위험도별 색상 분류. <strong>최종 법적 판단은 반드시 변호사 확인 필수.</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">23</span>
+                <div>
+                  <div class="case-title">브랜드 톤 적용 콘텐츠 초안</div>
+                  <div class="case-detail mt-1">마케팅 플러그인 설치 → <code>/draft-content</code> 명령 → 브랜드 톤이 자동 적용된 콘텐츠 초안 생성.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">24</span>
+                <div>
+                  <div class="case-title">화면 녹화 영상 자동 이름 변경</div>
+                  <div class="case-detail mt-1">화면 녹화 프레임 분석 → <code>YYYY-MM-DD_프로그램명_활동설명.mp4</code> 형식으로 이름 변경 → 의미 있는 이름의 영상 라이브러리 구축.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">25</span>
+                <div>
+                  <div class="case-title">부서별 플러그인 패키지 배포</div>
+                  <div class="case-detail mt-1">스킬 + 커넥터 + 슬래시 명령 번들링 → 기업 전체 조직 배포.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">26</span>
+                <div>
+                  <div class="case-title">워크플로우 → 재사용 스킬로 저장</div>
+                  <div class="case-detail mt-1"><strong>"이 워크플로우를 스킬로 저장해줘"</strong> → 전체 프로세스를 호출 가능한 .md 파일로 저장 → 한 줄 명령으로 반복 실행.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">27</span>
+                <div>
+                  <div class="case-title">다국가 규제 비교 분석</div>
+                  <div class="case-detail mt-1">여러 국가 AI 규제 문서 교차 분석 → 용어 정의·규제 강도 비교 테이블 출력.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">28</span>
+                <div>
+                  <div class="case-title">출장 일정 자동 구성</div>
+                  <div class="case-detail mt-1">캘린더 연결 → 회의별 준비 자료·체크리스트 자동 생성.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">29</span>
+                <div>
+                  <div class="case-title">무인 장시간 작업 실행</div>
+                  <div class="case-detail mt-1">복잡한 다단계 워크플로우를 사용자 부재 중 실행 → 완료 시 시스템 알림.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-indigo-100 text-indigo-700 mt-0.5">30</span>
+                <div>
+                  <div class="case-title">경비 정산 자동화</div>
+                  <div class="case-detail mt-1">스캔 영수증 → 카테고리별 합계 SUMIF 수식 포함 Excel → 바로 제출 가능한 경비 보고서.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ===== PART 2 ===== -->
+        <section id="claudecode" class="mt-12">
+          <h2 class="!text-2xl !border-0 !pb-0">Part 2 · 클로드 코드 사용사례</h2>
+        </section>
+
+        <!-- Section C -->
+        <section id="sec-c" class="mt-8">
+          <div class="not-prose">
+            <span class="section-badge bg-violet-50 text-violet-700 border border-violet-200">C · 워크플로우 구축 (사례 31–50)</span>
+          </div>
+
+          <div class="not-prose space-y-3 mt-4">
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">31</span>
+                <div>
+                  <div class="case-title">경쟁사 분석 보고서 자동 생성</div>
+                  <div class="case-detail mt-1">플랜 모드(Shift+Tab) → 5개 경쟁사 가격 분석 설명 → Python 파일 7개 자동 생성(웹 스크래퍼·분석기·PDF 생성기 등) → 브랜드 에셋 드래그 → 로고·색상 적용 PDF.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">32</span>
+                <div>
+                  <div class="case-title">웹사이트 클론 &amp; 커스터마이징</div>
+                  <div class="case-detail mt-1">참조 사이트 스크린샷 + 브랜드 에셋 입력 → Build→Capture→Compare→Modify 루프 3회 → 참조 레이아웃 + 브랜드 아이덴티티 적용 웹사이트.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">33</span>
+                <div>
+                  <div class="case-title">PRD 자동 작성</div>
+                  <div class="case-detail mt-1">플랜 모드 → 10개 이상 명확화 질문 수신 → 완성된 PRD에서 Prisma 스키마 + OpenAPI 스펙 자동 확장 → PRD가 에이전트 팀의 실행 청사진.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">34</span>
+                <div>
+                  <div class="case-title">에이전트 팀 병렬 개발</div>
+                  <div class="case-detail mt-1"><code>settings.json</code> 환경 변수 설정 → 프론트엔드·백엔드·QA 에이전트 동시 작업 → 서브에이전트 간 메시지 공유·함수 시그니처 동기화 → tmux로 전체 모니터링.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">35</span>
+                <div>
+                  <div class="case-title">레거시 코드 마이그레이션</div>
+                  <div class="case-detail mt-1"><code>/init</code> → <strong>"기존 테스트 통과하면서 Fastify로 마이그레이션"</strong> → Opus 4.6의 100만 토큰 컨텍스트로 수십만 줄 분석 → 테스트 통과 코드베이스 완성.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">36</span>
+                <div>
+                  <div class="case-title">GitHub 버전 관리 통합</div>
+                  <div class="case-detail mt-1"><strong>"GitHub에 푸시해줘"</strong> → 커밋·브랜치·PR 생성 자동 처리.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">37</span>
+                <div>
+                  <div class="case-title">Vercel 자동 배포</div>
+                  <div class="case-detail mt-1">GitHub 연결 후 자동 배포 설정 → 코드 변경 시 라이브 업데이트 자동 트리거.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">38</span>
+                <div>
+                  <div class="case-title">테스트 코드 자동 생성</div>
+                  <div class="case-detail mt-1">기존 코드 역분석 → Jest/Pytest 테스트 케이스 생성 → 레거시 함수 포괄 테스트 스위트 완성.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">39</span>
+                <div>
+                  <div class="case-title">Figma ↔ 코드 동기화</div>
+                  <div class="case-detail mt-1">Figma MCP → 디자인을 React로 변환. 반대로 코드 변경 시 Figma 프레임 역동기화. 디자인-코드 일치 유지.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">40</span>
+                <div>
+                  <div class="case-title">MCP 서버 체이닝</div>
+                  <div class="case-detail mt-1">Notion + GitHub + Calendar 동시 통합 → 기획 → 이슈 생성 → 마감일 등록 (단일 세션).</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">41</span>
+                <div>
+                  <div class="case-title">브라우저 자동화</div>
+                  <div class="case-detail mt-1">웹사이트 탐색·폼 작성·데이터 스크래핑 자동화. 에이전트가 브라우저 조작 → 수동 조작 불필요.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">42</span>
+                <div>
+                  <div class="case-title">Chrome DevTools 자동 검증</div>
+                  <div class="case-detail mt-1">버튼 클릭·폼 제출·콘솔 오류 감지 자동화 → 전체 브라우저 상호작용 검증.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">43</span>
+                <div>
+                  <div class="case-title">커스텀 슬래시 명령 생성</div>
+                  <div class="case-detail mt-1">예: <code>/deploy-check</code> → 테스트 → 린트 → 빌드 → 배포 체인 한 번에 실행.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">44</span>
+                <div>
+                  <div class="case-title">서브에이전트 병렬 위임</div>
+                  <div class="case-detail mt-1"><strong>"병렬로 작업해줘"</strong> 지시 → 리서치·코딩·테스팅 동시 진행.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">45</span>
+                <div>
+                  <div class="case-title">스킬 파일 생성</div>
+                  <div class="case-detail mt-1">반복 가능한 워크플로우를 .md 파일로 캡처 → 한 줄 호출로 전체 프로세스 실행.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">46</span>
+                <div>
+                  <div class="case-title">멀티 세션 워크트리</div>
+                  <div class="case-detail mt-1">브랜치별 <code>claude --worktree</code> → 5개 이상 독립 작업 세션 동시 운영.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">47</span>
+                <div>
+                  <div class="case-title">에이전트 설계 에이전트</div>
+                  <div class="case-detail mt-1">AI가 워크플로우 아키텍처 자체를 설계하는 메타 능력.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">48</span>
+                <div>
+                  <div class="case-title">유튜브 채널 분석 파이프라인</div>
+                  <div class="case-detail mt-1">30개 채널·187개 영상 → 데이터 수집 → 차트 생성 → PPT 작성 → 이메일 발송 자동화.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">49</span>
+                <div>
+                  <div class="case-title">VPS 원격 운영</div>
+                  <div class="case-detail mt-1">서버 기반 Claude Code 설치 → 24시간 세션 유지 → Telegram 원격 명령 인터페이스 구축.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-violet-100 text-violet-700 mt-0.5">50</span>
+                <div>
+                  <div class="case-title">배포 전 배틀 테스트</div>
+                  <div class="case-detail mt-1">잘못된 입력·극단적 화면 크기·엣지 케이스 자동 검증 → 운영 배포 전 문제 사전 차단.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Section D -->
+        <section id="sec-d" class="mt-10">
+          <div class="not-prose">
+            <span class="section-badge bg-cyan-50 text-cyan-700 border border-cyan-200">D · 세션 관리 &amp; 최적화 (사례 51–70)</span>
+          </div>
+
+          <div class="not-prose space-y-3 mt-4">
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-cyan-100 text-cyan-700 mt-0.5">51</span>
+                <div>
+                  <div class="case-title">/init 프로젝트 초기화</div>
+                  <div class="case-detail mt-1">전체 코드베이스 분석 → 프로젝트 구조 문서화 <code>claude.md</code> 자동 생성.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-cyan-100 text-cyan-700 mt-0.5">52</span>
+                <div>
+                  <div class="case-title">플랜 모드 우선 사용</div>
+                  <div class="case-detail mt-1">단축키: <kbd class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">Shift+Tab</kbd> → 코딩 전 아키텍처 설계 먼저.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-cyan-100 text-cyan-700 mt-0.5">53</span>
+                <div>
+                  <div class="case-title">안내형 질문 프롬프팅</div>
+                  <div class="case-detail mt-1"><strong>"95% 확신할 때까지 질문해줘"</strong> → 실행 전 요구사항 완전 명확화.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-cyan-100 text-cyan-700 mt-0.5">54</span>
+                <div>
+                  <div class="case-title">자기 검증 체크리스트</div>
+                  <div class="case-detail mt-1">각 단계마다 스크린샷 검증 → 모바일 테스트 포함 체크리스트 통과 후 다음 단계.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-cyan-100 text-cyan-700 mt-0.5">55</span>
+                <div>
+                  <div class="case-title">/compact 60% 압축 규칙</div>
+                  <div class="case-detail mt-1">컨텍스트 60% 도달 시 → 보존 기준 명시 후 압축 → 핵심 정보 유지.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-cyan-100 text-cyan-700 mt-0.5">56</span>
+                <div>
+                  <div class="case-title">/context 토큰 진단</div>
+                  <div class="case-detail mt-1">항목별 토큰 소비량 퍼센트로 표시 → 최적화 대상 파악.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-cyan-100 text-cyan-700 mt-0.5">57</span>
+                <div>
+                  <div class="case-title">/rewind 이전 상태 복귀</div>
+                  <div class="case-detail mt-1">이전 대화 지점으로 되돌리기 → 처음부터 재시작 없이 다른 방향 탐색.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-cyan-100 text-cyan-700 mt-0.5">58</span>
+                <div>
+                  <div class="case-title">Escape 즉시 중단</div>
+                  <div class="case-detail mt-1">잘못된 방향의 생성 즉시 중단 → 토큰 낭비 방지.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-cyan-100 text-cyan-700 mt-0.5">59</span>
+                <div>
+                  <div class="case-title">/voice 음성 입력</div>
+                  <div class="case-detail mt-1">자연스럽게 말하기 → 타이핑보다 빠른 지시, 컨텍스트 보존 용이.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-cyan-100 text-cyan-700 mt-0.5">60</span>
+                <div>
+                  <div class="case-title">상태 표시줄 설정</div>
+                  <div class="case-detail mt-1">모델명·컨텍스트 사용량 %·실시간 비용 추적 표시.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-cyan-100 text-cyan-700 mt-0.5">61–65</span>
+                <div>
+                  <div class="case-title">완료 알림 / 공격적 피드백 / claude.md 분산 / 모델 선택 최적화 / 자기 검증 루프</div>
+                  <div class="case-detail mt-1">61: 세션 완료 시 시스템 알림 소리 설정. 62: <strong>"부족해, 완전히 다른 접근 시도해"</strong> → 품질 한계 돌파. 63: 세부 정보를 외부 파일에 저장·참조. 64: Haiku(검색)·Sonnet(일반)·Opus(복잡) 분배. 65: Build→Capture→Compare 3회 반복 후 v1 출시.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-cyan-100 text-cyan-700 mt-0.5">66–70</span>
+                <div>
+                  <div class="case-title">4단계 권한 등급 / 허용·차단 목록 / API 키 보안 / /clear 작업 전환 / 주니어 개발자처럼 활용</div>
+                  <div class="case-detail mt-1">66: Plan / 확인 후 / 자동 편집 / 우회 단계 상황별 전환. 67: <code>git commit</code> 허용, <code>rm -rf</code> 차단 등 세분화. 68: <code>.env</code> + <code>.gitignore</code> 필수. 69: 다른 프로젝트 전환 시 컨텍스트 초기화. 70: 명령이 아닌 문제 제시 → 추론 품질 향상.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Section E -->
+        <section id="sec-e" class="mt-10">
+          <div class="not-prose">
+            <span class="section-badge bg-emerald-50 text-emerald-700 border border-emerald-200">E · 웹/앱 개발 &amp; 배포 (사례 71–85)</span>
+          </div>
+
+          <div class="not-prose space-y-3 mt-4">
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-emerald-100 text-emerald-700 mt-0.5">71</span>
+                <div>
+                  <div class="case-title">랜딩 페이지 구축</div>
+                  <div class="case-detail mt-1">히어로 섹션·스크롤 애니메이션·반응형 디자인 → 자연어 명세서로 구현.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-emerald-100 text-emerald-700 mt-0.5">72</span>
+                <div>
+                  <div class="case-title">React/Next.js 웹앱</div>
+                  <div class="case-detail mt-1">컴포넌트 아키텍처 설계부터 Tailwind CSS 구현까지.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-emerald-100 text-emerald-700 mt-0.5">73</span>
+                <div>
+                  <div class="case-title">전자상거래 기능 병렬 개발</div>
+                  <div class="case-detail mt-1">워크트리 활용 → 위시리스트·결제·장바구니 기능 동시 개발.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-emerald-100 text-emerald-700 mt-0.5">74–85</span>
+                <div>
+                  <div class="case-title">모바일 반응형 / 코드 리뷰 / 리팩토링 / DB 스키마 / OpenAPI 명세 / CI·CD / Docker / 도메인 연결 / 환경변수 / Webhook / /loop 주기 실행 / 배포 후 유지보수</div>
+                  <div class="case-detail mt-1">74: 뷰포트별 레이아웃 검증. 75: 보안+품질 에이전트 동시 실행. 76: 함수 시그니처 변경·중복 제거. 77: Prisma 관계 매핑·인덱스. 78: PRD → OpenAPI 엔드포인트 문서. 79: GitHub Actions 자동 테스트/배포. 80: Dockerfile + docker-compose 생성. 81: Vercel 커스텀 도메인·DNS·SSL 자동화. 82: 개발/운영 환경 분리. 83: GitHub 커밋 → 자동 배포 트리거. 84: 5분마다 배포 상태 점검. 85: Modal 워크플로우 배포·크론 실행.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Section F -->
+        <section id="sec-f" class="mt-10">
+          <div class="not-prose">
+            <span class="section-badge bg-amber-50 text-amber-700 border border-amber-200">F · 책 집필 &amp; 편집 (사례 86–95)</span>
+          </div>
+
+          <div class="not-prose space-y-3 mt-4">
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-amber-100 text-amber-700 mt-0.5">86</span>
+                <div>
+                  <div class="case-title">전자책 목차 기획</div>
+                  <div class="case-detail mt-1">주제 + 대상 독자 입력 → 워크북 요소 포함 5대 주제 목차 + 초보→전문가 흐름 검증.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-amber-100 text-amber-700 mt-0.5">87</span>
+                <div>
+                  <div class="case-title">에이전트 팀 병렬 챕터 집필</div>
+                  <div class="case-detail mt-1">완성된 목차 + 스타일 가이드 → 3–5개 에이전트 챕터 동시 집필 → 메인 에이전트 톤·용어 통일.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-amber-100 text-amber-700 mt-0.5">88</span>
+                <div>
+                  <div class="case-title">원고 분량 점검</div>
+                  <div class="case-detail mt-1">8챕터 Word 파일 → 챕터별 글자 수 + 스크린샷 수 표 → 약 30초 처리.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-amber-100 text-amber-700 mt-0.5">89</span>
+                <div>
+                  <div class="case-title">교정 교열 &amp; 문체 통일</div>
+                  <div class="case-detail mt-1">문법·번역투·어색한 표현 교정 → 경어체 일관성·전문용어 평이화. 스킬 파일로 집필 원칙 지속 적용.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-amber-100 text-amber-700 mt-0.5">90–95</span>
+                <div>
+                  <div class="case-title">참고 자료 추출 / 원고 병합 / 색인·용어집 / 번역 현지화 / 프롬프트 예시 검증 / 최종 형식</div>
+                  <div class="case-detail mt-1">90: PDF 연구자료 → 주제별 핵심 문장 + 출처·페이지 번호. 91: 다중 형식 원고 → 자동 목차·표 포함 단일 .docx. 92: 전체 원고 → 주요 용어 정의 + 페이지 참조. 93: 직역이 아닌 문화적 맥락 적용 번역. 94: 책 속 프롬프트를 코워크에서 직접 실행 검증. 95: Word → 브랜드 가이드라인 적용 PDF 변환.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Section G -->
+        <section id="sec-g" class="mt-10">
+          <div class="not-prose">
+            <span class="section-badge bg-rose-50 text-rose-700 border border-rose-200">G · 동영상 제작 파이프라인 (사례 96–110)</span>
+          </div>
+
+          <div class="not-prose space-y-3 mt-4">
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-rose-100 text-rose-700 mt-0.5">96</span>
+                <div>
+                  <div class="case-title">유튜브 롱폼 대본</div>
+                  <div class="case-detail mt-1">10분 영상 분량 명세 → 오프닝 훅·구독 CTA·페이스 조절 포함. 타이머로 길이 검증.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-rose-100 text-rose-700 mt-0.5">97</span>
+                <div>
+                  <div class="case-title">숏폼 대본 (릴스/틱톡)</div>
+                  <div class="case-detail mt-1">30초 이내 → 3초 오프닝 훅·방향 지시 액션·순환 결말. 무한 루프 재생 유도 구조.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-rose-100 text-rose-700 mt-0.5">98</span>
+                <div>
+                  <div class="case-title">스토리보드 &amp; 연출 가이드</div>
+                  <div class="case-detail mt-1">씬 분할·컷 전환·B롤 제안·자막 효과 포함. 약 1분 3초마다 화면 전환 페이싱.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-rose-100 text-rose-700 mt-0.5">99</span>
+                <div>
+                  <div class="case-title">섬네일 문구 &amp; AI 이미지 프롬프트</div>
+                  <div class="case-detail mt-1">각도별 5글자 이내 강렬한 문구 3가지 + AI 이미지 생성 프롬프트 포함.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-rose-100 text-rose-700 mt-0.5">100</span>
+                <div>
+                  <div class="case-title">제목 A/B 테스트 카피</div>
+                  <div class="case-detail mt-1">호기심형·정보형·감성형 각 5가지 = 15개 변형. 클릭베이트 지양, 참여 최적화. YouTube Studio A/B 테스트 적용.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="case-card">
+              <div class="flex items-start gap-3">
+                <span class="case-num bg-rose-100 text-rose-700 mt-0.5">101–110</span>
+                <div>
+                  <div class="case-title">콘텐츠 캘린더 / 댓글 분석 / 팟캐스트 쇼노트 / 영문 자막 / 브랜드 미디어킷 / SEO 키워드 / 뉴스레터 / FFmpeg 자동편집 / 유튜브 트렌드 / 모닝 커피 스킬</div>
+                  <div class="case-detail mt-1">101: 4주 CSV 일정표 (주 2회 업로드). 102: 댓글 CSV → 불만 TOP3·강점·답글 초안. 103: 녹취록 → 타임코드 요약·키워드·링크. 104: 미국 20대 대상 문화 적응 번역. 105: 채널 통계 기반 협찬 제안 이메일. 106: 키워드 리스트 → SEO 블로그 포스트. 107: 기사 스크랩 → 대화체 뉴스레터. 108: <strong>"10개 클립 합치고 페이드 전환·자막·MP4 내보내기"</strong> → Python으로 FFmpeg 자동 호출. 109: 30채널 187영상 → 차트 6개·PPT 9슬라이드·이메일 자동 발송. 110: 4개 에이전트 병렬 실행 → 2분 만에 완전한 모닝 브리핑.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- 핵심 원칙 -->
+        <section id="principles" class="mt-12">
+          <h2>핵심 원칙 &amp; 주의사항</h2>
+
+          <div class="callout-warn not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-amber-500 text-lg">⚠️</span>
+              <div>
+                <p class="text-sm font-semibold text-amber-800 mb-1">AI 결과물은 초안이지 최종본이 아닙니다</p>
+                <p class="text-sm text-amber-700">숫자·날짜·법 조항처럼 오류가 치명적인 항목은 사람이 반드시 원문과 대조해야 합니다. 계약서 법적 검토는 반드시 변호사 확인이 필요합니다.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 원칙 SVG 다이어그램 -->
+          <div class="not-prose my-6 border border-slate-200 rounded-xl p-6 bg-slate-50">
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">AI 활용 올바른 흐름</p>
+            <svg viewBox="0 0 660 80" style="width:100%;max-width:660px;" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arr3" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
+                </marker>
+              </defs>
+              <rect x="10" y="20" width="110" height="40" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+              <text x="65" y="38" text-anchor="middle" font-size="11" fill="#475569" font-weight="600" font-family="sans-serif">지시 입력</text>
+              <text x="65" y="53" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">자연어 명세</text>
+              <line x1="120" y1="40" x2="150" y2="40" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#arr3)"/>
+              <rect x="150" y="20" width="110" height="40" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+              <text x="205" y="38" text-anchor="middle" font-size="11" fill="#3b82f6" font-weight="600" font-family="sans-serif">Claude 실행</text>
+              <text x="205" y="53" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">자동 처리</text>
+              <line x1="260" y1="40" x2="290" y2="40" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#arr3)"/>
+              <rect x="290" y="20" width="110" height="40" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
+              <text x="345" y="38" text-anchor="middle" font-size="11" fill="#b45309" font-weight="600" font-family="sans-serif">결과 초안</text>
+              <text x="345" y="53" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">AI 생성물</text>
+              <line x1="400" y1="40" x2="430" y2="40" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#arr3)"/>
+              <rect x="430" y="20" width="110" height="40" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5"/>
+              <text x="485" y="38" text-anchor="middle" font-size="11" fill="#c2410c" font-weight="600" font-family="sans-serif">사람 검증</text>
+              <text x="485" y="53" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">수치·법조항 확인</text>
+              <line x1="540" y1="40" x2="570" y2="40" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#arr3)"/>
+              <rect x="570" y="20" width="80" height="40" rx="8" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
+              <text x="610" y="38" text-anchor="middle" font-size="11" fill="#16a34a" font-weight="600" font-family="sans-serif">최종 배포</text>
+              <text x="610" y="53" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">확인 완료</text>
+            </svg>
+          </div>
+
+          <div class="not-prose overflow-x-auto mt-4">
+            <table class="w-full text-sm border-collapse">
+              <thead>
+                <tr class="bg-slate-50">
+                  <th class="text-left px-4 py-3 border border-slate-200 font-semibold text-slate-700 text-xs uppercase tracking-wide">항목</th>
+                  <th class="text-left px-4 py-3 border border-slate-200 font-semibold text-slate-700 text-xs uppercase tracking-wide">권장 사항</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="px-4 py-3 border border-slate-200 font-medium text-slate-700">수치·날짜</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">반드시 원문과 직접 대조 확인</td>
+                </tr>
+                <tr class="bg-slate-50/50">
+                  <td class="px-4 py-3 border border-slate-200 font-medium text-slate-700">법률 조항</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">변호사 최종 검토 필수</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 border border-slate-200 font-medium text-slate-700">개인정보</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">이력서 평가 등 조직 정책 검토 후 사용</td>
+                </tr>
+                <tr class="bg-slate-50/50">
+                  <td class="px-4 py-3 border border-slate-200 font-medium text-slate-700">이메일 발송</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">초안 생성 후 반드시 수동 발송</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 border border-slate-200 font-medium text-slate-700">코드 배포</td>
+                  <td class="px-4 py-3 border border-slate-200 text-slate-600">배포 전 배틀 테스트 및 검증</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout-info not-prose mt-4">
+            <div class="flex gap-2.5">
+              <span class="text-sky-500">📎</span>
+              <p class="text-sm text-sky-800">원문 출처: <a href="https://kimkj.com/ai-board/?mod=document&uid=198&execute_uid=198" target="_blank" class="font-semibold underline">kimkj.com — 클로드 코드 &amp; 코워크 실전 사용사례 110선</a> (김경진 변호사)</p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- 오른쪽 목차 -->
+    <aside class="sidebar-right hidden xl:block fixed top-14 right-0 w-52 bottom-0 py-8 px-4 border-l border-slate-200 overflow-y-auto">
+      <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">이 페이지</p>
+      <div class="space-y-0.5">
+        <a href="#overview" class="toc-link">소개 &amp; 구성</a>
+        <a href="#difference" class="toc-link">코워크 vs 코드</a>
+        <a href="#sec-a" class="toc-link">A. 일상 업무 (1–15)</a>
+        <a href="#sec-b" class="toc-link">B. 고급 자동화 (16–30)</a>
+        <a href="#sec-c" class="toc-link">C. 워크플로우 (31–50)</a>
+        <a href="#sec-d" class="toc-link">D. 세션 관리 (51–70)</a>
+        <a href="#sec-e" class="toc-link">E. 웹/앱 개발 (71–85)</a>
+        <a href="#sec-f" class="toc-link">F. 책 집필 (86–95)</a>
+        <a href="#sec-g" class="toc-link">G. 동영상 (96–110)</a>
+        <a href="#principles" class="toc-link">핵심 원칙</a>
+      </div>
+    </aside>
+
+  </div>
+
+  <script data-page-hash="GXEMCD9" src="/assets/js/page-footer.js"></script>
+  <script>
+    // 활성 사이드바·TOC 링크 하이라이트
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-item');
+    const tocLinks = document.querySelectorAll('.toc-link');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          navLinks.forEach(l => {
+            l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+          });
+          tocLinks.forEach(l => {
+            l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    sections.forEach(s => observer.observe(s));
+  </script>
+</body>
+</html>
