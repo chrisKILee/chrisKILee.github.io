@@ -76,10 +76,65 @@ function transformPage(srcName) {
 
   // Pick representative image BEFORE any mutation
   const repImg = pickRepImage(html, displayName);
+  if (repImg) {
+    const fixes = {
+      '/gemini_html/assets/screenshot.jpg': '/gemini_html/assets/assets/screenshot.jpg',
+      '/gemini_html/assets/screenshot.png': '/gemini_html/assets/정선우-screenshot.png',
+      '/gemini_html/assets/screen1.png': '/gemini_html/assets/screen1_정혜나.png',
+      '/gemini_html/assets/screen2.png': '/gemini_html/contents/3JDHPAR/screen2.png',
+      '/gemini_html/assets/에이전트1.png': '/gemini_html/assets/최윤희/에이전트1.png',
+      '/gemini_html/assets/에이전트2.png': '/gemini_html/assets/최윤희/에이전트2.png',
+      '/gemini_html/assets/자동화 화면1.png': '/gemini_html/assets/최윤희/자동화 화면1.png',
+      '/gemini_html/assets/발송화면.png': '/gemini_html/assets/최윤희/발송화면.png',
+    };
+    if (fixes[repImg.src]) repImg.src = fixes[repImg.src];
+  }
 
   // A. Rewrite relative asset paths to absolute /gemini_html/ paths
-  // Replace src="assets/..." → src="/gemini_html/assets/..."
+  // A1. HTML attributes: src="assets/..." / href="assets/..."
   html = html.replace(/(src|href)=["']assets\//g, '$1="/gemini_html/assets/');
+  // A2. JS string literals inside initGallery(): {src:"assets/..."} / {src:'assets/...'}
+  //     Also data-src and inline style url(assets/...)
+  html = html.replace(/(\bsrc\s*:\s*)(["'])assets\//g, '$1$2/gemini_html/assets/');
+  html = html.replace(/(\bdata-src\s*=\s*)(["'])assets\//g, '$1$2/gemini_html/assets/');
+  html = html.replace(/url\(\s*(['"]?)assets\//g, 'url($1/gemini_html/assets/');
+  // A3. Map known misplaced/renamed assets to actual disk paths
+  const assetFixes = {
+    // 이기완 screenshot lives at /gemini_html/assets/assets/screenshot.jpg
+    '/gemini_html/assets/screenshot.jpg': '/gemini_html/assets/assets/screenshot.jpg',
+    // 정선우 screenshot renamed with prefix
+    '/gemini_html/assets/screenshot.png': '/gemini_html/assets/정선우-screenshot.png',
+    // 정혜나 screen1 renamed (screen2 lives elsewhere, screen3 missing)
+    '/gemini_html/assets/screen1.png': '/gemini_html/assets/screen1_정혜나.png',
+    '/gemini_html/assets/screen2.png': '/gemini_html/contents/3JDHPAR/screen2.png',
+    // 최윤희 images moved into subdirectory
+    '/gemini_html/assets/에이전트1.png': '/gemini_html/assets/최윤희/에이전트1.png',
+    '/gemini_html/assets/에이전트2.png': '/gemini_html/assets/최윤희/에이전트2.png',
+    '/gemini_html/assets/자동화 화면1.png': '/gemini_html/assets/최윤희/자동화 화면1.png',
+    '/gemini_html/assets/발송화면.png': '/gemini_html/assets/최윤희/발송화면.png',
+  };
+  function applyAssetFixes(s) {
+    if (!s) return s;
+    for (const [from, to] of Object.entries(assetFixes)) {
+      s = s.split(from).join(to);
+    }
+    return s;
+  }
+  html = applyAssetFixes(html);
+
+  // A4. Remove references to assets that don't exist anywhere (정혜나 screen3)
+  //     Strip the entire <img ...> tag and corresponding initGallery entries
+  const deadAssets = ['/gemini_html/assets/screen3.png'];
+  for (const dead of deadAssets) {
+    // Remove <img> tags whose src is the dead asset
+    const imgTagRe = new RegExp('<img[^>]*src=["\']' + dead.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '["\'][^>]*>', 'g');
+    html = html.replace(imgTagRe, '');
+    // Remove gallery object entries: {src:"...dead..."[, alt:"..."]},
+    const galRe = new RegExp('\\{[^}]*src\\s*:\\s*["\']' + dead.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '["\'][^}]*\\}\\s*,?', 'g');
+    html = html.replace(galRe, '');
+    // Clean trailing commas in arrays
+    html = html.replace(/,(\s*\])/g, '$1');
+  }
 
   // Rewrite favicon href path
   // (already absolute in most cases, but ensure)
