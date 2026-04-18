@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LLM Wiki: RAG를 넘어선 지식 베이스</title>
+  <link rel="icon" type="image/svg+xml" href="/gemini_html/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:     #0E0E0B;
+      --ink-2:   #3A3A36;
+      --ink-3:   #6B6B64;
+      --ink-4:   #A8A8A0;
+      --paper:   #F7F7F4;
+      --paper-2: #EFEFEB;
+      --white:   #FFFFFF;
+      --rule:    #D8D8D0;
+      --accent:  #0E0E0B;
+      --red:     #C4522A;
+      --red-bg:  #FEF3ED;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Masthead */
+    .masthead {
+      border-bottom: 3px solid var(--ink);
+      padding: 20px 40px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .masthead-name { font-family: var(--font-display); font-size: 14px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+    .masthead-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    /* Lead */
+    .lead { border-bottom: 1px solid var(--rule); padding: 80px 40px 64px; max-width: 1100px; margin: 0 auto; }
+    .lead-eyebrow {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--ink-3); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .lead-eyebrow::before { content: '//'; color: var(--ink-4); }
+    .lead h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 900; line-height: 1.0; letter-spacing: -0.03em;
+      color: var(--ink); margin-bottom: 28px; max-width: 900px;
+    }
+    .lead h1 em { font-style: italic; font-weight: 400; }
+    .lead-deck {
+      font-size: 19px; color: var(--ink-2); max-width: 640px;
+      line-height: 1.65; border-left: 3px solid var(--ink);
+      padding-left: 20px; margin-bottom: 40px;
+    }
+    .lead-byline {
+      font-size: 13px; color: var(--ink-4); font-family: var(--font-mono);
+      display: flex; gap: 20px; flex-wrap: wrap;
+    }
+    .lead-byline span::before { content: '— '; }
+
+    /* Page body */
+    .page-body { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+
+    /* Section */
+    .doc-section { padding: 56px 0; border-bottom: 1px solid var(--rule); }
+    .doc-section:last-child { border-bottom: none; }
+    .section-num { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+    .section-heading { font-family: var(--font-display); font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 14px; }
+    .section-lead { font-size: 16px; color: var(--ink-3); max-width: 600px; margin-bottom: 40px; line-height: 1.7; }
+
+    /* Two-col */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+    .col-item { padding: 28px; border: 1px solid var(--rule); }
+    .col-item + .col-item { border-left: none; }
+    @media (max-width: 680px) { .col-item + .col-item { border-left: 1px solid var(--rule); border-top: none; } }
+    .col-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 10px; font-family: var(--font-mono); }
+    .col-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--ink); }
+    .col-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .col-item.dark { background: var(--ink); border-color: var(--ink); }
+    .col-item.dark .col-label { color: #666660; }
+    .col-item.dark .col-title { color: #F7F7F4; }
+    .col-item.dark .col-body { color: #A8A8A0; }
+    .col-item.dark .col-body strong { color: var(--red); }
+
+    /* Bullet list */
+    .dot-list { list-style: none; padding: 0; margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .dot-list li { font-size: 14px; color: var(--ink-3); padding-left: 16px; position: relative; line-height: 1.6; }
+    .dot-list li::before { content: '·'; position: absolute; left: 0; color: var(--ink-4); }
+    .col-item.dark .dot-list li { color: #8A8A80; }
+    .col-item.dark .dot-list li::before { color: #555550; }
+
+    /* Pullquote */
+    .pullquote { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--rule); padding: 32px 0; margin: 40px 0; }
+    .pullquote p { font-family: var(--font-display); font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-style: italic; font-weight: 400; line-height: 1.4; color: var(--ink); }
+    .pullquote cite { display: block; margin-top: 12px; font-size: 13px; font-family: var(--font-mono); color: var(--ink-4); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { border-bottom: 2px solid var(--ink); padding: 10px 16px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-family: var(--font-mono); }
+    td { border-bottom: 1px solid var(--rule); padding: 14px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--paper-2); }
+
+    /* Code */
+    pre.code { background: var(--ink); color: #E8E8E0; border-radius: 4px; padding: 20px 24px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; margin: 20px 0; }
+    code.inline { background: var(--paper-2); border: 1px solid var(--rule); border-radius: 3px; padding: 1px 6px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+
+    /* Fact strip */
+    .facts { display: flex; gap: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
+    .fact { flex: 1; min-width: 120px; padding: 24px 28px; border-right: 1px solid var(--rule); }
+    .fact:last-child { border-right: none; }
+    .fact-num { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; color: var(--ink); line-height: 1; margin-bottom: 6px; }
+    .fact-label { font-size: 13px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    /* Insight box */
+    .insight-box { border: 2px solid var(--ink); padding: 28px 32px; margin: 32px 0; display: flex; gap: 20px; align-items: flex-start; }
+    .insight-label { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--red); white-space: nowrap; margin-top: 3px; }
+    .insight-text { font-size: 15px; color: var(--ink-2); line-height: 1.75; }
+    .insight-text strong { color: var(--ink); }
+
+    /* Pipeline diagram container */
+    .diagram-wrap { overflow-x: auto; margin-top: 32px; }
+
+    /* Three-column grid */
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+    @media (max-width: 680px) { .three-col { grid-template-columns: 1fr; } }
+    .three-item { padding: 28px 24px; border: 1px solid var(--rule); }
+    .three-item + .three-item { border-left: none; }
+    @media (max-width: 680px) { .three-item + .three-item { border-left: 1px solid var(--rule); border-top: none; } }
+    .three-item .item-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 8px; font-family: var(--font-mono); }
+    .three-item .item-title { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+    .three-item .item-body { font-size: 13px; color: var(--ink-3); line-height: 1.65; }
+    .three-item .item-tag { display: inline-block; margin-top: 12px; font-size: 11px; font-family: var(--font-mono); background: var(--paper-2); border: 1px solid var(--rule); padding: 2px 8px; border-radius: 2px; color: var(--ink-4); }
+
+    /* Body prose */
+    .prose { font-size: 15px; color: var(--ink-2); max-width: 680px; line-height: 1.75; }
+    .prose + .prose { margin-top: 16px; }
+
+    /* Footer */
+    footer { border-top: 3px solid var(--ink); padding: 28px 40px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12px; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--ink); }
+
+    @media (max-width: 640px) {
+      .masthead, .lead, footer { padding-left: 16px; padding-right: 16px; }
+      .page-body { padding: 0 16px; }
+      .facts { flex-direction: column; }
+      .fact { border-right: none; border-bottom: 1px solid var(--rule); }
+      .fact:last-child { border-bottom: none; }
+      .insight-box { flex-direction: column; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <span class="masthead-name">LLM Wiki</span>
+  <span class="masthead-meta">Andrej Karpathy &nbsp;·&nbsp; GitHub Gist &nbsp;·&nbsp; 2026-04-04</span>
+</header>
+
+<!-- LEAD -->
+<div class="lead">
+  <div class="lead-eyebrow">AI Study · Knowledge Base Pattern</div>
+  <h1>RAG는 매번 처음부터 시작합니다<br><em>LLM Wiki는 지식이 쌓입니다</em></h1>
+  <p class="lead-deck">
+    LLM으로 개인 지식 베이스를 구축하는 패턴 — 전체 아이디어 파일 공개.
+    Andrej Karpathy가 직접 쓰는 워크플로우를 GitHub Gist로 공개했습니다.
+  </p>
+  <div class="lead-byline">
+    <span>출처: github.com/karpathy Gist (2026-04-04)</span>
+    <span>작성: 2026-04-19</span>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- FACT STRIP -->
+  <div class="facts" style="margin: 40px 0;">
+    <div class="fact">
+      <div class="fact-num">0×</div>
+      <div class="fact-label">RAG의 지식 축적량</div>
+    </div>
+    <div class="fact">
+      <div class="fact-num">3</div>
+      <div class="fact-label">LLM Wiki 계층 구조</div>
+    </div>
+    <div class="fact">
+      <div class="fact-num">95%</div>
+      <div class="fact-label">RAG 대비 토큰 절감 가능 (MindStudio 분석)</div>
+    </div>
+    <div class="fact">
+      <div class="fact-num">5</div>
+      <div class="fact-label">파이프라인 단계 수</div>
+    </div>
+  </div>
+
+  <!-- SECTION 01: RAG vs LLM Wiki -->
+  <section class="doc-section">
+    <div class="section-num">01</div>
+    <h2 class="section-heading">RAG의 문제 — 매번 처음부터 시작한다</h2>
+    <p class="section-lead">
+      Karpathy Gist 원문: "LLM이 매번 질문마다 지식을 처음부터 다시 발견합니다. 축적이 없습니다."
+    </p>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">기존 방식</div>
+        <div class="col-title">RAG</div>
+        <ul class="dot-list">
+          <li>파일 업로드 → 질문마다 청크(조각) 검색</li>
+          <li>매번 원본에서 처음부터 발견</li>
+          <li>축적 없음, 정제 없음</li>
+          <li>복잡한 질문은 조각 찾기부터 시작</li>
+          <li>NotebookLM, ChatGPT 파일 업로드 방식</li>
+        </ul>
+        <p style="font-size:13px;color:var(--ink-4);margin-top:20px;font-family:var(--font-mono);">아무것도 쌓이지 않습니다. 질문할수록 지식 베이스는 그대로입니다.</p>
+      </div>
+      <div class="col-item dark">
+        <div class="col-label">Karpathy 방식</div>
+        <div class="col-title">LLM Wiki</div>
+        <ul class="dot-list">
+          <li>원본 자료 → LLM이 위키로 컴파일</li>
+          <li>개념별 아티클, 역링크, 인덱스 생성</li>
+          <li>에이전트가 Q&A하며 위키를 보강</li>
+          <li>탐색할수록 지식 베이스가 강해짐</li>
+          <li><strong>Obsidian + Claude Code 조합</strong></li>
+        </ul>
+        <p style="font-size:13px;color:#666660;margin-top:20px;font-family:var(--font-mono);">탐색과 질문이 쌓일수록 위키가 점점 뚜렷해집니다.</p>
+      </div>
+    </div>
+
+    <!-- 핵심 차이 SVG -->
+    <div class="diagram-wrap" style="margin-top:40px;">
+      <svg viewBox="0 0 900 100" style="width:100%;max-width:900px;" role="img" aria-label="RAG vs LLM Wiki 흐름 비교">
+        <defs>
+          <marker id="arr-g" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#A8A8A0"/></marker>
+          <marker id="arr-r" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#C4522A"/></marker>
+        </defs>
+
+        <!-- RAG 흐름 -->
+        <text x="10" y="18" font-family="JetBrains Mono" font-size="10" fill="#A8A8A0" letter-spacing="2">RAG</text>
+        <rect x="10" y="26" width="80" height="34" rx="4" fill="#EFEFEB" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="50" y="47" text-anchor="middle" font-family="Inter" font-size="12" fill="#3A3A36">문서</text>
+        <line x1="90" y1="43" x2="120" y2="43" stroke="#A8A8A0" stroke-width="1.2" marker-end="url(#arr-g)"/>
+        <rect x="122" y="26" width="100" height="34" rx="4" fill="#EFEFEB" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="172" y="47" text-anchor="middle" font-family="Inter" font-size="12" fill="#3A3A36">청크 검색</text>
+        <line x1="222" y1="43" x2="252" y2="43" stroke="#A8A8A0" stroke-width="1.2" marker-end="url(#arr-g)"/>
+        <rect x="254" y="26" width="80" height="34" rx="4" fill="#EFEFEB" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="294" y="47" text-anchor="middle" font-family="Inter" font-size="12" fill="#3A3A36">답변</text>
+        <text x="350" y="47" font-family="JetBrains Mono" font-size="11" fill="#A8A8A0">← 매번 반복, 축적 없음</text>
+
+        <!-- LLM Wiki 흐름 -->
+        <text x="10" y="90" font-family="JetBrains Mono" font-size="10" fill="#C4522A" letter-spacing="2">LLM WIKI</text>
+
+        <!-- Already drawn in section below -->
+      </svg>
+    </div>
+  </section>
+
+  <!-- SECTION 02: Karpathy 발언 + 핵심 인사이트 -->
+  <section class="doc-section">
+    <div class="section-num">02</div>
+    <h2 class="section-heading">코드 조작에서 지식 조작으로</h2>
+
+    <div class="pullquote">
+      <p>"A large fraction of my recent token throughput is going less into <em>manipulating code</em>, and more into <em>manipulating knowledge</em>."</p>
+      <cite>Andrej Karpathy · X (Twitter) · 2026-04-02</cite>
+    </div>
+
+    <p class="prose">지금까지 대부분의 LLM 활용 경험은 코드를 조작하는 것이었습니다. Karpathy는 이제 자신의 토큰 사용량 상당 부분이 코드 조작이 아닌 <strong>지식 조작</strong>에 쓰인다고 밝혔습니다.</p>
+
+    <p class="prose" style="margin-top:16px;">Gist 원문: <em>"The idea of the idea file is that in this era of LLM agents, there is less of a point/need of sharing the specific code/app, you just share the idea, then the other person's agent customizes &amp; builds it for your specific needs."</em></p>
+
+    <div class="insight-box" style="margin-top:32px;">
+      <span class="insight-label">CORE INSIGHT</span>
+      <p class="insight-text">
+        Karpathy는 이제 토큰의 상당 부분을 <strong>코드 조작이 아닌 지식 조작</strong>에 씁니다.
+        LLM이 위키를 직접 쓰고 관리합니다. 사람은 방향만 잡으면 됩니다.
+        전체 아이디어 파일은 GitHub Gist에 공개됐고, 본인의 LLM 에이전트에 복붙하면 바로 시작할 수 있습니다.
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION 03: LLM Wiki 파이프라인 -->
+  <section class="doc-section">
+    <div class="section-num">03</div>
+    <h2 class="section-heading">LLM Wiki 파이프라인 — 5단계</h2>
+    <p class="section-lead">원본 소스 → raw 저장 → Wiki 컴파일 → Q&A 에이전트 → 출력 귀환. STEP 3 WIKI가 핵심입니다.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 860 160" style="width:100%;max-width:860px;" role="img" aria-label="LLM Wiki 5단계 파이프라인">
+        <defs>
+          <marker id="pipe-arr" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#6B6B64"/></marker>
+        </defs>
+
+        <!-- Step 1: Sources -->
+        <rect x="10" y="30" width="130" height="100" rx="4" fill="#FFFFFF" stroke="#D8D8D0" stroke-width="1.5"/>
+        <text x="20" y="52" font-family="JetBrains Mono" font-size="9" fill="#A8A8A0" letter-spacing="1">STEP 1</text>
+        <text x="20" y="68" font-family="Inter" font-size="14" font-weight="700" fill="#0E0E0B">Sources</text>
+        <text x="20" y="86" font-family="Inter" font-size="11" fill="#6B6B64">아티클·논문</text>
+        <text x="20" y="101" font-family="Inter" font-size="11" fill="#6B6B64">레포·데이터셋</text>
+        <text x="20" y="116" font-family="Inter" font-size="11" fill="#6B6B64">이미지·다이어그램</text>
+
+        <!-- Arrow 1→2 -->
+        <line x1="140" y1="80" x2="168" y2="80" stroke="#6B6B64" stroke-width="1.2" marker-end="url(#pipe-arr)"/>
+        <text x="147" y="75" font-family="JetBrains Mono" font-size="9" fill="#A8A8A0">index</text>
+        <text x="150" y="92" font-family="JetBrains Mono" font-size="9" fill="#A8A8A0">→</text>
+
+        <!-- Step 2: raw/ -->
+        <rect x="170" y="30" width="130" height="100" rx="4" fill="#FFFFFF" stroke="#D8D8D0" stroke-width="1.5"/>
+        <text x="180" y="52" font-family="JetBrains Mono" font-size="9" fill="#A8A8A0" letter-spacing="1">STEP 2</text>
+        <text x="180" y="68" font-family="Inter" font-size="14" font-weight="700" fill="#0E0E0B">raw/</text>
+        <text x="180" y="86" font-family="Inter" font-size="11" fill="#6B6B64">원본 파일 그대로</text>
+        <text x="180" y="101" font-family="Inter" font-size="11" fill="#6B6B64">.md 변환 저장</text>
+        <text x="180" y="116" font-family="Inter" font-size="11" fill="#6B6B64">로컬 이미지 포함</text>
+
+        <!-- Arrow 2→3 -->
+        <line x1="300" y1="80" x2="328" y2="80" stroke="#C4522A" stroke-width="1.5" marker-end="url(#pipe-arr)"/>
+        <text x="304" y="75" font-family="JetBrains Mono" font-size="9" fill="#C4522A">LLM</text>
+        <text x="308" y="92" font-family="JetBrains Mono" font-size="9" fill="#C4522A">→</text>
+
+        <!-- Step 3: WIKI (highlighted) -->
+        <rect x="330" y="20" width="145" height="120" rx="4" fill="#C4522A" stroke="#C4522A" stroke-width="1.5"/>
+        <text x="342" y="44" font-family="JetBrains Mono" font-size="9" fill="rgba(255,255,255,0.6)" letter-spacing="1">STEP 3</text>
+        <text x="342" y="62" font-family="Inter" font-size="14" font-weight="700" fill="#FFFFFF">WIKI</text>
+        <text x="342" y="80" font-family="Inter" font-size="11" fill="rgba(255,255,255,0.85)">.md 지식 베이스</text>
+        <text x="342" y="95" font-family="Inter" font-size="11" fill="rgba(255,255,255,0.85)">요약 + 역링크</text>
+        <text x="342" y="110" font-family="Inter" font-size="11" fill="rgba(255,255,255,0.85)">개념 카테고리</text>
+        <text x="342" y="125" font-family="Inter" font-size="11" fill="rgba(255,255,255,0.85)">자동 유지 인덱스</text>
+
+        <!-- Arrow 3→4 -->
+        <line x1="475" y1="80" x2="503" y2="80" stroke="#6B6B64" stroke-width="1.2" marker-end="url(#pipe-arr)"/>
+        <text x="478" y="75" font-family="JetBrains Mono" font-size="9" fill="#A8A8A0">query</text>
+        <text x="481" y="92" font-family="JetBrains Mono" font-size="9" fill="#A8A8A0">→</text>
+
+        <!-- Step 4: Q&A Agent -->
+        <rect x="505" y="30" width="145" height="100" rx="4" fill="#FFFFFF" stroke="#D8D8D0" stroke-width="1.5"/>
+        <text x="516" y="52" font-family="JetBrains Mono" font-size="9" fill="#A8A8A0" letter-spacing="1">STEP 4</text>
+        <text x="516" y="68" font-family="Inter" font-size="14" font-weight="700" fill="#0E0E0B">Q&amp;A Agent</text>
+        <text x="516" y="86" font-family="Inter" font-size="11" fill="#6B6B64">위키 전체 대상</text>
+        <text x="516" y="101" font-family="Inter" font-size="11" fill="#6B6B64">복잡한 질문 가능</text>
+        <text x="516" y="116" font-family="Inter" font-size="11" fill="#6B6B64">RAG 불필요</text>
+
+        <!-- Arrow 4→5 -->
+        <line x1="650" y1="80" x2="678" y2="80" stroke="#6B6B64" stroke-width="1.2" marker-end="url(#pipe-arr)"/>
+        <text x="652" y="75" font-family="JetBrains Mono" font-size="9" fill="#A8A8A0">render</text>
+        <text x="656" y="92" font-family="JetBrains Mono" font-size="9" fill="#A8A8A0">→</text>
+
+        <!-- Step 5: Output -->
+        <rect x="680" y="30" width="170" height="100" rx="4" fill="#FFFFFF" stroke="#D8D8D0" stroke-width="1.5"/>
+        <text x="692" y="52" font-family="JetBrains Mono" font-size="9" fill="#A8A8A0" letter-spacing="1">STEP 5</text>
+        <text x="692" y="68" font-family="Inter" font-size="14" font-weight="700" fill="#0E0E0B">Output</text>
+        <text x="692" y="86" font-family="Inter" font-size="11" fill="#6B6B64">마크다운 파일</text>
+        <text x="692" y="101" font-family="Inter" font-size="11" fill="#6B6B64">Marp 슬라이드</text>
+        <text x="692" y="116" font-family="Inter" font-size="11" fill="#C4522A" font-weight="600">결과는 위키로 귀환 ↩</text>
+      </svg>
+    </div>
+
+    <p style="font-size:12px;color:var(--ink-4);font-family:var(--font-mono);margin-top:12px;">STEP 3 WIKI — LLM이 소유하는 유일한 계층. 사람은 읽기만 합니다.</p>
+  </section>
+
+  <!-- SECTION 04: 3계층 아키텍처 -->
+  <section class="doc-section">
+    <div class="section-num">04</div>
+    <h2 class="section-heading">3계층 아키텍처</h2>
+    <p class="section-lead">Karpathy Gist가 정의한 세 개의 계층. 계층마다 소유자가 다릅니다.</p>
+
+    <div class="three-col">
+      <div class="three-item">
+        <div class="item-label">Layer 1 · 불변</div>
+        <div class="item-title">Raw Sources</div>
+        <div class="item-body">큐레이션된 원본 문서 모음. 아티클, 논문, 이미지, 데이터 파일. LLM이 읽지만 <strong>절대 수정하지 않습니다</strong>. 진실의 원천(source of truth).</div>
+        <span class="item-tag">human-owned · read-only</span>
+      </div>
+      <div class="three-item">
+        <div class="item-label">Layer 2 · 핵심</div>
+        <div class="item-title">The Wiki</div>
+        <div class="item-body">LLM이 생성하는 마크다운 파일 디렉토리. 요약, 엔티티 페이지, 개념 페이지, 비교, 개요, 합성. <strong>LLM이 이 계층 전체를 소유합니다</strong>. 사람은 읽기만 합니다.</div>
+        <span class="item-tag">llm-owned · always-current</span>
+      </div>
+      <div class="three-item">
+        <div class="item-label">Layer 3 · 설정</div>
+        <div class="item-title">The Schema</div>
+        <div class="item-body">LLM에게 위키 구조·규칙·워크플로우를 알려주는 설정 파일. Claude Code → <code style="font-family:var(--font-mono);font-size:11px;">CLAUDE.md</code>, OpenAI Codex → <code style="font-family:var(--font-mono);font-size:11px;">AGENTS.md</code>. LLM을 챗봇이 아닌 <strong>규율 있는 위키 관리자</strong>로 만듭니다.</div>
+        <span class="item-tag">config · CLAUDE.md / AGENTS.md</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 05: 3가지 주요 작업 -->
+  <section class="doc-section">
+    <div class="section-num">05</div>
+    <h2 class="section-heading">3가지 주요 작업 — Ingest · Query · Lint</h2>
+    <p class="section-lead">Gist 원문이 정의한 위키 운영의 세 가지 핵심 작업입니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>작업</th>
+            <th>트리거</th>
+            <th>LLM이 하는 일</th>
+            <th>결과</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Ingest (수집)</strong></td>
+            <td>새 소스 파일 추가 시</td>
+            <td>소스 읽기 → 핵심 추출 → 요약 페이지 생성 → 인덱스 업데이트 → 관련 엔티티/개념 페이지 10~15개 업데이트 → 로그 추가</td>
+            <td>위키가 새 지식을 흡수</td>
+          </tr>
+          <tr>
+            <td><strong>Query (질의)</strong></td>
+            <td>사용자가 질문 시</td>
+            <td>index.md로 관련 페이지 탐색 → 읽기 → 인용 포함 답변 합성. 좋은 답변은 새 위키 페이지로 저장됨</td>
+            <td>답변 + 위키 보강</td>
+          </tr>
+          <tr>
+            <td><strong>Lint (건강 체크)</strong></td>
+            <td>주기적으로 실행</td>
+            <td>모순 감지, 구식 정보 플래그, 고아 페이지(링크 없는 페이지) 탐지, 누락 역링크 추가, 데이터 공백 확인</td>
+            <td>위키 일관성 유지</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 06: 특수 파일 index.md & log.md -->
+  <section class="doc-section">
+    <div class="section-num">06</div>
+    <h2 class="section-heading">특수 파일 — index.md &amp; log.md</h2>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">콘텐츠 지도</div>
+        <div class="col-title">index.md</div>
+        <div class="col-body">
+          위키 내 모든 페이지 목록 + 한 줄 요약 + 링크. Q&A Agent가 질문을 받으면 <strong>index.md를 먼저 읽어</strong> 관련 페이지를 찾습니다. 적당한 규모(소스 ~100개, 페이지 수백 개)에서는 임베딩 기반 RAG 인프라 없이도 충분히 작동합니다.
+        </div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">타임라인 기록</div>
+        <div class="col-title">log.md</div>
+        <div class="col-body">
+          언제 무엇을 했는지 추가 전용(append-only) 기록. 인제스트·쿼리·린트 이벤트가 쌓입니다.
+          Gist 팁: 각 항목을 <code style="font-family:var(--font-mono);font-size:11px;">## [2026-04-02] ingest | 제목</code> 형식으로 시작하면 <code style="font-family:var(--font-mono);font-size:11px;">grep</code>으로 파싱 가능합니다.
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-box" style="margin-top:32px;">
+      <span class="insight-label">Obsidian 비유</span>
+      <p class="insight-text">
+        Gist 원문: <em>"In practice, I have the LLM agent open on one side and Obsidian open on the other. The LLM makes edits based on our conversation, and I browse the results in real time — following links, checking the graph view, reading the updated pages."</em><br><br>
+        <strong>Obsidian = IDE &nbsp;/&nbsp; LLM = 프로그래머 &nbsp;/&nbsp; Wiki = 코드베이스</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION 07: 구현 도구 -->
+  <section class="doc-section">
+    <div class="section-num">07</div>
+    <h2 class="section-heading">실제 구현 도구</h2>
+    <p class="section-lead">Gist 원문에서 언급된 도구 목록입니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>도구</th>
+            <th>역할</th>
+            <th>비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Obsidian</strong></td>
+            <td>마크다운 IDE, 그래프 뷰, 실시간 탐색</td>
+            <td>"Obsidian is the IDE"</td>
+          </tr>
+          <tr>
+            <td><strong>Obsidian Web Clipper</strong></td>
+            <td>웹 기사 → 마크다운 변환 (브라우저 확장)</td>
+            <td>Sources 수집 자동화</td>
+          </tr>
+          <tr>
+            <td><strong>Claude Code</strong></td>
+            <td>기본 LLM 에이전트, CLAUDE.md 스키마 사용</td>
+            <td>현재 Karpathy 사용 도구</td>
+          </tr>
+          <tr>
+            <td><strong>OpenAI Codex</strong></td>
+            <td>대안 LLM 에이전트, AGENTS.md 스키마 사용</td>
+            <td>에이전트 교체 가능</td>
+          </tr>
+          <tr>
+            <td><strong>Marp</strong></td>
+            <td>마크다운 → 슬라이드 덱 변환</td>
+            <td>Obsidian 플러그인</td>
+          </tr>
+          <tr>
+            <td><strong>Dataview</strong></td>
+            <td>프론트매터(frontmatter) 쿼리, 동적 테이블</td>
+            <td>Obsidian 플러그인</td>
+          </tr>
+          <tr>
+            <td><strong>qmd</strong></td>
+            <td>로컬 마크다운 검색 (BM25 + 벡터)</td>
+            <td>대규모 확장 시 선택 옵션</td>
+          </tr>
+          <tr>
+            <td><strong>Git</strong></td>
+            <td>위키 버전 관리, 협업</td>
+            <td>"The wiki is just a git repo"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 08: 왜 작동하는가 -->
+  <section class="doc-section">
+    <div class="section-num">08</div>
+    <h2 class="section-heading">왜 작동하는가</h2>
+
+    <div class="pullquote">
+      <p>"Humans abandon wikis because the maintenance burden grows faster than the value. LLMs don't get bored, don't forget to update a cross-reference, and can touch 15 files in one pass."</p>
+      <cite>Andrej Karpathy · GitHub Gist · 2026-04-04</cite>
+    </div>
+
+    <p class="prose">지식 베이스 유지의 고통스러운 부분은 읽기나 생각이 아닙니다. <strong>장부 정리(bookkeeping)</strong>입니다. 역링크 업데이트, 요약 최신화, 모순 플래그, 수십 페이지 일관성 유지. 사람은 이 비용이 증가하면 위키를 포기합니다. LLM은 지루해하지 않고, 역링크 업데이트를 잊지 않으며, 한 번에 15개 파일을 처리할 수 있습니다.</p>
+
+    <p class="prose" style="margin-top:16px;">Karpathy는 1945년 Vannevar Bush의 <strong>Memex</strong> 개념도 언급합니다. <em>"그가 해결하지 못한 부분은 누가 유지보수를 하느냐였습니다. LLM이 그것을 처리합니다."</em></p>
+
+    <div class="three-col" style="margin-top:32px;">
+      <div class="three-item">
+        <div class="item-label">RAG와 가장 큰 차이</div>
+        <div class="item-title">컴파일 → 축적</div>
+        <div class="item-body">원본을 한 번 컴파일하면 지식이 위키에 쌓입니다. 질문마다 다시 검색하지 않습니다. 위키는 영구적으로 복리처럼 성장하는 결과물입니다.</div>
+      </div>
+      <div class="three-item">
+        <div class="item-label">핵심 원칙</div>
+        <div class="item-title">에이전트가 쓴다</div>
+        <div class="item-body">사람이 위키를 직접 편집하지 않습니다. LLM 에이전트가 씁니다. 사람의 역할은 소스 큐레이션, 방향 설정, 좋은 질문하기.</div>
+      </div>
+      <div class="three-item">
+        <div class="item-label">복리 효과</div>
+        <div class="item-title">출력이 귀환한다</div>
+        <div class="item-body">Q&A 결과물을 다시 위키에 넣습니다. 비교 분석, 연결 발견, 합성 — 이것들이 채팅 기록에 사라지지 않고 위키에 남습니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 09: 한계 및 주의사항 -->
+  <section class="doc-section">
+    <div class="section-num">09</div>
+    <h2 class="section-heading">한계 및 주의사항</h2>
+    <p class="section-lead">커뮤니티와 Gist 자체에서 지적된 제한 사항입니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>한계</th>
+            <th>내용</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>규모 한계</strong></td>
+            <td>소스 ~100개, 페이지 수백 개까지는 index.md로 충분. 이후엔 qmd 같은 임베딩 검색 필요 → 결국 RAG로 회귀한다는 비판 있음</td>
+          </tr>
+          <tr>
+            <td><strong>LLM 부정확성</strong></td>
+            <td>LLM이 부정확한 크로스레퍼런스를 생성하거나 모순을 놓칠 수 있음. 인간 검증이 여전히 필요</td>
+          </tr>
+          <tr>
+            <td><strong>협업 한계</strong></td>
+            <td>DokuWiki 창업자 등의 비판: "진짜 위키가 아님" — 다중 사용자 권한·협업·버전 병합 메커니즘 부재</td>
+          </tr>
+          <tr>
+            <td><strong>추상적 설계</strong></td>
+            <td>Gist 원문: "이 문서는 의도적으로 추상적입니다. 특정 구현이 아닌 아이디어를 설명합니다." 도메인·도구·선호도에 따라 직접 구현 필요</td>
+          </tr>
+          <tr>
+            <td><strong>초기 비용</strong></td>
+            <td>기존 문서 전체를 처음 인제스트할 때 토큰·시간 비용이 큼. 이후 유지비용은 낮음</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="prose" style="margin-top:28px;">Gist 마지막 구절: <em>"Everything mentioned above is optional and modular — pick what's useful, ignore what isn't."</em></p>
+  </section>
+
+</div><!-- /page-body -->
+
+<!-- FOOTER -->
+<footer>
+  <span>LLM Wiki · Andrej Karpathy · AI Study</span>
+  <span><a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f">gist.github.com/karpathy</a> &nbsp;·&nbsp; 2026-04-19</span>
+</footer>
+
+  <script data-page-hash="FVM74JL" src="/gemini_html/page-footer.js"></script>
+</body>
+</html>
