@@ -1224,7 +1224,7 @@
       const ext = filename.split('.').pop().toUpperCase();
       const searchData = `${displayName.toLowerCase()} ${filename.toLowerCase()}`;
       const folder = siteConfig.folders && siteConfig.folders[fileCfg.categoryHash];
-      const tier = fileCfg.tier || folder?.tier || 'public';
+      const tier = getEffectiveTier(fileCfg, folder);
       const tierIcon = tier === 'private' ? '🔒' : tier === 'company' ? '🏢' : '🌍';
       const hasShare = !!fileCfg.shareToken;
 
@@ -1509,8 +1509,12 @@
     }
 
     // =============================================
-    // SHARE LINK
+    // TIER LOGIC  (spec: assets/js/site-logic.js)
     // =============================================
+    function getEffectiveTier(fileCfg, folder) {
+      return fileCfg?.tier || folder?.tier || 'public';
+    }
+
     function changeFileTier(fileHash, newTier) {
       const f = siteConfig.files && siteConfig.files[fileHash];
       if (!f) return;
