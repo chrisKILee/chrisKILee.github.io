@@ -358,11 +358,14 @@
     .tier-badge.public  { background: rgba(5,150,105,0.1);  color: #059669; border: 1px solid rgba(5,150,105,0.25); }
     .tier-badge.company { background: rgba(37,99,235,0.1);  color: #2563eb; border: 1px solid rgba(37,99,235,0.25); }
     .tier-badge.private { background: rgba(220,38,38,0.1);  color: #dc2626; border: 1px solid rgba(220,38,38,0.25); }
-    .tier-btns { display: flex; gap: 3px; margin-left: auto; }
-    .tier-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; font-size: 0.6rem; font-weight: 700; padding: 1px 5px; border-radius: 5px; transition: all 0.15s; font-family: var(--font); }
-    .tier-btn.t-public.active  { color: #059669; border-color: #059669; background: rgba(5,150,105,0.08); }
-    .tier-btn.t-company.active { color: #2563eb; border-color: #2563eb; background: rgba(37,99,235,0.08); }
-    .tier-btn.t-private.active { color: #dc2626; border-color: #dc2626; background: rgba(220,38,38,0.08); }
+    .tier-btns { display: flex; gap: 4px; margin: 6px 0 8px; }
+    .tier-btn { background: #f3f4f6; border: 1px solid #e5e7eb; color: #9ca3af; cursor: pointer; font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; transition: all 0.15s; font-family: var(--font); opacity: 0.5; }
+    .tier-btn.active { opacity: 1; }
+    .tier-btn.t-public.active  { color: #059669; border-color: #059669; background: rgba(5,150,105,0.1); }
+    .tier-btn.t-company.active { color: #2563eb; border-color: #2563eb; background: rgba(37,99,235,0.1); }
+    .tier-btn.t-private.active { color: #dc2626; border-color: #dc2626; background: rgba(220,38,38,0.1); }
+    .tier-btn.t-share { font-size: 0.65rem; }
+    .tier-btn.t-share.active   { color: #d97706; border-color: #d97706; background: rgba(217,119,6,0.1); opacity: 1; }
     .file-title { font-size: 0.95rem; font-weight: 600; line-height: 1.45; color: var(--text); flex-grow: 1; margin-bottom: 12px; }
 
     .card-actions { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border); margin-top: auto; }
@@ -884,6 +887,8 @@
     let siteConfig = null;
     let isAdmin = false;
     let favorites = new Set();
+    let _pendingShareCreates = {}; // token → linkUrl
+    let _pendingShareDeletes = []; // [token]
 
     // =============================================
     // CONFIG MANAGEMENT
@@ -1226,15 +1231,15 @@
       const tierBtns = isAdmin ? `
             <div class="tier-btns" onclick="event.stopPropagation()">
               <button class="tier-btn t-public${tier==='public'?' active':''}"
-                      onclick="changeFolderTier('${fileCfg.categoryHash}','public')" title="Public">🌍</button>
+                      onclick="changeFolderTier('${fileCfg.categoryHash}','public')">🌍 Public</button>
               <button class="tier-btn t-company${tier==='company'?' active':''}"
-                      onclick="changeFolderTier('${fileCfg.categoryHash}','company')" title="Company">🏢</button>
+                      onclick="changeFolderTier('${fileCfg.categoryHash}','company')">🏢 Company</button>
               <button class="tier-btn t-private${tier==='private'?' active':''}"
-                      onclick="changeFolderTier('${fileCfg.categoryHash}','private')" title="Private">🔒</button>
-              <button class="tier-btn t-public${hasShare?' active':''}"
-                      onclick="toggleShareLink('${fileHash}')"
-                      title="${hasShare ? '공유 링크 삭제' : '공유 링크 생성'}"
-                      style="${hasShare?'color:#f59e0b;border-color:#f59e0b;background:rgba(245,158,11,0.08)':''}">🔗</button>
+                      onclick="changeFolderTier('${fileCfg.categoryHash}','private')">🔒 Private</button>
+              <button class="tier-btn t-share${hasShare?' active':''}"
+                      onclick="toggleShareLink('${fileHash}')">
+                ${hasShare ? '🔗 공유중' : '🔗 공유'}
+              </button>
             </div>` : '';
 
       const adminBtns = isAdmin ? `
@@ -1527,18 +1532,23 @@
 
       if (f.shareToken) {
         if (!confirm(`공유 링크를 삭제할까요?\n${location.origin}/share/${f.shareToken}`)) return;
+        _pendingShareDeletes.push(f.shareToken);
+        delete _pendingShareCreates[f.shareToken];
         f.shareToken = null;
         persistConfig();
         render();
-        showToast('🔒 공유 링크 삭제됨');
+        showToast('🔒 공유 링크 삭제됨 — GitHub 저장 시 파일 삭제');
       } else {
+        const folderPath = getFolderPath(f.categoryHash);
+        const linkUrl = `${folderPath}${f.filename}`;
         const token = generateToken(8);
         f.shareToken = token;
+        _pendingShareCreates[token] = linkUrl;
         const shareUrl = `${location.origin}/share/${token}`;
         persistConfig();
         render();
         doCopy(shareUrl);
-        showToast(`🔗 공유 링크 생성됨 — 클립보드 복사 완료\n${shareUrl}`);
+        showToast(`🔗 공유 링크 생성됨\n${shareUrl}\n\n⚠️ GitHub 저장 버튼으로 파일 배포 필요`);
       }
     }
 
@@ -1647,6 +1657,39 @@
 
         if (remember) sessionStorage.setItem(GH_PAT_KEY, pat);
         else sessionStorage.removeItem(GH_PAT_KEY);
+
+        // share 파일 생성
+        for (const [token, linkUrl] of Object.entries(_pendingShareCreates)) {
+          const shareHtml = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="UTF-8">\n  <meta http-equiv="refresh" content="0;url=${linkUrl}">\n  <script>location.replace('${linkUrl}')<\/script>\n</head>\n<body>Redirecting...</body>\n</html>\n`;
+          const shareContent = btoa(unescape(encodeURIComponent(shareHtml)));
+          const sharePath = `share/${token}.html`;
+          // 기존 파일 SHA 확인 (없으면 신규 생성)
+          let shareSha;
+          const getShare = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${sharePath}`,
+            { headers: { Authorization: `Bearer ${pat}`, Accept: 'application/vnd.github+json' } });
+          if (getShare.ok) { const d = await getShare.json(); shareSha = d.sha; }
+          await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${sharePath}`, {
+            method: 'PUT',
+            headers: { Authorization: `Bearer ${pat}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: `feat: 공유 링크 생성 /share/${token}`, content: shareContent, ...(shareSha ? { sha: shareSha } : {}) })
+          });
+        }
+        // share 파일 삭제
+        for (const token of _pendingShareDeletes) {
+          const sharePath = `share/${token}.html`;
+          const getShare = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${sharePath}`,
+            { headers: { Authorization: `Bearer ${pat}`, Accept: 'application/vnd.github+json' } });
+          if (getShare.ok) {
+            const d = await getShare.json();
+            await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${sharePath}`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${pat}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: `chore: 공유 링크 삭제 /share/${token}`, sha: d.sha })
+            });
+          }
+        }
+        _pendingShareCreates = {};
+        _pendingShareDeletes = [];
 
         closeGithubModal();
         showToast('✅ GitHub에 커밋 완료! 배포 중...');
