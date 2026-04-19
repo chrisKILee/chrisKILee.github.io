@@ -354,6 +354,15 @@
 
     .file-type-badge { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 9px; }
     .cat-badge { display: inline-block; margin-bottom: 9px; font-size: 0.62rem; font-weight: 700; padding: 2px 8px; border-radius: 8px; letter-spacing: 0.03em; background: rgba(99,102,241,0.12); color: #818cf8; border: 1px solid rgba(99,102,241,0.25); }
+    .tier-badge { display: inline-flex; align-items: center; gap: 3px; margin-bottom: 9px; font-size: 0.6rem; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
+    .tier-badge.public  { background: rgba(5,150,105,0.1);  color: #059669; border: 1px solid rgba(5,150,105,0.25); }
+    .tier-badge.company { background: rgba(37,99,235,0.1);  color: #2563eb; border: 1px solid rgba(37,99,235,0.25); }
+    .tier-badge.private { background: rgba(220,38,38,0.1);  color: #dc2626; border: 1px solid rgba(220,38,38,0.25); }
+    .tier-btns { display: flex; gap: 3px; margin-left: auto; }
+    .tier-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; font-size: 0.6rem; font-weight: 700; padding: 1px 5px; border-radius: 5px; transition: all 0.15s; font-family: var(--font); }
+    .tier-btn.t-public.active  { color: #059669; border-color: #059669; background: rgba(5,150,105,0.08); }
+    .tier-btn.t-company.active { color: #2563eb; border-color: #2563eb; background: rgba(37,99,235,0.08); }
+    .tier-btn.t-private.active { color: #dc2626; border-color: #dc2626; background: rgba(220,38,38,0.08); }
     .file-title { font-size: 0.95rem; font-weight: 600; line-height: 1.45; color: var(--text); flex-grow: 1; margin-bottom: 12px; }
 
     .card-actions { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border); margin-top: auto; }
@@ -1213,6 +1222,22 @@
       const tierIcon = tier === 'private' ? '🔒' : tier === 'company' ? '🏢' : '🌍';
       const hasShare = !!fileCfg.shareToken;
 
+      const tierLabel = tier === 'private' ? 'Private' : tier === 'company' ? 'Company' : 'Public';
+
+      const tierBtns = isAdmin ? `
+            <div class="tier-btns" onclick="event.stopPropagation()">
+              <button class="tier-btn t-public${tier==='public'?' active':''}"
+                      onclick="changeFolderTier('${fileCfg.categoryHash}','public')" title="Public">🌍</button>
+              <button class="tier-btn t-company${tier==='company'?' active':''}"
+                      onclick="changeFolderTier('${fileCfg.categoryHash}','company')" title="Company">🏢</button>
+              <button class="tier-btn t-private${tier==='private'?' active':''}"
+                      onclick="changeFolderTier('${fileCfg.categoryHash}','private')" title="Private">🔒</button>
+              <button class="tier-btn t-public${hasShare?' active':''}"
+                      onclick="toggleShareLink('${fileHash}')"
+                      title="${hasShare ? '공유 링크 삭제' : '공유 링크 생성'}"
+                      style="${hasShare?'color:#f59e0b;border-color:#f59e0b;background:rgba(245,158,11,0.08)':''}">🔗</button>
+            </div>` : '';
+
       const adminBtns = isAdmin ? `
             <button class="action-btn${isHidden ? ' is-active' : ''}"
                     onclick="event.stopPropagation(); toggleFileVisibility('${fileHash}')"
@@ -1228,11 +1253,6 @@
                     onclick="event.stopPropagation(); editMemo('${fileHash}')"
                     title="메모 편집">
               <i class="fas fa-tag"></i>
-            </button>
-            <button class="action-btn${hasShare ? ' is-active' : ''}"
-                    onclick="event.stopPropagation(); toggleShareLink('${fileHash}')"
-                    title="${hasShare ? '공유 링크 삭제' : '공유 링크 생성'}">
-              <i class="fas fa-share-alt"></i>
             </button>` : '';
 
       const isNew = fileCfg.createdAt && (Date.now() - new Date(fileCfg.createdAt)) < 604800000;
@@ -1244,8 +1264,12 @@
              data-file-hash="${fileHash}"
              data-search="${esc(searchData)}">
           ${isNew ? '<span class="new-badge">NEW</span>' : ''}
-          ${fileCfg.memo ? `<span class="cat-badge">${esc(fileCfg.memo)}</span>` : `<div class="file-type-badge">${ext}</div>`}
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:9px;">
+            <span class="tier-badge ${tier}">${tierIcon} ${tierLabel}</span>
+            ${fileCfg.memo ? `<span class="cat-badge" style="margin-bottom:0">${esc(fileCfg.memo)}</span>` : `<span class="file-type-badge" style="margin-bottom:0">${ext}</span>`}
+          </div>
           <div class="file-title">${esc(displayName)}</div>
+          ${tierBtns}
           <div class="card-actions">
             <button class="action-btn primary" onclick="event.stopPropagation(); location.href='${linkUrl}'">
               <i class="fas fa-arrow-right"></i> 열기
@@ -1481,6 +1505,18 @@
     // =============================================
     // SHARE LINK
     // =============================================
+    function changeFolderTier(folderHash, newTier) {
+      const folder = siteConfig.folders && siteConfig.folders[folderHash];
+      if (!folder || folder.tier === newTier) return;
+      const tierPrefix = newTier === 'private' ? '/s/' : newTier === 'company' ? '/c/' : '/';
+      const slug = folder.slug || folderHash;
+      folder.tier = newTier;
+      folder.path = `${tierPrefix}${slug}/`;
+      persistConfig();
+      render();
+      showToast(`✅ Tier → ${newTier} (site.json 업데이트됨)\n⚠️ 파일 실제 이동 및 Cloudflare Access 설정 필요`);
+    }
+
     function generateToken(len = 8) {
       const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
       return Array.from({length: len}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
