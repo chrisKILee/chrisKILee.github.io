@@ -1223,7 +1223,7 @@
       const ext = filename.split('.').pop().toUpperCase();
       const searchData = `${displayName.toLowerCase()} ${filename.toLowerCase()}`;
       const folder = siteConfig.folders && siteConfig.folders[fileCfg.categoryHash];
-      const tier = folder?.tier || 'public';
+      const tier = fileCfg.tier || folder?.tier || 'public';
       const tierIcon = tier === 'private' ? '🔒' : tier === 'company' ? '🏢' : '🌍';
       const hasShare = !!fileCfg.shareToken;
 
@@ -1232,11 +1232,11 @@
       const tierBtns = isAdmin ? `
             <div class="tier-btns" onclick="event.stopPropagation()">
               <button class="tier-btn t-public${tier==='public'?' active':''}"
-                      onclick="changeFolderTier('${fileCfg.categoryHash}','public')">🌍 Public</button>
+                      onclick="changeFileTier('${fileHash}','public')">🌍 Public</button>
               <button class="tier-btn t-company${tier==='company'?' active':''}"
-                      onclick="changeFolderTier('${fileCfg.categoryHash}','company')">🏢 Company</button>
+                      onclick="changeFileTier('${fileHash}','company')">🏢 Company</button>
               <button class="tier-btn t-private${tier==='private'?' active':''}"
-                      onclick="changeFolderTier('${fileCfg.categoryHash}','private')">🔒 Private</button>
+                      onclick="changeFileTier('${fileHash}','private')">🔒 Private</button>
               <button class="tier-btn t-share${hasShare?' active':''}"
                       onclick="toggleShareLink('${fileHash}')">
                 ${hasShare ? '🔗 공유중' : '🔗 공유'}
@@ -1510,16 +1510,18 @@
     // =============================================
     // SHARE LINK
     // =============================================
-    function changeFolderTier(folderHash, newTier) {
-      const folder = siteConfig.folders && siteConfig.folders[folderHash];
-      if (!folder || folder.tier === newTier) return;
-      const tierPrefix = newTier === 'private' ? '/s/' : newTier === 'company' ? '/c/' : '/';
-      const slug = folder.slug || folderHash;
-      folder.tier = newTier;
-      folder.path = `${tierPrefix}${slug}/`;
+    function changeFileTier(fileHash, newTier) {
+      const f = siteConfig.files && siteConfig.files[fileHash];
+      if (!f) return;
+      const folder = siteConfig.folders && siteConfig.folders[f.categoryHash];
+      const folderTier = folder?.tier || 'public';
+      if (newTier === folderTier) {
+        delete f.tier;
+      } else {
+        f.tier = newTier;
+      }
       persistConfig();
       render();
-      showToast(`✅ Tier → ${newTier} (site.json 업데이트됨)\n⚠️ 파일 실제 이동 및 Cloudflare Access 설정 필요`);
     }
 
     function generateToken(len = 8) {
