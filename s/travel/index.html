@@ -228,20 +228,20 @@
 
         async function init() {
             try {
-                const resp = await fetch(`../site.json?v=${Date.now()}`);
+                const resp = await fetch(`/site.json?v=${Date.now()}`);
                 const site = await resp.json();
                 filesData = Object.entries(site.files || {})
                     .filter(([, f]) => f.categoryHash === CATEGORY_HASH && f.visible !== false)
                     .sort((a, b) => (a[1].order || 999) - (b[1].order || 999))
                     .map(([hash, f]) => ({ hash, filename: f.filename, displayName: f.displayName, createdAt: f.createdAt, memo: f.memo }));
-                renderGrid(); checkHash();
+                renderGrid(); toggleView('list');
             } catch (e) { showStealth404(); }
         }
 
         function renderGrid() {
             const container = document.getElementById('filesContainer');
             container.innerHTML = filesData.map(file => `
-                <div class="file-card" onclick="location.href='../${file.filename}'" style="position:relative">
+                <div class="file-card" onclick="location.href='./${file.filename}'" style="position:relative">
                     ${(file.createdAt && (Date.now()-new Date(file.createdAt))<604800000)?'<span class="new-badge">NEW</span>':''}
                     <div class="file-icon"><i class="fas fa-leaf"></i></div>
                     <div class="file-name">${file.displayName}</div>
@@ -266,11 +266,11 @@
 
         function loadContent(file) {
             const iframe = document.getElementById('contentFrame');
-            iframe.src = `../${file.filename}?v=${Date.now()}`;
+            iframe.src = `./${file.filename}?v=${Date.now()}`;
         }
 
         function showStealth404() { document.body.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100vh; color:#94a3b8; background:#f8fafc;"><h1>404 Not Found</h1></div>`; }
-        window.addEventListener('hashchange', checkHash); window.addEventListener('DOMContentLoaded', init);
+        window.addEventListener('DOMContentLoaded', init);
     </script>
     <!-- Version: 2026-03-18 flat architecture v4.0 -->
 </body>
