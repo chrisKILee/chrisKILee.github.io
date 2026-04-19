@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oh My Agent</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* Top Bar */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+    .topbar-meta { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    /* Hero */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 28px 60px;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-bdr);
+      color: var(--accent);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      max-width: 740px;
+      margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
+    .hero-desc { font-size: 17px; color: var(--ink-3); max-width: 620px; line-height: 1.75; margin-bottom: 36px; }
+    .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-2);
+    }
+
+    /* Stats row */
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+    }
+    .stat-item { display: flex; flex-direction: column; gap: 2px; }
+    .stat-num { font-family: var(--font-display); font-size: 2rem; font-weight: 900; color: var(--ink); line-height: 1; }
+    .stat-label { font-size: 13px; color: var(--ink-4); }
+
+    /* Section */
+    .section { padding: 56px 28px; border-bottom: 1px solid var(--border); }
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); max-width: 80px; }
+    .section-title { font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 10px; }
+    .section-desc { font-size: 15px; color: var(--ink-3); max-width: 620px; margin-bottom: 36px; line-height: 1.7; }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card__header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+    .card__icon { font-size: 22px; margin-bottom: 8px; }
+    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__body { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__footer { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+    .card__tag { font-size: 11px; font-weight: 600; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--bg-2); border: 1px solid var(--border); padding: 11px 16px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:hover td { background: var(--bg); }
+
+    /* Callouts */
+    .callout { border-left: 3px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; font-size: 14px; line-height: 1.65; }
+    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+    /* Code block */
+    .code-wrap { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 0; }
+    .code-bar { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--bg-2); }
+    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body { padding: 18px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; color: var(--ink-2); }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--surface); margin-top: 2px; }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* Tags */
+    .tag { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+
+    /* Workflow commands */
+    .cmd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 24px; }
+    .cmd-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+    .cmd-slash {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-bdr);
+      border-radius: 6px;
+      padding: 4px 10px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .cmd-desc { font-size: 14px; color: var(--ink-3); line-height: 1.55; }
+    .cmd-title { font-size: 14px; font-weight: 600; color: var(--ink-2); margin-bottom: 3px; }
+
+    /* Agent role pills */
+    .agent-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    .agent-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+    .agent-pill span { font-size: 12px; color: var(--ink-4); font-family: var(--font-body); font-weight: 400; }
+
+    /* SVG diagram */
+    .diagram-wrap { margin: 28px 0; overflow-x: auto; }
+
+    /* Two-col layout */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* Sub-section */
+    .sub-title { font-size: 15px; font-weight: 700; color: var(--ink); margin: 28px 0 10px; }
+
+    /* Footer */
+    footer { padding: 28px; border-top: 1px solid var(--border); background: var(--surface); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--ink-4); }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+      .hero-stats { gap: 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">Oh My Agent</span>
+  <span class="topbar-meta">2026-04-20</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">🤖 Multi-Agent Framework</div>
+    <h1>Oh My Agent<br><em>포터블 멀티 에이전트 오케스트레이션</em></h1>
+    <p class="hero-desc">단일 AI에 모든 것을 맡기는 대신, 실제 엔지니어링 팀처럼 역할을 분산합니다. 프론트엔드·백엔드·아키텍처·QA 등 15개 이상의 전문 에이전트가 협업하며, Claude Code·Gemini CLI·Cursor 등 어떤 AI IDE에서도 동일하게 작동합니다.</p>
+    <div class="hero-chips">
+      <span class="chip">📦 TypeScript 87.8%</span>
+      <span class="chip">⚡ Bun 런타임</span>
+      <span class="chip">🔄 15+ 전문 에이전트</span>
+      <span class="chip">🌍 11개 언어 자동 감지</span>
+      <span class="chip">📄 MIT License</span>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num">704</span>
+        <span class="stat-label">GitHub Stars</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">85</span>
+        <span class="stat-label">Forks</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">214+</span>
+        <span class="stat-label">릴리스</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">~75%</span>
+        <span class="stat-label">토큰 절감 (공식 주장)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 01: 핵심 철학 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 개요</div>
+    <h2 class="section-title">왜 멀티 에이전트인가?</h2>
+    <p class="section-desc">하나의 AI가 설계·구현·테스트를 모두 처리하면 컨텍스트가 뒤섞이고 품질이 낮아집니다. oh-my-agent는 실제 팀 구조를 그대로 모방합니다.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 800 160" style="width:100%;max-width:800px;display:block;">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#A8A8A3"/>
+          </marker>
+        </defs>
+        <!-- User -->
+        <rect x="10" y="55" width="110" height="50" rx="8" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="65" y="77" text-anchor="middle" fill="#1C1C1A" font-size="12" font-family="Inter,sans-serif" font-weight="600">사용자 입력</text>
+        <text x="65" y="94" text-anchor="middle" fill="#6B6B66" font-size="11" font-family="Inter,sans-serif">자연어 / 슬래시</text>
+        <!-- Arrow 1 -->
+        <line x1="120" y1="80" x2="168" y2="80" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- Orchestrator -->
+        <rect x="170" y="45" width="130" height="70" rx="8" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="235" y="72" text-anchor="middle" fill="#C4522A" font-size="12" font-family="Inter,sans-serif" font-weight="700">오케스트레이터</text>
+        <text x="235" y="89" text-anchor="middle" fill="#7c2d12" font-size="11" font-family="Inter,sans-serif">oma-pm / coordinator</text>
+        <text x="235" y="104" text-anchor="middle" fill="#7c2d12" font-size="10" font-family="Inter,sans-serif">워크플로우 라우팅</text>
+        <!-- Arrow 2 -->
+        <line x1="300" y1="80" x2="348" y2="80" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- Agents group -->
+        <rect x="350" y="15" width="140" height="40" rx="6" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.2"/>
+        <text x="420" y="40" text-anchor="middle" fill="#3D3D3A" font-size="11" font-family="Inter,sans-serif">🏗 Architecture</text>
+        <rect x="350" y="60" width="140" height="40" rx="6" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.2"/>
+        <text x="420" y="85" text-anchor="middle" fill="#3D3D3A" font-size="11" font-family="Inter,sans-serif">⚙️ Backend / Frontend</text>
+        <rect x="350" y="105" width="140" height="40" rx="6" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.2"/>
+        <text x="420" y="130" text-anchor="middle" fill="#3D3D3A" font-size="11" font-family="Inter,sans-serif">🧪 QA / Debug</text>
+        <!-- Lines from orchestrator to agents -->
+        <line x1="350" y1="35" x2="300" y2="62" stroke="#E8E8E4" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="350" y1="80" x2="300" y2="80" stroke="#E8E8E4" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="350" y1="125" x2="300" y2="98" stroke="#E8E8E4" stroke-width="1" stroke-dasharray="4,3"/>
+        <!-- Arrow 3 -->
+        <line x1="490" y1="80" x2="538" y2="80" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- SCM -->
+        <rect x="540" y="45" width="120" height="70" rx="8" fill="#F0FDF4" stroke="#6ee7b7" stroke-width="1.5"/>
+        <text x="600" y="72" text-anchor="middle" fill="#1A7F5A" font-size="12" font-family="Inter,sans-serif" font-weight="700">SCM 통합</text>
+        <text x="600" y="89" text-anchor="middle" fill="#064e3b" font-size="11" font-family="Inter,sans-serif">oma-scm</text>
+        <text x="600" y="104" text-anchor="middle" fill="#064e3b" font-size="10" font-family="Inter,sans-serif">커밋·PR 자동화</text>
+        <!-- Arrow 4 -->
+        <line x1="660" y1="80" x2="708" y2="80" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- Output -->
+        <rect x="710" y="55" width="80" height="50" rx="8" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="750" y="77" text-anchor="middle" fill="#1C1C1A" font-size="11" font-family="Inter,sans-serif" font-weight="600">결과물</text>
+        <text x="750" y="94" text-anchor="middle" fill="#6B6B66" font-size="10" font-family="Inter,sans-serif">코드 / 문서</text>
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">📦</div>
+          <div class="card__title">포터블(Portable) 설계</div>
+        </div>
+        <div class="card__body">
+          <p><code>.agents/</code> 디렉토리가 프로젝트와 함께 이동합니다. Claude Code, Gemini CLI, Cursor, Codex CLI 등 어떤 도구를 써도 같은 스킬 정의를 공유합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">vendor-agnostic</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🎯</div>
+          <div class="card__title">역할 기반 전문화</div>
+        </div>
+        <div class="card__body">
+          <p>아키텍처·백엔드·프론트엔드·모바일·DB·QA·디버그 등 실제 팀 구조를 그대로 반영합니다. 각 에이전트는 자신의 도메인에만 집중합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">role-based</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">⚡</div>
+          <div class="card__title">2계층 스킬 설계</div>
+        </div>
+        <div class="card__body">
+          <p>공식 주장에 따르면 스킬을 핵심 로직과 컨텍스트 계층으로 분리해 약 75% 토큰 절감 효과를 냅니다. 각 에이전트는 필요한 컨텍스트만 로드합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">token-efficient</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 02: 전문 에이전트 목록 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 에이전트</div>
+    <h2 class="section-title">15개 이상의 전문 에이전트</h2>
+    <p class="section-desc">각 에이전트는 특정 도메인에 집중하도록 설계되었습니다. 역할에 따라 6개 프리셋으로 묶어 빠르게 팀을 구성할 수 있습니다.</p>
+
+    <div class="two-col">
+      <div>
+        <p class="sub-title">🔧 기술 에이전트</p>
+        <div class="agent-grid">
+          <div class="agent-pill">oma-architecture <span>시스템 설계</span></div>
+          <div class="agent-pill">oma-backend <span>Python / Node.js / Rust</span></div>
+          <div class="agent-pill">oma-frontend <span>React / Next.js</span></div>
+          <div class="agent-pill">oma-mobile <span>Flutter</span></div>
+          <div class="agent-pill">oma-db <span>데이터베이스</span></div>
+          <div class="agent-pill">oma-tf-infra <span>Terraform</span></div>
+          <div class="agent-pill">oma-design <span>디자인 시스템</span></div>
+        </div>
+      </div>
+      <div>
+        <p class="sub-title">🛠 지원 에이전트</p>
+        <div class="agent-grid">
+          <div class="agent-pill">oma-pm <span>프로젝트 관리 · Orchestrator</span></div>
+          <div class="agent-pill">oma-qa <span>품질 보증</span></div>
+          <div class="agent-pill">oma-debug <span>디버깅 · 근본 원인 분석</span></div>
+          <div class="agent-pill">oma-scm <span>소스 제어 관리</span></div>
+          <div class="agent-pill">oma-brainstorm <span>아이디어 발상</span></div>
+          <div class="agent-pill">oma-coordinator <span>조율 · 통합</span></div>
+          <div class="agent-pill">oma-search <span>자동 에스컬레이팅 검색</span></div>
+          <div class="agent-pill">oma-hwp <span>HWP/HWPX → Markdown</span></div>
+          <div class="agent-pill">oma-pdf <span>PDF 변환</span></div>
+          <div class="agent-pill">oma-translator <span>다국어 번역</span></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="sub-title" style="margin-top:32px;">📦 역할별 프리셋</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>프리셋</th>
+            <th>포함 에이전트</th>
+            <th>적합한 상황</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>All</strong></td>
+            <td>전체 에이전트</td>
+            <td>대규모 프로젝트, 모든 도메인 필요 시</td>
+          </tr>
+          <tr>
+            <td><strong>Fullstack</strong></td>
+            <td>9개 에이전트</td>
+            <td>전체 애플리케이션 개발</td>
+          </tr>
+          <tr>
+            <td><strong>Frontend</strong></td>
+            <td>5개 에이전트</td>
+            <td>UI/UX 중심 작업</td>
+          </tr>
+          <tr>
+            <td><strong>Backend</strong></td>
+            <td>5개 에이전트</td>
+            <td>서버 사이드 · API 개발</td>
+          </tr>
+          <tr>
+            <td><strong>Mobile</strong></td>
+            <td>크로스플랫폼 스택</td>
+            <td>iOS/Android 개발</td>
+          </tr>
+          <tr>
+            <td><strong>DevOps</strong></td>
+            <td>인프라 + 배포</td>
+            <td>Terraform, CI/CD 자동화</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 03: 워크플로우 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 워크플로우</div>
+    <h2 class="section-title">7개 슬래시 커맨드</h2>
+    <p class="section-desc">개발 프로세스를 구조화하는 내장 워크플로우입니다. 자연어에서 자동으로 의도를 감지해 적절한 워크플로우를 활성화합니다 (11개 언어 지원).</p>
+
+    <div class="cmd-grid">
+      <div class="cmd-item">
+        <span class="cmd-slash">/brainstorm</span>
+        <div>
+          <div class="cmd-title">아이디어 발상</div>
+          <div class="cmd-desc">요구사항 브레인스토밍. 아키텍처 에이전트 참여, 기술 결정사항 도출.</div>
+        </div>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-slash">/plan</span>
+        <div>
+          <div class="cmd-title">작업 계획 수립</div>
+          <div class="cmd-desc">요구사항을 실행 가능한 작업으로 분해. PM + 조율 에이전트 처리.</div>
+        </div>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-slash">/work</span>
+        <div>
+          <div class="cmd-title">멀티 에이전트 실행</div>
+          <div class="cmd-desc">지정된 에이전트들이 병렬로 작업을 수행합니다.</div>
+        </div>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-slash">/ultrawork</span>
+        <div>
+          <div class="cmd-title">고급 품질 검증</div>
+          <div class="cmd-desc">5단계 품질 프로세스 + 11개 체크포인트 포함. 프로덕션 수준 결과물.</div>
+        </div>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-slash">/review</span>
+        <div>
+          <div class="cmd-title">코드 리뷰</div>
+          <div class="cmd-desc">보안·성능 감시. 아키텍처 + QA 에이전트가 감시합니다.</div>
+        </div>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-slash">/architecture</span>
+        <div>
+          <div class="cmd-title">아키텍처 분석</div>
+          <div class="cmd-desc">시스템 설계 검토. 확장성·복잡도·비용 트레이드오프 분석.</div>
+        </div>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-slash">/debug</span>
+        <div>
+          <div class="cmd-title">문제 해결</div>
+          <div class="cmd-desc">근본 원인 조사. 임시 대응과 영구 개선안을 구분해 제시.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout info" style="margin-top:28px;">
+      <div class="callout-title">자연어 자동 감지</div>
+      "새로운 기능 계획 세워줄래?" → <code>/plan</code> 자동 활성화 / "Let's brainstorm the architecture" → <code>/brainstorm</code> 자동 활성화. 한국어·영어·일본어 등 11개 언어를 인식합니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 04: 설치 및 사용 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 시작하기</div>
+    <h2 class="section-title">설치 및 기본 사용법</h2>
+    <p class="section-desc">사전 요구사항: <code>bun</code>과 <code>uv</code>가 필요합니다. Windows 사용자는 두 의존성을 먼저 수동 설치하세요.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">설치</div>
+          <div class="step-body">한 줄 명령어로 설치합니다. 또는 <code>bunx oh-my-agent@latest</code>로도 실행 가능합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body">curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash</pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">프리셋 선택</div>
+          <div class="step-body">설치 후 역할 기반 팀 구성을 선택합니다: <code>All</code> / <code>Fullstack</code> / <code>Frontend</code> / <code>Backend</code> / <code>Mobile</code> / <code>DevOps</code>.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">워크플로우 실행</div>
+          <div class="step-body">슬래시 커맨드나 자연어로 작업을 시작합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body"># 아이디어 발상 → 계획 → 구현 플로우
+/brainstorm OAuth 2.0 소셜 로그인 시스템 설계
+/plan 마이크로서비스 백엔드 구현
+/ultrawork React + Node.js 풀스택 완성
+
+# 특정 에이전트 단독 실행
+oma agent:spawn --agent backend --task "API 엔드포인트 구현"
+
+# 여러 에이전트 병렬 실행
+oma agent:parallel --agents frontend,backend --task "사용자 인증 기능"
+
+# 시스템 상태 확인
+oma doctor
+
+# 실시간 대시보드
+oma dashboard</pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title">HWP 문서 변환 (한국 사용자)</div>
+          <div class="step-body">한글(HWP/HWPX) 문서를 Markdown으로 변환하는 <code>oma-hwp</code> 에이전트가 내장되어 있습니다. v5.12.0에서 추가된 기능입니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body">oma agent:spawn --agent oma-hwp --task "기술 스펙 문서 변환"</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 05: .agents/ 구조 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 아키텍처</div>
+    <h2 class="section-title">.agents/ 디렉토리 규격</h2>
+    <p class="section-desc">프로젝트 루트의 <code>.agents/</code>가 모든 에이전트·스킬·워크플로우의 단일 소스입니다. 각 AI IDE는 이 디렉토리를 읽어 호환성 뷰를 생성합니다.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar">
+        <div class="code-dot" style="background:#ef4444;"></div>
+        <div class="code-dot" style="background:#f59e0b;"></div>
+        <div class="code-dot" style="background:#22c55e;"></div>
+        <span class="code-lang">directory tree</span>
+      </div>
+      <pre class="code-body">.agents/
+├── agents/          # 에이전트 정의 (벤더 무관)
+├── skills/          # 재사용 가능한 스킬 정의
+│   ├── oma-architecture/
+│   ├── oma-backend/
+│   ├── oma-frontend/
+│   ├── oma-db/
+│   ├── oma-qa/
+│   ├── oma-hwp/     # HWP 변환 (v5.12.0+)
+│   └── _shared/     # 공유 유틸리티
+├── workflows/       # 멀티 단계 오케스트레이션 (work, ultrawork, plan 등)
+├── hooks/           # 트리거 기반 자동 스킬 주입
+├── rules/           # 에이전트 동작 규칙
+├── results/         # 출력/결과 저장소
+├── mcp.json         # Model Configuration Protocol 설정
+└── oma-config.yaml  # 메인 에이전트 설정</pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-title">한 번 작성, 모든 벤더에서 사용</div>
+      <code>.agents/</code> 아래에 스킬을 한 번 정의하면 Claude Code(<code>.claude/</code>), Gemini CLI, Codex CLI, Cursor 등 각 도구가 자동으로 호환성 뷰를 생성합니다. 벤더를 바꿔도 스킬 정의를 다시 작성할 필요가 없습니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 06: 멀티벤더 호환성 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">06 호환성</div>
+    <h2 class="section-title">멀티 벤더 지원</h2>
+    <p class="section-desc">Claude Code, Gemini CLI, Cursor, Codex CLI, Amp, GitHub Copilot 등 주요 AI 개발 도구를 모두 지원합니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>벤더</th>
+            <th>호환성 방식</th>
+            <th>비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Claude Code</strong></td>
+            <td><code>.claude/</code> 경로 + 네이티브 어댑터</td>
+            <td><span class="tag green">태스크 기반 서브에이전트 완전 지원</span></td>
+          </tr>
+          <tr>
+            <td><strong>Gemini CLI</strong></td>
+            <td>마크다운 에이전트 파일</td>
+            <td><span class="tag orange">네이티브 태스크 기능</span></td>
+          </tr>
+          <tr>
+            <td><strong>Codex CLI</strong></td>
+            <td>TOML 에이전트 정의</td>
+            <td><span class="tag green">동일 벤더 네이티브 디스패치</span></td>
+          </tr>
+          <tr>
+            <td><strong>Cursor / Amp / OpenCode</strong></td>
+            <td>프로젝트 레벨 스킬 소스 직접 사용</td>
+            <td><span class="tag gray">기본 레이아웃</span></td>
+          </tr>
+          <tr>
+            <td><strong>GitHub Copilot</strong></td>
+            <td>선택적 symlink 설정</td>
+            <td><span class="tag orange">수동 설정 필요</span></td>
+          </tr>
+          <tr>
+            <td><strong>Antigravity</strong></td>
+            <td><code>.agents/agents/</code> 직접 읽음</td>
+            <td><span class="tag green">기본 레이아웃 지원</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 07: 기술 스택 & 주의사항 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">07 기술 스택 · 주의사항</div>
+    <h2 class="section-title">기술 구성 및 트레이드오프</h2>
+    <p class="section-desc">TypeScript 87.8%로 구성된 CLI + 웹 대시보드 모노레포 구조입니다.</p>
+
+    <div class="two-col">
+      <div>
+        <p class="sub-title">핵심 의존성</p>
+        <div class="table-wrap" style="margin-top:0;">
+          <table>
+            <thead><tr><th>패키지</th><th>버전</th><th>목적</th></tr></thead>
+            <tbody>
+              <tr><td><code>commander</code></td><td>14.0.3</td><td>CLI 인자 파싱</td></tr>
+              <tr><td><code>better-sqlite3</code></td><td>12.9.0</td><td>로컬 데이터베이스</td></tr>
+              <tr><td><code>puppeteer-core</code></td><td>24</td><td>브라우저 자동화</td></tr>
+              <tr><td><code>ws</code></td><td>8.18.0</td><td>WebSocket 통신</td></tr>
+              <tr><td><code>zod</code></td><td>4.3.6</td><td>스키마 검증</td></tr>
+              <tr><td><code>chokidar</code></td><td>5.0.0</td><td>파일 시스템 모니터링</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <p class="sub-title">알려진 트레이드오프</p>
+        <div class="callout warn">
+          <div class="callout-title">벤더별 기능 편차</div>
+          Claude Code는 네이티브 태스크 기반 서브에이전트를 완전 지원하지만, GitHub Copilot은 symlink 설정이 필요합니다.
+        </div>
+        <div class="callout warn" style="margin-top:12px;">
+          <div class="callout-title">대규모 조율 복잡도</div>
+          15개 이상 에이전트를 동시에 실행할 경우 조율 오버헤드가 증가합니다. /ultrawork의 11개 체크포인트는 처리 시간이 늘어납니다.
+        </div>
+        <div class="callout info" style="margin-top:12px;">
+          <div class="callout-title">활발한 개발 중</div>
+          v5.13.0 기준 오픈 이슈 0개. 주요 릴리스가 거의 매일 출시됩니다 (214+ 버전).
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>Oh My Agent — <a href="https://github.com/first-fluke/oh-my-agent" target="_blank" rel="noopener">github.com/first-fluke/oh-my-agent</a> · MIT License</span>
+  <span>2026-04-20</span>
+</footer>
+
+  <script data-page-hash="RC6ZWKG" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
