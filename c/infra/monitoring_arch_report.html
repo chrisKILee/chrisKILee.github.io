@@ -107,11 +107,7 @@
       overflow-y: auto;
     }
     .slide.active {
-      opacity: 1; transform: translateX(0);
       pointer-events: auto;
-    }
-    .slide.exit-left {
-      opacity: 0; transform: translateX(-60px);
     }
     .slide-inner {
       width: 100%; max-width: 1100px;
@@ -623,6 +619,11 @@
     const btnPrev = document.getElementById('btn-prev');
     const btnNext = document.getElementById('btn-next');
 
+    // 첫 슬라이드 초기화 (inline style로 제어)
+    slides[0].style.opacity = '1';
+    slides[0].style.transform = 'translateX(0)';
+    slides[0].classList.add('active');
+
     // 도트 생성
     for (let i = 0; i < TOTAL; i++) {
       const d = document.createElement('div');
@@ -647,31 +648,30 @@
 
       const prev = cur;
       const dir = next > prev ? 1 : -1;
-
-      slides[prev].classList.remove('active');
-      slides[prev].classList.add('exit-left');
-      if (dir < 0) {
-        slides[prev].style.transform = 'translateX(60px)';
-      }
-
       cur = next;
-      slides[cur].style.transform = dir > 0 ? 'translateX(60px)' : 'translateX(-60px)';
-      slides[cur].style.opacity = '0';
+
+      // 이전 슬라이드 퇴장
+      slides[prev].classList.remove('active');
+      slides[prev].style.opacity = '0';
+      slides[prev].style.transform = dir > 0 ? 'translateX(-60px)' : 'translateX(60px)';
+
+      // 새 슬라이드 진입 시작 위치 설정 (transition 없이)
       slides[cur].style.transition = 'none';
+      slides[cur].style.opacity = '0';
+      slides[cur].style.transform = dir > 0 ? 'translateX(60px)' : 'translateX(-60px)';
 
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          slides[cur].style.transition = '';
-          slides[cur].classList.add('active');
-          updateUI();
+      // 브라우저 리플로우 강제 — 시작 위치 커밋
+      slides[cur].getBoundingClientRect();
 
-          setTimeout(() => {
-            slides[prev].classList.remove('exit-left');
-            slides[prev].style.transform = '';
-            animating = false;
-          }, 480);
-        });
-      });
+      // transition 복원 후 목표 위치로 애니메이션
+      slides[cur].style.transition = '';
+      slides[cur].classList.add('active');
+      slides[cur].style.opacity = '1';
+      slides[cur].style.transform = 'translateX(0)';
+
+      updateUI();
+
+      setTimeout(() => { animating = false; }, 500);
     }
 
     function navigate(dir) { goTo(cur + dir); }
