@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code 토큰 절약 설정</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .prose p { margin-bottom: 1rem; color: #475569; line-height: 1.8; font-size: 15px; }
+    .prose h2 { font-size: 1.375rem; font-weight: 700; color: #0f172a; margin: 2.5rem 0 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+    .prose h3 { font-size: 1.0625rem; font-weight: 600; color: #1e293b; margin: 1.75rem 0 0.75rem; }
+    .prose ul { margin: 1rem 0; padding-left: 1.5rem; }
+    .prose ul li { color: #475569; margin-bottom: 0.375rem; font-size: 15px; }
+    .prose ol { margin: 1rem 0; padding-left: 1.5rem; }
+    .prose ol li { color: #475569; margin-bottom: 0.375rem; font-size: 15px; }
+    .prose code { background: #f1f5f9; border-radius: 4px; padding: 2px 6px; font-size: 0.85em; color: #7c3aed; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+    .prose pre { background: #0f172a; color: #e2e8f0; border-radius: 12px; padding: 1.25rem 1.5rem; overflow-x: auto; font-size: 0.875rem; margin: 1.25rem 0; line-height: 1.7; font-family: 'JetBrains Mono', 'Fira Code', monospace; white-space: pre; }
+    .prose pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
+    .prose a { color: #0ea5e9; }
+    .prose table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 14px; }
+    .prose table th { background: #f8fafc; text-align: left; padding: 10px 14px; font-size: 13px; font-weight: 600; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+    .prose table td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: #475569; vertical-align: top; }
+    .prose table tr:hover td { background: #f8fafc; }
+    .nav-section { margin-bottom: 1.5rem; }
+    .nav-item { display: block; padding: 4px 12px; font-size: 14px; color: #64748b; border-radius: 6px; transition: all 0.15s; margin-bottom: 1px; }
+    .nav-item:hover, .nav-item.active { background: #f1f5f9; color: #0f172a; text-decoration: none; }
+    .nav-sub { padding-left: 20px; }
+    .callout-info { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+    .callout-warn { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+    .callout-tip { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+    .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem 1.5rem; }
+    a { text-decoration: none; }
+    .toc-link { display: block; font-size: 13px; color: #94a3b8; padding: 3px 0 3px 12px; border-left: 2px solid transparent; transition: all 0.15s; }
+    .toc-link:hover, .toc-link.active { color: #0ea5e9; border-left-color: #0ea5e9; }
+    .badge-new { background: #dbeafe; color: #1d4ed8; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 20px; }
+  </style>
+</head>
+<body class="bg-white text-slate-700 antialiased">
+
+  <!-- 헤더 -->
+  <header class="fixed top-0 inset-x-0 z-50 h-14 border-b border-slate-200 bg-white flex items-center px-6">
+    <div class="max-w-7xl mx-auto w-full flex items-center gap-6">
+      <a href="/" class="flex items-center gap-2.5 font-bold text-slate-900">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">C</div>
+        Claude Code
+      </a>
+      <div class="h-5 w-px bg-slate-200"></div>
+      <nav class="flex items-center gap-1 text-sm">
+        <a href="#overview" class="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-600 font-medium">토큰 최적화</a>
+        <a href="#claude-settings" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors">Claude Code</a>
+        <a href="#codex-settings" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors">Codex CLI</a>
+      </nav>
+      <div class="ml-auto">
+        <a href="https://www.stdy.blog/increasing-token-efficiency-by-setting-adjustment-in-claude-and-codex/" target="_blank"
+           class="text-xs text-slate-400 hover:text-sky-500 transition-colors">원문 보기 →</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto pt-14 flex">
+
+    <!-- 왼쪽 사이드바 -->
+    <aside class="fixed top-14 bottom-0 w-64 overflow-y-auto border-r border-slate-200 py-8 px-5">
+      <div class="nav-section">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-3">개요</p>
+        <a href="#overview" class="nav-item active">소개</a>
+        <a href="#why-tokens" class="nav-item">토큰 낭비 원인</a>
+        <a href="#token-paths" class="nav-item">토큰 소비 경로</a>
+      </div>
+      <div class="nav-section">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-3">Claude Code 설정</p>
+        <a href="#claude-settings" class="nav-item">설정 개요</a>
+        <a href="#claude-git" class="nav-item nav-sub">Git 지시문 비활성화</a>
+        <a href="#claude-ide" class="nav-item nav-sub">IDE 자동 연결 차단</a>
+        <a href="#claude-output" class="nav-item nav-sub">출력 길이 제한</a>
+        <a href="#claude-mcp" class="nav-item nav-sub">MCP 서버 관리</a>
+      </div>
+      <div class="nav-section">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-3">Codex CLI 설정</p>
+        <a href="#codex-settings" class="nav-item">설정 개요</a>
+        <a href="#codex-mcp" class="nav-item nav-sub">MCP 앱 비활성화</a>
+        <a href="#codex-search" class="nav-item nav-sub">웹 검색 비활성화</a>
+        <a href="#codex-flags" class="nav-item nav-sub">플래그 활용</a>
+      </div>
+      <div class="nav-section">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-3">추가 도구</p>
+        <a href="#claude-slim" class="nav-item">claude-slim</a>
+        <a href="#summary" class="nav-item">설정 체크리스트</a>
+      </div>
+    </aside>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="ml-64 mr-0 xl:mr-52 px-12 py-10">
+
+      <!-- 히어로 -->
+      <div class="mb-12">
+        <div class="inline-flex items-center gap-2 text-xs font-semibold text-sky-600 bg-sky-50 border border-sky-200 px-3 py-1 rounded-full mb-4">
+          ⚡ 토큰 비용 최적화 가이드
+        </div>
+        <h1 class="text-4xl font-extrabold text-slate-900 mb-3">Claude Code & Codex<br>토큰 절약 설정</h1>
+        <p class="text-lg text-slate-500 leading-relaxed">
+          코딩 에이전트가 조용히 낭비하는 토큰의 원인을 파악하고,<br>
+          설정 조정만으로 불필요한 비용을 줄이는 방법을 정리합니다.
+        </p>
+        <p class="text-sm text-slate-400 mt-3">출처: <a href="https://www.stdy.blog/increasing-token-efficiency-by-setting-adjustment-in-claude-and-codex/" class="text-sky-500 hover:underline" target="_blank">stdy.blog</a> · <a href="https://news.hada.io/topic?id=28697" class="text-sky-500 hover:underline" target="_blank">GeekNews</a></p>
+
+        <!-- 퀵링크 카드 -->
+        <div class="grid sm:grid-cols-3 gap-3 mt-8">
+          <a href="#claude-settings" class="group border border-slate-200 rounded-xl p-4 hover:border-sky-300 hover:bg-sky-50/50 transition-all">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-sky-500">🤖</span>
+              <span class="text-sm font-semibold text-slate-800 group-hover:text-sky-600">Claude Code</span>
+            </div>
+            <p class="text-xs text-slate-500">settings.json + 환경변수</p>
+          </a>
+          <a href="#codex-settings" class="group border border-slate-200 rounded-xl p-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-indigo-500">💻</span>
+              <span class="text-sm font-semibold text-slate-800 group-hover:text-indigo-600">Codex CLI</span>
+            </div>
+            <p class="text-xs text-slate-500">설정 파일 + 플래그</p>
+          </a>
+          <a href="#summary" class="group border border-slate-200 rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50/50 transition-all">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-emerald-500">✅</span>
+              <span class="text-sm font-semibold text-slate-800 group-hover:text-emerald-600">체크리스트</span>
+            </div>
+            <p class="text-xs text-slate-500">전체 설정 한눈에 보기</p>
+          </a>
+        </div>
+      </div>
+
+      <div class="prose max-w-none">
+
+        <!-- 섹션 1: 소개 -->
+        <section id="overview">
+          <h2>왜 토큰이 예상보다 많이 소비되는가</h2>
+          <p>
+            Claude Opus 4.7 출시 이후 코딩 에이전트의 토큰 비용이 급증했다는 사용자 보고가 이어지고 있습니다.
+            원인을 찾지 못한 채 비용만 늘어나는 상황에서, 이 가이드는 실제로 토큰을 낭비하는 근본 원인을 식별하고
+            설정 변경만으로 해결하는 방법을 제시합니다.
+          </p>
+          <div class="callout-warn not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-amber-500 text-lg">⚠️</span>
+              <div>
+                <p class="text-sm font-semibold text-amber-800 mb-1">비용은 "기능"에서가 아닌 "설정"에서 새고 있다</p>
+                <p class="text-sm text-amber-700">
+                  코딩 에이전트의 토큰 소비 중 상당 부분은 실제 작업과 무관한 자동 첨부 텍스트, 장황한 도구 출력,
+                  불필요한 외부 연결에서 발생합니다. 코드 자체를 줄이지 않아도 설정만으로 대폭 절감이 가능합니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 2: 토큰 낭비 원인 -->
+        <section id="why-tokens">
+          <h2>토큰 낭비의 3가지 주요 원인</h2>
+          <p>코딩 에이전트에서 토큰이 낭비되는 경로는 크게 세 가지입니다.</p>
+
+          <!-- SVG 다이어그램 -->
+          <div class="not-prose my-6">
+            <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:720px; font-family:-apple-system,sans-serif;">
+              <!-- 배경 -->
+              <rect width="720" height="200" fill="#f8fafc" rx="12"/>
+
+              <!-- 원인 1 -->
+              <rect x="20" y="30" width="210" height="140" fill="#eff6ff" rx="10" stroke="#bfdbfe" stroke-width="1.5"/>
+              <text x="125" y="58" text-anchor="middle" font-size="22">📝</text>
+              <text x="125" y="82" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af">자동 첨부 텍스트</text>
+              <text x="125" y="102" text-anchor="middle" font-size="11" fill="#3b82f6">Auto-appended text</text>
+              <text x="125" y="126" text-anchor="middle" font-size="11" fill="#475569">세션·턴마다 자동으로</text>
+              <text x="125" y="142" text-anchor="middle" font-size="11" fill="#475569">추가되는 텍스트</text>
+              <text x="125" y="158" text-anchor="middle" font-size="11" fill="#475569">(Git 지시문, IDE 컨텍스트)</text>
+
+              <!-- 화살표 -->
+              <text x="248" y="105" font-size="20" fill="#94a3b8">+</text>
+
+              <!-- 원인 2 -->
+              <rect x="265" y="30" width="190" height="140" fill="#fdf4ff" rx="10" stroke="#e9d5ff" stroke-width="1.5"/>
+              <text x="360" y="58" text-anchor="middle" font-size="22">📜</text>
+              <text x="360" y="82" text-anchor="middle" font-size="13" font-weight="700" fill="#6b21a8">긴 도구 출력</text>
+              <text x="360" y="102" text-anchor="middle" font-size="11" fill="#a855f7">Lengthy tool output</text>
+              <text x="360" y="126" text-anchor="middle" font-size="11" fill="#475569">대화 기록에 누적되는</text>
+              <text x="360" y="142" text-anchor="middle" font-size="11" fill="#475569">Bash/Read 출력</text>
+              <text x="360" y="158" text-anchor="middle" font-size="11" fill="#475569">(상한선 없을 경우)</text>
+
+              <!-- 화살표 -->
+              <text x="467" y="105" font-size="20" fill="#94a3b8">+</text>
+
+              <!-- 원인 3 -->
+              <rect x="490" y="30" width="210" height="140" fill="#fff7ed" rx="10" stroke="#fed7aa" stroke-width="1.5"/>
+              <text x="595" y="58" text-anchor="middle" font-size="22">🔌</text>
+              <text x="595" y="82" text-anchor="middle" font-size="13" font-weight="700" fill="#9a3412">외부 연결</text>
+              <text x="595" y="102" text-anchor="middle" font-size="11" fill="#f97316">External connections</text>
+              <text x="595" y="126" text-anchor="middle" font-size="11" fill="#475569">검색, MCP 서버,</text>
+              <text x="595" y="142" text-anchor="middle" font-size="11" fill="#475569">IDE 통합 등</text>
+              <text x="595" y="158" text-anchor="middle" font-size="11" fill="#475569">불필요한 외부 호출</text>
+            </svg>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>원인</th>
+                <th>설명</th>
+                <th>해결 방향</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>자동 첨부 텍스트</code></td>
+                <td>매 세션/턴마다 자동으로 삽입되는 Git 지시문, IDE 컨텍스트 등</td>
+                <td>설정에서 비활성화</td>
+              </tr>
+              <tr>
+                <td><code>긴 도구 출력</code></td>
+                <td>Bash 명령어 실행 결과 등이 대화 기록에 무제한으로 누적</td>
+                <td>출력 길이 상한 설정</td>
+              </tr>
+              <tr>
+                <td><code>외부 연결</code></td>
+                <td>웹 검색, MCP 서버, IDE 통합 등 각 호출마다 추가 토큰 발생</td>
+                <td>필요한 것만 활성화</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- 섹션 3: 토큰 소비 경로 시각화 -->
+        <section id="token-paths">
+          <h2>토큰 소비 흐름</h2>
+          <p>코딩 에이전트가 하나의 요청을 처리할 때 토큰이 어디서 발생하는지 시각화합니다.</p>
+          <div class="not-prose my-4">
+            <svg viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:680px; font-family:-apple-system,sans-serif;">
+              <rect width="680" height="260" fill="#f8fafc" rx="12"/>
+
+              <!-- 사용자 요청 -->
+              <rect x="20" y="20" width="120" height="50" fill="#0ea5e9" rx="8"/>
+              <text x="80" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="white">사용자 요청</text>
+              <text x="80" y="58" text-anchor="middle" font-size="11" fill="#e0f2fe">(실제 작업)</text>
+
+              <!-- 화살표 -->
+              <line x1="140" y1="45" x2="170" y2="45" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+              <!-- 시스템 프롬프트 -->
+              <rect x="170" y="20" width="130" height="50" fill="#dbeafe" rx="8" stroke="#93c5fd" stroke-width="1.5"/>
+              <text x="235" y="42" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40af">시스템 프롬프트</text>
+              <text x="235" y="58" text-anchor="middle" font-size="11" fill="#3b82f6">+ Git 지시문 자동 첨부</text>
+
+              <!-- 화살표 -->
+              <line x1="300" y1="45" x2="330" y2="45" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+              <!-- 대화 기록 -->
+              <rect x="330" y="20" width="130" height="50" fill="#fdf4ff" rx="8" stroke="#e9d5ff" stroke-width="1.5"/>
+              <text x="395" y="42" text-anchor="middle" font-size="12" font-weight="600" fill="#6b21a8">대화 기록</text>
+              <text x="395" y="58" text-anchor="middle" font-size="11" fill="#a855f7">도구 출력 누적</text>
+
+              <!-- 화살표 -->
+              <line x1="460" y1="45" x2="490" y2="45" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+              <!-- 외부 연결 -->
+              <rect x="490" y="20" width="170" height="50" fill="#fff7ed" rx="8" stroke="#fed7aa" stroke-width="1.5"/>
+              <text x="575" y="42" text-anchor="middle" font-size="12" font-weight="600" fill="#9a3412">외부 연결</text>
+              <text x="575" y="58" text-anchor="middle" font-size="11" fill="#f97316">MCP / IDE / 웹 검색</text>
+
+              <!-- 구분선 -->
+              <line x1="20" y1="100" x2="660" y2="100" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+
+              <!-- 절감 포인트들 -->
+              <text x="340" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="#64748b">설정으로 줄일 수 있는 포인트</text>
+
+              <!-- 절감 1 -->
+              <rect x="20" y="135" width="190" height="105" fill="#f0fdf4" rx="8" stroke="#bbf7d0" stroke-width="1.5"/>
+              <text x="115" y="158" text-anchor="middle" font-size="13" font-weight="700" fill="#166534">① Git 지시문 OFF</text>
+              <text x="115" y="178" text-anchor="middle" font-size="11" fill="#475569">includeGitInstructions: false</text>
+              <text x="115" y="196" text-anchor="middle" font-size="11" fill="#475569">autoConnectIde: false</text>
+              <text x="115" y="218" text-anchor="middle" font-size="11" fill="#6b7280">→ 매 턴 수백 토큰 절감</text>
+
+              <!-- 절감 2 -->
+              <rect x="230" y="135" width="190" height="105" fill="#f0fdf4" rx="8" stroke="#bbf7d0" stroke-width="1.5"/>
+              <text x="325" y="158" text-anchor="middle" font-size="13" font-weight="700" fill="#166534">② 출력 길이 제한</text>
+              <text x="325" y="178" text-anchor="middle" font-size="11" fill="#475569">BASH_MAX_OUTPUT_LENGTH</text>
+              <text x="325" y="196" text-anchor="middle" font-size="11" fill="#475569">환경변수로 상한 설정</text>
+              <text x="325" y="218" text-anchor="middle" font-size="11" fill="#6b7280">→ 긴 출력 누적 차단</text>
+
+              <!-- 절감 3 -->
+              <rect x="440" y="135" width="220" height="105" fill="#f0fdf4" rx="8" stroke="#bbf7d0" stroke-width="1.5"/>
+              <text x="550" y="158" text-anchor="middle" font-size="13" font-weight="700" fill="#166534">③ 외부 연결 최소화</text>
+              <text x="550" y="178" text-anchor="middle" font-size="11" fill="#475569">MCP 서버 선별 활성화</text>
+              <text x="550" y="196" text-anchor="middle" font-size="11" fill="#475569">web_search: disabled</text>
+              <text x="550" y="218" text-anchor="middle" font-size="11" fill="#6b7280">→ 불필요한 호출 제거</text>
+
+              <defs>
+                <marker id="arrow" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+                  <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+                </marker>
+              </defs>
+            </svg>
+          </div>
+        </section>
+
+        <!-- 섹션 4: Claude Code 설정 -->
+        <section id="claude-settings">
+          <h2>Claude Code 토큰 절약 설정</h2>
+          <p>
+            Claude Code는 <code>.claude/settings.json</code> 또는 <code>.claude/settings.local.json</code> 파일과
+            환경변수를 통해 토큰 소비를 제어할 수 있습니다.
+          </p>
+
+          <h3 id="claude-git">1. Git 지시문 비활성화</h3>
+          <p>
+            Claude Code는 기본적으로 매 세션에 Git 관련 지시문을 자동 첨부합니다.
+            Git 작업이 주 목적이 아닌 경우 비활성화하면 매 턴마다 수백 토큰을 절감할 수 있습니다.
+          </p>
+          <pre># .claude/settings.json 또는 .claude/settings.local.json
+{
+  "includeGitInstructions": false
+}</pre>
+
+          <h3 id="claude-ide">2. IDE 자동 연결 차단</h3>
+          <p>
+            IDE 통합(VS Code, JetBrains 등)이 활성화되어 있으면 에디터 컨텍스트를 자동으로 가져옵니다.
+            터미널 전용으로 사용할 경우 비활성화합니다.
+          </p>
+          <pre># .claude/settings.json
+{
+  "includeGitInstructions": false,
+  "autoConnectIde": false
+}</pre>
+
+          <h3 id="claude-output">3. Bash 출력 길이 제한</h3>
+          <p>
+            <code>BASH_MAX_OUTPUT_LENGTH</code> 환경변수로 Bash 명령어 실행 결과의 최대 길이를 제한합니다.
+            기본값이 없거나 매우 크게 설정된 경우, 긴 로그·빌드 출력이 대화 기록에 고스란히 누적됩니다.
+          </p>
+          <pre># 쉘 설정 파일 (~/.zshrc, ~/.bashrc 등)에 추가
+export BASH_MAX_OUTPUT_LENGTH=10000   # 문자 단위, 필요에 맞게 조정</pre>
+          <div class="callout-tip not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-emerald-500">💡</span>
+              <p class="text-sm text-emerald-800">
+                빌드 로그처럼 수만 줄이 나오는 명령어는 출력 상한 설정의 효과가 특히 큽니다.
+                필요한 정보만 확인하려면 <code>tail -n 50</code>처럼 명령어 수준에서도 제한하는 것이 좋습니다.
+              </p>
+            </div>
+          </div>
+
+          <h3 id="claude-mcp">4. MCP 서버 선별 활성화</h3>
+          <p>
+            설치되어 있지만 사용하지 않는 MCP 서버는 등록만으로도 컨텍스트를 차지합니다.
+            현재 작업에 필요한 서버만 활성화하고 나머지는 비활성화합니다.
+          </p>
+          <pre># .claude/settings.json — 특정 MCP 서버 비활성화 예시
+{
+  "mcpServers": {
+    "unused-server": {
+      "disabled": true
+    }
+  }
+}</pre>
+          <div class="callout-info not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-sky-500">ℹ️</span>
+              <div>
+                <p class="text-sm text-sky-800 font-semibold mb-1">슬래시 커맨드도 정리 대상</p>
+                <p class="text-sm text-sky-700">
+                  사용하지 않는 슬래시 커맨드(스킬)도 컨텍스트에 로드됩니다.
+                  <code>.claude/settings.json</code>에서 등록된 커맨드를 주기적으로 정리하면 추가 절감이 가능합니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 5: Codex CLI 설정 -->
+        <section id="codex-settings">
+          <h2>Codex CLI 토큰 절약 설정</h2>
+          <p>
+            OpenAI의 Codex CLI도 설정 파일과 플래그로 토큰 소비를 제어할 수 있습니다.
+            Claude Code와 병행 사용하는 경우 양쪽 모두 최적화하는 것이 좋습니다.
+          </p>
+
+          <h3 id="codex-mcp">1. MCP 앱 비활성화</h3>
+          <p>
+            Codex CLI 설정 파일에서 MCP 앱을 비활성화합니다.
+          </p>
+          <pre># Codex 설정 파일 (codex.toml 또는 config.json)
+features.apps = false</pre>
+
+          <h3 id="codex-search">2. 웹 검색 비활성화</h3>
+          <p>
+            웹 검색은 검색 결과 전체가 토큰으로 변환되어 컨텍스트에 포함됩니다.
+            코드 작업 중 필요하지 않다면 비활성화합니다.
+          </p>
+          <pre># Codex 설정 파일
+web_search = "disabled"</pre>
+
+          <h3 id="codex-flags">3. 명령어 플래그 활용</h3>
+          <p>
+            비대화형 모드에서 Codex CLI를 실행할 때 유용한 플래그입니다.
+          </p>
+          <pre># JSON 출력 모드 — 파싱하기 쉬운 구조화된 출력
+codex --json
+
+# 읽기 전용 샌드박스 — 불필요한 재시도 루프 방지
+codex --sandbox read-only</pre>
+
+          <div class="callout-info not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-sky-500">💬</span>
+              <div>
+                <p class="text-sm text-sky-800 font-semibold mb-1">작성자 경험담</p>
+                <p class="text-sm text-sky-700">
+                  원문 작성자(spilist2)는 실제 사용 경험을 통해 Codex가 Claude Code보다 토큰 효율이 더 나은 것으로 경험했다고 밝혔습니다.
+                  다만 이는 작업 유형과 설정에 따라 다를 수 있습니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 6: claude-slim -->
+        <section id="claude-slim">
+          <h2>보완 도구: claude-slim</h2>
+          <p>
+            GeekNews 댓글(dzzwe)에서 소개된 <strong>claude-slim</strong>은 "들어오는 토큰"을 등록 단계에서 줄이는 접근법입니다.
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>항목</th>
+                <th>내용</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>목적</td>
+                <td>미사용 스킬, 비대해진 CLAUDE.md 파일을 스캔하고 정리</td>
+              </tr>
+              <tr>
+                <td>방식</td>
+                <td>CLI 도구로 등록된 컴포넌트 중 실제로 사용되지 않는 것을 탐지</td>
+              </tr>
+              <tr>
+                <td>이 가이드와의 관계</td>
+                <td>이 가이드가 "설정으로 토큰 차단"이라면, claude-slim은 "등록 단계에서 불필요한 것을 제거"</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="callout-warn not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-amber-500">⚠️</span>
+              <p class="text-sm text-amber-800">
+                claude-slim의 정확한 설치 경로와 공식 저장소는 원문에서 확인되지 않았습니다. 사용 전 공식 채널에서 최신 정보를 확인하세요.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 7: 체크리스트 -->
+        <section id="summary">
+          <h2>설정 체크리스트</h2>
+          <p>아래 설정을 순서대로 적용하면 불필요한 토큰 소비를 최소화할 수 있습니다.</p>
+
+          <h3>Claude Code</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>설정</th>
+                <th>방법</th>
+                <th>효과</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>includeGitInstructions: false</code></td>
+                <td>settings.json</td>
+                <td>매 턴 Git 지시문 자동 첨부 차단</td>
+              </tr>
+              <tr>
+                <td><code>autoConnectIde: false</code></td>
+                <td>settings.json</td>
+                <td>IDE 컨텍스트 자동 수집 차단</td>
+              </tr>
+              <tr>
+                <td><code>BASH_MAX_OUTPUT_LENGTH</code></td>
+                <td>환경변수</td>
+                <td>Bash 출력 상한 설정으로 누적 차단</td>
+              </tr>
+              <tr>
+                <td>미사용 MCP 서버 비활성화</td>
+                <td>settings.json</td>
+                <td>불필요한 서버 컨텍스트 제거</td>
+              </tr>
+              <tr>
+                <td>미사용 슬래시 커맨드 정리</td>
+                <td>settings.json</td>
+                <td>로드되는 스킬 수 감소</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Codex CLI</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>설정</th>
+                <th>방법</th>
+                <th>효과</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>features.apps = false</code></td>
+                <td>설정 파일</td>
+                <td>MCP 앱 비활성화</td>
+              </tr>
+              <tr>
+                <td><code>web_search = "disabled"</code></td>
+                <td>설정 파일</td>
+                <td>웹 검색 결과 토큰 제거</td>
+              </tr>
+              <tr>
+                <td><code>--sandbox read-only</code></td>
+                <td>플래그</td>
+                <td>불필요한 재시도 루프 방지</td>
+              </tr>
+              <tr>
+                <td><code>--json</code></td>
+                <td>플래그</td>
+                <td>비대화형 모드 효율 향상</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout-tip not-prose mt-6">
+            <div class="flex gap-2.5">
+              <span class="text-emerald-500">✅</span>
+              <div>
+                <p class="text-sm text-emerald-800 font-semibold mb-1">적용 우선순위</p>
+                <p class="text-sm text-emerald-700">
+                  모든 설정을 한꺼번에 적용하기보다 ① Git 지시문 비활성화 → ② IDE 자동 연결 차단 → ③ 출력 길이 제한 순으로
+                  하나씩 적용하며 효과를 확인하는 것을 권장합니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- 오른쪽 목차 -->
+    <aside class="hidden xl:block fixed top-14 right-0 w-52 bottom-0 py-8 px-4 border-l border-slate-200 overflow-y-auto">
+      <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">이 페이지</p>
+      <div class="space-y-0.5">
+        <a href="#overview" class="toc-link">소개</a>
+        <a href="#why-tokens" class="toc-link">토큰 낭비 원인</a>
+        <a href="#token-paths" class="toc-link">토큰 소비 흐름</a>
+        <a href="#claude-settings" class="toc-link active">Claude Code 설정</a>
+        <a href="#claude-git" class="toc-link" style="padding-left:20px">Git 지시문</a>
+        <a href="#claude-ide" class="toc-link" style="padding-left:20px">IDE 연결</a>
+        <a href="#claude-output" class="toc-link" style="padding-left:20px">출력 제한</a>
+        <a href="#claude-mcp" class="toc-link" style="padding-left:20px">MCP 서버</a>
+        <a href="#codex-settings" class="toc-link">Codex CLI 설정</a>
+        <a href="#claude-slim" class="toc-link">claude-slim</a>
+        <a href="#summary" class="toc-link">체크리스트</a>
+      </div>
+    </aside>
+
+  </div>
+
+  <script data-page-hash="ASPHKVG" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
