@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Design: Figma의 시대가 끝나는가</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --color-primary: #111111;
+      --color-secondary: #f1f1f1;
+      --color-surface: #FFFFFF;
+      --color-text: #111827;
+      --font-primary: 'Gelasio', Georgia, serif;
+      --font-mono: 'Ubuntu Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-surface);
+      color: var(--color-text);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .editorial-rule { border: none; border-top: 2px solid var(--color-primary); margin: 0; }
+    .editorial-rule-thin { border: none; border-top: 1px solid #e5e7eb; }
+
+    .site-header { border-bottom: 2px solid var(--color-primary); padding: 20px 24px; }
+    .site-header-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+
+    .site-logo { font-family: var(--font-primary); font-size: 13px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-primary); }
+    .site-nav { display: flex; gap: 32px; }
+    .site-nav a { font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-primary); text-decoration: none; opacity: 0.6; transition: opacity 0.2s; }
+    .site-nav a:hover { opacity: 1; }
+    .site-date { font-family: var(--font-mono); font-size: 12px; color: #6b7280; letter-spacing: 0.05em; }
+
+    .hero-section { max-width: 1400px; margin: 0 auto; padding: 80px 24px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: end; }
+    .hero-kicker { display: inline-block; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-surface); background-color: var(--color-primary); padding: 4px 10px; margin-bottom: 28px; }
+    .hero-heading { font-family: var(--font-primary); font-size: clamp(38px, 5vw, 68px); font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; color: var(--color-primary); margin-bottom: 8px; }
+    .hero-heading em { font-style: italic; font-weight: 400; }
+    .hero-heading-em { font-family: var(--font-primary); font-size: clamp(20px, 3vw, 32px); font-weight: 400; font-style: italic; line-height: 1.4; color: var(--color-primary); opacity: 0.5; margin-bottom: 32px; }
+    .hero-description { font-size: 17px; line-height: 1.75; color: #374151; max-width: 480px; }
+    .hero-meta { border-top: 1px solid #e5e7eb; padding-top: 24px; margin-top: 40px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .hero-meta-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: #9ca3af; }
+    .hero-meta-value { font-family: var(--font-mono); font-size: 12px; color: var(--color-primary); }
+    .hero-pullquote { border-left: 4px solid var(--color-primary); padding: 32px 40px; background: var(--color-secondary); }
+    .hero-pullquote blockquote { font-size: clamp(17px, 2.2vw, 24px); font-style: italic; font-weight: 500; line-height: 1.55; color: var(--color-primary); margin-bottom: 20px; }
+    .hero-pullquote cite { font-family: var(--font-mono); font-size: 12px; font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7280; }
+
+    .content-wrap { max-width: 1400px; margin: 0 auto; padding: 0 24px 80px; }
+
+    .section-label { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #9ca3af; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+
+    .article-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0; border: 1px solid var(--color-primary); margin-bottom: 64px; }
+    .article-card { padding: 32px; border-right: 1px solid var(--color-primary); display: flex; flex-direction: column; }
+    .article-card:last-child { border-right: none; }
+    .article-card-featured { border-right: 2px solid var(--color-primary); }
+    .article-category { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #9ca3af; margin-bottom: 16px; }
+    .article-category.highlighted { color: var(--color-surface); background: var(--color-primary); display: inline-block; padding: 2px 8px; }
+    .article-title { font-size: 21px; font-weight: 700; line-height: 1.25; color: var(--color-primary); margin-bottom: 12px; letter-spacing: -0.01em; }
+    .article-card:not(.article-card-featured) .article-title { font-size: 17px; }
+    .article-excerpt { font-size: 15px; line-height: 1.7; color: #4b5563; margin-bottom: 16px; }
+    .article-byline { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 16px; margin-top: auto; }
+
+    .stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--color-primary); margin-bottom: 64px; }
+    .stat-cell { padding: 28px 24px; border-right: 1px solid var(--color-primary); }
+    .stat-cell:last-child { border-right: none; }
+    .stat-num { font-family: var(--font-primary); font-size: clamp(32px, 4vw, 52px); font-weight: 700; color: var(--color-primary); line-height: 1; margin-bottom: 8px; }
+    .stat-num em { font-style: italic; font-weight: 400; }
+    .stat-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b7280; }
+    .stat-desc { font-size: 13px; color: #9ca3af; margin-top: 6px; line-height: 1.5; }
+
+    .data-section { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-bottom: 64px; }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #9ca3af; text-align: left; padding: 0 0 12px 0; border-bottom: 2px solid var(--color-primary); }
+    .data-table td { font-size: 14px; padding: 14px 0; border-bottom: 1px solid #e5e7eb; color: var(--color-text); vertical-align: top; }
+    .data-table td:first-child { font-weight: 600; color: var(--color-primary); width: 42%; }
+    .data-table .mono-val { font-family: var(--font-mono); font-size: 12px; }
+    .data-table .tag { display: inline-block; font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; }
+    .tag-good { background: #dcfce7; color: #15803d; }
+    .tag-bad { background: #fee2e2; color: #b91c1c; }
+    .tag-mid { background: #fef9c3; color: #92400e; }
+
+    .full-table-section { margin-bottom: 64px; }
+    .full-table { width: 100%; border-collapse: collapse; }
+    .full-table th { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #9ca3af; text-align: left; padding: 0 16px 12px 0; border-bottom: 2px solid var(--color-primary); }
+    .full-table td { font-size: 14px; padding: 14px 16px 14px 0; border-bottom: 1px solid #e5e7eb; color: var(--color-text); vertical-align: top; line-height: 1.6; }
+    .full-table td:first-child { font-weight: 600; color: var(--color-primary); }
+    .full-table tr:hover td { background: #fafafa; }
+
+    .svg-section { margin-bottom: 64px; }
+    .svg-section svg { width: 100%; height: auto; display: block; }
+
+    .pullquote-block { border-left: 4px solid var(--color-primary); padding: 28px 36px; background: var(--color-secondary); margin-bottom: 64px; }
+    .pullquote-block blockquote { font-size: clamp(16px, 2vw, 21px); font-style: italic; font-weight: 500; line-height: 1.55; color: var(--color-primary); margin-bottom: 12px; }
+    .pullquote-block cite { font-family: var(--font-mono); font-size: 12px; font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7280; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-bottom: 64px; }
+    .verdict-box { border: 1px solid var(--color-primary); padding: 32px; }
+    .verdict-title { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-primary); margin-bottom: 20px; font-family: var(--font-mono); }
+    .verdict-body { font-size: 15px; line-height: 1.75; color: #374151; }
+    .verdict-body p { margin-bottom: 12px; }
+    .verdict-body p:last-child { margin-bottom: 0; }
+
+    .source-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; border: 1px solid var(--color-primary); margin-bottom: 64px; }
+    .source-item { padding: 20px 24px; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
+    .source-item:nth-child(3n) { border-right: none; }
+    .source-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #9ca3af; margin-bottom: 8px; }
+    .source-link { font-size: 13px; color: var(--color-primary); text-decoration: none; font-weight: 500; line-height: 1.5; display: block; }
+    .source-link:hover { text-decoration: underline; }
+
+    .site-footer { border-top: 2px solid var(--color-primary); padding: 32px 24px; }
+    .site-footer-inner { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .footer-text { font-family: var(--font-mono); font-size: 12px; color: #9ca3af; letter-spacing: 0.05em; }
+    .footer-rule-word { font-family: var(--font-primary); font-size: 13px; font-style: italic; color: #d1d5db; }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .article-card { transition: background 0.15s ease-out; }
+      .article-card:hover { background: #fafafa; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+
+    @media (max-width: 900px) {
+      .hero-section { grid-template-columns: 1fr; gap: 40px; }
+      .article-grid { grid-template-columns: 1fr; }
+      .article-card { border-right: none; border-bottom: 1px solid var(--color-primary); }
+      .data-section { grid-template-columns: 1fr; }
+      .stat-strip { grid-template-columns: 1fr 1fr; }
+      .stat-cell { border-bottom: 1px solid var(--color-primary); }
+      .two-col { grid-template-columns: 1fr; }
+      .source-list { grid-template-columns: 1fr 1fr; }
+      .source-item:nth-child(3n) { border-right: 1px solid #e5e7eb; }
+      .source-item:nth-child(2n) { border-right: none; }
+      .site-nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <header class="site-header">
+    <div class="site-header-inner">
+      <span class="site-logo">Design by AI</span>
+      <nav class="site-nav">
+        <a href="/ai-design/">Gallery</a>
+        <a href="/ai-study/">AI Study</a>
+        <a href="/">Home</a>
+      </nav>
+      <span class="site-date">2026-04-20</span>
+    </div>
+  </header>
+
+  <!-- 히어로 -->
+  <section class="hero-section">
+    <div>
+      <span class="hero-kicker">Analysis · Design Tools</span>
+      <h1 class="hero-heading">Claude Design:<br><em>Figma의 시대가<br>끝나는가</em></h1>
+      <p class="hero-heading-em">LLM이 코드로 학습된다는 사실이<br>디자인 도구의 판도를 바꾼다</p>
+      <p class="hero-description">Anthropic이 2026년 4월 출시한 Claude Design은 단순한 AI 도구가 아니다. Figma가 20년간 쌓아온 복잡성을 정반대로 설계한 구조적 도전이다.</p>
+      <div class="hero-meta">
+        <span class="hero-meta-label">출처</span>
+        <span class="hero-meta-value">Sam Henri Gold · GeekNews #28682</span>
+        <span class="hero-meta-label" style="margin-left:16px;">분석일</span>
+        <span class="hero-meta-value">2026-04-20</span>
+      </div>
+    </div>
+    <div class="hero-pullquote">
+      <blockquote>"일이 실제로 살아갈 매체에서 직접 작업하는 것과 비교할 때, 손실 많은 근사치에서 작업하는 이유가 무엇인가?"</blockquote>
+      <cite>— Sam Henri Gold, 원문 블로그 (2026-04-18)</cite>
+    </div>
+  </section>
+
+  <div class="content-wrap">
+
+    <!-- 핵심 수치 -->
+    <p class="section-label">Figma의 복잡성 지표</p>
+    <div class="stat-strip">
+      <div class="stat-cell">
+        <div class="stat-num">946</div>
+        <div class="stat-label">색상 변수</div>
+        <div class="stat-desc">디자인 시스템 파일 내 컬러 토큰 총수</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">12<em>+</em></div>
+        <div class="stat-label">컴포넌트 배리언트</div>
+        <div class="stat-desc">단일 모달 컴포넌트 기준</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">8</div>
+        <div class="stat-label">변수 모드</div>
+        <div class="stat-desc">Light · Dark · FigJam 등 per 변수</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">7<em>%</em></div>
+        <div class="stat-label">Figma 주가 하락</div>
+        <div class="stat-desc">Claude Design 출시 직후 시장 반응</div>
+      </div>
+    </div>
+
+    <!-- 핵심 요약 기사 그리드 -->
+    <p class="section-label">핵심 요약</p>
+    <div class="article-grid">
+      <div class="article-card article-card-featured">
+        <p class="article-category highlighted">Lead Analysis</p>
+        <h2 class="article-title">LLM은 코드로 학습됐다 — Figma 형식이 아니라</h2>
+        <p class="article-excerpt">Sam Henri Gold의 핵심 주장은 단순하다. GPT·Claude·Gemini 등 모든 LLM은 GitHub의 HTML·CSS·JavaScript로 학습됐지, Figma가 내부에서 사용하는 독점 JSON 형식으로 학습되지 않았다. 이 비대칭이 AI 시대에 구조적 불이익이 된다.</p>
+        <p class="article-excerpt">Figma 페이지 하나는 수천 줄의 JSON을 생성하지만, 대부분은 픽셀 좌표·시각 효과 메타데이터 같은 LLM에 불필요한 노이즈다. Claude Design이 HTML/JS를 직접 출력하는 이유가 여기 있다.</p>
+        <p class="article-byline">Sam Henri Gold · samhenri.gold · 2026-04-18</p>
+      </div>
+      <div class="article-card">
+        <p class="article-category">Context</p>
+        <h2 class="article-title">Claude Design 출시 — 2026년 4월 17일</h2>
+        <p class="article-excerpt">Claude Opus 4.7 기반. Pro·Max·Team·Enterprise 구독자 대상 리서치 프리뷰로 공개. 자연어 → 프로토타입, 코드베이스 연동 디자인 시스템 자동 구축, Claude Code와 네이티브 handoff.</p>
+        <p class="article-byline">TechCrunch · 2026-04-17</p>
+      </div>
+      <div class="article-card">
+        <p class="article-category">History</p>
+        <h2 class="article-title">Sketch의 몰락이 주는 교훈</h2>
+        <p class="article-excerpt">2012년 Apple 디자인 어워드 수상. Mac 전용·클라우드 미지원으로 2021년 Figma에 1위 자리를 내줬다. 저자는 Figma가 같은 경로를 걷고 있다고 본다.</p>
+        <p class="article-byline">Samsung SDS Insights · Brunch</p>
+      </div>
+    </div>
+
+    <!-- SVG: 디자인 도구 흐름 다이어그램 -->
+    <p class="section-label">디자인→코드 워크플로우 비교</p>
+    <div class="svg-section">
+      <svg viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg" style="border:1px solid #111111;">
+        <rect width="1000" height="320" fill="#f1f1f1"/>
+
+        <!-- Figma 흐름 -->
+        <text x="30" y="36" font-family="'Ubuntu Mono', monospace" font-size="11" font-weight="700" letter-spacing="2" fill="#9ca3af">FIGMA WORKFLOW</text>
+
+        <!-- 박스들 -->
+        <rect x="30" y="52" width="130" height="52" fill="#111111"/>
+        <text x="95" y="74" text-anchor="middle" font-family="Gelasio, serif" font-size="13" font-weight="700" fill="white">디자이너</text>
+        <text x="95" y="92" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="11" fill="#9ca3af">Figma 작업</text>
+
+        <text x="168" y="81" font-family="'Ubuntu Mono', monospace" font-size="20" fill="#9ca3af">→</text>
+
+        <rect x="190" y="52" width="130" height="52" fill="white" stroke="#111111" stroke-width="1.5"/>
+        <text x="255" y="74" text-anchor="middle" font-family="Gelasio, serif" font-size="13" font-weight="600" fill="#111111">Figma JSON</text>
+        <text x="255" y="92" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="11" fill="#DC2626">946 변수 · 노이즈</text>
+
+        <text x="328" y="81" font-family="'Ubuntu Mono', monospace" font-size="20" fill="#9ca3af">→</text>
+
+        <rect x="350" y="52" width="130" height="52" fill="white" stroke="#111111" stroke-width="1.5"/>
+        <text x="415" y="74" text-anchor="middle" font-family="Gelasio, serif" font-size="13" font-weight="600" fill="#111111">Handoff</text>
+        <text x="415" y="92" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="11" fill="#DC2626">수동 변환 필요</text>
+
+        <text x="488" y="81" font-family="'Ubuntu Mono', monospace" font-size="20" fill="#9ca3af">→</text>
+
+        <rect x="510" y="52" width="130" height="52" fill="white" stroke="#111111" stroke-width="1.5"/>
+        <text x="575" y="74" text-anchor="middle" font-family="Gelasio, serif" font-size="13" font-weight="600" fill="#111111">개발자</text>
+        <text x="575" y="92" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="11" fill="#D97706">재해석·재구현</text>
+
+        <text x="648" y="81" font-family="'Ubuntu Mono', monospace" font-size="20" fill="#9ca3af">→</text>
+
+        <rect x="670" y="52" width="130" height="52" fill="white" stroke="#111111" stroke-width="1.5"/>
+        <text x="735" y="74" text-anchor="middle" font-family="Gelasio, serif" font-size="13" font-weight="600" fill="#111111">최종 코드</text>
+        <text x="735" y="92" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="11" fill="#9ca3af">구현 완료</text>
+
+        <!-- 손실 표시 -->
+        <path d="M95 108 L95 140" stroke="#DC2626" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="95" y="158" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="10" fill="#DC2626">디자인 의도</text>
+        <path d="M415 108 L415 140" stroke="#DC2626" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="415" y="158" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="10" fill="#DC2626">정보 손실</text>
+        <path d="M575 108 L575 140" stroke="#DC2626" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="575" y="158" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="10" fill="#DC2626">추가 손실</text>
+
+        <!-- 구분선 -->
+        <line x1="30" y1="180" x2="970" y2="180" stroke="#e5e7eb" stroke-width="1"/>
+
+        <!-- Claude 흐름 -->
+        <text x="30" y="210" font-family="'Ubuntu Mono', monospace" font-size="11" font-weight="700" letter-spacing="2" fill="#9ca3af">CLAUDE DESIGN WORKFLOW</text>
+
+        <rect x="30" y="226" width="150" height="52" fill="#111111"/>
+        <text x="105" y="248" text-anchor="middle" font-family="Gelasio, serif" font-size="13" font-weight="700" fill="white">자연어 입력</text>
+        <text x="105" y="266" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="11" fill="#9ca3af">디자이너/PM/개발자</text>
+
+        <text x="188" y="255" font-family="'Ubuntu Mono', monospace" font-size="20" fill="#9ca3af">→</text>
+
+        <rect x="210" y="226" width="150" height="52" fill="white" stroke="#111111" stroke-width="1.5"/>
+        <text x="285" y="248" text-anchor="middle" font-family="Gelasio, serif" font-size="13" font-weight="600" fill="#111111">Claude Design</text>
+        <text x="285" y="266" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="11" fill="#16A34A">HTML/JS 직접 생성</text>
+
+        <text x="368" y="255" font-family="'Ubuntu Mono', monospace" font-size="20" fill="#9ca3af">→</text>
+
+        <rect x="390" y="226" width="150" height="52" fill="white" stroke="#111111" stroke-width="1.5"/>
+        <text x="465" y="248" text-anchor="middle" font-family="Gelasio, serif" font-size="13" font-weight="600" fill="#111111">Handoff Bundle</text>
+        <text x="465" y="266" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="11" fill="#16A34A">자동 생성</text>
+
+        <text x="548" y="255" font-family="'Ubuntu Mono', monospace" font-size="20" fill="#9ca3af">→</text>
+
+        <rect x="570" y="226" width="150" height="52" fill="#111111"/>
+        <text x="645" y="248" text-anchor="middle" font-family="Gelasio, serif" font-size="13" font-weight="700" fill="white">Claude Code</text>
+        <text x="645" y="266" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="11" fill="#9ca3af">기능 코드 출력</text>
+
+        <text x="728" y="255" font-family="'Ubuntu Mono', monospace" font-size="20" fill="#9ca3af">→</text>
+
+        <rect x="750" y="226" width="150" height="52" fill="white" stroke="#111111" stroke-width="1.5"/>
+        <text x="825" y="248" text-anchor="middle" font-family="Gelasio, serif" font-size="13" font-weight="600" fill="#111111">최종 코드</text>
+        <text x="825" y="266" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="11" fill="#16A34A">단일 대화 완성</text>
+
+        <!-- 손실 없음 표시 -->
+        <path d="M465 282 L465 308" stroke="#16A34A" stroke-width="1"/>
+        <text x="465" y="316" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="10" fill="#16A34A">의도 보존</text>
+      </svg>
+    </div>
+
+    <!-- Claude Design 기능 vs Figma 비교 -->
+    <p class="section-label">기능 비교</p>
+    <div class="data-section">
+      <div>
+        <p class="section-label" style="font-size:10px;">Claude Design 핵심 기능</p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>기능</th>
+              <th>설명</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>자연어 생성</td>
+              <td>텍스트 프롬프트 → 프로토타입 즉시 출력</td>
+            </tr>
+            <tr>
+              <td>디자인 시스템</td>
+              <td>코드베이스 읽고 색상·타이포·컴포넌트 자동 구축</td>
+            </tr>
+            <tr>
+              <td>입력 방식</td>
+              <td>텍스트·이미지·문서·코드베이스·웹 캡처</td>
+            </tr>
+            <tr>
+              <td>Claude Code 연동</td>
+              <td>Handoff bundle → 기능 코드 자동 생성</td>
+            </tr>
+            <tr>
+              <td>출력 형식</td>
+              <td>PDF · URL · PPTX · Canva 상호운용</td>
+            </tr>
+            <tr>
+              <td>대상</td>
+              <td>창업자 · PM · 마케터 · 엔지니어</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <p class="section-label" style="font-size:10px;">Claude Design vs Figma 비교</p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>측면</th>
+              <th>Claude Design</th>
+              <th>Figma</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>학습 곡선</td>
+              <td><span class="tag tag-good">낮음</span></td>
+              <td><span class="tag tag-bad">높음</span></td>
+            </tr>
+            <tr>
+              <td>초기 속도</td>
+              <td><span class="tag tag-good">빠름</span></td>
+              <td><span class="tag tag-mid">보통</span></td>
+            </tr>
+            <tr>
+              <td>LLM 친화성</td>
+              <td><span class="tag tag-good">네이티브</span></td>
+              <td><span class="tag tag-bad">변환 필요</span></td>
+            </tr>
+            <tr>
+              <td>개발 연동</td>
+              <td><span class="tag tag-good">긴밀</span></td>
+              <td><span class="tag tag-mid">Dev Mode</span></td>
+            </tr>
+            <tr>
+              <td>협업 기능</td>
+              <td><span class="tag tag-mid">제한적</span></td>
+              <td><span class="tag tag-good">강함</span></td>
+            </tr>
+            <tr>
+              <td>시장 점유율</td>
+              <td><span class="tag tag-mid">신진</span></td>
+              <td><span class="tag tag-good">80–90%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SVG: 시장 포지셔닝 -->
+    <p class="section-label">코드 기반 디자인 도구 시장 지도</p>
+    <div class="svg-section">
+      <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" style="border:1px solid #111111;">
+        <rect width="1000" height="400" fill="white"/>
+
+        <!-- 축 -->
+        <line x1="100" y1="50" x2="100" y2="350" stroke="#111111" stroke-width="1.5"/>
+        <line x1="100" y1="350" x2="950" y2="350" stroke="#111111" stroke-width="1.5"/>
+
+        <!-- 축 레이블 -->
+        <text x="50" y="205" font-family="'Ubuntu Mono', monospace" font-size="11" fill="#9ca3af" text-anchor="middle" transform="rotate(-90,50,205)">코드 통합 수준 (높음)</text>
+        <text x="525" y="390" font-family="'Ubuntu Mono', monospace" font-size="11" fill="#9ca3af" text-anchor="middle">창작 자유도 (높음) →</text>
+
+        <!-- 사분면 레이블 -->
+        <text x="150" y="80" font-family="'Ubuntu Mono', monospace" font-size="10" fill="#e5e7eb">코드 중심 · 시스템 통합</text>
+        <text x="600" y="80" font-family="'Ubuntu Mono', monospace" font-size="10" fill="#e5e7eb">탐색 중심 · 창작 자유</text>
+
+        <!-- 그리드 -->
+        <line x1="100" y1="200" x2="950" y2="200" stroke="#f3f4f6" stroke-width="1"/>
+        <line x1="525" y1="50" x2="525" y2="350" stroke="#f3f4f6" stroke-width="1"/>
+
+        <!-- 도구 포인트들 -->
+        <!-- Claude Design -->
+        <circle cx="200" cy="100" r="28" fill="#111111"/>
+        <text x="200" y="96" text-anchor="middle" font-family="Gelasio, serif" font-size="12" font-weight="700" fill="white">Claude</text>
+        <text x="200" y="112" text-anchor="middle" font-family="Gelasio, serif" font-size="12" font-weight="700" fill="white">Design</text>
+
+        <!-- v0 -->
+        <circle cx="280" cy="150" r="20" fill="#111111" opacity="0.8"/>
+        <text x="280" y="155" text-anchor="middle" font-family="Gelasio, serif" font-size="13" font-weight="700" fill="white">v0</text>
+
+        <!-- Lovable -->
+        <circle cx="350" cy="130" r="22" fill="#374151"/>
+        <text x="350" y="135" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="11" fill="white">Lovable</text>
+
+        <!-- Bolt -->
+        <circle cx="420" cy="160" r="20" fill="#374151" opacity="0.7"/>
+        <text x="420" y="165" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="11" fill="white">Bolt</text>
+
+        <!-- Google Stitch -->
+        <circle cx="580" cy="240" r="24" fill="#6b7280"/>
+        <text x="580" y="236" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="10" fill="white">Google</text>
+        <text x="580" y="250" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="10" fill="white">Stitch</text>
+
+        <!-- Figma -->
+        <circle cx="700" cy="180" r="36" fill="white" stroke="#111111" stroke-width="2"/>
+        <text x="700" y="176" text-anchor="middle" font-family="Gelasio, serif" font-size="14" font-weight="700" fill="#111111">Figma</text>
+        <text x="700" y="194" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="10" fill="#9ca3af">80~90%</text>
+
+        <!-- 미래 "탐색 전용" 영역 -->
+        <rect x="780" y="260" width="140" height="60" fill="none" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="850" y="286" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="10" fill="#9ca3af">미래 탐색</text>
+        <text x="850" y="300" text-anchor="middle" font-family="'Ubuntu Mono', monospace" font-size="10" fill="#9ca3af">전용 도구</text>
+
+        <!-- 범례 -->
+        <circle cx="120" cy="370" r="7" fill="#111111"/>
+        <text x="132" y="375" font-family="'Ubuntu Mono', monospace" font-size="10" fill="#374151">코드 기반</text>
+        <circle cx="220" cy="370" r="7" fill="white" stroke="#111111" stroke-width="1.5"/>
+        <text x="232" y="375" font-family="'Ubuntu Mono', monospace" font-size="10" fill="#374151">기존 도구</text>
+        <rect x="320" y="363" width="14" height="14" fill="none" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="338" y="375" font-family="'Ubuntu Mono', monospace" font-size="10" fill="#374151">신흥 영역</text>
+      </svg>
+    </div>
+
+    <!-- 경쟁 도구 풀 테이블 -->
+    <p class="section-label">코드 기반 디자인 도구 비교 (2026)</p>
+    <div class="full-table-section">
+      <table class="full-table">
+        <thead>
+          <tr>
+            <th>도구</th>
+            <th>개발사</th>
+            <th>특징</th>
+            <th>주 대상</th>
+            <th>비용</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Claude Design</td>
+            <td class="mono-val">Anthropic</td>
+            <td>HTML/JS 직접 생성 · 디자인 시스템 자동 통합 · Claude Code 연동</td>
+            <td>창업자 · PM · 엔지니어</td>
+            <td class="mono-val">Pro/Max 구독 포함</td>
+          </tr>
+          <tr>
+            <td>v0</td>
+            <td class="mono-val">Vercel</td>
+            <td>Tailwind React 컴포넌트 생성 · 프로덕션 코드 품질</td>
+            <td>프론트엔드 개발자</td>
+            <td class="mono-val">무료 티어 · 유료</td>
+          </tr>
+          <tr>
+            <td>Google Stitch</td>
+            <td class="mono-val">Google Labs</td>
+            <td>완전 무료 · Gemini 2.5 Pro 기반 · 빠른 목업</td>
+            <td>디자이너 · 탐색 목적</td>
+            <td class="mono-val">무료</td>
+          </tr>
+          <tr>
+            <td>Lovable</td>
+            <td class="mono-val">—</td>
+            <td>풀스택 앱 생성 (프론트+백+DB+인증)</td>
+            <td>비개발자 창업자</td>
+            <td class="mono-val">유료</td>
+          </tr>
+          <tr>
+            <td>Bolt</td>
+            <td class="mono-val">—</td>
+            <td>빠른 풀스택 프로토타입</td>
+            <td>개발자 · 해커톤</td>
+            <td class="mono-val">유료</td>
+          </tr>
+          <tr>
+            <td>Figma</td>
+            <td class="mono-val">Figma Inc.</td>
+            <td>정교한 협업 · 픽셀 정밀도 · 광범위한 플러그인 생태계</td>
+            <td>전문 디자이너 팀</td>
+            <td class="mono-val">팀 플랜 $15+/월</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 풀쿼트: 두 세계 -->
+    <div class="pullquote-block">
+      <blockquote>"디자인 도구 시장은 두 갈래로 분화한다. 코드가 살아 숨쉬는 매체를 직접 다루는 도구와, 시스템 제약 없이 자유롭게 탐색하는 순수 창작 환경."</blockquote>
+      <cite>— Sam Henri Gold · samhenri.gold (2026-04-18)</cite>
+    </div>
+
+    <!-- 두 관점 -->
+    <p class="section-label">평가 · 전망</p>
+    <div class="two-col">
+      <div class="verdict-box">
+        <p class="verdict-title">Figma의 구조적 약점</p>
+        <div class="verdict-body">
+          <p>946개 색상 변수, 컴포넌트당 12개 배리언트. 조직 규모가 커질수록 Figma의 디자인 시스템은 관리 부담이 증가하고, 오히려 생산성을 저해한다는 현장 보고가 늘고 있다.</p>
+          <p>더 근본적인 문제는 포맷이다. Figma가 생성하는 JSON은 LLM 컨텍스트 윈도우를 과도하게 소비하는 노이즈를 포함하며, 이를 해결하기 위한 제3자 도구(Figma Raw, fig2json, Figma MCP Server)가 별도로 존재한다는 사실 자체가 구조적 한계를 방증한다.</p>
+          <p>Figma 주가는 Claude Design 출시 직후 7% 하락했다. 시장은 이미 이 위협을 인지하고 있다.</p>
+        </div>
+      </div>
+      <div class="verdict-box">
+        <p class="verdict-title">공존 vs 대체 — 현실적 전망</p>
+        <div class="verdict-body">
+          <p>Fast Company는 두 도구를 "경쟁"이 아닌 "용도 분리"로 바라본다. Figma는 세부 정제·협업·최종 출시, Claude Design은 빠른 초안·탐색·개발 연동으로 역할 분기 가능성이 크다.</p>
+          <p>단기적으로 스타트업과 독립 개발자에서 Claude Design의 침투율이 높아질 것이다. Figma의 80~90% 시장 점유율은 대기업 생태계에서 당분간 유지된다.</p>
+          <p>Sketch의 몰락은 5년에 걸쳐 점진적으로 이뤄졌다. 클라우드 협업의 부재라는 단일 약점이 결정적이었다. Figma의 경우 AI 시대 LLM 비호환이라는 구조적 약점이 같은 역할을 할 가능성이 있다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 출처 -->
+    <p class="section-label">참고 출처</p>
+    <div class="source-list">
+      <div class="source-item">
+        <p class="source-label">원문 분석</p>
+        <a class="source-link" href="https://samhenri.gold/blog/20260418-claude-design/" target="_blank" rel="noopener">Sam Henri Gold — Claude Design에 대한 생각</a>
+      </div>
+      <div class="source-item">
+        <p class="source-label">GeekNews</p>
+        <a class="source-link" href="https://news.hada.io/topic?id=28682" target="_blank" rel="noopener">GeekNews #28682 — 한국어 요약 · 댓글</a>
+      </div>
+      <div class="source-item">
+        <p class="source-label">출시 보도</p>
+        <a class="source-link" href="https://techcrunch.com/2026/04/17/anthropic-launches-claude-design-a-new-product-for-creating-quick-visuals/" target="_blank" rel="noopener">TechCrunch — Claude Design 출시 (2026-04-17)</a>
+      </div>
+      <div class="source-item">
+        <p class="source-label">시장 분석</p>
+        <a class="source-link" href="https://www.fastcompany.com/91528198/anthropic-claude-design-ai-design-tool" target="_blank" rel="noopener">Fast Company — Anthropic Claude Design AI 분석</a>
+      </div>
+      <div class="source-item">
+        <p class="source-label">도구 비교</p>
+        <a class="source-link" href="https://www.nxcode.io/resources/news/vibe-design-tools-compared-stitch-v0-lovable-2026" target="_blank" rel="noopener">NxCode — Stitch vs v0 vs Lovable 2026</a>
+      </div>
+      <div class="source-item">
+        <p class="source-label">Figma 한계</p>
+        <a class="source-link" href="https://www.wedesignx.com/knowledge/figma-adoption-failure" target="_blank" rel="noopener">wedesignx — Figma 도입 실패 사례</a>
+      </div>
+      <div class="source-item">
+        <p class="source-label">주가 반응</p>
+        <a class="source-link" href="https://medium.com/@yrjdeveloper/claude-design-just-launched-figma-stocks-dropped-by-7-41636436018f" target="_blank" rel="noopener">Medium — Figma 주가 7% 하락 분석</a>
+      </div>
+      <div class="source-item">
+        <p class="source-label">기술 분석</p>
+        <a class="source-link" href="https://blog.bytebytego.com/p/figma-design-to-code-code-to-design" target="_blank" rel="noopener">ByteByteGo — Figma Design to Code</a>
+      </div>
+      <div class="source-item">
+        <p class="source-label">Sketch 역사</p>
+        <a class="source-link" href="https://www.samsungsds.com/kr/insights/figma.html" target="_blank" rel="noopener">Samsung SDS — Figma 성장과 Sketch 몰락</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 푸터 -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <span class="footer-text">2026-04-20 · Design by AI · Claude Design Analysis</span>
+      <span class="footer-rule-word">«finis»</span>
+      <span class="footer-text">출처: samhenri.gold · news.hada.io #28682</span>
+    </div>
+  </footer>
+
+  <script data-page-hash="ETK6NVG" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
