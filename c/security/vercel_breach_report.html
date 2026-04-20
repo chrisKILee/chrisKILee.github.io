@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vercel 보안 침해 분석 리포트 — 플랫폼정보보호</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --color-primary: #111111;
+      --color-secondary: #f1f1f1;
+      --color-surface: #FFFFFF;
+      --color-text: #111827;
+      --color-danger: #DC2626;
+      --color-warning: #D97706;
+      --color-success: #16A34A;
+      --color-info: #2563EB;
+      --font-primary: 'Gelasio', Georgia, serif;
+      --font-mono: 'Ubuntu Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-surface);
+      color: var(--color-text);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    /* 헤더 */
+    .site-header {
+      border-bottom: 2px solid var(--color-primary);
+      padding: 20px 24px;
+    }
+    .site-header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .site-logo {
+      font-family: var(--font-primary);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .site-nav {
+      display: flex;
+      gap: 32px;
+    }
+    .site-nav a {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      text-decoration: none;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+    .site-nav a:hover { opacity: 1; }
+    .site-date {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    /* 히어로 */
+    .hero-section {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 72px 24px 56px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+      align-items: end;
+    }
+    .hero-kicker {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #fff;
+      background-color: var(--color-danger);
+      padding: 4px 10px;
+      margin-bottom: 28px;
+    }
+    .hero-heading {
+      font-size: clamp(42px, 6vw, 78px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+    }
+    .hero-heading-em {
+      font-size: clamp(42px, 6vw, 78px);
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--color-primary);
+      opacity: 0.45;
+      margin-bottom: 32px;
+    }
+    .hero-description {
+      font-size: 18px;
+      line-height: 1.7;
+      color: #374151;
+      max-width: 480px;
+    }
+    .hero-meta {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 24px;
+      margin-top: 40px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .hero-meta-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+    .hero-meta-value {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-primary);
+    }
+    .hero-pullquote {
+      border-left: 4px solid var(--color-danger);
+      padding: 32px 40px;
+      background: var(--color-secondary);
+    }
+    .hero-pullquote blockquote {
+      font-size: clamp(17px, 2.2vw, 24px);
+      font-style: italic;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--color-primary);
+      margin-bottom: 20px;
+    }
+    .hero-pullquote cite {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-style: normal;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    /* 콘텐츠 */
+    .content-wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e5e7eb;
+    }
+
+    /* 기사 그리드 */
+    .article-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 64px;
+    }
+    .article-card {
+      padding: 32px;
+      border-right: 1px solid var(--color-primary);
+      display: flex;
+      flex-direction: column;
+    }
+    .article-card:last-child { border-right: none; }
+    .article-card-featured { border-right: 2px solid var(--color-primary); }
+    .article-category {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+    .article-category.danger {
+      color: #fff;
+      background: var(--color-danger);
+      display: inline-block;
+      padding: 2px 8px;
+    }
+    .article-category.warning {
+      color: #fff;
+      background: var(--color-warning);
+      display: inline-block;
+      padding: 2px 8px;
+    }
+    .article-title {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--color-primary);
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+    .article-card:not(.article-card-featured) .article-title { font-size: 17px; }
+    .article-excerpt {
+      font-size: 15px;
+      line-height: 1.65;
+      color: #4b5563;
+      margin-bottom: 16px;
+    }
+    .article-byline {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 16px;
+      margin-top: auto;
+    }
+
+    /* 상태 스트립 */
+    .status-strip {
+      display: flex;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 64px;
+    }
+    .status-item {
+      flex: 1;
+      padding: 20px 24px;
+      border-right: 1px solid var(--color-primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .status-item:last-child { border-right: none; }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .status-desc {
+      font-size: 13px;
+      color: #6b7280;
+      margin-left: auto;
+    }
+
+    /* 데이터 섹션 */
+    .data-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 64px;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .data-table th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      text-align: left;
+      padding: 0 0 12px 0;
+      border-bottom: 2px solid var(--color-primary);
+    }
+    .data-table td {
+      font-size: 14px;
+      padding: 13px 0;
+      border-bottom: 1px solid #e5e7eb;
+      color: var(--color-text);
+      vertical-align: top;
+    }
+    .data-table td:first-child {
+      font-weight: 600;
+      color: var(--color-primary);
+      width: 38%;
+      padding-right: 12px;
+    }
+    .mono-val {
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    /* 코드 블록 */
+    .code-block {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-left: 4px solid var(--color-danger);
+      padding: 24px 28px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.8;
+      color: #374151;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .code-comment { color: #9ca3af; }
+    .code-key { color: var(--color-primary); font-weight: 700; }
+    .code-val { color: #059669; }
+    .code-danger { color: var(--color-danger); font-weight: 700; }
+    .code-warn { color: var(--color-warning); }
+
+    /* SVG 다이어그램 */
+    .diagram-wrap {
+      border: 1px solid var(--color-primary);
+      padding: 40px;
+      margin-bottom: 64px;
+      background: #fafafa;
+    }
+
+    /* 비교 테이블 */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 64px;
+      font-size: 14px;
+    }
+    .compare-table th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-surface);
+      background: var(--color-primary);
+      padding: 12px 16px;
+      text-align: left;
+    }
+    .compare-table td {
+      padding: 13px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      border-right: 1px solid #f3f4f6;
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .compare-table tr:last-child td { border-bottom: 2px solid var(--color-primary); }
+    .compare-table td:first-child { font-weight: 600; color: var(--color-primary); }
+
+    /* 권고사항 체크리스트 */
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 64px;
+    }
+    .checklist-col {
+      padding: 28px 32px;
+      border-right: 1px solid var(--color-primary);
+    }
+    .checklist-col:last-child { border-right: none; }
+    .checklist-title {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--color-primary);
+    }
+    .checklist-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #374151;
+    }
+    .checklist-item::before {
+      content: '□';
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--color-primary);
+      flex-shrink: 0;
+      line-height: 1.5;
+    }
+
+    /* 키 스탯 */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 64px;
+    }
+    .stat-item {
+      padding: 28px 32px;
+      border-right: 1px solid var(--color-primary);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 8px;
+      color: var(--color-primary);
+    }
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+    .stat-sub {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 6px;
+    }
+
+    /* 푸터 */
+    .site-footer {
+      border-top: 2px solid var(--color-primary);
+      padding: 32px 24px;
+    }
+    .site-footer-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-text {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .footer-rule-word {
+      font-size: 13px;
+      font-style: italic;
+      color: #d1d5db;
+    }
+
+    @media (max-width: 900px) {
+      .hero-section { grid-template-columns: 1fr; gap: 40px; }
+      .article-grid { grid-template-columns: 1fr; }
+      .article-card { border-right: none; border-bottom: 1px solid var(--color-primary); }
+      .data-section { grid-template-columns: 1fr; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .checklist-grid { grid-template-columns: 1fr; }
+      .checklist-col { border-right: none; border-bottom: 1px solid var(--color-primary); }
+      .status-strip { flex-wrap: wrap; }
+      .status-item { border-right: none; border-bottom: 1px solid var(--color-primary); min-width: 50%; }
+      .site-nav { display: none; }
+      .compare-table { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <header class="site-header">
+    <div class="site-header-inner">
+      <span class="site-logo">보안 인텔리전스</span>
+      <nav class="site-nav">
+        <a href="/c/security/">Security</a>
+        <a href="https://vercel.com/kb/bulletin/vercel-april-2026-security-incident" target="_blank">Official KB</a>
+        <a href="https://www.bleepingcomputer.com/news/security/vercel-confirms-breach-as-hackers-claim-to-be-selling-stolen-data/" target="_blank">BleepingComputer</a>
+      </nav>
+      <span class="site-date">2026-04-20</span>
+    </div>
+  </header>
+
+  <!-- 히어로 -->
+  <section class="hero-section">
+    <div>
+      <span class="hero-kicker">보안 인시던트 분석</span>
+      <h1 class="hero-heading">Vercel</h1>
+      <p class="hero-heading-em">보안 침해 사고</p>
+      <p class="hero-description">서드파티 AI 도구 Context.ai의 Google Workspace OAuth 앱이 손상되어 Vercel 내부 시스템이 침해되었습니다. ShinyHunters가 탈취 데이터 판매를 주장하며 200만 달러 몸값을 요구했습니다.</p>
+      <div class="hero-meta">
+        <span class="hero-meta-label">발생</span>
+        <span class="hero-meta-value">2026-04 (공개: 04-19)</span>
+        <span class="hero-meta-label" style="margin-left:8px;">출처</span>
+        <span class="hero-meta-value">Vercel KB · BleepingComputer</span>
+        <span class="hero-meta-label" style="margin-left:8px;">공격자</span>
+        <span class="hero-meta-value" style="color:var(--color-danger);">ShinyHunters</span>
+      </div>
+    </div>
+    <div class="hero-pullquote">
+      <blockquote>"위협 행위자는 매우 정교하며, AI 역량을 활용해 침투 속도와 Vercel 시스템에 대한 상세한 이해를 바탕으로 공격을 수행했을 가능성이 있습니다."</blockquote>
+      <cite>— Guillermo Rauch, Vercel CEO · Hacker News 성명 (2026-04-19)</cite>
+    </div>
+  </section>
+
+  <div class="content-wrap">
+
+    <!-- 사고 현황 상태 스트립 -->
+    <p class="section-label">사고 현황 (2026-04-20 기준)</p>
+    <div class="status-strip">
+      <div class="status-item">
+        <span class="status-dot" style="background:var(--color-danger);"></span>
+        <span class="status-label" style="color:var(--color-danger);">침해 확인</span>
+        <span class="status-desc">Vercel 공식 인정</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:var(--color-warning);"></span>
+        <span class="status-label" style="color:var(--color-warning);">조사 중</span>
+        <span class="status-desc">Mandiant 협업</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:var(--color-success);"></span>
+        <span class="status-label" style="color:var(--color-success);">서비스 정상</span>
+        <span class="status-desc">배포·엣지 영향 없음</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:var(--color-warning);"></span>
+        <span class="status-label" style="color:var(--color-warning);">고객 알림</span>
+        <span class="status-desc">일부 고객 직접 연락</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:var(--color-danger);"></span>
+        <span class="status-label" style="color:var(--color-danger);">데이터 판매</span>
+        <span class="status-desc">BreachForums 게시 중</span>
+      </div>
+    </div>
+
+    <!-- 주요 수치 -->
+    <p class="section-label">사고 핵심 수치</p>
+    <div class="stat-row">
+      <div class="stat-item">
+        <div class="stat-num" style="color:var(--color-danger);">$2M</div>
+        <div class="stat-label">요구 몸값</div>
+        <div class="stat-sub">ShinyHunters 요구액</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">1명</div>
+        <div class="stat-label">초기 피해 직원</div>
+        <div class="stat-sub">Context.ai 사용 직원</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" style="color:var(--color-warning);">비민감</div>
+        <div class="stat-label">접근된 변수 유형</div>
+        <div class="stat-sub">민감 변수는 암호화 보호</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">400+</div>
+        <div class="stat-label">ShinyHunters 누적 피해사</div>
+        <div class="stat-sub">2025-2026년 상반기 기준</div>
+      </div>
+    </div>
+
+    <!-- 사건 개요 기사 그리드 -->
+    <p class="section-label">사건 분석</p>
+    <div class="article-grid">
+      <div class="article-card article-card-featured">
+        <p class="article-category danger">주요 사건</p>
+        <h2 class="article-title">Context.ai OAuth 앱 손상으로 시작된 공급망 공격</h2>
+        <p class="article-excerpt">2026년 4월, Vercel 직원이 사용 중이던 서드파티 AI 도구 Context.ai의 Google Workspace OAuth 앱이 손상되었습니다. 공격자는 이를 통해 직원의 Google Workspace 계정을 탈취하고 Vercel 내부 시스템에 접근했습니다.</p>
+        <p class="article-excerpt">OAuth 토큰은 다단계 인증(MFA)을 우회하므로, 공격자는 정상적인 인증처럼 내부 환경에 진입하여 권한 확대(privilege escalation) 후 환경 변수를 열거하고 '비민감(non-sensitive)' 표시 항목에 접근했습니다.</p>
+        <p class="article-excerpt">Vercel CEO Guillermo Rauch는 공격자가 "매우 정교"하며 AI를 활용했을 가능성을 언급했습니다.</p>
+        <p class="article-byline">출처: Vercel Knowledge Base · BleepingComputer · Hacker News (2026-04-19)</p>
+      </div>
+
+      <div class="article-card">
+        <p class="article-category warning">공격자 정보</p>
+        <h2 class="article-title">ShinyHunters: 2026년 가장 활발한 위협 그룹</h2>
+        <p class="article-excerpt">2026년 상반기 기준 400개 이상 기업을 침해한 사이버 범죄 집단. Panera Bread, Telus, Harvard University, Rockstar Games(GTA 6) 등 다양한 산업을 타겟으로 삼았습니다.</p>
+        <p class="article-excerpt">SSO 피싱, OAuth 토큰 탈취, Salesforce Experience Cloud 취약점 등 다양한 공격 벡터를 활용합니다. 다만 이번 Vercel 사건의 실제 배후가 ShinyHunters인지는 미확정 상태입니다.</p>
+        <p class="article-byline">출처: Google Cloud Blog · Group-IB 2026 Report</p>
+      </div>
+
+      <div class="article-card">
+        <p class="article-category">피해 범위</p>
+        <h2 class="article-title">환경 변수 노출 — 민감 변수는 보호</h2>
+        <p class="article-excerpt">공격자가 접근한 데이터는 '비민감' 표시 환경 변수, 소스 코드 일부, 직원 정보로 알려졌습니다. Vercel의 '민감(sensitive)' 표시 환경 변수는 암호화 저장으로 현재까지 접근 증거 없음.</p>
+        <p class="article-excerpt">웹3/암호화폐 개발팀들이 Vercel 호스팅 인터페이스 보안을 우려해 긴급 점검에 나섰습니다.</p>
+        <p class="article-byline">출처: XDA Developers · CoinDesk · The Block</p>
+      </div>
+    </div>
+
+    <!-- 공격 경로 SVG 다이어그램 -->
+    <p class="section-label">공격 경로 다이어그램</p>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:900px;display:block;margin:0 auto;">
+        <!-- 배경 박스들 -->
+        <rect x="10" y="70" width="130" height="80" fill="#fef2f2" stroke="#DC2626" stroke-width="1.5" rx="2"/>
+        <rect x="200" y="70" width="130" height="80" fill="#fef9f0" stroke="#D97706" stroke-width="1.5" rx="2"/>
+        <rect x="390" y="70" width="130" height="80" fill="#fef9f0" stroke="#D97706" stroke-width="1.5" rx="2"/>
+        <rect x="580" y="70" width="130" height="80" fill="#fef2f2" stroke="#DC2626" stroke-width="1.5" rx="2"/>
+        <rect x="770" y="70" width="120" height="80" fill="#fef2f2" stroke="#DC2626" stroke-width="1.5" rx="2"/>
+
+        <!-- 라벨 -->
+        <text x="75" y="100" text-anchor="middle" font-family="Ubuntu Mono,monospace" font-size="10" font-weight="700" fill="#DC2626">ATTACKER</text>
+        <text x="75" y="116" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#111111">Context.ai</text>
+        <text x="75" y="132" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#111111">OAuth 앱 손상</text>
+
+        <text x="265" y="100" text-anchor="middle" font-family="Ubuntu Mono,monospace" font-size="10" font-weight="700" fill="#D97706">INITIAL ACCESS</text>
+        <text x="265" y="116" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#111111">직원 Google</text>
+        <text x="265" y="132" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#111111">계정 탈취</text>
+
+        <text x="455" y="100" text-anchor="middle" font-family="Ubuntu Mono,monospace" font-size="10" font-weight="700" fill="#D97706">ESCALATION</text>
+        <text x="455" y="116" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#111111">내부 시스템</text>
+        <text x="455" y="132" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#111111">권한 확대</text>
+
+        <text x="645" y="100" text-anchor="middle" font-family="Ubuntu Mono,monospace" font-size="10" font-weight="700" fill="#DC2626">DATA ACCESS</text>
+        <text x="645" y="116" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#111111">환경 변수</text>
+        <text x="645" y="132" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#111111">열거 및 탈취</text>
+
+        <text x="830" y="100" text-anchor="middle" font-family="Ubuntu Mono,monospace" font-size="10" font-weight="700" fill="#DC2626">EXTORTION</text>
+        <text x="830" y="116" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#111111">BreachForums</text>
+        <text x="830" y="132" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#111111">$2M 요구</text>
+
+        <!-- 화살표 -->
+        <defs>
+          <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#DC2626"/>
+          </marker>
+        </defs>
+        <line x1="142" y1="110" x2="196" y2="110" stroke="#DC2626" stroke-width="2" marker-end="url(#arrowRed)"/>
+        <line x1="332" y1="110" x2="386" y2="110" stroke="#DC2626" stroke-width="2" marker-end="url(#arrowRed)"/>
+        <line x1="522" y1="110" x2="576" y2="110" stroke="#DC2626" stroke-width="2" marker-end="url(#arrowRed)"/>
+        <line x1="712" y1="110" x2="766" y2="110" stroke="#DC2626" stroke-width="2" marker-end="url(#arrowRed)"/>
+
+        <!-- MFA 우회 노트 -->
+        <text x="265" y="170" text-anchor="middle" font-family="Ubuntu Mono,monospace" font-size="10" fill="#9ca3af">MFA 우회 (OAuth 토큰)</text>
+        <line x1="265" y1="152" x2="265" y2="162" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="3,2"/>
+      </svg>
+      <p style="font-family:'Ubuntu Mono',monospace;font-size:12px;color:#9ca3af;text-align:center;margin-top:16px;">
+        공격 경로: Context.ai OAuth 앱 손상 → 직원 계정 탈취 → 내부 권한 확대 → 데이터 탈취 → 몸값 요구
+      </p>
+    </div>
+
+    <!-- 타임라인 + 피해 범위 데이터 -->
+    <div class="data-section">
+      <div>
+        <p class="section-label">사고 타임라인</p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>시점</th>
+              <th>이벤트</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono-val">2026-04 초</td>
+              <td>Context.ai Google Workspace OAuth 앱 손상</td>
+            </tr>
+            <tr>
+              <td class="mono-val">2026-04 중</td>
+              <td>Vercel 직원 계정 탈취 → 내부 접근 시작</td>
+            </tr>
+            <tr>
+              <td class="mono-val">2026-04 중</td>
+              <td>환경 변수 열거 및 탈취, 소스 코드 접근</td>
+            </tr>
+            <tr>
+              <td class="mono-val">2026-04-19</td>
+              <td>Vercel 공식 보안 공지 발표 (Knowledge Base)</td>
+            </tr>
+            <tr>
+              <td class="mono-val">2026-04-19</td>
+              <td>ShinyHunters, BreachForums에 데이터 판매 게시</td>
+            </tr>
+            <tr>
+              <td class="mono-val">2026-04-19~</td>
+              <td>Mandiant 및 법 집행기관 협력 조사 진행</td>
+            </tr>
+            <tr>
+              <td class="mono-val">2026-04-20</td>
+              <td>영향받은 고객 직접 연락 · 자격증명 회전 권고</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <p class="section-label">피해 범위 및 영향</p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th>상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>비민감 환경 변수</td>
+              <td style="color:var(--color-danger);">접근 확인 (미암호화)</td>
+            </tr>
+            <tr>
+              <td>민감 환경 변수</td>
+              <td style="color:var(--color-success);">암호화 보호 — 접근 증거 없음</td>
+            </tr>
+            <tr>
+              <td>소스 코드</td>
+              <td style="color:var(--color-warning);">일부 접근 주장 (미확인)</td>
+            </tr>
+            <tr>
+              <td>오픈소스 (Next.js 등)</td>
+              <td style="color:var(--color-success);">영향 없음 (Vercel 확인)</td>
+            </tr>
+            <tr>
+              <td>배포 서비스</td>
+              <td style="color:var(--color-success);">정상 운영</td>
+            </tr>
+            <tr>
+              <td>고객 자격증명</td>
+              <td style="color:var(--color-warning);">일부 고객 손상 (직접 연락)</td>
+            </tr>
+            <tr>
+              <td>직원 정보</td>
+              <td style="color:var(--color-danger);">일부 탈취 주장</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 공격 기법 코드 블록 -->
+    <p class="section-label">공격 기법 상세</p>
+    <div class="code-block"><span class="code-comment"># OAuth 공급망 공격 (OAuth Supply Chain Attack) 흐름</span>
+
+<span class="code-key">1단계</span> | <span class="code-danger">Context.ai OAuth 앱 손상</span>
+  - 손상된 앱: <span class="code-warn">110671459871-30f1spbu0hptbs60cb4vsmv79i7bbvqj.apps.googleusercontent.com</span>
+  - Google Workspace OAuth 토큰 탈취
+
+<span class="code-key">2단계</span> | <span class="code-danger">MFA 우회</span>
+  - OAuth 토큰 = 이미 인증된 세션 → MFA 검증 불필요
+  - 정상 접근으로 위장됨
+
+<span class="code-key">3단계</span> | <span class="code-danger">Vercel 내부 권한 확대</span>
+  - 탈취 계정으로 Vercel 시스템 로그인
+  - 환경 변수 열거(enumeration) 수행
+  - "non-sensitive" 표시 항목 식별 → API 키, 접근 토큰 추출
+
+<span class="code-key">4단계</span> | <span class="code-danger">후속 내부 시스템 접근</span>
+  - 추출된 자격증명으로 추가 접근
+  - 소스 코드, 직원 정보, 대시보드 스크린샷
+
+<span class="code-comment"># 핵심 위험: OAuth Worm 패턴</span>
+  - M365 / Google Workspace / Slack 간 자동 확산 가능
+  - 하나의 서드파티 앱 손상 → 수백 조직 동시 피해</div>
+
+    <!-- 유사 사례 비교 테이블 -->
+    <p class="section-label" style="margin-top:48px;">유사 OAuth 공급망 공격 사례 비교</p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>사건</th>
+          <th>시기</th>
+          <th>공격 벡터</th>
+          <th>피해 규모</th>
+          <th>출처</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Vercel (Context.ai)</td>
+          <td class="mono-val" style="font-family:'Ubuntu Mono',monospace;font-size:13px;">2026-04</td>
+          <td>OAuth 앱 손상 → 직원 계정 탈취</td>
+          <td>일부 고객 자격증명 손상</td>
+          <td style="font-family:'Ubuntu Mono',monospace;font-size:12px;">Vercel KB</td>
+        </tr>
+        <tr>
+          <td>Drift/Salesloft</td>
+          <td class="mono-val" style="font-family:'Ubuntu Mono',monospace;font-size:13px;">2025-08</td>
+          <td>OAuth 토큰 탈취 → Salesforce 접근</td>
+          <td>700개 이상 조직</td>
+          <td style="font-family:'Ubuntu Mono',monospace;font-size:12px;">Cloud Security Alliance</td>
+        </tr>
+        <tr>
+          <td>Gainsight</td>
+          <td class="mono-val" style="font-family:'Ubuntu Mono',monospace;font-size:13px;">2025-11</td>
+          <td>OAuth 토큰 악용 (Drift 후속)</td>
+          <td>200개 이상 Salesforce 인스턴스</td>
+          <td style="font-family:'Ubuntu Mono',monospace;font-size:12px;">Cloud Security Alliance</td>
+        </tr>
+        <tr>
+          <td>Salesforce Experience</td>
+          <td class="mono-val" style="font-family:'Ubuntu Mono',monospace;font-size:13px;">2025-09 ~ 2026-03</td>
+          <td>게스트 권한 오설정 + AuraInspector</td>
+          <td>300~400개 조직</td>
+          <td style="font-family:'Ubuntu Mono',monospace;font-size:12px;">Salesforce Ben</td>
+        </tr>
+        <tr>
+          <td>Rockstar Games (GTA 6)</td>
+          <td class="mono-val" style="font-family:'Ubuntu Mono',monospace;font-size:13px;">2026-04 초</td>
+          <td>내부 시스템 접근 (경로 미확인)</td>
+          <td>내부 자료 탈취 주장</td>
+          <td style="font-family:'Ubuntu Mono',monospace;font-size:12px;">Sunday Guardian Live</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Vercel 보안 권고사항 체크리스트 -->
+    <p class="section-label">Vercel 공식 보안 권고사항 (고객 대상)</p>
+    <div class="checklist-grid">
+      <div class="checklist-col">
+        <div class="checklist-title" style="color:var(--color-danger);">즉시 조치</div>
+        <div class="checklist-item">Vercel 계정 활동 로그 점검 (의심스러운 로그인, 비정상 배포)</div>
+        <div class="checklist-item">모든 환경 변수 회전 — 데이터베이스 비밀번호, API 키, JWT 토큰 포함</div>
+        <div class="checklist-item">제3자 서비스 자격증명 즉시 갱신 (Stripe, AWS, Firebase 등)</div>
+        <div class="checklist-item">기존 Deployment Protection 토큰 폐기 및 재생성</div>
+      </div>
+      <div class="checklist-col">
+        <div class="checklist-title" style="color:var(--color-warning);">단기 조치</div>
+        <div class="checklist-item">최근 배포 이력 검토 — 코드 변조·백도어 삽입 여부 확인</div>
+        <div class="checklist-item">Git 커밋 이력 이상 여부 감시</div>
+        <div class="checklist-item">Deployment Protection 활성화 (대시보드 → 프로젝트 설정)</div>
+        <div class="checklist-item">팀 멤버 접근 권한 재평가 및 불필요 권한 제거</div>
+      </div>
+      <div class="checklist-col">
+        <div class="checklist-title" style="color:var(--color-info);">중장기 조치</div>
+        <div class="checklist-item">신규 환경 변수는 기본값으로 '민감(Sensitive)' 표시 설정</div>
+        <div class="checklist-item">사용 중인 서드파티 OAuth 앱 정기 감시 및 불필요 통합 제거</div>
+        <div class="checklist-item">직원 퇴직 시 계정 정리 절차 강화</div>
+        <div class="checklist-item">OAuth 권한 요청 검토 방법론 내부 교육 실시</div>
+      </div>
+    </div>
+
+    <!-- 참고 링크 -->
+    <p class="section-label">참고 출처</p>
+    <div class="data-section" style="margin-bottom:0;">
+      <div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>출처</th>
+              <th>링크</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Vercel 공식 KB</td>
+              <td class="mono-val" style="font-size:12px;word-break:break-all;">vercel.com/kb/bulletin/vercel-april-2026-security-incident</td>
+            </tr>
+            <tr>
+              <td>BleepingComputer</td>
+              <td class="mono-val" style="font-size:12px;word-break:break-all;">bleepingcomputer.com — vercel-confirms-breach</td>
+            </tr>
+            <tr>
+              <td>Google Cloud Blog</td>
+              <td class="mono-val" style="font-size:12px;word-break:break-all;">cloud.google.com — expansion-shinyhunters-saas-data-theft</td>
+            </tr>
+            <tr>
+              <td>Palo Alto Unit42</td>
+              <td class="mono-val" style="font-size:12px;word-break:break-all;">unit42.paloaltonetworks.com — third-party-supply-chain</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>출처</th>
+              <th>링크</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Cloud Security Alliance</td>
+              <td class="mono-val" style="font-size:12px;word-break:break-all;">cloudsecurityalliance.org — salesloft-drift-oauth</td>
+            </tr>
+            <tr>
+              <td>CoinDesk</td>
+              <td class="mono-val" style="font-size:12px;word-break:break-all;">coindesk.com — vercel-breach-crypto-api-keys</td>
+            </tr>
+            <tr>
+              <td>GeekNews (원본)</td>
+              <td class="mono-val" style="font-size:12px;word-break:break-all;">news.hada.io/topic?id=28699</td>
+            </tr>
+            <tr>
+              <td>Hacker News 토론</td>
+              <td class="mono-val" style="font-size:12px;word-break:break-all;">news.ycombinator.com/item?id=47824463</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 푸터 -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <span class="footer-text">2026-04-20 · Vercel 보안 침해 분석 · 플랫폼정보보호</span>
+      <span class="footer-rule-word">«보안 인텔리전스»</span>
+      <span class="footer-text">출처: Vercel KB · BleepingComputer · Google Cloud</span>
+    </div>
+  </footer>
+
+  <script data-page-hash="AGL8JW6" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
