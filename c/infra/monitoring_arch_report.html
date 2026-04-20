@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>모니터링 아키텍처 개선 방안 보고</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #060612;
+      --glass:     rgba(255,255,255,0.06);
+      --glass-b:   rgba(255,255,255,0.12);
+      --glass-hov: rgba(255,255,255,0.10);
+      --text:      #F0F0FF;
+      --sub:       rgba(240,240,255,0.50);
+      --accent:    #A78BFA;
+      --blue:      #60A5FA;
+      --green:     #34D399;
+      --orange:    #FBBF24;
+      --red:       #F87171;
+      --shadow:    0 4px 32px rgba(139,92,246,0.18), 0 1px 4px rgba(0,0,0,0.5);
+      --glow:      0 0 40px rgba(139,92,246,0.22);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      word-break: keep-all;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+
+    /* ── Progress bar ── */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--blue));
+      transition: width 0.4s cubic-bezier(0.16,1,0.3,1);
+      z-index: 100;
+      box-shadow: 0 0 12px rgba(167,139,250,0.6);
+    }
+
+    /* ── Header ── */
+    header {
+      position: fixed; top: 3px; left: 0; right: 0; z-index: 90;
+      height: 56px;
+      background: rgba(6,6,18,0.7);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+    }
+    .h-logo {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .h-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: rgba(167,139,250,0.15);
+      border: 1px solid rgba(167,139,250,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+    .h-title { font-size: 14px; font-weight: 700; color: var(--text); opacity: 0.85; }
+    .h-center {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .slide-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .slide-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(167,139,250,0.7);
+      transform: scale(1.4);
+    }
+    .h-counter {
+      font-size: 13px; color: var(--sub); font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      min-width: 36px; text-align: right;
+    }
+
+    /* ── Slide container ── */
+    #slides-wrap {
+      position: fixed; top: 59px; left: 0; right: 0; bottom: 0;
+      overflow: hidden;
+    }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      padding: 32px 48px;
+      opacity: 0;
+      transform: translateX(60px);
+      transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.45s cubic-bezier(0.16,1,0.3,1);
+      pointer-events: none;
+      overflow-y: auto;
+    }
+    .slide.active {
+      opacity: 1; transform: translateX(0);
+      pointer-events: auto;
+    }
+    .slide.exit-left {
+      opacity: 0; transform: translateX(-60px);
+    }
+    .slide-inner {
+      width: 100%; max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ── Gradient blobs ── */
+    .blob {
+      position: fixed; border-radius: 50%;
+      filter: blur(80px); pointer-events: none; z-index: 0;
+    }
+    .blob-1 { width: 500px; height: 500px; top: -100px; left: -100px; background: rgba(139,92,246,0.12); }
+    .blob-2 { width: 400px; height: 400px; bottom: -80px; right: -60px; background: rgba(59,130,246,0.10); }
+    .blob-3 { width: 300px; height: 300px; top: 40%; left: 50%; transform: translateX(-50%); background: rgba(16,185,129,0.06); }
+
+    /* ── Glass card ── */
+    .g-card {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-b);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── Navigation ── */
+    .nav-btn {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(12px);
+      color: var(--sub); font-size: 18px;
+      cursor: pointer; z-index: 80;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .nav-btn:hover { background: rgba(167,139,250,0.15); color: var(--accent); border-color: rgba(167,139,250,0.3); }
+    .nav-btn:disabled { opacity: 0.2; pointer-events: none; }
+    #btn-prev { left: 16px; }
+    #btn-next { right: 16px; }
+
+    /* ─────────────────────────────────────────
+       슬라이드 1 — 타이틀
+    ───────────────────────────────────────── */
+    .s1-wrap { text-align: center; position: relative; }
+    .s1-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(167,139,250,0.12);
+      border: 1px solid rgba(167,139,250,0.3);
+      color: var(--accent); font-size: 13px; font-weight: 600;
+      padding: 6px 20px; border-radius: 100px; margin-bottom: 36px;
+    }
+    .pulse-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(167,139,250,0.4); }
+      50% { opacity:0.6; box-shadow:0 0 0 6px rgba(167,139,250,0); } }
+    .s1-title {
+      font-size: clamp(32px, 4.5vw, 62px);
+      font-weight: 900; line-height: 1.1;
+      letter-spacing: -0.04em; margin-bottom: 8px;
+    }
+    .s1-sub {
+      font-size: clamp(24px, 3vw, 42px);
+      font-weight: 700; color: var(--accent);
+      letter-spacing: -0.03em; margin-bottom: 20px;
+    }
+    .s1-desc {
+      font-size: 16px; color: var(--sub);
+      max-width: 560px; margin: 0 auto 48px; line-height: 1.7;
+    }
+    .s1-meta {
+      display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+    .s1-chip {
+      font-size: 13px; padding: 6px 18px; border-radius: 100px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--sub);
+    }
+    .s1-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; max-width: 640px; margin: 0 auto;
+    }
+    .s1-stat {
+      padding: 20px 16px; text-align: center;
+    }
+    .s1-num {
+      font-size: 36px; font-weight: 900;
+      letter-spacing: -0.04em; line-height: 1;
+      margin-bottom: 6px;
+    }
+    .s1-lbl { font-size: 12px; color: var(--sub); font-weight: 500; }
+
+    /* ─────────────────────────────────────────
+       슬라이드 2 — 설치 현황
+    ───────────────────────────────────────── */
+    .s-heading {
+      font-size: clamp(20px, 2.5vw, 32px);
+      font-weight: 900; letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+    .s-heading span { color: var(--accent); }
+    .s-desc { font-size: 14px; color: var(--sub); margin-bottom: 32px; }
+
+    .region-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .region-card { padding: 28px 24px; }
+    .region-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 16px;
+    }
+    .region-name { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+    .region-status {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 700; padding: 4px 12px;
+      border-radius: 100px; margin-bottom: 16px;
+    }
+    .status-done  { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+    .status-prog  { background: rgba(251,191,36,0.15); color: var(--orange); border: 1px solid rgba(251,191,36,0.3); }
+    .status-plan  { background: rgba(96,165,250,0.15); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+    .region-detail { font-size: 13px; color: var(--sub); line-height: 1.7; }
+    .region-progress { margin-top: 16px; }
+    .prog-label { font-size: 12px; color: var(--sub); margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .prog-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 100px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 100px; transition: width 1s cubic-bezier(0.16,1,0.3,1); }
+    .prog-done { background: linear-gradient(90deg, var(--green), #6EE7B7); }
+    .prog-prog  { background: linear-gradient(90deg, var(--orange), #FDE68A); }
+    .prog-plan  { background: linear-gradient(90deg, var(--blue), #93C5FD); }
+
+    /* ─────────────────────────────────────────
+       슬라이드 3 — 이슈
+    ───────────────────────────────────────── */
+    .issue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .issue-card { padding: 28px; position: relative; overflow: hidden; }
+    .issue-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .issue-card.issue-1::before { background: linear-gradient(90deg, var(--red), var(--orange)); }
+    .issue-card.issue-2::before { background: linear-gradient(90deg, var(--orange), var(--blue)); }
+    .issue-num {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--sub); margin-bottom: 12px;
+    }
+    .issue-title { font-size: 18px; font-weight: 800; margin-bottom: 6px; line-height: 1.3; }
+    .issue-subtitle { font-size: 12px; color: var(--sub); margin-bottom: 20px; }
+    .issue-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .issue-tag {
+      font-size: 11px; font-weight: 700; padding: 2px 10px;
+      border-radius: 4px; flex-shrink: 0; align-self: flex-start;
+      margin-top: 2px;
+    }
+    .tag-curr { background: rgba(96,165,250,0.15); color: var(--blue); }
+    .tag-prob { background: rgba(248,113,113,0.15); color: var(--red); }
+    .tag-need { background: rgba(167,139,250,0.15); color: var(--accent); }
+    .issue-text { font-size: 13px; color: var(--sub); line-height: 1.65; }
+    .issue-highlight { color: var(--red); font-weight: 600; }
+
+    /* ─────────────────────────────────────────
+       슬라이드 4 — TO-BE
+    ───────────────────────────────────────── */
+    .tobe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+    .tobe-steps { display: flex; flex-direction: column; gap: 16px; }
+    .step-card { padding: 22px 24px; position: relative; }
+    .step-num {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--sub); margin-bottom: 8px;
+    }
+    .step-title { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+    .step-body { font-size: 13px; color: var(--sub); line-height: 1.65; }
+    .step-tech {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;
+    }
+    .tech-chip {
+      font-size: 11px; font-weight: 600; padding: 2px 10px;
+      border-radius: 100px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      color: var(--sub);
+    }
+
+    /* SVG 파이프라인 다이어그램 */
+    .diagram-card { padding: 24px; display: flex; flex-direction: column; gap: 0; }
+    .diagram-title {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--sub); margin-bottom: 20px;
+    }
+
+    /* ── 반응형 ── */
+    @media (max-width: 768px) {
+      .slide { padding: 20px 20px; }
+      .region-grid { grid-template-columns: 1fr; }
+      .issue-grid { grid-template-columns: 1fr; }
+      .tobe-grid { grid-template-columns: 1fr; }
+      .s1-stats { grid-template-columns: repeat(3, 1fr); }
+      #btn-prev { left: 8px; }
+      #btn-next { right: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 배경 블롭 -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <!-- 진행 바 -->
+  <div id="progress-bar" style="width:25%"></div>
+
+  <!-- 헤더 -->
+  <header>
+    <div class="h-logo">
+      <div class="h-icon">📡</div>
+      <span class="h-title">모니터링 아키텍처 보고</span>
+    </div>
+    <div class="h-center" id="dots"></div>
+    <span class="h-counter" id="counter">1 / 4</span>
+  </header>
+
+  <!-- 슬라이드 래퍼 -->
+  <div id="slides-wrap">
+
+    <!-- ── 슬라이드 1: 타이틀 ── -->
+    <div class="slide active" data-idx="0">
+      <div class="slide-inner">
+        <div class="s1-wrap">
+          <div class="s1-badge">
+            <span class="pulse-dot"></span>
+            2026. 04. 20 &nbsp;·&nbsp; 플랫폼인프라
+          </div>
+          <div class="s1-title">모니터링 시스템</div>
+          <div class="s1-sub">구축 현황 &amp; 아키텍처 개선 방안</div>
+          <p class="s1-desc">Alloy 설치 진행률 및 거점-GCP Kafka 연동 이슈 중심</p>
+          <div class="s1-meta">
+            <span class="s1-chip">📍 3개 지역</span>
+            <span class="s1-chip">⚡ Grafana Alloy</span>
+            <span class="s1-chip">☁️ GCP Kafka</span>
+            <span class="s1-chip">🔗 MirrorMaker2</span>
+          </div>
+          <div class="s1-stats">
+            <div class="g-card s1-stat">
+              <div class="s1-num" style="color:var(--green)">3</div>
+              <div class="s1-lbl">지역 거점</div>
+            </div>
+            <div class="g-card s1-stat">
+              <div class="s1-num" style="color:var(--orange)">15+</div>
+              <div class="s1-lbl">설치 완료 대수</div>
+            </div>
+            <div class="g-card s1-stat">
+              <div class="s1-num" style="color:var(--red)">2</div>
+              <div class="s1-lbl">주요 이슈</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 슬라이드 2: 설치 현황 ── -->
+    <div class="slide" data-idx="1">
+      <div class="slide-inner">
+        <div class="s-heading">1. 지역 내 Alloy <span>설치 진행 현황</span></div>
+        <p class="s-desc">2026년 4월 20일 기준 · 3개 거점 순차 배포 중</p>
+        <div class="region-grid">
+
+          <div class="g-card region-card">
+            <div class="region-icon" style="background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.25);">🏙️</div>
+            <div class="region-name">상암</div>
+            <span class="region-status status-done">✅ 설치 완료</span>
+            <p class="region-detail">전체 서버 Alloy 배포 완료.<br>정상 모니터링 데이터 수집 중.</p>
+            <div class="region-progress">
+              <div class="prog-label"><span>배포율</span><span style="color:var(--green)">100%</span></div>
+              <div class="prog-bar"><div class="prog-fill prog-done" style="width:100%"></div></div>
+            </div>
+          </div>
+
+          <div class="g-card region-card">
+            <div class="region-icon" style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.25);">🏭</div>
+            <div class="region-name">군산</div>
+            <span class="region-status status-prog">⏳ 설치 중</span>
+            <p class="region-detail">4월 20일 기준 <strong style="color:var(--orange)">15대 이상</strong> 설치 완료.<br>잔여 서버 순차 배포 진행 중.</p>
+            <div class="region-progress">
+              <div class="prog-label"><span>배포율</span><span style="color:var(--orange)">진행 중</span></div>
+              <div class="prog-bar"><div class="prog-fill prog-prog" style="width:65%"></div></div>
+            </div>
+          </div>
+
+          <div class="g-card region-card">
+            <div class="region-icon" style="background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.25);">🏗️</div>
+            <div class="region-name">창원</div>
+            <span class="region-status status-plan">🔜 착수 예정</span>
+            <p class="region-detail">금주 중 작업 착수 예정.<br>사전 환경 점검 및 일정 조율 완료.</p>
+            <div class="region-progress">
+              <div class="prog-label"><span>배포율</span><span style="color:var(--blue)">대기</span></div>
+              <div class="prog-bar"><div class="prog-fill prog-plan" style="width:5%"></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 슬라이드 3: 이슈 ── -->
+    <div class="slide" data-idx="2">
+      <div class="slide-inner">
+        <div class="s-heading">2. 현행 아키텍처 <span>주요 한계 및 이슈</span></div>
+        <p class="s-desc">MM2 복제 구조와 DMZ 구간 통신 제약 — 2가지 핵심 문제</p>
+        <div class="issue-grid">
+
+          <div class="g-card issue-card issue-1">
+            <div class="issue-num">Issue 01</div>
+            <div class="issue-title">데이터 복제 구조의<br>강-결합 (Tight-Coupling)</div>
+            <div class="issue-subtitle">MirrorMaker2 기반 클러스터 간 복제</div>
+
+            <div class="issue-row">
+              <span class="issue-tag tag-curr">현황</span>
+              <span class="issue-text">거점 Kafka ↔ GCP Kafka 간 MM2 기반 복제 운영 중</span>
+            </div>
+            <div class="issue-row">
+              <span class="issue-tag tag-prob">문제</span>
+              <span class="issue-text">두 클러스터 간 상태 동기화로 인한 <span class="issue-highlight">운영 오버헤드 및 장애 전파 위험</span></span>
+            </div>
+            <div class="issue-row">
+              <span class="issue-tag tag-need">요구</span>
+              <span class="issue-text">MM2를 대체할 수 있는 유연한 데이터 복제 방안 검토 필요</span>
+            </div>
+
+            <svg viewBox="0 0 340 70" style="width:100%;margin-top:20px;" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="18" width="80" height="34" rx="8" fill="rgba(96,165,250,0.15)" stroke="rgba(96,165,250,0.4)" stroke-width="1.5"/>
+              <text x="50" y="36" text-anchor="middle" font-size="10" fill="#60A5FA" font-weight="700">거점 Kafka</text>
+              <text x="50" y="48" text-anchor="middle" font-size="9" fill="rgba(240,240,255,0.4)">Cluster A</text>
+              <rect x="250" y="18" width="80" height="34" rx="8" fill="rgba(52,211,153,0.15)" stroke="rgba(52,211,153,0.4)" stroke-width="1.5"/>
+              <text x="290" y="36" text-anchor="middle" font-size="10" fill="#34D399" font-weight="700">GCP Kafka</text>
+              <text x="290" y="48" text-anchor="middle" font-size="9" fill="rgba(240,240,255,0.4)">Cluster B</text>
+              <rect x="130" y="22" width="80" height="26" rx="6" fill="rgba(248,113,113,0.12)" stroke="rgba(248,113,113,0.4)" stroke-width="1.5" stroke-dasharray="4,2"/>
+              <text x="170" y="36" text-anchor="middle" font-size="9" fill="#F87171" font-weight="700">MM2 (강결합)</text>
+              <line x1="90" y1="35" x2="128" y2="35" stroke="#F87171" stroke-width="1.5" stroke-dasharray="3,2"/>
+              <line x1="212" y1="35" x2="248" y2="35" stroke="#F87171" stroke-width="1.5" stroke-dasharray="3,2"/>
+            </svg>
+          </div>
+
+          <div class="g-card issue-card issue-2">
+            <div class="issue-num">Issue 02</div>
+            <div class="issue-title">DMZ 구간<br>통신 제약</div>
+            <div class="issue-subtitle">방화벽 정책으로 인한 직접 전송 불가</div>
+
+            <div class="issue-row">
+              <span class="issue-tag tag-curr">현황</span>
+              <span class="issue-text">지역 DMZ 서버 내 Alloy에서 내부망의 GCP Kafka로 <strong style="color:var(--red)">직접 전송 불가</strong></span>
+            </div>
+            <div class="issue-row">
+              <span class="issue-tag tag-prob">문제</span>
+              <span class="issue-text">DMZ 방화벽 정책 및 네트워크 단절로 인한 통신 제약 발생</span>
+            </div>
+            <div class="issue-row">
+              <span class="issue-tag tag-need">요구</span>
+              <span class="issue-text">거점 내에서 데이터를 중계(Proxy)해 줄 수 있는 서버 아키텍처 필요</span>
+            </div>
+
+            <svg viewBox="0 0 340 70" style="width:100%;margin-top:20px;" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="18" width="70" height="34" rx="8" fill="rgba(251,191,36,0.12)" stroke="rgba(251,191,36,0.35)" stroke-width="1.5"/>
+              <text x="45" y="33" text-anchor="middle" font-size="9" fill="#FBBF24" font-weight="700">DMZ</text>
+              <text x="45" y="46" text-anchor="middle" font-size="9" fill="rgba(240,240,255,0.4)">Alloy</text>
+              <line x1="82" y1="35" x2="158" y2="35" stroke="#F87171" stroke-width="2" stroke-dasharray="5,3"/>
+              <text x="120" y="28" text-anchor="middle" font-size="9" fill="#F87171" font-weight="600">🚫 차단</text>
+              <rect x="160" y="18" width="70" height="34" rx="8" fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.35)" stroke-width="1.5"/>
+              <text x="195" y="33" text-anchor="middle" font-size="9" fill="#A78BFA" font-weight="700">내부망</text>
+              <text x="195" y="46" text-anchor="middle" font-size="9" fill="rgba(240,240,255,0.4)">GCP Kafka</text>
+              <rect x="255" y="22" width="72" height="26" rx="6" fill="rgba(52,211,153,0.08)" stroke="rgba(52,211,153,0.3)" stroke-width="1.5" stroke-dasharray="4,2"/>
+              <text x="291" y="37" text-anchor="middle" font-size="9" fill="#34D399">Proxy 필요</text>
+            </svg>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 슬라이드 4: TO-BE ── -->
+    <div class="slide" data-idx="3">
+      <div class="slide-inner">
+        <div class="s-heading">3. 차세대 모니터링 데이터 파이프라인 <span>(TO-BE)</span></div>
+        <p class="s-desc">3-Step 아키텍처 — 엣지 수집 → 거점 버퍼 → 클라우드 통합</p>
+        <div class="tobe-grid">
+
+          <div class="tobe-steps">
+            <div class="g-card step-card" style="border-left:3px solid var(--accent);">
+              <div class="step-num">Step 1 &nbsp;·&nbsp; 수집 / 전달</div>
+              <div class="step-title">엣지 &amp; 게이트웨이 구성</div>
+              <p class="step-body">DMZ 서버군은 <strong style="color:var(--accent)">Alloy Gateway</strong> 또는 <strong style="color:var(--accent)">REST Proxy</strong>를 통해 HTTP/OTLP 기반으로 안전하게 내부 거점으로 데이터를 전송합니다.</p>
+              <div class="step-tech">
+                <span class="tech-chip">Alloy Gateway</span>
+                <span class="tech-chip">REST Proxy</span>
+                <span class="tech-chip">HTTP/OTLP</span>
+              </div>
+            </div>
+            <div class="g-card step-card" style="border-left:3px solid var(--blue);">
+              <div class="step-num">Step 2 &nbsp;·&nbsp; 완충 / 로컬 저장</div>
+              <div class="step-title">거점 허브 — 버퍼 풀</div>
+              <p class="step-body">각 지역 거점 Kafka/Alloy가 데이터를 1차 취합하여 <strong style="color:var(--blue)">네트워크 단절에 대비한 버퍼 풀(Buffer Pool)</strong> 역할을 수행합니다.</p>
+              <div class="step-tech">
+                <span class="tech-chip">거점 Kafka</span>
+                <span class="tech-chip">Buffer Pool</span>
+                <span class="tech-chip">Local Alloy</span>
+              </div>
+            </div>
+            <div class="g-card step-card" style="border-left:3px solid var(--green);">
+              <div class="step-num">Step 3 &nbsp;·&nbsp; 전송 / 통합</div>
+              <div class="step-title">클라우드 통합 전송</div>
+              <p class="step-body">MM2 강결합을 탈피하여 <strong style="color:var(--green)">GCS 기반 우회 전송</strong> 또는 <strong style="color:var(--green)">비동기 Connect</strong>를 활용해 GCP Kafka로 최종 통합합니다.</p>
+              <div class="step-tech">
+                <span class="tech-chip">GCS 우회</span>
+                <span class="tech-chip">Async Connect</span>
+                <span class="tech-chip">GCP Kafka</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="g-card diagram-card">
+            <div class="diagram-title">📐 TO-BE 파이프라인 다이어그램</div>
+            <svg viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:320px;display:block;margin:0 auto;">
+              <!-- DMZ 영역 -->
+              <rect x="10" y="10" width="140" height="70" rx="12" fill="rgba(251,191,36,0.08)" stroke="rgba(251,191,36,0.25)" stroke-width="1.5" stroke-dasharray="5,3"/>
+              <text x="80" y="28" text-anchor="middle" font-size="9" fill="#FBBF24" font-weight="700" letter-spacing="1">DMZ 영역</text>
+              <rect x="22" y="36" width="52" height="32" rx="7" fill="rgba(251,191,36,0.15)" stroke="rgba(251,191,36,0.4)" stroke-width="1"/>
+              <text x="48" y="53" text-anchor="middle" font-size="9" fill="#FBBF24" font-weight="600">Alloy</text>
+              <text x="48" y="63" text-anchor="middle" font-size="8" fill="rgba(240,240,255,0.4)">서버군</text>
+              <rect x="86" y="36" width="52" height="32" rx="7" fill="rgba(251,191,36,0.15)" stroke="rgba(251,191,36,0.4)" stroke-width="1"/>
+              <text x="112" y="51" text-anchor="middle" font-size="9" fill="#FBBF24" font-weight="600">REST</text>
+              <text x="112" y="63" text-anchor="middle" font-size="9" fill="#FBBF24" font-weight="600">Proxy</text>
+
+              <!-- 화살표 DMZ → 거점 -->
+              <defs>
+                <marker id="ar1" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                  <path d="M0,0 L7,3.5 L0,7 Z" fill="rgba(167,139,250,0.8)"/>
+                </marker>
+                <marker id="ar2" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                  <path d="M0,0 L7,3.5 L0,7 Z" fill="rgba(96,165,250,0.8)"/>
+                </marker>
+                <marker id="ar3" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                  <path d="M0,0 L7,3.5 L0,7 Z" fill="rgba(52,211,153,0.8)"/>
+                </marker>
+              </defs>
+              <line x1="80" y1="80" x2="80" y2="118" stroke="rgba(167,139,250,0.5)" stroke-width="1.5" marker-end="url(#ar1)" stroke-dasharray="3,2"/>
+              <text x="90" y="102" font-size="8" fill="rgba(167,139,250,0.6)">HTTP/OTLP</text>
+
+              <!-- 거점 영역 -->
+              <rect x="10" y="120" width="300" height="80" rx="12" fill="rgba(167,139,250,0.07)" stroke="rgba(167,139,250,0.25)" stroke-width="1.5"/>
+              <text x="160" y="138" text-anchor="middle" font-size="9" fill="#A78BFA" font-weight="700" letter-spacing="1">거점 허브 (Buffer Pool)</text>
+              <rect x="22" y="144" width="80" height="44" rx="8" fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.3)" stroke-width="1"/>
+              <text x="62" y="163" text-anchor="middle" font-size="9" fill="#A78BFA" font-weight="600">거점 Kafka</text>
+              <text x="62" y="176" text-anchor="middle" font-size="8" fill="rgba(240,240,255,0.4)">로컬 버퍼</text>
+              <rect x="118" y="144" width="80" height="44" rx="8" fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.3)" stroke-width="1"/>
+              <text x="158" y="163" text-anchor="middle" font-size="9" fill="#A78BFA" font-weight="600">Alloy</text>
+              <text x="158" y="176" text-anchor="middle" font-size="8" fill="rgba(240,240,255,0.4)">데이터 취합</text>
+              <rect x="214" y="144" width="84" height="44" rx="8" fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.3)" stroke-width="1"/>
+              <text x="256" y="163" text-anchor="middle" font-size="9" fill="#A78BFA" font-weight="600">Gateway</text>
+              <text x="256" y="176" text-anchor="middle" font-size="8" fill="rgba(240,240,255,0.4)">중계 서버</text>
+
+              <!-- 화살표 거점 → 중간 -->
+              <line x1="160" y1="200" x2="160" y2="248" stroke="rgba(96,165,250,0.5)" stroke-width="1.5" marker-end="url(#ar2)" stroke-dasharray="3,2"/>
+              <text x="170" y="228" font-size="8" fill="rgba(96,165,250,0.6)">GCS / Async</text>
+
+              <!-- 전송 방식 박스 -->
+              <rect x="10" y="250" width="300" height="60" rx="12" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.2)" stroke-width="1.5"/>
+              <text x="160" y="268" text-anchor="middle" font-size="9" fill="#60A5FA" font-weight="700" letter-spacing="1">전송 방식 (MM2 대체)</text>
+              <rect x="22" y="274" width="120" height="24" rx="6" fill="rgba(96,165,250,0.12)" stroke="rgba(96,165,250,0.3)" stroke-width="1"/>
+              <text x="82" y="289" text-anchor="middle" font-size="9" fill="#60A5FA" font-weight="600">GCS 기반 우회 전송</text>
+              <rect x="156" y="274" width="140" height="24" rx="6" fill="rgba(96,165,250,0.12)" stroke="rgba(96,165,250,0.3)" stroke-width="1"/>
+              <text x="226" y="289" text-anchor="middle" font-size="9" fill="#60A5FA" font-weight="600">비동기 Kafka Connect</text>
+
+              <!-- 화살표 → GCP -->
+              <line x1="160" y1="310" x2="160" y2="348" stroke="rgba(52,211,153,0.5)" stroke-width="1.5" marker-end="url(#ar3)"/>
+
+              <!-- GCP Kafka -->
+              <rect x="60" y="350" width="200" height="56" rx="12" fill="rgba(52,211,153,0.10)" stroke="rgba(52,211,153,0.35)" stroke-width="1.5"/>
+              <text x="160" y="372" text-anchor="middle" font-size="10" fill="#34D399" font-weight="800">GCP Kafka</text>
+              <text x="160" y="389" text-anchor="middle" font-size="9" fill="rgba(240,240,255,0.45)">최종 통합 클러스터</text>
+            </svg>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /slides-wrap -->
+
+  <!-- 네비게이션 버튼 -->
+  <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>←</button>
+  <button class="nav-btn" id="btn-next" onclick="navigate(1)">→</button>
+
+  <script data-page-hash="YPDXRD8" src="/assets/js/page-footer.js"></script>
+  <script>
+    const TOTAL = 4;
+    let cur = 0;
+    let animating = false;
+
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const dotsWrap = document.getElementById('dots');
+    const counter = document.getElementById('counter');
+    const progressBar = document.getElementById('progress-bar');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+
+    // 도트 생성
+    for (let i = 0; i < TOTAL; i++) {
+      const d = document.createElement('div');
+      d.className = 'slide-dot' + (i === 0 ? ' active' : '');
+      d.onclick = () => goTo(i);
+      dotsWrap.appendChild(d);
+    }
+
+    function updateUI() {
+      counter.textContent = (cur + 1) + ' / ' + TOTAL;
+      progressBar.style.width = ((cur + 1) / TOTAL * 100) + '%';
+      btnPrev.disabled = cur === 0;
+      btnNext.disabled = cur === TOTAL - 1;
+      document.querySelectorAll('.slide-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === cur);
+      });
+    }
+
+    function goTo(next) {
+      if (animating || next === cur || next < 0 || next >= TOTAL) return;
+      animating = true;
+
+      const prev = cur;
+      const dir = next > prev ? 1 : -1;
+
+      slides[prev].classList.remove('active');
+      slides[prev].classList.add('exit-left');
+      if (dir < 0) {
+        slides[prev].style.transform = 'translateX(60px)';
+      }
+
+      cur = next;
+      slides[cur].style.transform = dir > 0 ? 'translateX(60px)' : 'translateX(-60px)';
+      slides[cur].style.opacity = '0';
+      slides[cur].style.transition = 'none';
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          slides[cur].style.transition = '';
+          slides[cur].classList.add('active');
+          updateUI();
+
+          setTimeout(() => {
+            slides[prev].classList.remove('exit-left');
+            slides[prev].style.transform = '';
+            animating = false;
+          }, 480);
+        });
+      });
+    }
+
+    function navigate(dir) { goTo(cur + dir); }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+    });
+
+    // 터치 스와이프
+    let touchX = 0;
+    document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
+    }, { passive: true });
+
+    updateUI();
+  </script>
+</body>
+</html>
