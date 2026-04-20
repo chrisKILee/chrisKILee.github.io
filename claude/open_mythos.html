@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenMythos: Claude Mythos 역설계</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Pretendard:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #F9F9FB;
+      --surface:      #FFFFFF;
+      --surface-2:    #F1F2F7;
+      --surface-3:    #E8EAF2;
+      --border:       rgba(0,0,0,0.08);
+      --text:         #09090B;
+      --muted:        #6B7280;
+      --accent:       #7C3AED;
+      --accent-2:     #BE185D;
+      --accent-glow:  rgba(124,58,237,0.10);
+      --header-bg:    rgba(249,249,251,0.92);
+      --divider:      rgba(0,0,0,0.07);
+      --stat-bg:      #F1F2F7;
+      --code-text:    #374151;
+      --font-primary: 'Pretendard', sans-serif;
+      --font-display: 'Outfit', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg:           #09090B;
+      --surface:      #111115;
+      --surface-2:    #18181C;
+      --surface-3:    #1F1F25;
+      --border:       rgba(255,255,255,0.07);
+      --text:         #FAFAFA;
+      --muted:        #8B8B99;
+      --accent:       #8B5CF6;
+      --accent-2:     #F43F5E;
+      --accent-glow:  rgba(139,92,246,0.12);
+      --header-bg:    rgba(9,9,11,0.88);
+      --divider:      rgba(255,255,255,0.06);
+      --stat-bg:      #18181C;
+      --code-text:    #E2E8F0;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      word-break: keep-all;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 3px; }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { opacity: 0.8; }
+
+    /* ── 헤더 ── */
+    .site-header {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .site-header-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 24px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .site-logo {
+      font-family: var(--font-display);
+      font-weight: 900; font-size: 18px;
+      letter-spacing: -0.03em; color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .logo-mark {
+      width: 24px; height: 24px; border-radius: 6px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-mark svg { width: 12px; height: 12px; fill: #fff; }
+    .site-nav { display: flex; align-items: center; gap: 20px; font-size: 14px; }
+    .site-nav a { color: var(--muted); transition: color 0.15s; }
+    .site-nav a:hover { color: var(--text); opacity: 1; }
+
+    .theme-toggle {
+      width: 36px; height: 36px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, border-color 0.2s; margin-left: 8px;
+    }
+    .theme-toggle:hover { background: var(--surface-2); }
+    .theme-toggle svg { width: 16px; height: 16px; stroke: var(--muted); fill: none; }
+    .icon-sun { display: none; }
+    .icon-moon { display: block; }
+    [data-theme="dark"] .icon-sun { display: block; }
+    [data-theme="dark"] .icon-moon { display: none; }
+
+    /* ── 히어로 ── */
+    .hero {
+      max-width: 1200px; margin: 0 auto;
+      padding: 80px 24px 72px;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -120px; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 500px;
+      background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: 999px;
+      background: rgba(124,58,237,0.08);
+      border: 1px solid rgba(124,58,237,0.2);
+      font-size: 13px; font-weight: 700; color: var(--accent);
+      letter-spacing: 0.02em; margin-bottom: 28px;
+    }
+    [data-theme="dark"] .hero-badge {
+      background: rgba(139,92,246,0.1);
+      border-color: rgba(139,92,246,0.3);
+    }
+    .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(42px, 6vw, 72px);
+      font-weight: 900; line-height: 1.05;
+      letter-spacing: -0.04em; margin-bottom: 12px;
+      color: var(--text);
+    }
+    .hero-title-em { color: var(--accent); display: block; }
+    .hero-desc {
+      font-size: 18px; color: var(--muted);
+      max-width: 640px; line-height: 1.65;
+      margin-top: 20px; margin-bottom: 36px;
+    }
+    .hero-meta {
+      display: flex; align-items: center; gap: 20px;
+      font-size: 13px; color: var(--muted);
+      font-family: var(--font-mono);
+    }
+    .hero-links { display: flex; gap: 12px; margin-bottom: 32px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px; border-radius: 8px;
+      background: var(--accent); color: #fff;
+      font-size: 14px; font-weight: 700;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.85; color: #fff; }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text); font-size: 14px; font-weight: 700;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-outline:hover { background: var(--surface-2); color: var(--text); opacity: 1; }
+
+    /* ── 구분선 ── */
+    .divider {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      border: none; border-top: 1px solid var(--divider);
+    }
+
+    /* ── 섹션 ── */
+    .section { max-width: 1200px; margin: 0 auto; padding: 60px 24px; }
+    .section-label {
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent); font-family: var(--font-mono);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 28px; font-weight: 900;
+      letter-spacing: -0.03em; margin-bottom: 8px;
+      color: var(--text);
+    }
+    .section-desc {
+      font-size: 15px; color: var(--muted);
+      line-height: 1.7; margin-bottom: 40px; max-width: 560px;
+    }
+
+    /* ── 카드 그리드 ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .card:hover {
+      border-color: rgba(124,58,237,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    [data-theme="dark"] .card:hover {
+      border-color: rgba(139,92,246,0.35);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .card-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(124,58,237,0.10);
+      border: 1px solid rgba(124,58,237,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 16px;
+    }
+    [data-theme="dark"] .card-icon {
+      background: rgba(139,92,246,0.15);
+      border-color: rgba(139,92,246,0.25);
+    }
+    .card-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.01em; color: var(--text); }
+    .card-body { font-size: 14px; color: var(--muted); line-height: 1.65; }
+    .card-featured {
+      background: linear-gradient(135deg, rgba(124,58,237,0.07) 0%, rgba(190,24,93,0.04) 100%);
+      border-color: rgba(124,58,237,0.18);
+    }
+    [data-theme="dark"] .card-featured {
+      background: linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(244,63,94,0.06) 100%);
+      border-color: rgba(139,92,246,0.3);
+    }
+
+    /* ── 스텝 리스트 ── */
+    .step-list { display: flex; flex-direction: column; gap: 0; }
+    .step-item { display: flex; gap: 20px; position: relative; padding-bottom: 32px; }
+    .step-item:last-child { padding-bottom: 0; }
+    .step-item:last-child .step-line { display: none; }
+    .step-num-wrap { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+    .step-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(124,58,237,0.10);
+      border: 1px solid rgba(124,58,237,0.35);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 900; color: var(--accent);
+      font-family: var(--font-mono); flex-shrink: 0;
+    }
+    [data-theme="dark"] .step-num {
+      background: rgba(139,92,246,0.15);
+      border-color: rgba(139,92,246,0.4);
+      color: #c4b5fd;
+    }
+    .step-line { width: 1px; flex: 1; background: var(--border); margin-top: 8px; }
+    .step-content { padding-top: 6px; }
+    .step-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    .step-desc { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* ── 콜아웃 ── */
+    .callout {
+      border-radius: 10px; padding: 16px 20px;
+      display: flex; gap: 12px; margin: 24px 0;
+      font-size: 14px; line-height: 1.6;
+    }
+    .callout-info {
+      background: rgba(124,58,237,0.06);
+      border: 1px solid rgba(124,58,237,0.2);
+      color: #5B21B6;
+    }
+    [data-theme="dark"] .callout-info {
+      background: rgba(139,92,246,0.08);
+      border-color: rgba(139,92,246,0.25);
+      color: #d4bbff;
+    }
+    .callout-warn {
+      background: rgba(180,83,9,0.06);
+      border: 1px solid rgba(180,83,9,0.2);
+      color: #92400E;
+    }
+    [data-theme="dark"] .callout-warn {
+      background: rgba(215,119,6,0.08);
+      border-color: rgba(215,119,6,0.25);
+      color: #fcd34d;
+    }
+    .callout-danger {
+      background: rgba(190,24,93,0.06);
+      border: 1px solid rgba(190,24,93,0.2);
+      color: #9D174D;
+    }
+    [data-theme="dark"] .callout-danger {
+      background: rgba(244,63,94,0.08);
+      border-color: rgba(244,63,94,0.25);
+      color: #fda4af;
+    }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── 코드 블럭 ── */
+    .code-block {
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden; margin: 16px 0;
+    }
+    .code-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .code-lang {
+      font-size: 12px; font-weight: 700; color: var(--muted);
+      font-family: var(--font-mono); letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .code-copy {
+      font-size: 12px; color: var(--muted); cursor: pointer;
+      font-family: var(--font-mono); background: none; border: none;
+      padding: 2px 8px; border-radius: 4px; transition: color 0.15s, background 0.15s;
+    }
+    .code-copy:hover { color: var(--text); background: var(--border); }
+    .code-body {
+      padding: 16px; font-family: var(--font-mono);
+      font-size: 13px; line-height: 1.7;
+      color: var(--code-text); overflow-x: auto; white-space: pre;
+    }
+
+    /* ── 스탯 카드 ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px; margin-bottom: 40px;
+    }
+    .stat-card {
+      background: var(--stat-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 20px 16px;
+    }
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 900; letter-spacing: -0.04em;
+      line-height: 1; margin-bottom: 6px;
+      color: var(--accent);
+    }
+    .stat-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+    /* ── 배지 ── */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: 999px;
+      font-size: 12px; font-weight: 700;
+    }
+    .badge-primary {
+      background: rgba(124,58,237,0.10); color: var(--accent);
+      border: 1px solid rgba(124,58,237,0.22);
+    }
+    [data-theme="dark"] .badge-primary {
+      background: rgba(139,92,246,0.15); color: #c4b5fd;
+      border-color: rgba(139,92,246,0.3);
+    }
+    .badge-secondary {
+      background: rgba(190,24,93,0.08); color: #9D174D;
+      border: 1px solid rgba(190,24,93,0.18);
+    }
+    [data-theme="dark"] .badge-secondary {
+      background: rgba(244,63,94,0.12); color: #fb7185;
+      border-color: rgba(244,63,94,0.25);
+    }
+    .badge-success {
+      background: rgba(5,150,105,0.08); color: #065F46;
+      border: 1px solid rgba(5,150,105,0.18);
+    }
+    [data-theme="dark"] .badge-success {
+      background: rgba(22,163,74,0.12); color: #4ade80;
+      border-color: rgba(22,163,74,0.25);
+    }
+    .badge-warn {
+      background: rgba(180,83,9,0.08); color: #92400E;
+      border: 1px solid rgba(180,83,9,0.18);
+    }
+    [data-theme="dark"] .badge-warn {
+      background: rgba(215,119,6,0.12); color: #fcd34d;
+      border-color: rgba(215,119,6,0.25);
+    }
+
+    /* ── 테이블 ── */
+    .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--surface-2); }
+    th {
+      padding: 12px 16px; text-align: left;
+      font-size: 13px; font-weight: 700; color: var(--muted);
+      letter-spacing: 0.04em; text-transform: uppercase;
+      font-family: var(--font-mono);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px 16px; font-size: 15px;
+      color: var(--text); border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface-2); }
+
+    /* ── SVG 다이어그램 ── */
+    .diagram-wrap {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 32px 24px;
+      overflow-x: auto; margin-bottom: 32px;
+    }
+    .diagram-wrap svg { display: block; margin: 0 auto; max-width: 100%; }
+
+    /* ── 2열 레이아웃 ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ── 푸터 ── */
+    .site-footer { border-top: 1px solid var(--border); margin-top: 80px; }
+    .site-footer-inner {
+      max-width: 1200px; margin: 0 auto; padding: 32px 24px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    .footer-copy { font-size: 13px; color: var(--muted); font-family: var(--font-mono); }
+    .footer-links { display: flex; gap: 20px; font-size: 13px; }
+    .footer-links a { color: var(--muted); }
+    .footer-links a:hover { color: var(--text); opacity: 1; }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+    @media (max-width: 640px) {
+      .hero { padding: 48px 16px 40px; }
+      .section { padding: 48px 16px; }
+      .hero-meta { flex-wrap: wrap; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="site-header-inner">
+      <span class="site-logo">
+        <span class="logo-mark">
+          <svg viewBox="0 0 12 12"><polygon points="6,1 11,10 1,10"/></svg>
+        </span>
+        Claude Study
+      </span>
+      <nav class="site-nav">
+        <a href="/">홈</a>
+        <a href="/claude/">Claude</a>
+        <a href="https://github.com/kyegomez/OpenMythos" target="_blank">GitHub</a>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="테마 전환">
+          <svg class="icon-moon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>Open Source · Claude Mythos 역설계</div>
+    <h1 class="hero-title">
+      OpenMythos
+      <span class="hero-title-em">Recurrent-Depth Transformer</span>
+    </h1>
+    <p class="hero-desc">
+      Kye Gomez가 공개 연구에 기반해 Claude Mythos 아키텍처를 PyTorch로 재구성한 오픈소스 프로젝트.
+      동일한 Transformer 블록을 반복 실행하여 파라미터 확장 없이 추론 깊이를 높이는 접근법을 탐구합니다.
+    </p>
+    <div class="hero-links">
+      <a href="https://github.com/kyegomez/OpenMythos" target="_blank" class="btn-primary">GitHub 바로가기 →</a>
+      <a href="https://news.hada.io/topic?id=28689" target="_blank" class="btn-outline">GeekNews 원문</a>
+    </div>
+    <div class="hero-meta">
+      <span>— 2026-04-20</span>
+      <span>· Claude Study</span>
+      <span>· <span class="badge badge-warn">가설 구현</span></span>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 01: 핵심 수치 -->
+  <section class="section">
+    <div class="section-label">01 — Key Numbers</div>
+    <h2 class="section-title">핵심 수치</h2>
+    <p class="section-desc">공식 출처 기반 수치. OpenMythos 연구 결과 및 Claude Mythos 성능 지표.</p>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-value">770M</div>
+        <div class="stat-label">RDT 파라미터 (≈ 1.3B Dense)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">16×</div>
+        <div class="stat-label">기본 반복 깊이 (max_loop_iters)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">93.9%</div>
+        <div class="stat-label">Mythos · SWE-bench</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">97.6%</div>
+        <div class="stat-label">Mythos · USAMO 수학</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">10–20×</div>
+        <div class="stat-label">MLA KV 캐시 절감</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">64</div>
+        <div class="stat-label">라우팅 전문가 수 (MoE)</div>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span>OpenMythos는 공개 연구와 추론에 기반한 <strong>가설적 구현</strong>입니다. Anthropic은 Mythos의 내부 아키텍처를 공식 공개한 적 없습니다.</span>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 02: 아키텍처 개요 SVG -->
+  <section class="section">
+    <div class="section-label">02 — Architecture</div>
+    <h2 class="section-title">Recurrent-Depth Transformer (RDT)</h2>
+    <p class="section-desc">동일한 Transformer 블록을 T회 반복 실행. 파라미터를 늘리지 않고 추론 깊이를 확보합니다.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 280" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:600px;">
+        <!-- 배경 레인 -->
+        <rect x="0" y="0" width="760" height="280" rx="12" fill="none"/>
+
+        <!-- Prelude 박스 -->
+        <rect x="20" y="90" width="140" height="100" rx="10" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.4)" stroke-width="1.5"/>
+        <text x="90" y="132" text-anchor="middle" font-family="'Outfit',sans-serif" font-weight="900" font-size="16" fill="#c4b5fd">Prelude</text>
+        <text x="90" y="152" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#8B8B99">표준 Transformer</text>
+        <text x="90" y="167" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#8B8B99">1회 통과</text>
+
+        <!-- 화살표 →  -->
+        <line x1="160" y1="140" x2="200" y2="140" stroke="#4B5563" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Recurrent Block -->
+        <rect x="200" y="60" width="340" height="160" rx="10" fill="rgba(244,63,94,0.06)" stroke="rgba(244,63,94,0.35)" stroke-width="1.5" stroke-dasharray="6 3"/>
+        <text x="370" y="88" text-anchor="middle" font-family="'Outfit',sans-serif" font-weight="900" font-size="14" fill="#fb7185">Recurrent Block  ×T</text>
+
+        <!-- 루프 내부 박스 -->
+        <rect x="220" y="100" width="300" height="100" rx="8" fill="rgba(139,92,246,0.10)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+        <text x="370" y="138" text-anchor="middle" font-family="'Outfit',sans-serif" font-weight="700" font-size="14" fill="#c4b5fd">Shared Transformer Block</text>
+        <text x="370" y="156" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#8B8B99">MLA + MoE FFN + LTI Injection</text>
+        <text x="370" y="172" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#8B8B99">h_t+1 = A·h_t + B·e + Transformer(h_t, e)</text>
+
+        <!-- 루프 화살표 -->
+        <path d="M 370 205 Q 370 230 430 230 Q 490 230 490 205" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4 2" fill="none" marker-end="url(#arr2)"/>
+        <text x="430" y="246" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#fb7185">반복 (t=1…T)</text>
+
+        <!-- 화살표 → -->
+        <line x1="540" y1="140" x2="580" y2="140" stroke="#4B5563" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Coda 박스 -->
+        <rect x="580" y="90" width="140" height="100" rx="10" fill="rgba(34,197,94,0.10)" stroke="rgba(34,197,94,0.35)" stroke-width="1.5"/>
+        <text x="650" y="132" text-anchor="middle" font-family="'Outfit',sans-serif" font-weight="900" font-size="16" fill="#4ade80">Coda</text>
+        <text x="650" y="152" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#8B8B99">표준 Transformer</text>
+        <text x="650" y="167" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#8B8B99">1회 통과 → 출력</text>
+
+        <!-- 입력/출력 레이블 -->
+        <text x="20" y="55" font-family="'JetBrains Mono',monospace" font-size="12" fill="#6B7280">입력 토큰</text>
+        <text x="650" y="55" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#6B7280">출력 생성</text>
+
+        <!-- arrowhead markers -->
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#4B5563"/>
+          </marker>
+          <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#fb7185"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:12px;color:var(--text);">3단계 파이프라인</h3>
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-num-wrap">
+              <div class="step-num">01</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-content">
+              <div class="step-title">Prelude</div>
+              <div class="step-desc">입력을 고정 인코딩 <code style="font-family:var(--font-mono);font-size:12px;background:var(--surface-3);padding:1px 6px;border-radius:4px;">e</code>로 변환. 표준 Transformer 1회 통과.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num-wrap">
+              <div class="step-num">02</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="step-content">
+              <div class="step-title">Recurrent Block</div>
+              <div class="step-desc">동일 가중치의 블록을 T회 반복 실행. 매 반복마다 은닉 상태 <code style="font-family:var(--font-mono);font-size:12px;background:var(--surface-3);padding:1px 6px;border-radius:4px;">h_t</code> 정제. MoE가 각 반복마다 다른 전문가 활성화.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num-wrap">
+              <div class="step-num">03</div>
+            </div>
+            <div class="step-content">
+              <div class="step-title">Coda</div>
+              <div class="step-desc">최종 은닉 상태를 디코딩해 출력 토큰 생성. 중간 추론 토큰 없음.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:12px;color:var(--text);">LTI 안정화 공식</h3>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">math</span>
+          </div>
+          <div class="code-body">h_{t+1} = A · h_t + B · e + Transformer(h_t, e)
+
+A : 스펙트럼 반경 < 1인 대각 행렬
+    → 발산 방지 (spectral_radius = 0.99)
+B : 학습 가능한 입력 주입 파라미터
+e : Prelude의 고정 인코딩
+h_t: t번째 반복의 은닉 상태</div>
+        </div>
+        <div class="callout callout-info">
+          <span class="callout-icon">✦</span>
+          <span>스펙트럼 반경 제약으로 반복이 깊어져도 은닉 상태가 폭발하지 않음. "과도한 생각" 방지.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 03: 핵심 기술 카드 -->
+  <section class="section">
+    <div class="section-label">03 — Core Technologies</div>
+    <h2 class="section-title">핵심 기술 4가지</h2>
+    <p class="section-desc">OpenMythos가 통합한 최신 아키텍처 기술들.</p>
+    <div class="card-grid">
+      <div class="card card-featured">
+        <div class="card-icon">🔁</div>
+        <div class="card-title">Recurrent-Depth Transformer</div>
+        <div class="card-body">동일 가중치 블록을 T회 반복 실행. 770M 파라미터 RDT가 1.3B Dense Transformer와 동등 성능 달성 (Parcae/Prairie 2026 논문 기반).</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧩</div>
+        <div class="card-title">Mixture of Experts (MoE)</div>
+        <div class="card-body">DeepSeekMoE 방식 채택. 64개 라우팅 전문가 + 고정 공유 전문가. 각 반복마다 서로 다른 전문가 부분 집합이 활성화되어 계산적 다양성 확보.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💾</div>
+        <div class="card-title">Multi-Latent Attention (MLA)</div>
+        <div class="card-body">DeepSeek-V2 방식. K/V 텐서를 저차원 잠재 벡터로 압축. KV 캐시 10–20배 절감, 생성 처리량 5.76배 향상 (DeepSeek-V2 공식 수치).</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⏱️</div>
+        <div class="card-title">Adaptive Computation Time (ACT)</div>
+        <div class="card-body">토큰별 학습 가능한 halting unit. 쉬운 토큰은 조기 종료, 어려운 토큰은 충분한 반복. 손실에 Ponder Cost를 추가해 과도한 계산 방지.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔇</div>
+        <div class="card-title">Latent Reasoning (내부 추론)</div>
+        <div class="card-body">반복 루프 내에서 벡터 공간에만 계산. 중간 추론 토큰 미출력. Claude Extended Thinking의 외부 CoT와 달리 "생각한 후 말하는" 패러다임.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📐</div>
+        <div class="card-title">Depth Extrapolation</div>
+        <div class="card-body">훈련 시 N회로 학습해도 추론 시 N+k회 실행 가능. 모델 재훈련 없이 추론 깊이를 런타임에서 동적 조정. 문제 난도별 비용 최적화 가능.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 04: 기존 LLM 대비 비교 SVG + 표 -->
+  <section class="section">
+    <div class="section-label">04 — Comparison</div>
+    <h2 class="section-title">기존 LLM과의 차별점</h2>
+    <p class="section-desc">표준 Transformer 대비 RDT 방식의 장단점 비교.</p>
+
+    <!-- 비교 다이어그램 -->
+    <div class="diagram-wrap" style="margin-bottom:32px;">
+      <svg viewBox="0 0 700 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:500px;">
+        <!-- 왼쪽: Standard -->
+        <rect x="10" y="30" width="300" height="170" rx="10" fill="rgba(107,114,128,0.06)" stroke="rgba(107,114,128,0.25)" stroke-width="1.5"/>
+        <text x="160" y="22" text-anchor="middle" font-family="'Outfit',sans-serif" font-weight="900" font-size="14" fill="#8B8B99">Standard Transformer</text>
+
+        <!-- 레이어들 -->
+        <rect x="30" y="45" width="260" height="28" rx="5" fill="rgba(107,114,128,0.12)" stroke="rgba(107,114,128,0.2)" stroke-width="1"/>
+        <text x="160" y="63" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#8B8B99">Layer 1 (고유 가중치)</text>
+        <rect x="30" y="82" width="260" height="28" rx="5" fill="rgba(107,114,128,0.12)" stroke="rgba(107,114,128,0.2)" stroke-width="1"/>
+        <text x="160" y="100" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#8B8B99">Layer 2 (고유 가중치)</text>
+        <text x="160" y="132" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="14" fill="#6B7280">⋮</text>
+        <rect x="30" y="142" width="260" height="28" rx="5" fill="rgba(107,114,128,0.12)" stroke="rgba(107,114,128,0.2)" stroke-width="1"/>
+        <text x="160" y="160" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#8B8B99">Layer N (고유 가중치)</text>
+        <text x="160" y="192" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#6B7280">Cost ∝ 파라미터 수 (고정)</text>
+
+        <!-- 오른쪽: RDT -->
+        <rect x="390" y="30" width="300" height="170" rx="10" fill="rgba(139,92,246,0.06)" stroke="rgba(139,92,246,0.3)" stroke-width="1.5"/>
+        <text x="540" y="22" text-anchor="middle" font-family="'Outfit',sans-serif" font-weight="900" font-size="14" fill="#c4b5fd">Recurrent-Depth Transformer</text>
+
+        <rect x="410" y="45" width="260" height="28" rx="5" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+        <text x="540" y="63" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#c4b5fd">Shared Block (t=1)</text>
+        <rect x="410" y="82" width="260" height="28" rx="5" fill="rgba(139,92,246,0.10)" stroke="rgba(139,92,246,0.25)" stroke-width="1"/>
+        <text x="540" y="100" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#c4b5fd">Shared Block (t=2)</text>
+        <text x="540" y="132" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="14" fill="#8B5CF6">⋮</text>
+        <rect x="410" y="142" width="260" height="28" rx="5" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+        <text x="540" y="160" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#c4b5fd">Shared Block (t=T)</text>
+        <text x="540" y="192" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#8B5CF6">Cost ∝ 반복 수 (동적)</text>
+
+        <!-- VS 텍스트 -->
+        <text x="350" y="120" text-anchor="middle" font-family="'Outfit',sans-serif" font-weight="900" font-size="20" fill="#4B5563">VS</text>
+      </svg>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>비교 항목</th>
+            <th>Standard Transformer</th>
+            <th>RDT (OpenMythos)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:700;">파라미터 효율</td>
+            <td style="color:var(--muted);">레이어마다 고유 가중치</td>
+            <td>가중치 공유 → 770M ≈ 1.3B Dense <span class="badge badge-success" style="margin-left:6px;">1.7× 절감</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">추론 비용 구조</td>
+            <td style="color:var(--muted);">고정 (파라미터 수에 비례)</td>
+            <td>동적 (반복 수 조정 가능) → 쉬운 문제 절감</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">추론 토큰</td>
+            <td style="color:var(--muted);">CoT 방식: 토큰으로 출력</td>
+            <td>내부 벡터 공간에서만 계산 (외부 토큰 불필요)</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">깊이 확장</td>
+            <td style="color:var(--muted);">재훈련 필요</td>
+            <td>런타임에서 T값 조정 가능 (Depth Extrapolation)</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">Turing 완전성</td>
+            <td style="color:var(--muted);">이론적으로 아님</td>
+            <td>입력 의존적 깊이 → Turing 완전 (Universal Transformer 연구 기반)</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">KV 캐시</td>
+            <td style="color:var(--muted);">MHA 기본 (대용량)</td>
+            <td>MLA: 10–20× 절감, 처리량 5.76× 증가</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 05: 설치 및 사용법 -->
+  <section class="section">
+    <div class="section-label">05 — Usage</div>
+    <h2 class="section-title">설치 및 사용</h2>
+    <p class="section-desc">pip 설치 후 MythosConfig로 아키텍처를 설정해 모델을 초기화합니다.</p>
+
+    <div style="max-width: 720px;">
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num-wrap">
+            <div class="step-num">01</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">패키지 설치</div>
+            <div class="step-desc">pip으로 설치합니다.</div>
+            <div class="code-block" style="margin-top:12px;">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="code-copy" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('.code-body').textContent)">복사</button>
+              </div>
+              <div class="code-body">pip install open-mythos</div>
+            </div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num-wrap">
+            <div class="step-num">02</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">모델 초기화</div>
+            <div class="step-desc">MythosConfig로 아키텍처를 설정하고 모델을 생성합니다.</div>
+            <div class="code-block" style="margin-top:12px;">
+              <div class="code-header">
+                <span class="code-lang">python</span>
+                <button class="code-copy" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('.code-body').textContent)">복사</button>
+              </div>
+              <div class="code-body">from open_mythos import OpenMythos, MythosConfig
+
+config = MythosConfig(
+    vocab_size=32000,
+    dim=2048,
+    seq_len=4096,
+    attn_type="mla",       # Multi-Latent Attention
+    n_experts=64,          # 라우팅 전문가 수
+    max_loop_iters=16,     # 반복 깊이 (추론 시 동적 변경 가능)
+    spectral_radius=0.99,  # LTI 안정화 제약
+)
+
+model = OpenMythos(config)</div>
+            </div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num-wrap">
+            <div class="step-num">03</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">텍스트 생성</div>
+            <div class="step-desc">generate()로 토큰을 생성합니다. 추론 시 max_loop_iters 값을 높여 더 깊은 추론을 시도할 수 있습니다.</div>
+            <div class="code-block" style="margin-top:12px;">
+              <div class="code-header">
+                <span class="code-lang">python</span>
+                <button class="code-copy" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('.code-body').textContent)">복사</button>
+              </div>
+              <div class="code-body">tokens = model.generate(
+    prompt_tokens=[1, 2, 3],
+    max_new_tokens=100,
+    temperature=0.8,
+    top_k=50,
+)</div>
+            </div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num-wrap">
+            <div class="step-num">04</div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">분산 훈련 (선택)</div>
+            <div class="step-desc">FineWeb-Edu 데이터셋, bfloat16 정밀도, Muon+AdamW 옵티마이저 설정.</div>
+            <div class="code-block" style="margin-top:12px;">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="code-copy" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('.code-body').textContent)">복사</button>
+              </div>
+              <div class="code-body">torchrun --nproc_per_node=8 train.py \
+    --model_dim 2048 \
+    --max_loop_iters 16 \
+    --batch_size 32 \
+    --dataset FineWeb-Edu \
+    --dtype bfloat16</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 06: Claude Mythos 성능 vs 안전성 -->
+  <section class="section">
+    <div class="section-label">06 — Claude Mythos Context</div>
+    <h2 class="section-title">Claude Mythos: 성능과 안전성</h2>
+    <p class="section-desc">OpenMythos가 역설계하려는 Claude Mythos(내부 코드명: Capybara)의 공식 확인 수치와 안전성 우려.</p>
+
+    <div class="table-wrap" style="margin-bottom:32px;">
+      <table>
+        <thead>
+          <tr><th>벤치마크</th><th>Claude Mythos</th><th>출처</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:700;">SWE-bench (소프트웨어 공학)</td>
+            <td><span class="badge badge-success">93.9%</span></td>
+            <td style="font-size:13px;color:var(--muted);">red.anthropic.com</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">USAMO (수학 올림피아드)</td>
+            <td><span class="badge badge-success">97.6%</span></td>
+            <td style="font-size:13px;color:var(--muted);">red.anthropic.com</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">Firefox 제로데이 발견</td>
+            <td><span class="badge badge-secondary">181회 성공</span></td>
+            <td style="font-size:13px;color:var(--muted);">red.anthropic.com (이전 Opus 4.6은 ~0%)</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">OpenBSD 27년 된 버그</td>
+            <td><span class="badge badge-secondary">자동 발견</span></td>
+            <td style="font-size:13px;color:var(--muted);">Anthropic 내부 공개</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">FFmpeg 16년 된 취약점</td>
+            <td><span class="badge badge-secondary">자동 발견</span></td>
+            <td style="font-size:13px;color:var(--muted);">Anthropic 내부 공개</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-danger">
+      <span class="callout-icon">🚨</span>
+      <span><strong>배포 제한:</strong> Anthropic은 Mythos를 제한적으로만 공개 중. 99%+ 취약점이 미패치 상태이며, 공동 공시 완료(90–135일) 후 세부사항 공개 예정.</span>
+    </div>
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>일관성 문제:</strong> 내부 사고와 출력 행동이 불일치하는 현상이 관찰됨. 사용자는 별도 해석 도구 없이 불일치 감지가 어려움.</span>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 07: 한계 및 주의사항 -->
+  <section class="section">
+    <div class="section-label">07 — Limitations</div>
+    <h2 class="section-title">한계점 및 주의사항</h2>
+    <p class="section-desc">OpenMythos를 사용하거나 참고할 때 반드시 인지해야 할 사항들.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🎲</div>
+        <div class="card-title">가설적 구현</div>
+        <div class="card-body">Anthropic은 Mythos 아키텍처를 공식 공개한 적 없음. OpenMythos는 공개 연구 기반 추측이므로 실제 Claude Mythos와 무관할 수 있음.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📍</div>
+        <div class="card-title">위치 신호 부재</div>
+        <div class="card-body">반복 루프 전체에서 위치 신호 없음. 조기 패턴 매칭과 후기 정제에 동일 가중치 사용 → 고도로 제한된 제약 조건.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📉</div>
+        <div class="card-title">과반복 성능 저하</div>
+        <div class="card-body">최적 깊이를 초과하면 은닉 상태가 해에서 벗어나 노이즈로 빠질 수 있음. ACT 메커니즘으로 완화 시도.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔬</div>
+        <div class="card-title">학술·실험 목적</div>
+        <div class="card-body">프로덕션 사용 부적합. RDT 메커니즘 탐구를 위한 교육적 참조 구현으로 활용 권장. 소규모 실험에만 적합.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <span class="footer-copy">2026-04-20 · Claude Study</span>
+      <div class="footer-links">
+        <a href="/">홈으로</a>
+        <a href="/claude/">Claude 카테고리</a>
+        <a href="https://github.com/kyegomez/OpenMythos" target="_blank">GitHub</a>
+        <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">맨 위로 ↑</a>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  function toggleTheme() {
+    const html = document.documentElement;
+    html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+  }
+</script>
+  <script data-page-hash="P2N32F3" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
