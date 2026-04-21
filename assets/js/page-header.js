@@ -90,6 +90,7 @@
 
   function insertHeader() {
     if (document.getElementById('page-header')) return;
+
     const header = document.createElement('nav');
     header.id = 'page-header';
     header.innerHTML = `
@@ -97,12 +98,23 @@
       <div class="ph-nav">${navItems}</div>
     `;
     document.body.insertBefore(header, document.body.firstChild);
+
+    // .topbar / .site-header 를 JS inline style로 직접 고정
+    // CSS !important보다 inline style setProperty('important')가 우선
+    ['topbar', 'site-header'].forEach(cls => {
+      document.querySelectorAll('.' + cls).forEach(el => {
+        el.style.setProperty('position', 'sticky', 'important');
+        el.style.setProperty('top', '48px', 'important');
+        el.style.setProperty('z-index', '9998', 'important');
+        el.style.setProperty('backdrop-filter', 'none', 'important');
+        el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+      });
+    });
   }
 
-  // body가 이미 있으면 즉시, 없으면 DOMContentLoaded 후 삽입
-  if (document.body) {
-    insertHeader();
-  } else {
+  if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', insertHeader);
+  } else {
+    insertHeader();
   }
 })();
