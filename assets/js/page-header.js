@@ -22,6 +22,7 @@
       left: 0;
       right: 0;
       z-index: 9999;
+      transform: translateZ(0); /* 독립 compositing layer 강제 */
       height: 48px;
       background: #ffffff;
       border-bottom: 1px solid #e5e7eb;
@@ -67,6 +68,8 @@
       position: sticky !important;
       top: 48px !important;
       z-index: 9998 !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
     }
   `;
   document.head.appendChild(style);
