@@ -13,6 +13,7 @@
     return currentPath.startsWith(href);
   }
 
+  // CSS는 head에서 즉시 적용 (body null 여부 무관)
   const style = document.createElement('style');
   style.textContent = `
     #page-header {
@@ -84,12 +85,21 @@
     return `${sep}<a href="${item.href}"${active}>${item.label}</a>`;
   }).join('');
 
-  const header = document.createElement('nav');
-  header.id = 'page-header';
-  header.innerHTML = `
-    <a class="ph-brand" href="/">${ICON_SVG} Chris Articles</a>
-    <div class="ph-nav">${navItems}</div>
-  `;
+  function insertHeader() {
+    if (document.getElementById('page-header')) return;
+    const header = document.createElement('nav');
+    header.id = 'page-header';
+    header.innerHTML = `
+      <a class="ph-brand" href="/">${ICON_SVG} Chris Articles</a>
+      <div class="ph-nav">${navItems}</div>
+    `;
+    document.body.insertBefore(header, document.body.firstChild);
+  }
 
-  document.body.insertBefore(header, document.body.firstChild);
+  // body가 이미 있으면 즉시, 없으면 DOMContentLoaded 후 삽입
+  if (document.body) {
+    insertHeader();
+  } else {
+    document.addEventListener('DOMContentLoaded', insertHeader);
+  }
 })();
