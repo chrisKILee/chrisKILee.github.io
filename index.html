@@ -2004,6 +2004,136 @@
 
     window.addEventListener('hashchange', () => { render(); });
     window.addEventListener('DOMContentLoaded', init);
+
+    // =============================================
+    // BACK NAVIGATION — 스크롤 위치 복원
+    // =============================================
+    const SCROLL_KEY = 'portal_scroll_y';
+
+    // 파일 카드 클릭 시 현재 스크롤 위치 저장
+    document.addEventListener('click', e => {
+      const card = e.target.closest('.file-card[data-link]');
+      if (card) sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+    });
+
+    // 페이지 로드 시 저장된 위치 복원 (뒤로가기 또는 새로고침)
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = sessionStorage.getItem(SCROLL_KEY);
+      if (saved !== null) {
+        // render()가 DOM을 그린 뒤 복원되도록 짧은 지연
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' });
+          sessionStorage.removeItem(SCROLL_KEY);
+        });
+      }
+    });
+
+    // =============================================
+    // FLOATING CATEGORY NAV — 우측 고정 네비
+    // =============================================
+    (function initFloatingNav() {
+      const style = document.createElement('style');
+      style.textContent = `
+        #floating-nav {
+          position: fixed;
+          right: 16px;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 200;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          max-height: 80vh;
+          overflow-y: auto;
+          scrollbar-width: none;
+        }
+        #floating-nav::-webkit-scrollbar { display: none; }
+        #floating-nav .fn-item {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #d1d5db;
+          cursor: pointer;
+          transition: all 0.2s;
+          position: relative;
+        }
+        #floating-nav .fn-item:hover {
+          background: #059669;
+          transform: scale(1.4);
+        }
+        #floating-nav .fn-item.active { background: #059669; }
+        #floating-nav .fn-item .fn-tooltip {
+          position: absolute;
+          right: 18px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: #111;
+          color: #fff;
+          font-size: 11px;
+          font-family: 'Inter', sans-serif;
+          padding: 4px 8px;
+          border-radius: 4px;
+          white-space: nowrap;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.15s;
+        }
+        #floating-nav .fn-item:hover .fn-tooltip { opacity: 1; }
+        @media (max-width: 1200px) { #floating-nav { display: none; } }
+      `;
+      document.head.appendChild(style);
+
+      const nav = document.createElement('nav');
+      nav.id = 'floating-nav';
+      nav.setAttribute('aria-label', '카테고리 네비게이션');
+      document.body.appendChild(nav);
+
+      // render() 완료 후 섹션 목록 빌드
+      function buildNav() {
+        const sections = document.querySelectorAll('.directory-section[data-dir-id]');
+        if (!sections.length) return;
+
+        nav.innerHTML = '';
+        sections.forEach(sec => {
+          const nameEl = sec.querySelector('.dir-name');
+          const label = nameEl ? nameEl.textContent.trim() : sec.dataset.dirId;
+
+          const dot = document.createElement('div');
+          dot.className = 'fn-item';
+          dot.innerHTML = `<span class="fn-tooltip">${label}</span>`;
+          dot.addEventListener('click', () => {
+            sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+          nav.appendChild(dot);
+        });
+
+        updateActive();
+      }
+
+      function updateActive() {
+        const sections = document.querySelectorAll('.directory-section[data-dir-id]');
+        const dots = nav.querySelectorAll('.fn-item');
+        const scrollY = window.scrollY + window.innerHeight * 0.3;
+
+        let active = 0;
+        sections.forEach((sec, i) => {
+          if (sec.getBoundingClientRect().top + window.scrollY <= scrollY) active = i;
+        });
+        dots.forEach((d, i) => d.classList.toggle('active', i === active));
+      }
+
+      // render() 완료를 기다려 빌드
+      const origRender = window.render;
+      if (origRender) {
+        window.render = function(...args) {
+          const result = origRender.apply(this, args);
+          requestAnimationFrame(buildNav);
+          return result;
+        };
+      }
+
+      window.addEventListener('scroll', updateActive, { passive: true });
+    })();
   </script>
   <!-- Version: 2026-03-18 v4.0 – flat URL, memo field, PIN auth (GitHub Actions) -->
 </body>
