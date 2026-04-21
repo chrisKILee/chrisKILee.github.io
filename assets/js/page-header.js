@@ -65,8 +65,10 @@
 
     /* 각 글 페이지의 제목 바 — page-header 바로 아래 고정 */
     .topbar, .site-header {
-      position: sticky !important;
+      position: fixed !important;
       top: 48px !important;
+      left: 0 !important;
+      right: 0 !important;
       z-index: 9998 !important;
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
@@ -99,17 +101,26 @@
     `;
     document.body.insertBefore(header, document.body.firstChild);
 
-    // .topbar / .site-header 를 JS inline style로 직접 고정
-    // CSS !important보다 inline style setProperty('important')가 우선
+    // .topbar / .site-header: sticky → fixed 변환
+    // backdrop-filter가 compositing layer를 만들어 fixed 위로 올라오는 문제 해결
+    // fixed로 변환 후 높이를 측정해 body padding-top 누적 조정
+    let extraPad = 0;
     ['topbar', 'site-header'].forEach(cls => {
       document.querySelectorAll('.' + cls).forEach(el => {
-        el.style.setProperty('position', 'sticky', 'important');
+        const h = el.offsetHeight || 56;
+        el.style.setProperty('position', 'fixed', 'important');
         el.style.setProperty('top', '48px', 'important');
+        el.style.setProperty('left', '0', 'important');
+        el.style.setProperty('right', '0', 'important');
         el.style.setProperty('z-index', '9998', 'important');
         el.style.setProperty('backdrop-filter', 'none', 'important');
         el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+        extraPad += h;
       });
     });
+    if (extraPad > 0) {
+      document.body.style.setProperty('padding-top', (48 + extraPad) + 'px', 'important');
+    }
   }
 
   if (document.readyState === 'loading') {
