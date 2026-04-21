@@ -22,9 +22,7 @@
       right: 0;
       z-index: 9999;
       height: 48px;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: #ffffff;
       border-bottom: 1px solid #e5e7eb;
       display: flex;
       align-items: center;
