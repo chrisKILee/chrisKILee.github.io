@@ -63,8 +63,8 @@
     #page-header .ph-sep { color: #e5e7eb; user-select: none; padding: 0 2px; }
     body { padding-top: 48px !important; }
 
-    /* 각 글 페이지의 topbar — page-header 바로 아래 고정 */
-    .topbar {
+    /* 각 글 페이지의 제목 바 — page-header 바로 아래 고정 */
+    .topbar, .site-header {
       position: sticky !important;
       top: 48px !important;
       z-index: 9998 !important;
