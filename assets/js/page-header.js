@@ -62,17 +62,6 @@
     #page-header .ph-nav a.active { color: #059669; background: #ecfdf5; }
     #page-header .ph-sep { color: #e5e7eb; user-select: none; padding: 0 2px; }
     body { padding-top: 48px !important; }
-
-    /* 각 글 페이지의 제목 바 — page-header 바로 아래 고정 */
-    .topbar, .site-header {
-      position: fixed !important;
-      top: 48px !important;
-      left: 0 !important;
-      right: 0 !important;
-      z-index: 9998 !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-    }
   `;
   document.head.appendChild(style);
 
@@ -101,13 +90,19 @@
     `;
     document.body.insertBefore(header, document.body.firstChild);
 
-    // .topbar / .site-header: sticky → fixed 변환
-    // backdrop-filter가 compositing layer를 만들어 fixed 위로 올라오는 문제 해결
-    // fixed로 변환 후 높이를 측정해 body padding-top 누적 조정
+    // .topbar / .site-header → fixed 변환: 높이 측정 먼저, 그 후 fixed 전환 + padding 보정
     let extraPad = 0;
     ['topbar', 'site-header'].forEach(cls => {
       document.querySelectorAll('.' + cls).forEach(el => {
-        const h = el.offsetHeight || 56;
+        // fixed 전환 전 자연 흐름에서 높이 측정
+        const h = el.getBoundingClientRect().height || el.offsetHeight || 56;
+        // 배경 투명 여부 확인 후 불투명 배경 강제 (콘텐츠 비침 방지)
+        const bg = window.getComputedStyle(el).backgroundColor;
+        const isTransparent = !bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent';
+        if (isTransparent) {
+          const bodyBg = window.getComputedStyle(document.body).backgroundColor;
+          el.style.setProperty('background-color', (bodyBg && bodyBg !== 'rgba(0, 0, 0, 0)') ? bodyBg : '#ffffff', 'important');
+        }
         el.style.setProperty('position', 'fixed', 'important');
         el.style.setProperty('top', '48px', 'important');
         el.style.setProperty('left', '0', 'important');
