@@ -28,12 +28,29 @@
       border-bottom: 1px solid #e5e7eb;
       display: flex;
       align-items: center;
-      padding: 0 24px;
-      gap: 8px;
+      justify-content: space-between;
+      padding: 0 20px;
+      gap: 12px;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       font-size: 0.875rem;
     }
-    #page-header a {
+    #page-header .ph-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: #111;
+      font-weight: 700;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    #page-header .ph-brand svg { display: block; }
+    #page-header .ph-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    #page-header .ph-nav a {
       text-decoration: none;
       color: #6b7280;
       padding: 4px 10px;
@@ -41,22 +58,40 @@
       transition: all 0.15s;
       font-weight: 500;
     }
-    #page-header a:hover { color: #111; background: #f3f4f6; }
-    #page-header a.active { color: #059669; background: #ecfdf5; }
-    #page-header .ph-sep { color: #e5e7eb; user-select: none; }
+    #page-header .ph-nav a:hover { color: #111; background: #f3f4f6; }
+    #page-header .ph-nav a.active { color: #059669; background: #ecfdf5; }
+    #page-header .ph-sep { color: #e5e7eb; user-select: none; padding: 0 2px; }
     body { padding-top: 48px !important; }
+
+    /* 각 글 페이지의 topbar — page-header 바로 아래 고정 */
+    .topbar {
+      position: sticky !important;
+      top: 48px !important;
+      z-index: 9998 !important;
+    }
   `;
   document.head.appendChild(style);
 
-  const header = document.createElement('nav');
-  header.id = 'page-header';
+  const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="26" height="26">
+    <rect x="8"  y="8"  width="16" height="16" rx="2" fill="#F97316"/>
+    <rect x="26" y="8"  width="16" height="16" rx="2" fill="#F97316"/>
+    <rect x="8"  y="26" width="16" height="16" rx="2" fill="#FED7AA"/>
+    <rect x="26" y="26" width="16" height="16" rx="2" fill="#FED7AA"/>
+    <rect x="8"  y="44" width="16" height="16" rx="2" fill="#FED7AA"/>
+  </svg>`;
 
-  const items = NAV_ITEMS.map((item, i) => {
+  const navItems = NAV_ITEMS.map((item, i) => {
     const active = isActive(item.href) ? ' class="active"' : '';
     const sep = i > 0 ? '<span class="ph-sep">/</span>' : '';
     return `${sep}<a href="${item.href}"${active}>${item.label}</a>`;
   }).join('');
 
-  header.innerHTML = items;
+  const header = document.createElement('nav');
+  header.id = 'page-header';
+  header.innerHTML = `
+    <a class="ph-brand" href="/">${ICON_SVG} Chris Articles</a>
+    <div class="ph-nav">${navItems}</div>
+  `;
+
   document.body.insertBefore(header, document.body.firstChild);
 })();
