@@ -76,7 +76,8 @@ function findCurrentPath(fileCfg, folder) {
     `/c/${slug}/${filename}`,
     `/s/${slug}/${filename}`,
   ];
-  return candidates.find(p => existsSync(join(ROOT, p))) ?? null;
+  // join(ROOT, p) 에서 p가 '/'로 시작하면 ROOT가 무시되므로 slice(1) 처리
+  return candidates.find(p => existsSync(join(ROOT, p.slice(1)))) ?? null;
 }
 
 function getFileMoves(siteConfig) {
@@ -103,7 +104,7 @@ function getFileMoves(siteConfig) {
 
 function movFiles(moves) {
   for (const m of moves) {
-    const toAbs = join(ROOT, m.to);
+    const toAbs = join(ROOT, m.to.slice(1));
     const toDir = dirname(toAbs);
 
     if (!existsSync(toDir)) {
