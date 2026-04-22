@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>robots.txt 파헤치기 — 역할, 차단 로직, 허점 완전 분석</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .prose p { margin-bottom: 1rem; color: #475569; line-height: 1.8; font-size: 15px; }
+    .prose h2 { font-size: 1.375rem; font-weight: 700; color: #0f172a; margin: 2.5rem 0 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+    .prose h3 { font-size: 1.0625rem; font-weight: 600; color: #1e293b; margin: 1.75rem 0 0.75rem; }
+    .prose h4 { font-size: 0.9375rem; font-weight: 600; color: #334155; margin: 1.25rem 0 0.5rem; }
+    .prose ul { margin: 1rem 0; padding-left: 1.5rem; }
+    .prose ul li { color: #475569; margin-bottom: 0.375rem; font-size: 15px; }
+    .prose ol { margin: 1rem 0; padding-left: 1.5rem; }
+    .prose ol li { color: #475569; margin-bottom: 0.375rem; font-size: 15px; }
+    .prose code { background: #f1f5f9; border-radius: 4px; padding: 2px 6px; font-size: 0.85em; color: #7c3aed; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+    .prose pre { background: #0f172a; color: #e2e8f0; border-radius: 12px; padding: 1.25rem; overflow-x: auto; font-size: 0.8125rem; margin: 1.25rem 0; white-space: pre; font-family: 'JetBrains Mono', 'Fira Code', monospace; line-height: 1.7; }
+    .prose a { color: #0ea5e9; }
+    .prose table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 1.25rem 0; }
+    .prose th { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; font-weight: 600; color: #334155; font-size: 13px; }
+    .prose td { border: 1px solid #e2e8f0; padding: 8px 12px; color: #475569; vertical-align: top; }
+    .prose tr:nth-child(even) td { background: #f8fafc; }
+    .nav-section { margin-bottom: 1.5rem; }
+    .nav-item { display: block; padding: 4px 12px; font-size: 13px; color: #64748b; border-radius: 6px; transition: all 0.15s; margin-bottom: 1px; text-decoration: none; }
+    .nav-item:hover, .nav-item.active { background: #f1f5f9; color: #0f172a; }
+    .nav-sub { display: block; padding: 3px 12px 3px 24px; font-size: 12px; color: #94a3b8; border-radius: 6px; transition: all 0.15s; margin-bottom: 1px; text-decoration: none; }
+    .nav-sub:hover { color: #64748b; background: #f8fafc; }
+    .callout-info { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+    .callout-warn { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+    .callout-danger { background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+    .callout-tip { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+    .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+    .badge-green { background: #dcfce7; color: #16a34a; }
+    .badge-red { background: #fee2e2; color: #dc2626; }
+    .badge-orange { background: #ffedd5; color: #ea580c; }
+    .badge-gray { background: #f1f5f9; color: #64748b; }
+    .badge-blue { background: #dbeafe; color: #2563eb; }
+    .toc-item { display: block; font-size: 12px; color: #94a3b8; padding: 3px 0 3px 12px; border-left: 2px solid transparent; transition: all 0.15s; text-decoration: none; }
+    .toc-item:hover { color: #475569; border-left-color: #cbd5e1; }
+    .toc-item.active { color: #0ea5e9; border-left-color: #0ea5e9; font-weight: 500; }
+    @media (max-width: 768px) {
+      aside { display: none; }
+      main { margin-left: 0 !important; margin-right: 0 !important; padding-left: 1rem !important; padding-right: 1rem !important; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body class="bg-white text-slate-700 antialiased">
+
+  <!-- 헤더 -->
+  <header class="fixed top-0 inset-x-0 z-50 h-14 border-b border-slate-200 bg-white flex items-center px-6">
+    <div class="max-w-7xl mx-auto w-full flex items-center gap-6">
+      <a href="/ai-study/" class="flex items-center gap-2.5 font-bold text-slate-900">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">R</div>
+        robots.txt 가이드
+      </a>
+      <div class="h-5 w-px bg-slate-200"></div>
+      <nav class="flex items-center gap-1 text-sm">
+        <a href="#overview" class="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-600 font-medium">개요</a>
+        <a href="#syntax" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors">문법</a>
+        <a href="#vulnerabilities" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors">허점</a>
+      </nav>
+      <div class="ml-auto flex items-center gap-3">
+        <span class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded">RFC 9309 · 2022</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto pt-14 flex">
+
+    <!-- 왼쪽 사이드바 -->
+    <aside class="fixed top-14 bottom-0 w-64 overflow-y-auto border-r border-slate-200 py-8 px-5">
+      <div class="nav-section">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-3">개요</p>
+        <a href="#overview" class="nav-item active">역사와 표준화</a>
+        <a href="#structure" class="nav-item">파일 구조</a>
+      </div>
+      <div class="nav-section">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-3">문법 & 로직</p>
+        <a href="#syntax" class="nav-item">지시어 완전 정리</a>
+        <a href="#wildcards" class="nav-item">와일드카드</a>
+        <a href="#priority" class="nav-item">우선순위 결정 방식</a>
+        <a href="#behavior" class="nav-item">크롤러 실제 동작</a>
+      </div>
+      <div class="nav-section">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-3">허점과 한계</p>
+        <a href="#vulnerabilities" class="nav-item">5가지 핵심 허점</a>
+        <a href="#ai-crawlers" class="nav-item">AI 크롤러 위반 현황</a>
+        <a href="#leakage" class="nav-item">정보 누출 역설</a>
+      </div>
+      <div class="nav-section">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 px-3">실전 가이드</p>
+        <a href="#useragents" class="nav-item">주요 크롤러 목록</a>
+        <a href="#examples" class="nav-item">코드 예시</a>
+        <a href="#alternatives" class="nav-item">대안 및 보완책</a>
+      </div>
+    </aside>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="ml-64 mr-0 xl:mr-52 px-12 py-10">
+
+      <!-- 히어로 -->
+      <div class="mb-12">
+        <div class="inline-flex items-center gap-2 text-xs font-semibold text-sky-600 bg-sky-50 border border-sky-200 px-3 py-1 rounded-full mb-4">
+          🤖 AI Study · 심층 분석
+        </div>
+        <h1 class="text-4xl font-extrabold text-slate-900 mb-3">robots.txt 파헤치기</h1>
+        <p class="text-lg text-slate-500 leading-relaxed">역할, 차단 로직, 우선순위 결정 방식, 그리고 AI 시대에 드러난 허점까지 — RFC 9309 공식 표준 기반 완전 분석.</p>
+
+        <!-- 퀵링크 카드 -->
+        <div class="grid sm:grid-cols-3 gap-3 mt-8">
+          <a href="#priority" class="group border border-slate-200 rounded-xl p-4 hover:border-sky-300 hover:bg-sky-50/50 transition-all">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-sky-500">⚖️</span>
+              <span class="text-sm font-semibold text-slate-800 group-hover:text-sky-600">우선순위 로직</span>
+            </div>
+            <p class="text-xs text-slate-500">Allow vs Disallow 충돌 해결 방식</p>
+          </a>
+          <a href="#vulnerabilities" class="group border border-slate-200 rounded-xl p-4 hover:border-red-300 hover:bg-red-50/50 transition-all">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-red-500">⚠️</span>
+              <span class="text-sm font-semibold text-slate-800 group-hover:text-red-600">5가지 허점</span>
+            </div>
+            <p class="text-xs text-slate-500">AI 크롤러 위반, 정보 누출 역설</p>
+          </a>
+          <a href="#alternatives" class="group border border-slate-200 rounded-xl p-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-indigo-500">🛡️</span>
+              <span class="text-sm font-semibold text-slate-800 group-hover:text-indigo-600">대안 & 보완책</span>
+            </div>
+            <p class="text-xs text-slate-500">Cloudflare, X-Robots-Tag, llms.txt</p>
+          </a>
+        </div>
+      </div>
+
+      <div class="prose max-w-none">
+
+        <!-- 섹션 1: 역사와 표준화 -->
+        <section id="overview">
+          <h2>역사와 표준화</h2>
+          <p>
+            robots.txt는 1994년 Martijn Koster가 고안한 웹 크롤러 제어 프로토콜이다.
+            초기에는 비공식 신사협정으로 WebCrawler, Lycos, AltaVista 등이 자발적으로 준수하기 시작했으며,
+            약 <strong>25년간 공식 RFC 없이 de facto 표준</strong>으로만 유지됐다.
+          </p>
+
+          <table>
+            <thead><tr><th>시점</th><th>사건</th></tr></thead>
+            <tbody>
+              <tr><td>1994년 6월</td><td>Martijn Koster가 Robots Exclusion Protocol 창안. 초기명 "RobotsNotWanted.txt"</td></tr>
+              <tr><td>1994~2019년</td><td>~25년간 공식 RFC 없이 de facto 표준으로 유지. 주요 검색 엔진 대부분 자발적 준수</td></tr>
+              <tr><td>2019년 7월</td><td>Google이 IETF에 공식 표준화 제안 (Martijn Koster와 공동 저술)</td></tr>
+              <tr><td>2022년 9월</td><td><strong>RFC 9309</strong> 공식 발표 (IETF Proposed Standard Track)</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout-info not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-sky-500">💡</span>
+              <div>
+                <p class="text-sm font-semibold text-sky-800 mb-1">RFC 9309의 핵심 기여</p>
+                <p class="text-sm text-sky-700">오류 처리(5xx → 차단, 404 → 허용) 명확화 · 캐싱 지침 표준화 · Percent-Encoding 처리 규칙 · 최소 500 KiB 처리 용량 요구</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 2: 파일 구조 -->
+        <section id="structure">
+          <h2>파일 구조</h2>
+          <p>robots.txt는 UTF-8 텍스트 파일로 웹사이트 루트(<code>https://example.com/robots.txt</code>)에 위치해야 한다. 기본 구조는 <strong>User-agent 그룹</strong>들의 집합이다.</p>
+
+<pre># 기본 구조
+User-agent: Googlebot        # 적용 대상 크롤러
+Disallow: /private/          # 차단할 경로
+Allow: /private/public/      # 예외적으로 허용
+
+User-agent: *                # 모든 크롤러
+Disallow: /admin/
+
+Sitemap: https://example.com/sitemap.xml</pre>
+
+          <div class="callout-warn not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-amber-500">⚠️</span>
+              <p class="text-sm text-amber-800"><strong>중요:</strong> 각 User-agent 그룹은 빈 줄로 구분되어야 한다. 한 그룹의 규칙은 다른 그룹에 자동으로 상속되지 않는다.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 3: 지시어 -->
+        <section id="syntax">
+          <h2>지시어 완전 정리</h2>
+
+          <h3>User-agent</h3>
+          <p>규칙이 적용될 크롤러를 지정한다. <code>*</code>는 모든 크롤러를 의미하는 와일드카드다. 대소문자를 구분하지 않으며, 영문자·언더스코어·하이픈만 사용 가능하다.</p>
+
+          <h3>Disallow</h3>
+          <p>접근을 차단할 경로를 지정한다. <strong>경로는 대소문자를 구분한다(case-sensitive).</strong> 빈 값(<code>Disallow:</code>)은 모든 경로를 허용하는 것과 같다.</p>
+<pre>Disallow: /private/      # /private/ 이하 전체 차단
+Disallow: /admin/        # /admin/ 이하 전체 차단
+Disallow: /temp.html     # 특정 파일만 차단
+Disallow: /              # 사이트 전체 차단
+Disallow:                # 모든 경로 허용 (= 차단 없음)</pre>
+
+          <h3>Allow</h3>
+          <p>Disallow와 충돌할 때 특정 경로를 예외적으로 허용한다. 더 구체적인(긴) 경로가 우선한다. 빈 값은 무시된다.</p>
+<pre>Disallow: /temp/
+Allow: /temp/public/     # /temp/ 전체 차단이지만 /temp/public/은 허용</pre>
+
+          <h3>Crawl-delay</h3>
+          <p>다음 요청까지 대기할 시간(초)을 지정한다. RFC 9309 비표준 지시어다.</p>
+          <table>
+            <thead><tr><th>크롤러</th><th>Crawl-delay 지원</th></tr></thead>
+            <tbody>
+              <tr><td>Googlebot</td><td><span class="badge badge-red">❌ 무시</span> — Google Search Console에서 개별 설정 필요</td></tr>
+              <tr><td>Bingbot</td><td><span class="badge badge-green">✓ 지원</span></td></tr>
+              <tr><td>Yandex, Baidu</td><td><span class="badge badge-green">✓ 지원</span></td></tr>
+              <tr><td>AI 크롤러들</td><td><span class="badge badge-gray">대부분 무시</span></td></tr>
+            </tbody>
+          </table>
+
+          <h3>Sitemap</h3>
+          <p>XML 사이트맵의 절대 URL을 지정한다. 여러 개 선언 가능하며, 반드시 완전한 URL을 사용해야 한다(상대 경로 불가).</p>
+<pre>Sitemap: https://example.com/sitemap.xml
+Sitemap: https://example.com/sitemap-images.xml</pre>
+        </section>
+
+        <!-- 섹션 4: 와일드카드 -->
+        <section id="wildcards">
+          <h2>와일드카드</h2>
+          <p>RFC 9309 표준에 포함되지 않지만 Google, Bing, 주요 AI 크롤러가 모두 지원한다.</p>
+
+          <h3><code>*</code> — 0개 이상의 임의 문자</h3>
+<pre>Disallow: /*.php$         # .php로 끝나는 모든 URL
+Disallow: /search*        # /search로 시작하는 모든 URL
+Disallow: /*?             # 쿼리 파라미터가 있는 모든 URL
+Disallow: /development/*  # /development/ 하위 전체</pre>
+
+          <h3><code>$</code> — URL 끝 앵커</h3>
+<pre>Disallow: /example$       # 정확히 /example로 끝나는 URL만 차단
+                          # /example-page, /examples 는 차단 안 됨
+Disallow: /*.pdf$         # .pdf로 끝나는 모든 URL</pre>
+
+          <div class="callout-info not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-sky-500">💡</span>
+              <p class="text-sm text-sky-800"><strong>조합 예시:</strong> <code>Disallow: /*.php$</code>는 <code>*</code>와 <code>$</code>를 결합해 ".php로 끝나는 모든 경로"를 차단한다.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 5: 우선순위 -->
+        <section id="priority">
+          <h2>우선순위 결정 방식</h2>
+          <p>RFC 9309는 <strong>경로 길이(Specificity) 기반 최장 일치(Longest Match) 우선</strong> 원칙을 정의한다.</p>
+
+          <h3>기본 원칙</h3>
+          <table>
+            <thead><tr><th>상황</th><th>규칙</th><th>결과</th></tr></thead>
+            <tbody>
+              <tr><td>경로 길이 다름</td><td>긴 경로 vs 짧은 경로</td><td><strong>긴 경로 우선</strong></td></tr>
+              <tr><td>동일 길이 Allow+Disallow 충돌</td><td>동등한 두 규칙 경합</td><td><strong>Allow 우선</strong> (덜 제한적)</td></tr>
+              <tr><td>매칭 규칙 없음</td><td>-</td><td><strong>Allow (기본값)</strong></td></tr>
+            </tbody>
+          </table>
+
+          <h3>실전 예시</h3>
+<pre># 예시 1: 길이 기반 우선순위
+User-agent: *
+Disallow: /admin/            # 길이 7
+Allow: /admin/public/        # 길이 14 ← 더 길어서 우선
+
+GET /admin/public/file.html  → ALLOW  ✓
+GET /admin/private/data.json → DISALLOW ✗
+
+# 예시 2: 동일 길이 — Allow 우선
+User-agent: *
+Disallow: /test/
+Allow: /test/
+
+GET /test/page.html → ALLOW (길이 같을 때 Allow 우선)
+
+# 예시 3: 여러 User-agent 그룹
+User-agent: Googlebot
+Disallow: /private/
+
+User-agent: *
+Disallow: /temp/
+
+# Googlebot → /private/ 적용, /temp/ 도 적용(*)
+# Bingbot → /temp/ 만 적용 (Googlebot 그룹 미해당)</pre>
+
+          <div class="callout-warn not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-amber-500">⚠️</span>
+              <div>
+                <p class="text-sm text-amber-800 font-semibold mb-1">User-agent 그룹 상속 없음</p>
+                <p class="text-sm text-amber-800">특정 User-agent 규칙은 <code>*</code> 그룹 규칙을 자동으로 포함하지 않는다. Googlebot에 대한 규칙이 있으면 <code>*</code> 그룹 규칙과 <strong>독립적으로</strong> 평가된다.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 6: 실제 동작 -->
+        <section id="behavior">
+          <h2>크롤러 실제 동작 방식</h2>
+
+          <h3>HTTP 상태코드별 처리 (RFC 9309)</h3>
+          <table>
+            <thead><tr><th>상태코드</th><th>처리 방식</th><th>효과</th></tr></thead>
+            <tbody>
+              <tr><td><code>200 OK</code></td><td>파일 파싱</td><td>규칙 적용</td></tr>
+              <tr><td><code>404 Not Found</code></td><td>EMPTY_RULES 가정</td><td><span class="badge badge-green">모든 경로 허용</span></td></tr>
+              <tr><td><code>401/403</code></td><td>UNAVAILABLE</td><td><span class="badge badge-green">모든 경로 허용</span> (접근 불가 → 허용으로 처리)</td></tr>
+              <tr><td><code>5xx</code></td><td>UNREACHABLE</td><td><span class="badge badge-red">모든 경로 차단</span> (서버 장애 중 보수적 처리)</td></tr>
+              <tr><td><code>30x</code></td><td>리다이렉트 추적</td><td>최종 URL의 robots.txt 적용</td></tr>
+            </tbody>
+          </table>
+
+          <h3>캐싱 정책 (Google 기준)</h3>
+          <ul>
+            <li>기본 캐시 TTL: <strong>최대 24시간</strong></li>
+            <li><code>Cache-Control: max-age</code> 헤더가 있으면 해당 값 따름</li>
+            <li>타임아웃/연결 실패 시: 마지막 알려진 버전 사용</li>
+            <li>지속적 5xx 장애 시: 최후 작동 버전 유지하며 재시도</li>
+          </ul>
+
+          <h3>파일 크기 제한</h3>
+          <p>RFC 9309는 크롤러가 최소 <strong>500 KiB</strong>를 처리할 수 있어야 한다고 규정한다. 이를 초과하는 부분은 크롤러가 무시할 수 있다.</p>
+        </section>
+
+        <!-- 섹션 7: 허점 -->
+        <section id="vulnerabilities">
+          <h2>5가지 핵심 허점</h2>
+
+          <h3>허점 1 — 법적 구속력 없음 (신사협정)</h3>
+          <p>
+            robots.txt는 법적으로 강제되지 않는 자발적 프로토콜이다.
+            미국 Ninth Circuit 항소법원 판례 <strong>hiQ Labs v. LinkedIn (2022)</strong>에 따르면,
+            공개된 데이터에 대한 접근은 CFAA(Computer Fraud and Abuse Act) 위반이 되지 않는다.
+            CFAA는 사용자명/비밀번호 같은 기술적 인증 우회에만 적용된다.
+          </p>
+
+          <div class="not-prose grid grid-cols-2 gap-4 my-4">
+            <div class="border border-green-200 rounded-xl p-4 bg-green-50">
+              <p class="text-xs font-semibold text-green-700 mb-2">기술적 차단 (강제 가능)</p>
+              <ul class="text-sm text-green-800 space-y-1">
+                <li>• HTTP 401/403 인증</li>
+                <li>• IP 차단</li>
+                <li>• WAF/Cloudflare 규칙</li>
+                <li>• Rate Limiting</li>
+              </ul>
+            </div>
+            <div class="border border-red-200 rounded-xl p-4 bg-red-50">
+              <p class="text-xs font-semibold text-red-700 mb-2">robots.txt (신사협정)</p>
+              <ul class="text-sm text-red-800 space-y-1">
+                <li>• 법적 구속력 없음</li>
+                <li>• 착한 크롤러만 따름</li>
+                <li>• 실제 접근은 막지 못함</li>
+                <li>• 위반 시 제재 수단 없음</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 8: AI 크롤러 위반 -->
+        <section id="ai-crawlers">
+          <h2>AI 크롤러 위반 현황</h2>
+          <p>2024년 영국 뉴스 사이트를 대상으로 한 연구에서 AI 크롤러의 <strong>72%</strong>가 robots.txt 지시를 무시한 것으로 확인됐다.</p>
+
+          <table>
+            <thead><tr><th>크롤러</th><th>기업</th><th>robots.txt 준수</th><th>비고</th></tr></thead>
+            <tbody>
+              <tr><td><code>GPTBot</code></td><td>OpenAI</td><td><span class="badge badge-orange">1,700:1 비율</span></td><td>학습용. OAI-SearchBot과 분리됨</td></tr>
+              <tr><td><code>ClaudeBot</code></td><td>Anthropic</td><td><span class="badge badge-red">73,000:1 비율</span></td><td>학습용</td></tr>
+              <tr><td><code>OAI-SearchBot</code></td><td>OpenAI</td><td><span class="badge badge-orange">급증 중</span></td><td>검색용, 2024년 12월 분리</td></tr>
+              <tr><td><code>Google-Extended</code></td><td>Google</td><td><span class="badge badge-blue">별도 제어</span></td><td>SGE/Gemini용</td></tr>
+              <tr><td><code>Googlebot</code></td><td>Google</td><td><span class="badge badge-green">대체로 준수</span></td><td>일반 검색</td></tr>
+              <tr><td><code>Bingbot</code></td><td>Microsoft</td><td><span class="badge badge-green">대체로 준수</span></td><td>일반 검색</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout-danger not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-red-500">🚨</span>
+              <div>
+                <p class="text-sm font-semibold text-red-800 mb-1">Anthropic 봇 3분류 문제</p>
+                <p class="text-sm text-red-700">ClaudeBot만 차단해도 불완전하다. <code>Claude-User</code>(사용자가 Claude에서 링크 방문)와 <code>Claude-SearchBot</code>(검색 기능)은 별도로 차단해야 한다. <code>ChatGPT-User</code>처럼 인터랙티브 접근은 robots.txt로 제어 자체가 불가능하다.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 9: 정보 누출 -->
+        <section id="leakage">
+          <h2>정보 누출 역설 (robots.txt Leakage)</h2>
+          <p>
+            robots.txt는 크롤러를 <em>막기 위해</em> 경로를 나열한다.
+            그런데 이 파일 자체가 공개 URL(<code>/robots.txt</code>)에 위치해 있기 때문에,
+            악의적 행위자에게 <strong>공격 지도(attack map)</strong>를 제공하는 역설이 발생한다.
+          </p>
+
+<pre># 이 robots.txt는 공격자에게 다음을 알려준다:
+Disallow: /admin/           # → 관리자 패널 위치
+Disallow: /backup/          # → 백업 파일 위치
+Disallow: /api/v1/users/    # → API 구조
+Disallow: /.git/            # → Git 저장소 위치
+Disallow: /database/backup.sql  # → 직접 DB 파일 경로!</pre>
+
+          <div class="callout-warn not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-amber-500">⚠️</span>
+              <div>
+                <p class="text-sm font-semibold text-amber-800 mb-1">이중 모순</p>
+                <p class="text-sm text-amber-800">선의의 크롤러(Google, Bing)는 차단되지만, 악의적 행위자는 robots.txt를 읽고 오히려 공격 대상을 파악한다. 정말 민감한 경로는 robots.txt에 노출하는 대신 <strong>기술적 인증</strong>(401/403, IP 차단)으로 보호해야 한다.</p>
+              </div>
+            </div>
+          </div>
+
+          <h3>나머지 허점 요약</h3>
+          <ul>
+            <li><strong>동적 콘텐츠 차단 불가</strong> — JavaScript SPA, GraphQL 쿼리는 robots.txt로 차단 불가</li>
+            <li><strong>기술적 차단이 아님</strong> — robots.txt는 "팻말"이고, HTTP 403은 "울타리"다. 파일은 실제로 접근 가능한 상태다</li>
+            <li><strong>User-Agent 위조 가능</strong> — <code>curl -A "Googlebot/2.1"</code>으로 누구나 크롤러를 흉내 낼 수 있다</li>
+          </ul>
+        </section>
+
+        <!-- 섹션 10: 크롤러 목록 -->
+        <section id="useragents">
+          <h2>주요 크롤러 User-Agent 목록</h2>
+
+          <h3>검색 엔진</h3>
+          <table>
+            <thead><tr><th>User-Agent</th><th>기업</th><th>용도</th></tr></thead>
+            <tbody>
+              <tr><td><code>Googlebot</code></td><td>Google</td><td>일반 검색 인덱싱</td></tr>
+              <tr><td><code>Google-Extended</code></td><td>Google</td><td>Gemini/SGE AI 학습용 (별도 제어)</td></tr>
+              <tr><td><code>Bingbot</code></td><td>Microsoft</td><td>Bing 검색 인덱싱</td></tr>
+              <tr><td><code>YandexBot</code></td><td>Yandex</td><td>Yandex 검색</td></tr>
+              <tr><td><code>Baiduspider</code></td><td>Baidu</td><td>바이두 검색</td></tr>
+              <tr><td><code>Applebot</code></td><td>Apple</td><td>Spotlight/Siri 인덱싱</td></tr>
+              <tr><td><code>Applebot-Extended</code></td><td>Apple</td><td>Apple AI 학습용</td></tr>
+            </tbody>
+          </table>
+
+          <h3>AI/LLM 크롤러</h3>
+          <table>
+            <thead><tr><th>User-Agent</th><th>기업</th><th>용도</th></tr></thead>
+            <tbody>
+              <tr><td><code>GPTBot</code></td><td>OpenAI</td><td>ChatGPT 학습 데이터 수집</td></tr>
+              <tr><td><code>OAI-SearchBot</code></td><td>OpenAI</td><td>ChatGPT 검색 결과 인덱싱 (2024.12~)</td></tr>
+              <tr><td><code>ClaudeBot</code></td><td>Anthropic</td><td>Claude 학습 데이터 수집</td></tr>
+              <tr><td><code>Claude-User</code></td><td>Anthropic</td><td>사용자가 Claude에서 링크 방문</td></tr>
+              <tr><td><code>Claude-SearchBot</code></td><td>Anthropic</td><td>Claude 검색 기능</td></tr>
+              <tr><td><code>PerplexityBot</code></td><td>Perplexity</td><td>AI 검색 인덱싱</td></tr>
+              <tr><td><code>CCBot</code></td><td>Common Crawl</td><td>공개 웹 아카이브 (AI 학습 데이터 소스)</td></tr>
+              <tr><td><code>Bytespider</code></td><td>ByteDance</td><td>TikTok 관련 데이터 수집</td></tr>
+              <tr><td><code>Meta-ExternalAgent</code></td><td>Meta</td><td>Meta AI 제품용</td></tr>
+              <tr><td><code>Amazonbot</code></td><td>Amazon</td><td>Alexa/AI 관련 수집</td></tr>
+              <tr><td><code>cohere-ai</code></td><td>Cohere</td><td>Cohere 모델 학습</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout-info not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-sky-500">💡</span>
+              <p class="text-sm text-sky-800"><strong>User-Agent는 쉽게 위조 가능하다.</strong> 공식 크롤러 IP 확인은 역 DNS 조회로만 가능하다. Google은 <code>developers.google.com/search/docs/crawling-indexing/verifying-googlebot</code>에서 공식 IP를 제공한다.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 11: 코드 예시 -->
+        <section id="examples">
+          <h2>코드 예시</h2>
+
+          <h3>1. AI 학습 봇 차단 + 검색 엔진 허용</h3>
+<pre># AI 학습용 크롤러 차단 (권장 설정)
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: OAI-SearchBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Claude-User
+Disallow: /
+
+User-agent: Claude-SearchBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+# 기본 검색 엔진은 허용
+User-agent: *
+Disallow: /admin/
+Disallow: /private/
+Disallow: /staging/
+
+Sitemap: https://example.com/sitemap.xml</pre>
+
+          <h3>2. 와일드카드 활용 (쿼리·파일타입 차단)</h3>
+<pre>User-agent: *
+
+# 쿼리 파라미터 포함 URL 전체 차단 (추적 파라미터)
+Disallow: /*?
+
+# 특정 파일 타입 차단
+Disallow: /*.pdf$
+Disallow: /*.xml$
+
+# 특정 경로 패턴 차단
+Disallow: /search*
+Disallow: /api/private/*
+
+# 관리자 차단 + 공개 서브경로 허용
+Disallow: /admin/
+Allow: /admin/status  # 공개 상태 페이지만 허용
+
+Sitemap: https://example.com/sitemap.xml</pre>
+
+          <h3>3. 크롤러별 맞춤형 Crawl-delay</h3>
+<pre># Googlebot은 Crawl-delay 무시하므로 설정 불필요
+User-agent: Bingbot
+Crawl-delay: 2
+
+User-agent: YandexBot
+Crawl-delay: 2
+
+User-agent: *
+Disallow: /admin/
+Crawl-delay: 5    # Googlebot 외 크롤러에 5초 대기 적용
+
+Sitemap: https://example.com/sitemap.xml</pre>
+        </section>
+
+        <!-- 섹션 12: 대안 -->
+        <section id="alternatives">
+          <h2>대안 및 보완책</h2>
+
+          <h3>X-Robots-Tag HTTP 헤더</h3>
+          <p>페이지 수준에서 인덱싱을 제어한다. HTML뿐 아니라 PDF, 이미지 등 모든 파일 타입에 적용 가능하다.</p>
+<pre># Nginx 설정 예시
+location /private/ {
+    add_header X-Robots-Tag "noindex, nofollow";
+}
+
+# HTTP 응답 헤더
+X-Robots-Tag: noindex, nofollow
+X-Robots-Tag: noindex          # 인덱싱만 금지 (크롤링은 허용)
+X-Robots-Tag: none             # 모든 것 금지</pre>
+
+          <table>
+            <thead><tr><th>비교</th><th>robots.txt</th><th>X-Robots-Tag</th></tr></thead>
+            <tbody>
+              <tr><td>적용 범위</td><td>경로 전체</td><td>개별 페이지/파일</td></tr>
+              <tr><td>동작</td><td>크롤링 차단</td><td>인덱싱 제어</td></tr>
+              <tr><td>파일 타입</td><td>모든 리소스</td><td>HTML, PDF, 이미지 등</td></tr>
+              <tr><td>강제 여부</td><td>신사협정</td><td>신사협정</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Cloudflare Bot Management (기술적 강제)</h3>
+          <p>robots.txt와 달리 실제로 요청이 서버에 도달하지 않도록 기술적으로 차단한다.</p>
+          <ul>
+            <li><strong>Managed Robots.txt</strong> — Cloudflare가 자동 생성·관리, AI 크롤러 자동 차단 (Pro 플랜 이상)</li>
+            <li><strong>AI Crawl Control</strong> — robots.txt 무시하는 봇도 WAF 레벨에서 강제 차단</li>
+            <li><strong>Rate Limiting</strong> — 특정 User-Agent의 요청 속도 제한</li>
+          </ul>
+
+          <h3>llms.txt (신규 제안)</h3>
+          <p>
+            2024년 Jeremy Howard가 제안한 새로운 프로토콜이다.
+            robots.txt가 "무엇을 차단할지"를 알려준다면,
+            llms.txt는 "AI가 무엇을 읽어야 하는지"를 안내하는 Markdown 문서다.
+            공식 RFC는 아니지만 초기 채택 단계에 있다.
+          </p>
+<pre># /llms.txt 예시 (Markdown 형식)
+# My Company
+
+My company is a SaaS platform for project management.
+
+## Key Features
+- Real-time collaboration
+- AI-powered task prioritization
+
+## Licensing
+Creative Commons Attribution 4.0
+
+## API Docs
+- [REST API](https://docs.example.com/api)</pre>
+
+          <h3>계층화된 방어 전략 (Defense in Depth)</h3>
+          <div class="not-prose space-y-2 my-4">
+            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <span class="w-6 h-6 rounded-full bg-sky-100 text-sky-600 text-xs font-bold flex items-center justify-center">1</span>
+              <div>
+                <p class="text-sm font-semibold text-slate-800">robots.txt</p>
+                <p class="text-xs text-slate-500">선의의 크롤러 차단 — 신사협정</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold flex items-center justify-center">2</span>
+              <div>
+                <p class="text-sm font-semibold text-slate-800">X-Robots-Tag / noindex</p>
+                <p class="text-xs text-slate-500">페이지 수준 인덱싱 제어</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <span class="w-6 h-6 rounded-full bg-green-100 text-green-600 text-xs font-bold flex items-center justify-center">3</span>
+              <div>
+                <p class="text-sm font-semibold text-slate-800">Authentication / Authorization</p>
+                <p class="text-xs text-slate-500">HTTP 401/403 기술적 접근 제어</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <span class="w-6 h-6 rounded-full bg-orange-100 text-orange-600 text-xs font-bold flex items-center justify-center">4</span>
+              <div>
+                <p class="text-sm font-semibold text-slate-800">Cloudflare / WAF</p>
+                <p class="text-xs text-slate-500">기술적 강제 차단 — IP/User-Agent 레벨</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <span class="w-6 h-6 rounded-full bg-red-100 text-red-600 text-xs font-bold flex items-center justify-center">5</span>
+              <div>
+                <p class="text-sm font-semibold text-slate-800">Rate Limiting / IP 화이트리스트</p>
+                <p class="text-xs text-slate-500">대량 요청 차단, 공식 크롤러 IP만 허용</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout-tip not-prose">
+            <div class="flex gap-2.5">
+              <span class="text-green-500">✅</span>
+              <div>
+                <p class="text-sm font-semibold text-green-800 mb-1">핵심 요약</p>
+                <p class="text-sm text-green-700">robots.txt는 선의의 크롤러에 대한 1차 방어선일 뿐이다. AI 크롤러가 이를 무시하는 시대에는 <strong>Cloudflare AI Crawl Control</strong>과 같은 기술적 강제 수단을 반드시 병행해야 한다. 민감한 데이터는 반드시 기술적 인증으로 보호하고, robots.txt에 절대 경로를 노출하지 말 것.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 참고 자료 -->
+        <section>
+          <h2>참고 자료</h2>
+          <ul>
+            <li><a href="https://datatracker.ietf.org/doc/html/rfc9309" target="_blank">RFC 9309 — Robots Exclusion Protocol (IETF, 2022)</a></li>
+            <li><a href="https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt" target="_blank">Google Search Central — robots.txt 명세</a></li>
+            <li><a href="https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler" target="_blank">Anthropic Claude Help — 크롤러 차단 방법</a></li>
+            <li><a href="https://paulcalvano.com/2025-08-21-ai-bots-and-robots-txt/" target="_blank">AI Bots and robots.txt — Paul Calvano 연구</a></li>
+            <li><a href="https://developers.cloudflare.com/bots/" target="_blank">Cloudflare Bot Management 문서</a></li>
+            <li><a href="https://better-robots.com/blog/llms-txt-explained" target="_blank">llms.txt 설명 — Better Robots</a></li>
+          </ul>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- 오른쪽 목차 -->
+    <aside class="hidden xl:block fixed top-14 right-0 w-52 bottom-0 py-8 px-4 border-l border-slate-200 overflow-y-auto">
+      <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">이 페이지</p>
+      <div class="space-y-0.5">
+        <a href="#overview" class="toc-item active">역사와 표준화</a>
+        <a href="#structure" class="toc-item">파일 구조</a>
+        <a href="#syntax" class="toc-item">지시어 정리</a>
+        <a href="#wildcards" class="toc-item">와일드카드</a>
+        <a href="#priority" class="toc-item">우선순위 로직</a>
+        <a href="#behavior" class="toc-item">크롤러 동작</a>
+        <a href="#vulnerabilities" class="toc-item">5가지 허점</a>
+        <a href="#ai-crawlers" class="toc-item">AI 크롤러 현황</a>
+        <a href="#leakage" class="toc-item">정보 누출 역설</a>
+        <a href="#useragents" class="toc-item">크롤러 목록</a>
+        <a href="#examples" class="toc-item">코드 예시</a>
+        <a href="#alternatives" class="toc-item">대안 & 보완책</a>
+      </div>
+    </aside>
+
+  </div>
+
+  <script>
+    // 스크롤에 따른 목차 활성화
+    const sections = document.querySelectorAll('section[id]');
+    const tocItems = document.querySelectorAll('.toc-item');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          tocItems.forEach(item => item.classList.remove('active'));
+          const active = document.querySelector(`.toc-item[href="#${entry.target.id}"]`);
+          if (active) active.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach(s => observer.observe(s));
+  </script>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="8DCYJ45" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
