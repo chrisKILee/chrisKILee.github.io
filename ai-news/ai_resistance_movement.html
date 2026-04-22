@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 크롤러 저항: 데이터 오염과 러다이트 2.0</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #111111;
+      --color-secondary: #f1f1f1;
+      --color-surface: #FFFFFF;
+      --color-text: #111827;
+      --color-success: #16A34A;
+      --color-warning: #D97706;
+      --color-danger: #DC2626;
+      --color-accent: #1a1a2e;
+      --font-primary: 'Gelasio', Georgia, serif;
+      --font-mono: 'Ubuntu Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-surface);
+      color: var(--color-text);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      padding-top: 48px;
+    }
+
+    .editorial-rule {
+      border: none;
+      border-top: 2px solid var(--color-primary);
+      margin: 0;
+    }
+
+    /* 헤더 */
+    .site-header {
+      border-bottom: 2px solid var(--color-primary);
+      padding: 20px 24px;
+    }
+
+    .site-header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .site-logo {
+      font-family: var(--font-primary);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .site-nav {
+      display: flex;
+      gap: 32px;
+    }
+
+    .site-nav a {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      text-decoration: none;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+
+    .site-nav a:hover { opacity: 1; }
+    .site-nav a.active { opacity: 1; }
+
+    .site-date {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #6b7280;
+      letter-spacing: 0.05em;
+    }
+
+    /* 히어로 */
+    .hero-section {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 72px 24px 56px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+      align-items: end;
+    }
+
+    .hero-kicker {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--color-surface);
+      background-color: var(--color-primary);
+      padding: 4px 10px;
+      margin-bottom: 28px;
+    }
+
+    .hero-heading {
+      font-family: var(--font-primary);
+      font-size: clamp(36px, 5vw, 68px);
+      font-weight: 700;
+      line-height: 1.07;
+      letter-spacing: -0.025em;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+    }
+
+    .hero-heading em {
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .hero-heading-sub {
+      font-family: var(--font-primary);
+      font-size: clamp(20px, 2.5vw, 32px);
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      color: var(--color-primary);
+      opacity: 0.4;
+      margin-bottom: 36px;
+    }
+
+    .hero-description {
+      font-size: 18px;
+      line-height: 1.72;
+      color: #374151;
+      max-width: 500px;
+    }
+
+    .hero-meta {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 24px;
+      margin-top: 40px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+
+    .hero-meta-value {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-primary);
+    }
+
+    .hero-pullquote {
+      border-left: 4px solid var(--color-primary);
+      padding: 32px 40px;
+      background: var(--color-secondary);
+    }
+
+    .hero-pullquote blockquote {
+      font-size: clamp(16px, 2vw, 22px);
+      font-style: italic;
+      font-weight: 500;
+      line-height: 1.55;
+      color: var(--color-primary);
+      margin-bottom: 20px;
+    }
+
+    .hero-pullquote cite {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-style: normal;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    /* 콘텐츠 */
+    .content-wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e5e7eb;
+    }
+
+    /* 기사 그리드 */
+    .article-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 64px;
+    }
+
+    .article-card {
+      padding: 32px;
+      border-right: 1px solid var(--color-primary);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .article-card:last-child { border-right: none; }
+
+    .article-card-featured {
+      border-right: 2px solid var(--color-primary);
+    }
+
+    .article-category {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+
+    .article-category.highlighted {
+      color: var(--color-surface);
+      background: var(--color-primary);
+      display: inline-block;
+      padding: 2px 8px;
+    }
+
+    .article-title {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--color-primary);
+      margin-bottom: 14px;
+      letter-spacing: -0.01em;
+    }
+
+    .article-card:not(.article-card-featured) .article-title {
+      font-size: 17px;
+    }
+
+    .article-excerpt {
+      font-size: 15px;
+      line-height: 1.65;
+      color: #4b5563;
+      margin-bottom: 16px;
+      flex: 1;
+    }
+
+    .article-byline {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 16px;
+      margin-top: 8px;
+    }
+
+    /* stat 카드 행 */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 64px;
+    }
+
+    .stat-card {
+      padding: 32px 24px;
+      border-right: 1px solid var(--color-primary);
+      text-align: center;
+    }
+
+    .stat-card:last-child { border-right: none; }
+
+    .stat-number {
+      font-family: var(--font-primary);
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 700;
+      color: var(--color-primary);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    .stat-sub {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 6px;
+    }
+
+    /* 데이터 섹션 */
+    .data-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 64px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      text-align: left;
+      padding: 0 0 12px 0;
+      border-bottom: 2px solid var(--color-primary);
+    }
+
+    .data-table td {
+      font-size: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid #e5e7eb;
+      color: var(--color-text);
+      vertical-align: top;
+    }
+
+    .data-table td:first-child {
+      font-weight: 600;
+      color: var(--color-primary);
+      width: 45%;
+      padding-right: 12px;
+    }
+
+    .data-table .mono-val {
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border: 1px solid currentColor;
+      border-radius: 2px;
+    }
+
+    .badge-red { color: var(--color-danger); }
+    .badge-green { color: var(--color-success); }
+    .badge-orange { color: var(--color-warning); }
+    .badge-gray { color: #6b7280; }
+
+    /* 타임라인 */
+    .timeline {
+      border: 1px solid var(--color-primary);
+      padding: 40px 48px;
+      margin-bottom: 64px;
+    }
+
+    .timeline-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 32px;
+      letter-spacing: -0.01em;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 24px;
+      padding: 20px 0;
+      border-bottom: 1px solid #e5e7eb;
+      align-items: start;
+    }
+
+    .timeline-item:last-child { border-bottom: none; }
+
+    .timeline-year {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-primary);
+      padding-top: 2px;
+    }
+
+    .timeline-content h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 6px;
+    }
+
+    .timeline-content p {
+      font-size: 14px;
+      color: #4b5563;
+      line-height: 1.6;
+    }
+
+    /* 상태 스트립 */
+    .status-strip {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 64px;
+    }
+
+    .status-item {
+      flex: 1;
+      padding: 20px 24px;
+      border-right: 1px solid var(--color-primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-item:last-child { border-right: none; }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .status-desc {
+      font-size: 13px;
+      color: #6b7280;
+      margin-left: auto;
+    }
+
+    /* 관점 섹션 */
+    .perspective-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 64px;
+    }
+
+    .perspective-card {
+      padding: 36px;
+      border-right: 1px solid var(--color-primary);
+    }
+
+    .perspective-card:last-child { border-right: none; }
+
+    .perspective-head {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 20px;
+    }
+
+    .perspective-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 16px;
+      line-height: 1.25;
+    }
+
+    .perspective-card p {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #4b5563;
+      margin-bottom: 14px;
+    }
+
+    .list-simple {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .list-simple li {
+      font-size: 14px;
+      color: #4b5563;
+      line-height: 1.6;
+      padding: 8px 0;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .list-simple li:last-child { border-bottom: none; }
+
+    .list-simple li::before {
+      content: '—';
+      font-family: var(--font-mono);
+      color: #9ca3af;
+      flex-shrink: 0;
+    }
+
+    /* 푸터 */
+    .site-footer {
+      border-top: 2px solid var(--color-primary);
+      padding: 32px 24px;
+    }
+
+    .site-footer-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .footer-text {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #9ca3af;
+      letter-spacing: 0.05em;
+    }
+
+    .footer-rule-word {
+      font-family: var(--font-primary);
+      font-size: 13px;
+      font-style: italic;
+      color: #d1d5db;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+
+    @media (max-width: 900px) {
+      .hero-section { grid-template-columns: 1fr; gap: 40px; padding: 48px 16px 40px; }
+      .article-grid { grid-template-columns: 1fr; }
+      .article-card { border-right: none; border-bottom: 1px solid var(--color-primary); }
+      .article-card:last-child { border-bottom: none; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .stat-card:nth-child(2) { border-right: none; }
+      .data-section { grid-template-columns: 1fr; }
+      .perspective-grid { grid-template-columns: 1fr; }
+      .perspective-card { border-right: none; border-bottom: 1px solid var(--color-primary); }
+      .perspective-card:last-child { border-bottom: none; }
+      .status-strip { flex-wrap: wrap; }
+      .status-item { border-right: none; border-bottom: 1px solid var(--color-primary); min-width: 50%; }
+      .site-nav { display: none; }
+      .timeline { padding: 24px 20px; }
+      .content-wrap { padding: 0 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a href="/ai-news/" class="site-logo">🗞️ AI News</a>
+      <nav class="site-nav">
+        <a href="/ai-news/" class="active">최신 기사</a>
+        <a href="/">홈</a>
+      </nav>
+      <span class="site-date">2026-04-22</span>
+    </div>
+  </header>
+
+  <!-- 히어로 -->
+  <section class="hero-section">
+    <div>
+      <span class="hero-kicker">AI 저항 운동 · 심층 분석</span>
+      <h1 class="hero-heading">데이터를 <em>독으로</em><br>채워라</h1>
+      <p class="hero-heading-sub">PoisonFountain · Glaze · Nightshade</p>
+      <p class="hero-description">
+        인터넷 전체 텍스트가 2026년까지 AI 학습 데이터로 소진될 것이라는 전망 속에서,
+        크리에이터·연구자·활동가들이 새로운 저항 전선을 열고 있다. robots.txt는 무시되고,
+        저작권은 회색지대에 놓인 지금 — 데이터 오염(data poisoning)이 유일한 현실적 방어 수단으로 부상하고 있다.
+      </p>
+      <div class="hero-meta">
+        <span class="hero-meta-label">출처</span>
+        <span class="hero-meta-value">GeekNews · news.hada.io</span>
+        <span class="hero-meta-label" style="margin-left:8px;">분류</span>
+        <span class="hero-meta-value">AI 정책 · 크리에이터 권리</span>
+      </div>
+    </div>
+    <div class="hero-pullquote">
+      <blockquote>"우리가 robots.txt를 존중하지 않는다면, 크리에이터들은 우리의 모델을 존중하지 않을 것이다."</blockquote>
+      <cite>— AI 비평가들이 AI 기업에 던지는 역설</cite>
+    </div>
+  </section>
+
+  <div class="content-wrap">
+
+    <!-- 핵심 수치 -->
+    <p class="section-label">핵심 수치</p>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-number">72%</div>
+        <div class="stat-label">robots.txt 위반율</div>
+        <div class="stat-sub">영국 뉴스 사이트 대상<br>AI 크롤러 측정 (2024)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">73,000<span style="font-size:0.4em;">:1</span></div>
+        <div class="stat-label">Anthropic 크롤 비율</div>
+        <div class="stat-sub">크롤/robots.txt 준수<br>페이지 수 비율</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">6M+</div>
+        <div class="stat-label">Glaze 다운로드</div>
+        <div class="stat-sub">아티스트 보호 도구<br>누적 다운로드 수</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">250</div>
+        <div class="stat-label">오염 문서로 백도어</div>
+        <div class="stat-sub">LLM에 행동 삽입 필요<br>최소 문서 수 (연구 기준)</div>
+      </div>
+    </div>
+
+    <!-- 메인 기사 그리드 -->
+    <p class="section-label">핵심 이슈</p>
+    <div class="article-grid">
+      <div class="article-card article-card-featured">
+        <p class="article-category highlighted">Lead Story</p>
+        <h2 class="article-title">PoisonFountain.org — "인터넷에 독을 놓자"</h2>
+        <p class="article-excerpt">
+          PoisonFountain.org는 AI 크롤러를 타깃으로 한 의도적인 쓰레기 텍스트를 배포하는 프로젝트다.
+          사이트 방문자는 AI 봇이 접근하면 의미 없는 반복 텍스트, 잘못된 사실, 모순된 정보로 가득 찬
+          페이지를 제공받는다. 목표는 단순하다: 학습 데이터를 오염시켜 모델의 품질을 저하시키는 것.
+        </p>
+        <p class="article-excerpt">
+          실제 효과성에 대한 연구도 존재한다. 2023년 발표된 논문에 따르면 단 250개의 오염된 문서만으로도
+          LLM에 의도하지 않은 행동 패턴("백도어")을 삽입하는 것이 가능함을 보였다.
+          PoisonFountain은 이 원리를 집단적으로 실천하는 시도다.
+        </p>
+        <p class="article-excerpt">
+          프로젝트의 철학은 명확하다: AI 기업이 동의 없이 데이터를 수집하는 한, 크리에이터는
+          동의 없이 학습 데이터를 파괴할 권리가 있다. "허락 없이 가져가면, 허락 없이 돌려준다."
+        </p>
+        <p class="article-byline">PoisonFountain.org · 데이터 오염 · AI 저항 전략</p>
+      </div>
+
+      <div class="article-card">
+        <p class="article-category">크롤러 위반</p>
+        <h2 class="article-title">robots.txt는 사실상 사문화됐다</h2>
+        <p class="article-excerpt">
+          영국 뉴스 사이트 조사 결과 AI 크롤러의 72%가 robots.txt 지시를 무시했다.
+          OpenAI의 GPTBot은 크롤 1,700페이지당 1페이지만 robots.txt 지시를 따랐다.
+          Anthropic의 ClaudeBot은 이보다 심각해 73,000:1 비율로 측정됐다.
+        </p>
+        <p class="article-excerpt">
+          법적 구속력이 없는 robots.txt는 "신사협정"에 불과하다.
+          AI 붐 이전 검색 엔진들은 이를 대체로 준수했지만,
+          학습 데이터 경쟁이 격화되면서 이 규범은 붕괴됐다.
+        </p>
+        <p class="article-byline">영국 뉴스 미디어 연구 · 2024</p>
+      </div>
+
+      <div class="article-card">
+        <p class="article-category">도구 · 기술</p>
+        <h2 class="article-title">Glaze & Nightshade: 아티스트의 방패</h2>
+        <p class="article-excerpt">
+          시카고 대학 연구팀이 개발한 Glaze는 이미지에 인간 눈에 보이지 않는 노이즈를 추가해
+          AI 스타일 모방을 방해한다. Nightshade는 여기서 더 나아가 AI 모델의 학습 데이터를
+          능동적으로 오염시키는 "공격적" 버전이다.
+        </p>
+        <p class="article-excerpt">
+          두 도구의 누적 다운로드는 600만 회를 넘어섰다.
+          이미지 생성 AI로 생계를 위협받는 일러스트레이터, 사진작가 사이에서
+          입소문으로 퍼지고 있다.
+        </p>
+        <p class="article-byline">시카고 대학 SAND Lab · 아티스트 보호 도구</p>
+      </div>
+    </div>
+
+    <!-- 타임라인 -->
+    <p class="section-label">저항 운동의 역사</p>
+    <div class="timeline">
+      <h3 class="timeline-title">러다이트 2.0 — 기술 저항의 계보</h3>
+      <div class="timeline-item">
+        <span class="timeline-year">1811–1816</span>
+        <div class="timeline-content">
+          <h4>원조 러다이트 운동 (영국)</h4>
+          <p>산업혁명 시대 섬유 노동자들이 자신들의 일자리를 빼앗는 자동화 기계를 파괴한 운동.
+            단순한 "기술 반대"가 아니라 노동 조건과 생계 보호를 위한 정치적 저항이었다.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <span class="timeline-year">2022</span>
+        <div class="timeline-content">
+          <h4>이미지 생성 AI 폭발적 성장</h4>
+          <p>Stable Diffusion, Midjourney, DALL-E 2 공개. 수억 장의 저작권 이미지가
+            동의 없이 학습 데이터로 사용됐다는 사실이 밝혀지며 아티스트 커뮤니티 분노 폭발.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <span class="timeline-year">2023</span>
+        <div class="timeline-content">
+          <h4>Glaze · Nightshade 출시 & 집단 소송</h4>
+          <p>시카고 대학 연구팀이 아티스트 보호 도구를 공개했고, 미국에서 Getty Images vs.
+            Stability AI, 작가 집단 vs. OpenAI 등 대형 저작권 소송이 연이어 제기됐다.
+            robots.txt 위반 실태가 언론을 통해 본격 보도되기 시작.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <span class="timeline-year">2024–2025</span>
+        <div class="timeline-content">
+          <h4>PoisonFountain · 집단 데이터 오염 운동 부상</h4>
+          <p>소송과 정책 변화를 기다리지 않는 직접 행동 운동이 등장. PoisonFountain.org 등
+            오염 데이터 배포 프로젝트가 조직화되기 시작. Glaze 누적 다운로드 600만 돌파.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <span class="timeline-year">2026</span>
+        <div class="timeline-content">
+          <h4>인터넷 텍스트 데이터 포화 전망</h4>
+          <p>연구자들은 고품질 인터넷 텍스트 데이터가 2026년까지 현재 모델의 학습 수요를 충족하지
+            못할 것이라고 경고. AI 기업들은 합성 데이터와 새로운 데이터 소스 확보에 총력을 기울이는 중.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 데이터 비교 -->
+    <p class="section-label">주요 AI 기업 크롤러 행동 비교</p>
+    <div class="data-section">
+      <div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>크롤러</th>
+              <th>기업</th>
+              <th>robots.txt 준수</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>GPTBot</td>
+              <td>OpenAI</td>
+              <td><span class="badge badge-orange">1,700:1 비율</span></td>
+            </tr>
+            <tr>
+              <td>ClaudeBot</td>
+              <td>Anthropic</td>
+              <td><span class="badge badge-red">73,000:1 비율</span></td>
+            </tr>
+            <tr>
+              <td>Googlebot</td>
+              <td>Google</td>
+              <td><span class="badge badge-green">대체로 준수</span></td>
+            </tr>
+            <tr>
+              <td>Bingbot</td>
+              <td>Microsoft</td>
+              <td><span class="badge badge-green">대체로 준수</span></td>
+            </tr>
+            <tr>
+              <td>AI 크롤러 평균</td>
+              <td>(영국 뉴스 기준)</td>
+              <td><span class="badge badge-red">72% 위반</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>저항 도구</th>
+              <th>방식</th>
+              <th>현황</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Glaze</td>
+              <td class="mono-val">스타일 교란 노이즈</td>
+              <td><span class="badge badge-green">6M+ 다운로드</span></td>
+            </tr>
+            <tr>
+              <td>Nightshade</td>
+              <td class="mono-val">능동적 데이터 오염</td>
+              <td><span class="badge badge-green">공개 배포 중</span></td>
+            </tr>
+            <tr>
+              <td>PoisonFountain</td>
+              <td class="mono-val">쓰레기 텍스트 배포</td>
+              <td><span class="badge badge-orange">운동 조직 중</span></td>
+            </tr>
+            <tr>
+              <td>robots.txt 강화</td>
+              <td class="mono-val">접근 차단 선언</td>
+              <td><span class="badge badge-gray">실효성 의문</span></td>
+            </tr>
+            <tr>
+              <td>저작권 소송</td>
+              <td class="mono-val">법적 구제</td>
+              <td><span class="badge badge-orange">진행 중</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 관점 비교 -->
+    <p class="section-label">논쟁의 두 축</p>
+    <div class="perspective-grid">
+      <div class="perspective-card">
+        <p class="perspective-head">저항론</p>
+        <h3>데이터 오염은 정당한 자기 방어다</h3>
+        <p>
+          AI 기업들은 수십억 개의 저작물을 동의나 보상 없이 가져갔다.
+          법원과 의회가 이를 해결하기를 기다리는 동안, 실질적인 피해는 지금 일어나고 있다.
+          데이터 오염은 크리에이터에게 남은 몇 안 되는 실질적 수단이다.
+        </p>
+        <ul class="list-simple">
+          <li>robots.txt는 법적 구속력이 없으며 AI 기업들이 이미 무시하고 있다</li>
+          <li>소송은 수년이 걸리고 개인 크리에이터가 감당하기 어렵다</li>
+          <li>Nightshade/Glaze는 실제로 스타일 모방을 어렵게 만드는 효과가 입증됐다</li>
+          <li>250개 문서면 LLM에 행동 패턴을 삽입할 수 있다 — 집단적 오염은 가능하다</li>
+        </ul>
+      </div>
+      <div class="perspective-card">
+        <p class="perspective-head">반론</p>
+        <h3>오염은 역효과를 낳을 수 있다</h3>
+        <p>
+          데이터 오염의 실제 효과는 불분명하며, 대규모 모델은 소수의 오염 데이터를 희석시킬 수 있다.
+          또한 법적 회색지대에서의 저항이 역으로 크리에이터를 법적 위험에 노출시킬 수 있다는 우려도 있다.
+        </p>
+        <ul class="list-simple">
+          <li>수십억 토큰 학습 데이터에서 수천 개의 오염 문서는 통계적으로 미미할 수 있다</li>
+          <li>의도적 오염 행위 자체가 법적 책임을 유발할 가능성 존재</li>
+          <li>AI 기업들은 오염 탐지 및 제거 기술을 고도화하고 있다</li>
+          <li>정책 변화 · 라이선스 협약이 더 지속 가능한 해법일 수 있다</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 현재 상태 -->
+    <p class="section-label">운동 현황</p>
+    <div class="status-strip">
+      <div class="status-item">
+        <span class="status-dot" style="background:#DC2626;"></span>
+        <span class="status-label" style="color:#DC2626;">Nightshade</span>
+        <span class="status-desc">이미지 오염 — 활성</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:#D97706;"></span>
+        <span class="status-label" style="color:#D97706;">PoisonFountain</span>
+        <span class="status-desc">텍스트 오염 — 확산 중</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:#16A34A;"></span>
+        <span class="status-label" style="color:#16A34A;">Glaze</span>
+        <span class="status-desc">스타일 보호 — 600만+</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:#6b7280;"></span>
+        <span class="status-label" style="color:#6b7280;">저작권 소송</span>
+        <span class="status-desc">법원 심리 진행 중</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 푸터 -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <span class="footer-text">2026-04-22 · AI News · page.chrisnolja.dev</span>
+      <span class="footer-rule-word">«finis»</span>
+      <span class="footer-text">출처: GeekNews / PoisonFountain.org / 시카고 대학 SAND Lab</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="UPJ97JY" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
