@@ -74,14 +74,14 @@
       grid-template-columns: 240px 1fr 200px;
       max-width: 1400px;
       margin: 0 auto;
-      padding-top: 52px;
+      padding-top: 0;      /* body padding-top을 page-header.js가 동적으로 설정 */
       min-height: 100vh;
     }
 
     /* ── 사이드바 ── */
     .sidebar {
-      position: sticky; top: 52px;
-      height: calc(100vh - 52px); overflow-y: auto;
+      position: sticky; top: 108px;  /* JS가 body padding-top 기준으로 보정 */
+      height: calc(100vh - 108px); overflow-y: auto;
       border-right: 1px solid var(--slate-200);
       padding: 1.5rem 1rem;
       align-self: start;
@@ -109,8 +109,8 @@
 
     /* ── 오른쪽 목차 ── */
     .toc {
-      position: sticky; top: 52px;
-      height: calc(100vh - 52px); overflow-y: auto;
+      position: sticky; top: 108px;
+      height: calc(100vh - 108px); overflow-y: auto;
       border-left: 1px solid var(--slate-200);
       padding: 1.5rem 1rem;
       align-self: start;
@@ -154,7 +154,7 @@
     .quick-card-desc { font-size: 12px; color: var(--slate-400); }
 
     /* ── 섹션 공통 ── */
-    section { margin-bottom: 3rem; scroll-margin-top: 72px; }
+    section { margin-bottom: 3rem; scroll-margin-top: 108px; }
     .section-title {
       font-size: 1.35rem; font-weight: 800; color: var(--slate-900);
       margin-bottom: 1rem; padding-bottom: 0.6rem;
@@ -898,13 +898,32 @@ export default config</div>
       </div>
     </section>
 
+    <!-- 다운로드 버튼 스타일 -->
+    <style>
+      .dl-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.25rem 0; }
+      .dl-btn {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 700;
+        text-decoration: none; transition: all 0.15s; border: 1.5px solid;
+      }
+      .dl-btn.primary { background: var(--sky); color: #fff; border-color: var(--sky); }
+      .dl-btn.primary:hover { background: #0284c7; border-color: #0284c7; }
+      .dl-btn.outline { background: #fff; color: var(--slate-700); border-color: var(--slate-300); }
+      .dl-btn.outline:hover { background: var(--slate-50); border-color: var(--slate-400); }
+    </style>
+
     <!-- 7. CI 워크플로우 -->
     <section id="ci-yml">
       <h2 class="section-title"><span class="section-icon">⚙️</span> CI 워크플로우 설정</h2>
       <p>
-        <span class="inline-code">.github/workflows/</span>에 두 파일이 필요합니다.
-        Confluence 댓글에서 템플릿을 다운로드할 수 있습니다.
+        <span class="inline-code">.github/workflows/</span>에 두 파일을 추가합니다.
+        아래에서 직접 다운로드하거나, Confluence 배포 가이드 댓글에서도 받을 수 있습니다.
       </p>
+
+      <div class="dl-row">
+        <a href="/assets/terroir/ci.yml" download class="dl-btn primary">⬇ ci.yml 다운로드</a>
+        <a href="/assets/terroir/fe-build.yml" download class="dl-btn outline">⬇ fe-build.yml 다운로드</a>
+      </div>
 
       <div class="table-wrap">
         <table>
@@ -1244,14 +1263,31 @@ export const dynamic = 'force-dynamic'</div>
 </div>
 
 <script>
-// 사이드바 스크롤 하이라이트
+// ── header offset 동적 보정 ──
+// page-header.js가 body.paddingTop을 설정한 뒤 실행되도록 rAF 두 번 대기
+function applyHeaderOffset() {
+  const pt = parseInt(getComputedStyle(document.body).paddingTop) || 108;
+  const offset = pt + 8;  // 여유 8px
+
+  document.querySelectorAll('section[id]').forEach(s => {
+    s.style.scrollMarginTop = offset + 'px';
+  });
+  const sidebar = document.querySelector('.sidebar');
+  const toc     = document.querySelector('.toc');
+  if (sidebar) { sidebar.style.top = pt + 'px'; sidebar.style.height = `calc(100vh - ${pt}px)`; }
+  if (toc)     { toc.style.top     = pt + 'px'; toc.style.height     = `calc(100vh - ${pt}px)`; }
+}
+requestAnimationFrame(() => requestAnimationFrame(applyHeaderOffset));
+
+// ── 사이드바 스크롤 하이라이트 ──
 const navLinks = document.querySelectorAll('.nav-link, .toc-link');
 const sections = document.querySelectorAll('section[id]');
 
 function onScroll() {
+  const scrollY = window.scrollY;
   let current = '';
   sections.forEach(s => {
-    if (window.scrollY >= s.offsetTop - 80) current = s.id;
+    if (scrollY >= s.offsetTop - 120) current = s.id;
   });
   navLinks.forEach(link => {
     link.classList.toggle('active', link.getAttribute('href') === '#' + current);

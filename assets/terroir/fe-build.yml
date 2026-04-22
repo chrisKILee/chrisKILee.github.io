@@ -1,0 +1,64 @@
+# Terroir FE Build & Deploy (Dispatch Caller)
+#
+# 사용법: 이 파일을 프로젝트의 .github/workflows/fe-build.yml 에 복사
+#
+# 동작: IDP(Backstage)에서 환경변수를 입력하고 배포 버튼을 누르면 이
+#       workflow가 workflow_dispatch로 호출되어 RND-INFRA의 301 reusable
+#       workflow를 통해 FE 앱을 빌드/푸시/배포한다.
+#
+# 사전 조건:
+#   - VntgCorp org 소속 레포지토리
+#   - 프로젝트 루트에 terroir.json 존재 (apps[].type == "FE")
+#   - 앱 디렉토리에 Dockerfile 존재 ({root}/docker/Dockerfile 또는 {root}/Dockerfile)
+#   - FE Dockerfile이 `COPY .env`로 빌드 타임 환경변수를 수용해야 함
+
+name: Terroir FE Build & Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: '프로젝트 그룹명 (terroir.json apps[].group)'
+        required: true
+        type: string
+      app:
+        description: '앱명 (terroir.json apps[].name, type=FE)'
+        required: true
+        type: string
+      environment:
+        description: '빌드/배포 환경'
+        required: true
+        type: choice
+        options:
+          - dev
+          - lab
+          - prod
+        default: dev
+      env_vars:
+        description: '빌드 타임 환경변수 JSON ({"VITE_API_URL":"..."})'
+        required: false
+        type: string
+      resources:
+        description: '리소스 JSON ({"requests":{...},"limits":{...}})'
+        required: true
+        type: string
+      containerPort:
+        description: '컨테이너 포트 (문자열, 예: "3000")'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write # GCP Workload Identity Federation 인증에 필요
+
+jobs:
+  fe-build:
+    uses: VntgCorp/RND-INFRA/.github/workflows/301-reusable-fe-build.yml@develop
+    with:
+      project: ${{ inputs.project }}
+      app: ${{ inputs.app }}
+      environment: ${{ inputs.environment }}
+      env_vars: ${{ inputs.env_vars }}
+      resources: ${{ inputs.resources }}
+      containerPort: ${{ inputs.containerPort }}
+    secrets: inherit
