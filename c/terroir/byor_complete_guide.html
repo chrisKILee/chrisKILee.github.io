@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terroir BYOR 완전 가이드 — 개발부터 배포까지</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sky: #0ea5e9;
+      --indigo: #6366f1;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #fff;
+      color: var(--slate-700);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* ── 헤더 ── */
+    .site-header {
+      position: fixed; top: 0; inset-x: 0; z-index: 100;
+      height: 52px; border-bottom: 1px solid var(--slate-200);
+      background: rgba(255,255,255,0.95);
+      display: flex; align-items: center; padding: 0 1.5rem;
+    }
+    .header-inner {
+      max-width: 1400px; width: 100%; margin: 0 auto;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-weight: 800; color: var(--slate-900); text-decoration: none; font-size: 14px;
+    }
+    .logo-badge {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--sky), var(--indigo));
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 12px; font-weight: 800;
+    }
+    .header-divider { width: 1px; height: 20px; background: var(--slate-200); }
+    .header-nav { display: flex; gap: 0.25rem; }
+    .header-nav a {
+      padding: 4px 12px; border-radius: 8px; font-size: 13px;
+      color: var(--slate-500); text-decoration: none; transition: all 0.15s;
+    }
+    .header-nav a.active { background: #e0f2fe; color: var(--sky); font-weight: 600; }
+    .header-nav a:hover:not(.active) { background: var(--slate-100); color: var(--slate-800); }
+    .header-version {
+      margin-left: auto;
+      font-size: 11px; background: var(--slate-100); color: var(--slate-500);
+      padding: 3px 10px; border-radius: 99px;
+    }
+
+    /* ── 레이아웃 ── */
+    .layout { max-width: 1400px; margin: 0 auto; display: flex; padding-top: 52px; }
+
+    /* ── 사이드바 ── */
+    .sidebar {
+      position: fixed; top: 52px; bottom: 0;
+      width: 240px; overflow-y: auto;
+      border-right: 1px solid var(--slate-200);
+      padding: 1.5rem 1rem;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 2px; }
+    .nav-group { margin-bottom: 1.5rem; }
+    .nav-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--slate-400);
+      padding: 0 10px; margin-bottom: 6px;
+    }
+    .nav-link {
+      display: block; padding: 5px 10px; font-size: 13px; color: var(--slate-500);
+      border-radius: 6px; text-decoration: none; transition: all 0.15s;
+      margin-bottom: 1px;
+    }
+    .nav-link:hover, .nav-link.active {
+      background: var(--slate-100); color: var(--slate-900);
+    }
+    .nav-link.active { color: var(--sky); background: #e0f2fe; font-weight: 600; }
+
+    /* ── 메인 ── */
+    .main { margin-left: 240px; margin-right: 200px; padding: 2.5rem 3rem; min-height: 100vh; }
+
+    /* ── 오른쪽 목차 ── */
+    .toc {
+      position: fixed; top: 52px; right: 0; bottom: 0;
+      width: 200px; overflow-y: auto;
+      border-left: 1px solid var(--slate-200);
+      padding: 1.5rem 1rem;
+    }
+    .toc-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--slate-400); margin-bottom: 0.75rem;
+    }
+    .toc-link {
+      display: block; font-size: 12px; color: var(--slate-500);
+      text-decoration: none; padding: 4px 0 4px 12px;
+      border-left: 2px solid transparent;
+      transition: all 0.15s; margin-bottom: 1px;
+    }
+    .toc-link:hover { color: var(--slate-800); border-color: var(--slate-300); }
+    .toc-link.active { color: var(--sky); border-color: var(--sky); font-weight: 600; }
+
+    /* ── 히어로 ── */
+    .hero { margin-bottom: 3rem; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #e0f2fe; color: var(--sky); border: 1px solid #bae6fd;
+      border-radius: 99px; padding: 4px 14px; font-size: 12px; font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 800; color: var(--slate-900);
+      line-height: 1.2; margin-bottom: 0.75rem;
+    }
+    .hero-em { color: var(--sky); }
+    .hero-desc { font-size: 16px; color: var(--slate-500); line-height: 1.8; max-width: 640px; }
+    .quick-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1.5rem; }
+    .quick-card {
+      border: 1px solid var(--slate-200); border-radius: 12px;
+      padding: 1rem; text-decoration: none; transition: all 0.2s;
+    }
+    .quick-card:hover { border-color: var(--sky); background: #f0f9ff; }
+    .quick-card-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .quick-card-title { font-size: 13px; font-weight: 700; color: var(--slate-800); }
+    .quick-card-desc { font-size: 12px; color: var(--slate-400); }
+
+    /* ── 섹션 공통 ── */
+    section { margin-bottom: 3rem; scroll-margin-top: 72px; }
+    .section-title {
+      font-size: 1.35rem; font-weight: 800; color: var(--slate-900);
+      margin-bottom: 1rem; padding-bottom: 0.6rem;
+      border-bottom: 2px solid var(--slate-100);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .section-icon { font-size: 1.1rem; }
+    h3 {
+      font-size: 1rem; font-weight: 700; color: var(--slate-800);
+      margin: 1.75rem 0 0.75rem;
+    }
+    p { color: var(--slate-600); margin-bottom: 0.875rem; }
+
+    /* ── 패턴 카드 ── */
+    .pattern-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0; }
+    .pattern-card {
+      border-radius: 14px; padding: 1.25rem;
+      border: 1px solid var(--slate-200);
+    }
+    .pattern-card.type1 { background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-color: #bae6fd; }
+    .pattern-card.type2 { background: linear-gradient(135deg, #f5f3ff, #ede9fe); border-color: #c4b5fd; }
+    .pattern-card.type3 { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-color: #86efac; }
+    .pattern-num {
+      font-size: 11px; font-weight: 800; letter-spacing: 0.05em;
+      text-transform: uppercase; margin-bottom: 0.5rem; opacity: 0.7;
+    }
+    .pattern-name { font-size: 1rem; font-weight: 800; color: var(--slate-900); margin-bottom: 0.25rem; }
+    .pattern-sub { font-size: 13px; color: var(--slate-500); }
+
+    /* ── SVG 다이어그램 ── */
+    .diagram-wrap {
+      background: var(--slate-50); border: 1px solid var(--slate-200);
+      border-radius: 14px; padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto;
+    }
+
+    /* ── 스텝 ── */
+    .steps { display: flex; flex-direction: column; gap: 0; margin: 1.25rem 0; }
+    .step { display: flex; gap: 1rem; }
+    .step-line { display: flex; flex-direction: column; align-items: center; }
+    .step-dot {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; color: #fff;
+      background: linear-gradient(135deg, var(--sky), var(--indigo));
+    }
+    .step-connector { width: 2px; flex: 1; min-height: 20px; background: var(--slate-200); margin: 4px 0; }
+    .step-body { padding-bottom: 1.5rem; flex: 1; }
+    .step-title { font-size: 14px; font-weight: 700; color: var(--slate-900); margin-bottom: 0.375rem; line-height: 32px; }
+    .step-content { font-size: 13px; color: var(--slate-600); line-height: 1.7; }
+
+    /* ── 코드 블록 ── */
+    .code-block {
+      background: var(--slate-900); color: #e2e8f0;
+      border-radius: 12px; padding: 1.25rem 1.5rem;
+      font-family: 'Fira Code', monospace; font-size: 13px;
+      line-height: 1.7; overflow-x: auto; margin: 1rem 0;
+      white-space: pre;
+    }
+    .code-header {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: var(--slate-800); border-radius: 10px 10px 0 0;
+      padding: 0.5rem 1.25rem; margin-bottom: -12px;
+    }
+    .code-dots { display: flex; gap: 5px; }
+    .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .code-lang { margin-left: auto; font-size: 11px; color: var(--slate-400); font-family: 'Fira Code', monospace; }
+    .code-with-header { margin: 1rem 0; }
+    .code-with-header .code-block { border-radius: 0 0 12px 12px; margin-top: 0; }
+    .inline-code {
+      background: var(--slate-100); border-radius: 4px;
+      padding: 1px 6px; font-size: 0.85em; color: #7c3aed;
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* ── 콜아웃 ── */
+    .callout {
+      border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0;
+      display: flex; gap: 0.75rem; align-items: flex-start;
+    }
+    .callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .callout-body { font-size: 13px; line-height: 1.7; }
+    .callout-title { font-weight: 700; margin-bottom: 3px; }
+    .callout.info { background: #f0f9ff; border: 1px solid #bae6fd; }
+    .callout.info .callout-body { color: #0369a1; }
+    .callout.warn { background: #fffbeb; border: 1px solid #fde68a; }
+    .callout.warn .callout-body { color: #92400e; }
+    .callout.danger { background: #fff1f2; border: 1px solid #fecdd3; }
+    .callout.danger .callout-body { color: #9f1239; }
+    .callout.success { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .callout.success .callout-body { color: #065f46; }
+
+    /* ── 테이블 ── */
+    .table-wrap { overflow-x: auto; margin: 1.25rem 0; border-radius: 12px; border: 1px solid var(--slate-200); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { background: var(--slate-50); }
+    th { padding: 10px 14px; font-weight: 700; color: var(--slate-700); text-align: left; border-bottom: 1px solid var(--slate-200); }
+    td { padding: 10px 14px; color: var(--slate-600); border-bottom: 1px solid var(--slate-100); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 99px;
+    }
+    .badge-req { background: #fee2e2; color: #991b1b; }
+    .badge-opt { background: var(--slate-100); color: var(--slate-500); }
+    .badge-cond { background: #fef3c7; color: #92400e; }
+
+    /* ── 체크리스트 ── */
+    .checklist { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin: 1rem 0; }
+    .checklist li {
+      display: flex; align-items: flex-start; gap: 0.625rem;
+      font-size: 14px; color: var(--slate-700);
+    }
+    .check-box {
+      width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0; margin-top: 1px;
+      border: 2px solid var(--slate-300); background: #fff;
+    }
+    .check-box.done { background: var(--emerald); border-color: var(--emerald); }
+
+    /* ── 태그 ── */
+    .tag-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0; }
+    .tag {
+      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px;
+      background: var(--slate-100); color: var(--slate-600);
+    }
+
+    /* ── 반응형 ── */
+    @media (max-width: 1100px) { .toc { display: none; } .main { margin-right: 0; } }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 1.5rem; }
+      .pattern-grid { grid-template-columns: 1fr; }
+      .quick-cards { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/c/terroir/" class="logo">
+      <div class="logo-badge">T</div>
+      Terroir 가이드
+    </a>
+    <div class="header-divider"></div>
+    <nav class="header-nav">
+      <a href="#" class="active">BYOR</a>
+      <a href="#">Greenfield</a>
+      <a href="#">Migration</a>
+    </nav>
+    <span class="header-version">2026-04 작성</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- 왼쪽 사이드바 -->
+  <aside class="sidebar">
+    <div class="nav-group">
+      <p class="nav-label">개요</p>
+      <a href="#intro" class="nav-link active">BYOR란?</a>
+      <a href="#patterns" class="nav-link">온보딩 패턴 3가지</a>
+    </div>
+    <div class="nav-group">
+      <p class="nav-label">개발</p>
+      <a href="#dev-init" class="nav-link">환경 세팅</a>
+      <a href="#dev-workflow" class="nav-link">Claude Code 워크플로우</a>
+      <a href="#dev-sdd" class="nav-link">SDD 파이프라인</a>
+    </div>
+    <div class="nav-group">
+      <p class="nav-label">배포 준비</p>
+      <a href="#terroir-json" class="nav-link">terroir.json</a>
+      <a href="#dockerfile" class="nav-link">Dockerfile</a>
+      <a href="#health-check" class="nav-link">Health Check</a>
+      <a href="#ci-yml" class="nav-link">ci.yml / fe-build.yml</a>
+    </div>
+    <div class="nav-group">
+      <p class="nav-label">KMM IDP 설정</p>
+      <a href="#kmm-db" class="nav-link">DB 앱 설정</a>
+      <a href="#kmm-fe" class="nav-link">FE 앱 환경변수</a>
+      <a href="#deploy-flow" class="nav-link">배포 실행</a>
+    </div>
+    <div class="nav-group">
+      <p class="nav-label">운영</p>
+      <a href="#troubleshoot" class="nav-link">트러블슈팅</a>
+      <a href="#checklist" class="nav-link">배포 체크리스트</a>
+    </div>
+  </aside>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="main">
+
+    <!-- 히어로 -->
+    <div class="hero">
+      <div class="hero-badge">⛰️ Terroir · BYOR 가이드</div>
+      <h1>개발부터 배포까지<br><span class="hero-em">BYOR 완전 가이드</span></h1>
+      <p class="hero-desc">
+        기존 레포를 Terroir에 연결하는 BYOR(Bring Your Own Repo) 방식으로,
+        Claude Code를 활용한 개발부터 KMM IDP 배포까지의 전 과정을 담았습니다.
+      </p>
+      <div class="quick-cards">
+        <a href="#dev-init" class="quick-card">
+          <div class="quick-card-head">
+            <span>🚀</span>
+            <span class="quick-card-title">빠른 시작</span>
+          </div>
+          <p class="quick-card-desc">환경 세팅 → 개발 → 배포 흐름</p>
+        </a>
+        <a href="#checklist" class="quick-card">
+          <div class="quick-card-head">
+            <span>✅</span>
+            <span class="quick-card-title">배포 체크리스트</span>
+          </div>
+          <p class="quick-card-desc">배포 전 필수 확인 사항 모음</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- 1. BYOR란 -->
+    <section id="intro">
+      <h2 class="section-title"><span class="section-icon">🍾</span> BYOR란?</h2>
+      <p>
+        <strong>BYOR (Bring Your Own Repo)</strong>는 VntgCorp org 내 기존 레포지토리를
+        KMM IDP에 연결하는 온보딩 패턴입니다.
+        레포를 이전하거나 새로 만들 필요 없이, 기존 레포 그대로 Terroir 배포 파이프라인에 연결됩니다.
+      </p>
+
+      <!-- 패턴 3가지 -->
+      <section id="patterns">
+        <h3>온보딩 패턴 3가지</h3>
+        <div class="pattern-grid">
+          <div class="pattern-card type1">
+            <div class="pattern-num">Pattern 1</div>
+            <div class="pattern-name">Greenfield</div>
+            <p class="pattern-sub">Terroir 템플릿에서 처음부터 신규 개발</p>
+          </div>
+          <div class="pattern-card type2">
+            <div class="pattern-num">Pattern 2</div>
+            <div class="pattern-name">Migration</div>
+            <p class="pattern-sub">기존 코드를 Terroir 템플릿에 이관·덮어쓰기</p>
+          </div>
+          <div class="pattern-card type3">
+            <div class="pattern-num">Pattern 3</div>
+            <div class="pattern-name">BYOR <em style="font-size:11px;opacity:.7">[바이오아]</em></div>
+            <p class="pattern-sub">VntgCorp org 기존 레포를 IDP에 연결 (레포 이동 없음)</p>
+          </div>
+        </div>
+
+        <!-- 전체 흐름 SVG -->
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:720px;display:block;margin:0 auto">
+            <defs>
+              <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+              </marker>
+            </defs>
+            <!-- 박스들 -->
+            <rect x="10" y="70" width="130" height="60" rx="10" fill="#e0f2fe" stroke="#bae6fd" stroke-width="1.5"/>
+            <text x="75" y="96" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#0369a1" text-anchor="middle">VntgCorp GitHub</text>
+            <text x="75" y="114" font-family="Inter,sans-serif" font-size="11" fill="#0369a1" text-anchor="middle">기존 레포</text>
+
+            <rect x="190" y="70" width="130" height="60" rx="10" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
+            <text x="255" y="96" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#6d28d9" text-anchor="middle">terroir.json</text>
+            <text x="255" y="114" font-family="Inter,sans-serif" font-size="11" fill="#6d28d9" text-anchor="middle">+ CI 워크플로우</text>
+
+            <rect x="370" y="70" width="130" height="60" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+            <text x="435" y="96" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">KMM IDP</text>
+            <text x="435" y="114" font-family="Inter,sans-serif" font-size="11" fill="#065f46" text-anchor="middle">환경변수 설정 + 배포</text>
+
+            <rect x="550" y="70" width="130" height="60" rx="10" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+            <text x="615" y="96" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#c2410c" text-anchor="middle">GKE 클러스터</text>
+            <text x="615" y="114" font-family="Inter,sans-serif" font-size="11" fill="#c2410c" text-anchor="middle">DEV / LAB / PROD</text>
+
+            <!-- 화살표 -->
+            <line x1="140" y1="100" x2="185" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="320" y1="100" x2="365" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="500" y1="100" x2="545" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <!-- 레이블 -->
+            <text x="75" y="148" font-family="Inter,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">① 레포 준비</text>
+            <text x="255" y="148" font-family="Inter,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">② 배포 파일 추가</text>
+            <text x="435" y="148" font-family="Inter,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">③ IDP 앱 등록</text>
+            <text x="615" y="148" font-family="Inter,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">④ 배포 완료</text>
+          </svg>
+        </div>
+      </section>
+    </section>
+
+    <!-- 2. 개발 환경 세팅 -->
+    <section id="dev-init">
+      <h2 class="section-title"><span class="section-icon">🛠️</span> 개발 환경 세팅</h2>
+      <p>Terroir에서 제공하는 개발 환경 init 후 설치되는 구조입니다.</p>
+
+      <div class="callout info">
+        <span class="callout-icon">💡</span>
+        <div class="callout-body">
+          <div class="callout-title">BYOR 사전 조건</div>
+          VntgCorp org 소속 레포 · GitHub Actions 활성화 · Dockerfile 존재 (<span class="inline-code">{root}/Dockerfile</span> 또는 <span class="inline-code">{root}/docker/Dockerfile</span>)
+        </div>
+      </div>
+
+      <h3>Terroir Init 후 생성되는 구조</h3>
+      <div class="code-with-header">
+        <div class="code-header">
+          <div class="code-dots">
+            <div class="code-dot" style="background:#ef4444"></div>
+            <div class="code-dot" style="background:#f59e0b"></div>
+            <div class="code-dot" style="background:#10b981"></div>
+          </div>
+          <span class="code-lang">프로젝트 루트</span>
+        </div>
+        <div class="code-block">/home/chris/git/chris-fun
+├── .claude/
+│   ├── agents/          ← 역할별 에이전트 6종
+│   │   ├── backend-developer-agent.md
+│   │   ├── code-review-agent.md
+│   │   ├── frontend-developer-agent.md
+│   │   ├── integration-qa-agent.md
+│   │   ├── prd-reviewer.md
+│   │   └── qa-agent.md
+│   ├── docs/sdd/        ← SDD 워크플로우 문서
+│   └── skills/          ← SDD 관련 스킬 8종
+│       ├── sdd-classify/   sdd-commit-pr/
+│       ├── sdd-doc-review/ sdd-execute/
+│       ├── sdd-plan/       sdd-prd/
+│       ├── sdd-spec/       sdd-task/
+├── docs/features/        ← PRD·Spec·Task 문서
+└── CLAUDE.md             ← 프로젝트 AI 가이드</div>
+      </div>
+
+      <div class="tag-row">
+        <span class="tag">Next.js 16 App Router</span>
+        <span class="tag">React 19</span>
+        <span class="tag">TypeScript</span>
+        <span class="tag">Tailwind CSS 4</span>
+        <span class="tag">Prisma 7</span>
+        <span class="tag">PostgreSQL</span>
+      </div>
+    </section>
+
+    <!-- 3. Claude Code 워크플로우 -->
+    <section id="dev-workflow">
+      <h2 class="section-title"><span class="section-icon">🤖</span> Claude Code 개발 워크플로우</h2>
+      <p>
+        Terroir init 후 Claude Code를 활용한 SDD(Spec-Driven Development) 파이프라인으로 개발합니다.
+        대규모 기능은 <strong>스펙 → 태스크 → 실행</strong> 순서로 컨텍스트를 분리해 진행합니다.
+      </p>
+
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div class="callout-body">
+          <div class="callout-title">작은 프로젝트 vs 대형 프로젝트</div>
+          소규모 기능은 SDD 전체 파이프라인이 과할 수 있습니다.
+          대형 프로젝트는 스펙 주도 플로우가 품질 관리에 효과적입니다.
+        </div>
+      </div>
+
+      <section id="dev-sdd">
+        <h3>SDD 파이프라인 전체 흐름</h3>
+
+        <!-- SDD 흐름 SVG -->
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:700px;display:block;margin:0 auto">
+            <defs>
+              <marker id="arr2" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+              </marker>
+            </defs>
+            <!-- 단계 박스 -->
+            <rect x="10" y="40" width="100" height="44" rx="8" fill="#e0f2fe" stroke="#bae6fd"/>
+            <text x="60" y="58" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#0369a1" text-anchor="middle">/sdd-prd</text>
+            <text x="60" y="74" font-family="Inter,sans-serif" font-size="10" fill="#0369a1" text-anchor="middle">PRD 작성</text>
+
+            <rect x="130" y="40" width="100" height="44" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
+            <text x="180" y="58" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#6d28d9" text-anchor="middle">/sdd-spec</text>
+            <text x="180" y="74" font-family="Inter,sans-serif" font-size="10" fill="#6d28d9" text-anchor="middle">Spec 확정</text>
+
+            <rect x="250" y="40" width="110" height="44" rx="8" fill="#fef3c7" stroke="#fde68a"/>
+            <text x="305" y="58" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">/sdd-doc-review</text>
+            <text x="305" y="74" font-family="Inter,sans-serif" font-size="10" fill="#92400e" text-anchor="middle">문서 검증 G3</text>
+
+            <rect x="380" y="40" width="100" height="44" rx="8" fill="#f0fdf4" stroke="#86efac"/>
+            <text x="430" y="58" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">/sdd-task</text>
+            <text x="430" y="74" font-family="Inter,sans-serif" font-size="10" fill="#065f46" text-anchor="middle">Task 분해</text>
+
+            <rect x="500" y="40" width="100" height="44" rx="8" fill="#fff1f2" stroke="#fecdd3"/>
+            <text x="550" y="58" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#9f1239" text-anchor="middle">/sdd-execute</text>
+            <text x="550" y="74" font-family="Inter,sans-serif" font-size="10" fill="#9f1239" text-anchor="middle">Task 실행</text>
+
+            <rect x="620" y="40" width="70" height="44" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+            <text x="655" y="58" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#334155" text-anchor="middle">/sdd-commit</text>
+            <text x="655" y="74" font-family="Inter,sans-serif" font-size="10" fill="#334155" text-anchor="middle">커밋·PR</text>
+
+            <!-- 화살표 -->
+            <line x1="110" y1="62" x2="125" y2="62" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <line x1="230" y1="62" x2="245" y2="62" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <line x1="360" y1="62" x2="375" y2="62" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <line x1="480" y1="62" x2="495" y2="62" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <line x1="600" y1="62" x2="615" y2="62" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+            <!-- /clear 레이블 -->
+            <text x="180" y="100" font-family="Inter,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">/clear 컨텍스트 분리</text>
+            <text x="430" y="100" font-family="Inter,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">Task 1개 = 1 세션</text>
+          </svg>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-line">
+              <div class="step-dot">1</div>
+              <div class="step-connector"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">PRD 작성 — <span class="inline-code">/sdd-prd</span></div>
+              <div class="step-content">
+                심층 인터뷰를 통해 요구사항 정리 → <span class="inline-code">docs/features/{feature}/prd.md</span> 생성.
+                PRD 리뷰어가 자동 검증 (Critical / Major 이슈 리포트).
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line">
+              <div class="step-dot">2</div>
+              <div class="step-connector"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Spec 확정 — <span class="inline-code">/sdd-spec</span></div>
+              <div class="step-content">
+                PRD를 기반으로 API 스펙·DB 스키마·UI 스펙 작성.
+                <span class="inline-code">spec.md</span> 생성 후 <strong>Self-Correction 품질 검증</strong> 자동 실행.
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line">
+              <div class="step-dot">3</div>
+              <div class="step-connector"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">문서 검증 Gate — <span class="inline-code">/sdd-doc-review</span></div>
+              <div class="step-content">
+                prd.md + spec.md 검증. <strong>G3 게이트 통과</strong> 시 다음 단계 진행.
+                Critical 0건이어야 통과.
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line">
+              <div class="step-dot">4</div>
+              <div class="step-connector"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Task 분해 — <span class="inline-code">/sdd-task</span></div>
+              <div class="step-content">
+                spec.md를 분석해 구현 가능한 단위로 Task 파일 생성.
+                Task 1개 = 독립적으로 실행 가능한 최소 작업 단위.
+                <div class="code-block" style="margin-top:0.5rem;font-size:12px">docs/features/roulette/tasks/
+├── 001-project-init.md
+├── 002-db-schema-seed.md
+...
+└── 012-gcp-deployment.md</div>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line">
+              <div class="step-dot">5</div>
+              <div class="step-connector"></div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">Task 실행 — <span class="inline-code">/sdd-execute</span></div>
+              <div class="step-content">
+                <strong>Task 1개 = /clear 후 새 세션</strong>에서 실행.
+                개발(backend-developer-agent) + QA(qa-agent) + 코드리뷰(code-reviewer) 병렬 에이전트 실행.
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line">
+              <div class="step-dot">6</div>
+            </div>
+            <div class="step-body">
+              <div class="step-title">커밋 & PR — <span class="inline-code">/sdd-commit-pr</span></div>
+              <div class="step-content">
+                Task 완료 후 자동 커밋·PR 생성. reports/ 폴더에 리포트 작성.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body">
+            <div class="callout-title">TDD 원칙 (Kent Beck)</div>
+            "테스트가 없으면 구현하지 않는다." —
+            반드시 <strong>Red → Green → Refactor</strong> 순서로. 구현 코드 먼저 작성 금지.
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- 4. terroir.json -->
+    <section id="terroir-json">
+      <h2 class="section-title"><span class="section-icon">📋</span> terroir.json 설정</h2>
+      <p>
+        프로젝트 루트에 위치하는 배포 설정 파일. CI가 이 파일을 읽어 빌드 대상과 배포 환경을 결정합니다.
+      </p>
+
+      <div class="callout danger">
+        <span class="callout-icon">🚨</span>
+        <div class="callout-body">
+          <div class="callout-title">version 변경 필수!</div>
+          코드를 변경해도 <span class="inline-code">version</span>을 올리지 않으면 CI가 빌드를 스킵합니다.
+          모든 배포 시 <strong>반드시 version bump</strong> 후 커밋하세요.
+        </div>
+      </div>
+
+      <h3>chris-fun 실제 예시</h3>
+      <div class="code-with-header">
+        <div class="code-header">
+          <div class="code-dots">
+            <div class="code-dot" style="background:#ef4444"></div>
+            <div class="code-dot" style="background:#f59e0b"></div>
+            <div class="code-dot" style="background:#10b981"></div>
+          </div>
+          <span class="code-lang">terroir.json</span>
+        </div>
+        <div class="code-block">{
+  "schema": "1",
+  "environments": {
+    "DEV": "main"
+  },
+  "apps": [
+    {
+      "name": "chris-fun",
+      "root": ".",
+      "group": "chris-fun",
+      "version": "0.1.8",
+      "type": "FE"
+    },
+    {
+      "name": "chris-fun-db",
+      "group": "chris-fun",
+      "type": "DB",
+      "engine": "postgres"
+    }
+  ]
+}</div>
+      </div>
+
+      <h3>필드 설명</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>필드</th>
+              <th>필수</th>
+              <th>설명</th>
+              <th>예시</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="inline-code">schema</span></td>
+              <td><span class="badge badge-req">필수</span></td>
+              <td>스키마 버전 — 현재 "1" 고정</td>
+              <td><span class="inline-code">"1"</span></td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">environments</span></td>
+              <td><span class="badge badge-req">필수</span></td>
+              <td>환경명 → 브랜치 매핑. 키는 대문자 환경명</td>
+              <td><span class="inline-code">{"DEV": "main"}</span></td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">apps[].name</span></td>
+              <td><span class="badge badge-req">필수</span></td>
+              <td>앱 이름. 소문자 + 하이픈만 허용</td>
+              <td><span class="inline-code">"chris-fun"</span></td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">apps[].type</span></td>
+              <td><span class="badge badge-req">필수</span></td>
+              <td><span class="inline-code">BE</span> / <span class="inline-code">FE</span> / <span class="inline-code">DB</span></td>
+              <td><span class="inline-code">"FE"</span></td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">apps[].group</span></td>
+              <td><span class="badge badge-req">필수</span></td>
+              <td>프로젝트 그룹명. AR 레포(<span class="inline-code">{group}-{env}-images</span>) 및 KMM 프로젝트명으로 사용</td>
+              <td><span class="inline-code">"chris-fun"</span></td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">apps[].root</span></td>
+              <td><span class="badge badge-cond">BE/FE 필수</span></td>
+              <td>Dockerfile 위치. DB는 커스텀 빌드 시에만 필요</td>
+              <td><span class="inline-code">"."</span></td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">apps[].version</span></td>
+              <td><span class="badge badge-cond">BE/FE 필수</span></td>
+              <td>앱 버전. <strong>변경 시에만 CI 트리거</strong></td>
+              <td><span class="inline-code">"0.1.8"</span></td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">apps[].engine</span></td>
+              <td><span class="badge badge-cond">DB 필수</span></td>
+              <td>DB 엔진 종류. 현재 <span class="inline-code">postgres</span>만 지원</td>
+              <td><span class="inline-code">"postgres"</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>DB 시나리오 3가지</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>시나리오</th><th>설명</th><th>terroir.json</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>KMM 기본 DB</strong> ✅</td>
+              <td>KMM이 제공하는 기본 이미지(postgres:16-alpine)로 배포. <span class="inline-code">root</span> 없음 → Docker 빌드 스킵</td>
+              <td><span class="inline-code">name, type, engine, group</span></td>
+            </tr>
+            <tr>
+              <td><strong>커스텀 DB</strong> 🚧</td>
+              <td>사용자 Dockerfile로 DB 이미지 빌드 (현재 미지원)</td>
+              <td><span class="inline-code">+ root, version</span></td>
+            </tr>
+            <tr>
+              <td><strong>외부 DB</strong> 🚧</td>
+              <td>CloudSQL 등 외부 관리형 DB (현재 미지원). terroir.json에 DB 선언 안 함</td>
+              <td>DB 선언 없음 → IDP에서 직접 입력</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. Dockerfile -->
+    <section id="dockerfile">
+      <h2 class="section-title"><span class="section-icon">🐳</span> Dockerfile (Next.js 기준)</h2>
+      <p>
+        Next.js의 <span class="inline-code">output: 'standalone'</span> 모드를 활용한 멀티스테이지 빌드입니다.
+        FE 앱은 <span class="inline-code">COPY .env*</span> 로 빌드 타임 환경변수를 수용합니다.
+      </p>
+
+      <div class="code-with-header">
+        <div class="code-header">
+          <div class="code-dots">
+            <div class="code-dot" style="background:#ef4444"></div>
+            <div class="code-dot" style="background:#f59e0b"></div>
+            <div class="code-dot" style="background:#10b981"></div>
+          </div>
+          <span class="code-lang">Dockerfile</span>
+        </div>
+        <div class="code-block">FROM node:20-alpine AS base
+
+# deps 단계
+FROM base AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# builder 단계
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+COPY .env* ./                    # FE 빌드 타임 환경변수
+RUN npx prisma generate
+RUN npm run build
+
+# runner 단계 (프로덕션)
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+
+EXPOSE 3000
+CMD ["node", "server.js"]</div>
+      </div>
+
+      <h3>next.config.ts 필수 설정</h3>
+      <div class="code-block">// next.config.ts
+const config: NextConfig = {
+  output: 'standalone',   // 필수 — standalone 빌드 활성화
+}
+export default config</div>
+    </section>
+
+    <!-- 6. Health Check -->
+    <section id="health-check">
+      <h2 class="section-title"><span class="section-icon">🩺</span> Health Check 엔드포인트</h2>
+      <p>KMM liveness/readiness probe에 사용됩니다. FE와 BE 모두 구현 필요합니다.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>타입</th><th>경로</th><th>응답</th></tr></thead>
+          <tbody>
+            <tr><td><strong>FE</strong></td><td><span class="inline-code">GET /health</span></td><td>HTTP 200</td></tr>
+            <tr><td><strong>BE</strong></td><td><span class="inline-code">GET /api/health</span></td><td>HTTP 200</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-with-header">
+        <div class="code-header">
+          <div class="code-dots">
+            <div class="code-dot" style="background:#ef4444"></div>
+            <div class="code-dot" style="background:#f59e0b"></div>
+            <div class="code-dot" style="background:#10b981"></div>
+          </div>
+          <span class="code-lang">app/health/route.ts (FE)</span>
+        </div>
+        <div class="code-block">export async function GET() {
+  return new Response('ok', { status: 200 })
+}</div>
+      </div>
+    </section>
+
+    <!-- 7. CI 워크플로우 -->
+    <section id="ci-yml">
+      <h2 class="section-title"><span class="section-icon">⚙️</span> CI 워크플로우 설정</h2>
+      <p>
+        <span class="inline-code">.github/workflows/</span>에 두 파일이 필요합니다.
+        Confluence 댓글에서 템플릿을 다운로드할 수 있습니다.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>파일</th><th>트리거</th><th>용도</th><th>호출 워크플로우</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="inline-code">ci.yml</span></td>
+              <td>push (main 브랜치)</td>
+              <td>BE/DB 빌드·배포</td>
+              <td><span class="inline-code">300-reusable-docker-delivery.yml@develop</span></td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">fe-build.yml</span></td>
+              <td>workflow_dispatch (IDP 수동)</td>
+              <td>FE 빌드·배포 (환경변수 주입)</td>
+              <td><span class="inline-code">301-reusable-fe-build.yml@develop</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>fe-build.yml 주요 input</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Input</th><th>설명</th><th>예시</th></tr></thead>
+          <tbody>
+            <tr><td><span class="inline-code">project</span></td><td>terroir.json apps[].group</td><td>chris-fun</td></tr>
+            <tr><td><span class="inline-code">app</span></td><td>terroir.json apps[].name (type=FE)</td><td>chris-fun</td></tr>
+            <tr><td><span class="inline-code">environment</span></td><td>dev / lab / prod</td><td>dev</td></tr>
+            <tr><td><span class="inline-code">env_vars</span></td><td>빌드 타임 환경변수 JSON</td><td><span class="inline-code">{"DATABASE_URL":"..."}</span></td></tr>
+            <tr><td><span class="inline-code">containerPort</span></td><td>컨테이너 포트 (문자열)</td><td>"3000"</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">💡</span>
+        <div class="callout-body">
+          <div class="callout-title">FE 빌드 타임 환경변수</div>
+          IDP에서 입력한 env_vars가 빌드 전 자동으로 <span class="inline-code">.env</span> 파일로 생성됩니다.
+          Dockerfile이 <span class="inline-code">COPY .env*</span>로 이를 참조해야 합니다.
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. KMM DB 설정 -->
+    <section id="kmm-db">
+      <h2 class="section-title"><span class="section-icon">🗄️</span> KMM IDP — DB 앱 환경변수</h2>
+      <p>
+        KMM IDP에서 DB 앱(<span class="inline-code">chris-fun-db</span>)에 입력하는 환경변수입니다.
+        이 값들은 PostgreSQL 컨테이너 설정에 사용됩니다.
+      </p>
+
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div class="callout-body">
+          <div class="callout-title">시크릿 vs 일반 환경변수</div>
+          DB명·유저명은 평문(ConfigMap)으로, 비밀번호는 반드시 <strong>Secret</strong>으로 등록하세요.
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>환경변수</th><th>타입</th><th>설명</th><th>예시</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="inline-code">DATABASE_DB</span></td>
+              <td><span class="badge badge-opt">일반값</span></td>
+              <td>데이터베이스 이름</td>
+              <td>postgres</td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">DATABASE_USER</span></td>
+              <td><span class="badge badge-opt">일반값</span></td>
+              <td>DB 유저명</td>
+              <td>postgres</td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">DATABASE_PASSWORD</span></td>
+              <td><span class="badge badge-req">Secret</span></td>
+              <td>DB 비밀번호</td>
+              <td>— (Secret 등록)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 9. FE 환경변수 -->
+    <section id="kmm-fe">
+      <h2 class="section-title"><span class="section-icon">🔧</span> KMM IDP — FE 앱 환경변수</h2>
+      <p>
+        FE 앱(<span class="inline-code">chris-fun</span>)에 DB 접속 정보를 주입합니다.
+        DB 앱에 입력한 정보와 <strong>동일한 값</strong>을 사용합니다.
+      </p>
+
+      <div class="callout info">
+        <span class="callout-icon">💡</span>
+        <div class="callout-body">
+          <div class="callout-title">왜 FE에도 DB 정보가 필요한가?</div>
+          Next.js App Router는 서버 컴포넌트에서 DB에 직접 접근합니다.
+          Prisma는 FE 앱(Next.js 서버) 안에서 실행되므로 DB 접속 정보가 필요합니다.
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>환경변수</th><th>타입</th><th>설명</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="inline-code">DATABASE_HOST</span></td>
+              <td><span class="badge badge-opt">일반값</span></td>
+              <td>KMM이 생성하는 DB 서비스 호스트명</td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">DATABASE_DB</span></td>
+              <td><span class="badge badge-opt">일반값</span></td>
+              <td>DB 앱에 설정한 것과 동일</td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">DATABASE_USER</span></td>
+              <td><span class="badge badge-opt">일반값</span></td>
+              <td>DB 앱에 설정한 것과 동일</td>
+            </tr>
+            <tr>
+              <td><span class="inline-code">DATABASE_PASSWORD</span></td>
+              <td><span class="badge badge-req">Secret</span></td>
+              <td>DB 앱에 설정한 것과 동일</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div class="callout-body">
+          <div class="callout-title">환경변수 없을 때 앱 저장 안 됨</div>
+          DB 환경변수가 없으면 FE 앱이 시작되지 않습니다.
+          배포 후 즉시 환경변수를 확인하고, 누락 시 IDP에서 입력 후 재배포하세요.
+        </div>
+      </div>
+
+      <h3>lib/prisma.ts — 환경변수 폴백 패턴</h3>
+      <p>
+        <span class="inline-code">DATABASE_URL</span> 단일 형태 또는
+        개별 변수 형태 모두 지원하도록 코드 레벨에서 처리합니다.
+      </p>
+      <div class="code-block">function createPrismaClient(): PrismaClient {
+  const connectionString = process.env.DATABASE_URL
+    ?? `postgresql://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}:5432/${process.env.DATABASE_DB}`
+
+  if (!connectionString.includes('@')) {
+    throw new Error('DATABASE_URL 또는 HOST/USER/PASSWORD/DB 환경변수 필요')
+  }
+  const adapter = new PrismaPg({ connectionString })
+  return new PrismaClient({ adapter })
+}</div>
+    </section>
+
+    <!-- 10. 배포 흐름 -->
+    <section id="deploy-flow">
+      <h2 class="section-title"><span class="section-icon">🚀</span> 배포 실행 흐름</h2>
+
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:700px;display:block;margin:0 auto">
+          <defs>
+            <marker id="arr3" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+            </marker>
+          </defs>
+
+          <!-- 단계 1: version bump -->
+          <rect x="20" y="20" width="150" height="50" rx="8" fill="#e0f2fe" stroke="#bae6fd"/>
+          <text x="95" y="42" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#0369a1" text-anchor="middle">version bump</text>
+          <text x="95" y="58" font-family="Inter,sans-serif" font-size="10" fill="#0369a1" text-anchor="middle">terroir.json 수정</text>
+
+          <!-- 단계 2: git push -->
+          <rect x="200" y="20" width="150" height="50" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
+          <text x="275" y="42" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#6d28d9" text-anchor="middle">git push → main</text>
+          <text x="275" y="58" font-family="Inter,sans-serif" font-size="10" fill="#6d28d9" text-anchor="middle">GitHub Actions 트리거</text>
+
+          <!-- 단계 3: CI 300 -->
+          <rect x="380" y="20" width="150" height="50" rx="8" fill="#fef3c7" stroke="#fde68a"/>
+          <text x="455" y="42" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">CI 300 workflow</text>
+          <text x="455" y="58" font-family="Inter,sans-serif" font-size="10" fill="#92400e" text-anchor="middle">빌드 → AR 푸시</text>
+
+          <!-- 단계 4: KMM Shadow -->
+          <rect x="560" y="20" width="130" height="50" rx="8" fill="#f0fdf4" stroke="#86efac"/>
+          <text x="625" y="42" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#065f46" text-anchor="middle">KMM Shadow</text>
+          <text x="625" y="58" font-family="Inter,sans-serif" font-size="10" fill="#065f46" text-anchor="middle">매니페스트 업데이트</text>
+
+          <!-- 화살표 1단계 -->
+          <line x1="170" y1="45" x2="195" y2="45" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr3)"/>
+          <line x1="350" y1="45" x2="375" y2="45" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr3)"/>
+          <line x1="530" y1="45" x2="555" y2="45" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+          <!-- FE 배포 별도 흐름 -->
+          <rect x="200" y="120" width="150" height="50" rx="8" fill="#fff1f2" stroke="#fecdd3"/>
+          <text x="275" y="142" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#9f1239" text-anchor="middle">IDP 배포 버튼</text>
+          <text x="275" y="158" font-family="Inter,sans-serif" font-size="10" fill="#9f1239" text-anchor="middle">FE 전용 수동 배포</text>
+
+          <rect x="380" y="120" width="150" height="50" rx="8" fill="#fff7ed" stroke="#fdba74"/>
+          <text x="455" y="142" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#c2410c" text-anchor="middle">fe-build.yml</text>
+          <text x="455" y="158" font-family="Inter,sans-serif" font-size="10" fill="#c2410c" text-anchor="middle">301 workflow 호출</text>
+
+          <line x1="350" y1="145" x2="375" y2="145" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+          <!-- 레이블 -->
+          <text x="95" y="90" font-family="Inter,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">BE/DB 자동 배포</text>
+          <text x="275" y="190" font-family="Inter,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">FE 수동 배포</text>
+
+          <!-- 분기선 -->
+          <line x1="275" y1="70" x2="275" y2="115" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="4,3"/>
+        </svg>
+      </div>
+
+      <div class="callout success">
+        <span class="callout-icon">✅</span>
+        <div class="callout-body">
+          <div class="callout-title">Grafana로 배포 확인</div>
+          배포 버튼 클릭 후 진행 상태가 불명확해 보여도 새로고침(refresh)하면 배포 완료 상태를 확인할 수 있습니다.
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. 트러블슈팅 -->
+    <section id="troubleshoot">
+      <h2 class="section-title"><span class="section-icon">🔍</span> 트러블슈팅</h2>
+
+      <h3>① 버전 변경 없이 배포 → 빌드 스킵</h3>
+      <p>terroir.json의 <span class="inline-code">version</span>을 변경해야 CI가 트리거됩니다.</p>
+      <div class="code-block">- "version": "0.1.7"
++ "version": "0.1.8"</div>
+
+      <h3>② 배포 후 404 — 앱 크래시</h3>
+      <p>모듈 로드 시점에 DB 환경변수 없으면 즉시 크래시. Prisma를 <strong>lazy init</strong>으로 변경해야 합니다.</p>
+      <div class="code-block">// ❌ 모듈 로드 시 즉시 초기화 — 환경변수 없으면 크래시
+export const prisma = new PrismaClient()
+
+// ✅ Proxy 패턴으로 lazy init — 첫 사용 시점에 초기화
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    return (getPrisma() as any)[prop]
+  },
+})</div>
+
+      <h3>③ Next.js 빌드 타임 API 라우트 크래시</h3>
+      <p>Next.js가 빌드 시 API 라우트를 pre-render 시도 → DB 접근으로 크래시 발생.</p>
+      <div class="code-block">// DB를 사용하는 모든 API route 파일 최상단에 추가
+export const dynamic = 'force-dynamic'</div>
+
+      <h3>④ fe-build.yml 없을 때</h3>
+      <p>FE 앱은 ci.yml(300 workflow)이 아닌 fe-build.yml(301 workflow)로 배포합니다. 누락 시 IDP에서 배포 불가.</p>
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div class="callout-body">
+          Confluence 배포 가이드 댓글에서 <span class="inline-code">fe-build.yml</span> 템플릿을 다운로드하여 <span class="inline-code">.github/workflows/</span>에 추가하세요.
+        </div>
+      </div>
+
+      <h3>⑤ DATABASE_DB / DATABASE_USER 값 문제</h3>
+      <p>
+        KMM IDP에서 <span class="inline-code">DATABASE_DB</span>와 <span class="inline-code">DATABASE_USER</span>를
+        일반 환경변수(Secret이 아닌 ConfigMap)로 설정하는 것은 <strong>정상</strong>입니다.
+        DB명과 유저명은 민감한 정보가 아닙니다. 비밀번호(<span class="inline-code">DATABASE_PASSWORD</span>)만 Secret으로 등록하면 됩니다.
+      </p>
+
+      <h3>⑥ SSH 터널 포트 충돌</h3>
+      <p>로컬 GCP SSH 터널(5433)과 로컬 Docker PostgreSQL 포트 충돌 시 docker-compose에서 포트 변경.</p>
+      <div class="code-block">services:
+  db:
+    ports:
+      - "5434:5432"   # 5433 → 5434 (SSH 터널 충돌 방지)</div>
+    </section>
+
+    <!-- 12. 체크리스트 -->
+    <section id="checklist">
+      <h2 class="section-title"><span class="section-icon">✅</span> 배포 체크리스트</h2>
+
+      <h3>코드 준비</h3>
+      <ul class="checklist">
+        <li><div class="check-box done"></div><span>VntgCorp org 레포 push 완료</span></li>
+        <li><div class="check-box done"></div><span><span class="inline-code">output: 'standalone'</span> in next.config.ts</span></li>
+        <li><div class="check-box done"></div><span><span class="inline-code">Dockerfile</span> 존재 (루트 또는 docker/)</span></li>
+        <li><div class="check-box done"></div><span><span class="inline-code">GET /health</span> → 200 (FE) / <span class="inline-code">GET /api/health</span> → 200 (BE)</span></li>
+        <li><div class="check-box done"></div><span><span class="inline-code">terroir.json</span> 프로젝트 루트에 존재</span></li>
+        <li><div class="check-box done"></div><span><span class="inline-code">.github/workflows/ci.yml</span> 추가</span></li>
+        <li><div class="check-box done"></div><span><span class="inline-code">.github/workflows/fe-build.yml</span> 추가</span></li>
+      </ul>
+
+      <h3>KMM IDP 설정</h3>
+      <ul class="checklist">
+        <li><div class="check-box"></div><span>DB 앱: DATABASE_DB, DATABASE_USER, DATABASE_PASSWORD(Secret) 입력</span></li>
+        <li><div class="check-box"></div><span>FE 앱: DATABASE_HOST, DATABASE_DB, DATABASE_USER, DATABASE_PASSWORD 입력</span></li>
+        <li><div class="check-box"></div><span>containerPort: "3000" 확인</span></li>
+      </ul>
+
+      <h3>배포 후 검증</h3>
+      <ul class="checklist">
+        <li><div class="check-box"></div><span><span class="inline-code">GET /health</span> → HTTP 200</span></li>
+        <li><div class="check-box"></div><span><span class="inline-code">GET /api/health</span> → HTTP 200</span></li>
+        <li><div class="check-box"></div><span><span class="inline-code">GET /api/members</span> → 정상 응답</span></li>
+        <li><div class="check-box"></div><span>주요 페이지 7개 정상 응답</span></li>
+        <li><div class="check-box"></div><span>DB 초기화: <span class="inline-code">prisma db push && npx ts-node prisma/seed.ts</span></span></li>
+      </ul>
+
+      <div class="callout success">
+        <span class="callout-icon">🎉</span>
+        <div class="callout-body">
+          <div class="callout-title">배포 완료 확인</div>
+          Grafana에서 앱 상태 확인 → <span class="inline-code">http://chris-fun-chris-fun.dev.nfw.vntgcorp.com/</span> 접속 확인
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 오른쪽 목차 -->
+  <aside class="toc">
+    <p class="toc-label">이 페이지</p>
+    <a href="#intro" class="toc-link active">BYOR란?</a>
+    <a href="#patterns" class="toc-link">온보딩 패턴</a>
+    <a href="#dev-init" class="toc-link">환경 세팅</a>
+    <a href="#dev-workflow" class="toc-link">Claude Code 워크플로우</a>
+    <a href="#dev-sdd" class="toc-link">SDD 파이프라인</a>
+    <a href="#terroir-json" class="toc-link">terroir.json</a>
+    <a href="#dockerfile" class="toc-link">Dockerfile</a>
+    <a href="#health-check" class="toc-link">Health Check</a>
+    <a href="#ci-yml" class="toc-link">ci.yml / fe-build.yml</a>
+    <a href="#kmm-db" class="toc-link">DB 환경변수</a>
+    <a href="#kmm-fe" class="toc-link">FE 환경변수</a>
+    <a href="#deploy-flow" class="toc-link">배포 흐름</a>
+    <a href="#troubleshoot" class="toc-link">트러블슈팅</a>
+    <a href="#checklist" class="toc-link">체크리스트</a>
+  </aside>
+
+</div>
+
+<script>
+// 사이드바 스크롤 하이라이트
+const navLinks = document.querySelectorAll('.nav-link, .toc-link');
+const sections = document.querySelectorAll('section[id]');
+
+function onScroll() {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 80) current = s.id;
+  });
+  navLinks.forEach(link => {
+    link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+  });
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+</script>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="2H2B68N" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
