@@ -58,6 +58,13 @@ export function applyAdminOverrides(siteConfig, cached) {
   });
 }
 
+export function computeFilePath(fileCfg, folder) {
+  const tier = fileCfg?.tier || folder?.tier || 'public';
+  const slug = folder?.slug || '';
+  const prefix = tier === 'private' ? '/s/' : tier === 'company' ? '/c/' : '/';
+  return `${prefix}${slug}/${fileCfg.filename}`;
+}
+
 export function generateToken(len = 8) {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   return Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');

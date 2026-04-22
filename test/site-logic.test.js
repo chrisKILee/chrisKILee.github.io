@@ -4,6 +4,7 @@ import {
   changeFileTier,
   applyAdminOverrides,
   generateToken,
+  computeFilePath,
 } from '../assets/js/site-logic.js';
 
 // ─── getEffectiveTier ─────────────────────────────────────────────────────────
@@ -177,5 +178,39 @@ describe('generateToken', () => {
     const a = generateToken(16);
     const b = generateToken(16);
     expect(a).not.toBe(b);
+  });
+});
+
+// ─── computeFilePath ──────────────────────────────────────────────────────────
+
+describe('computeFilePath', () => {
+  it('public tier → / prefix', () => {
+    expect(computeFilePath({ filename: 'foo.html' }, { slug: 'ai-study', tier: 'public' }))
+      .toBe('/ai-study/foo.html');
+  });
+
+  it('company tier → /c/ prefix', () => {
+    expect(computeFilePath({ filename: 'foo.html' }, { slug: 'rnd', tier: 'company' }))
+      .toBe('/c/rnd/foo.html');
+  });
+
+  it('private tier → /s/ prefix', () => {
+    expect(computeFilePath({ filename: 'foo.html' }, { slug: 'travel', tier: 'private' }))
+      .toBe('/s/travel/foo.html');
+  });
+
+  it('파일 tier가 폴더 tier를 오버라이드', () => {
+    expect(computeFilePath({ filename: 'secret.html', tier: 'company' }, { slug: 'ai-study', tier: 'public' }))
+      .toBe('/c/ai-study/secret.html');
+  });
+
+  it('파일 tier=public이 폴더 company를 오버라이드', () => {
+    expect(computeFilePath({ filename: 'open.html', tier: 'public' }, { slug: 'work-study', tier: 'company' }))
+      .toBe('/work-study/open.html');
+  });
+
+  it('tier 없으면 public 기본값', () => {
+    expect(computeFilePath({ filename: 'foo.html' }, { slug: 'misc' }))
+      .toBe('/misc/foo.html');
   });
 });

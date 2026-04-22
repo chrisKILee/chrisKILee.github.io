@@ -1219,12 +1219,11 @@
       const filename = fileCfg.filename;
       const displayName = fileCfg.displayName || filename.replace(/\.[^/.]+$/, '');
       const isHidden = !fileCfg.visible;
-      const folderPath = getFolderPath(fileCfg.categoryHash);
-      const linkUrl = `${folderPath}${filename}`;
-      const ext = filename.split('.').pop().toUpperCase();
-      const searchData = `${displayName.toLowerCase()} ${filename.toLowerCase()}`;
       const folder = siteConfig.folders && siteConfig.folders[fileCfg.categoryHash];
       const tier = getEffectiveTier(fileCfg, folder);
+      const linkUrl = computeFilePath(fileCfg, folder);
+      const ext = filename.split('.').pop().toUpperCase();
+      const searchData = `${displayName.toLowerCase()} ${filename.toLowerCase()}`;
       const tierIcon = tier === 'private' ? '🔒' : tier === 'company' ? '🏢' : '🌍';
       const hasShare = !!fileCfg.shareToken;
 
@@ -1513,6 +1512,13 @@
     // =============================================
     function getEffectiveTier(fileCfg, folder) {
       return fileCfg?.tier || folder?.tier || 'public';
+    }
+
+    function computeFilePath(fileCfg, folder) {
+      const tier = getEffectiveTier(fileCfg, folder);
+      const slug = folder?.slug || '';
+      const prefix = tier === 'private' ? '/s/' : tier === 'company' ? '/c/' : '/';
+      return `${prefix}${slug}/${fileCfg.filename}`;
     }
 
     function changeFileTier(fileHash, newTier) {
