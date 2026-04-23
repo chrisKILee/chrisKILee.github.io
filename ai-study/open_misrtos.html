@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>클로드 미소스를 PyTorch로 재현한 오픈미소스</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      padding-top: 48px;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 48px;
+      z-index: 100;
+    }
+    .topbar-brand {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .topbar-meta {
+      font-size: 12px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+    }
+
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 28px 60px;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-bdr);
+      color: var(--accent);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      max-width: 740px;
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--accent);
+    }
+    .hero-desc {
+      font-size: 17px;
+      color: var(--ink-3);
+      max-width: 620px;
+      line-height: 1.75;
+      margin-bottom: 36px;
+    }
+    .hero-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-2);
+    }
+
+    .section {
+      padding: 56px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      max-width: 80px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .section-desc {
+      font-size: 15px;
+      color: var(--ink-3);
+      max-width: 620px;
+      margin-bottom: 36px;
+      line-height: 1.7;
+    }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card__header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+    .card__icon { font-size: 22px; margin-bottom: 8px; }
+    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__body { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__footer { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+    .card__tag {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--ink-4);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:hover td { background: var(--bg); }
+
+    .callout {
+      border-left: 3px solid;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+    .code-wrap {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+    .code-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-2);
+    }
+    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body {
+      padding: 18px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink-2);
+    }
+
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--surface);
+      margin-top: 2px;
+    }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+
+    /* SVG 다이어그램 */
+    .diagram-wrap {
+      margin: 28px 0;
+      overflow-x: auto;
+    }
+
+    /* 수치 강조 카드 */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px 20px;
+      text-align: center;
+    }
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-label { font-size: 13px; color: var(--ink-3); line-height: 1.5; }
+
+    footer {
+      padding: 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--ink-4);
+    }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">OpenMythos — 클로드 미소스 오픈소스 재현</span>
+  <span class="topbar-meta">2026-04-23</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">🤖 AI Study · Open Source</div>
+    <h1>클로드 미소스를 PyTorch로<br><em>재현한 오픈미소스</em></h1>
+    <p class="hero-desc">
+      swarms.ai CEO 카이 고메스(Kye Gomez)가 공개한 <strong>OpenMythos</strong>는 앤트로픽의 Claude Mythos 아키텍처를 이론적으로 재구성한 오픈소스 프로젝트입니다. 실제 코드·유출 자료 없이 순수 연구 논문 기반으로 구현했으며, 770M 파라미터로 1.3B 표준 트랜스포머 수준의 품질을 달성합니다.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🔁 루프형 트랜스포머 (RDT)</span>
+      <span class="chip">🧠 Parcae 아키텍처</span>
+      <span class="chip">⚡ MoE 전문가 혼합</span>
+      <span class="chip">🐍 PyTorch 구현</span>
+      <span class="chip">📄 arXiv:2604.12946</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: 핵심 개요 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 개요</div>
+    <h2 class="section-title">OpenMythos란 무엇인가</h2>
+    <p class="section-desc">
+      GitHub 저장소 <code>kyegomez/OpenMythos</code>에 MIT 라이선스로 공개. 이론 기반 재구성이므로 실제 Claude Mythos와 완전히 동일하다는 보장은 없으나, Parcae 연구(UCSD + Together AI)의 실증 결과를 기반으로 합니다.
+    </p>
+
+    <div class="callout accent">
+      <div class="callout-title">⚠️ 주의: 이론적 재구성</div>
+      Anthropic은 Claude Mythos의 공식 아키텍처 세부사항을 공개하지 않았습니다. OpenMythos는 공개된 연구 논문과 역엔지니어링을 토대로 한 <strong>이론적 재구성</strong>입니다.
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔁</div>
+          <div class="card__title">재귀적 깊이 트랜스포머 (RDT)</div>
+        </div>
+        <div class="card__body">
+          <p>동일한 가중치를 단일 forward pass 내에서 최대 16회 반복 적용합니다. "깊이"가 파라미터 수가 아닌 추론 시 반복 횟수로 결정됩니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">핵심 메커니즘</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🏛️</div>
+          <div class="card__title">Parcae 아키텍처</div>
+        </div>
+        <div class="card__body">
+          <p>UC San Diego + Together AI가 개발한 루프형 LM 안정화 프레임워크. 제어 이론의 LTI(선형 시간 불변) 안정성 조건을 적용해 기울기 폭발/소멸을 방지합니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">안정성 기반</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔀</div>
+          <div class="card__title">MoE 전문가 혼합</div>
+        </div>
+        <div class="card__body">
+          <p>세분화된 전문가 라우팅(Fine-grained Expert Routing)과 항상-켜진 공유 전문가(Shared Expert)를 결합. 각 토큰이 적합한 전문가로 동적 라우팅됩니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">효율성 향상</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-grid" style="margin-top:36px;">
+      <div class="stat-card">
+        <div class="stat-value">770M</div>
+        <div class="stat-label">OpenMythos RDT<br>파라미터 수</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">≈1.3B</div>
+        <div class="stat-label">동등 품질<br>표준 트랜스포머</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">16회</div>
+        <div class="stat-label">최대 재귀 블록<br>반복 횟수</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">9,400+</div>
+        <div class="stat-label">GitHub Stars<br>(2026-04 기준)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: 아키텍처 다이어그램 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 아키텍처</div>
+    <h2 class="section-title">Prelude → Recurrent → Coda 3단계 구조</h2>
+    <p class="section-desc">
+      Parcae 아키텍처는 입력을 잠재 공간에 임베딩하고, 동일 블록을 반복 적용한 뒤, 최종 출력을 생성하는 3단계로 구성됩니다. 중간 텍스트 생성 없이 연속 잠재 공간에서 추론을 수행합니다.
+    </p>
+
+    <!-- SVG 아키텍처 다이어그램 -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:900px;font-family:'Inter',sans-serif;">
+        <!-- 배경 -->
+        <rect width="900" height="320" fill="#FAFAF8" rx="12"/>
+
+        <!-- 입력 -->
+        <rect x="30" y="120" width="110" height="80" rx="8" fill="#F4F4F1" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="85" y="152" text-anchor="middle" font-size="12" fill="#6B6B66" font-weight="600">INPUT</text>
+        <text x="85" y="170" text-anchor="middle" font-size="11" fill="#A8A8A3">토큰 시퀀스</text>
+        <text x="85" y="188" text-anchor="middle" font-size="11" fill="#A8A8A3">x₁…xₙ</text>
+
+        <!-- 화살표 1 -->
+        <line x1="140" y1="160" x2="190" y2="160" stroke="#D4D4CF" stroke-width="2" marker-end="url(#arrow)"/>
+
+        <!-- Prelude -->
+        <rect x="190" y="100" width="140" height="120" rx="8" fill="#FFFFFF" stroke="#C4522A" stroke-width="2"/>
+        <text x="260" y="130" text-anchor="middle" font-size="13" fill="#C4522A" font-weight="700">PRELUDE</text>
+        <text x="260" y="150" text-anchor="middle" font-size="11" fill="#6B6B66">표준 트랜스포머</text>
+        <text x="260" y="168" text-anchor="middle" font-size="11" fill="#6B6B66">블록 (1회)</text>
+        <text x="260" y="192" text-anchor="middle" font-size="12" fill="#3D3D3A" font-weight="600">입력 → 잠재 상태 e</text>
+
+        <!-- 화살표 2 -->
+        <line x1="330" y1="160" x2="385" y2="160" stroke="#D4D4CF" stroke-width="2" marker-end="url(#arrow)"/>
+
+        <!-- Recurrent Block -->
+        <rect x="385" y="80" width="180" height="160" rx="8" fill="#FFFFFF" stroke="#C4522A" stroke-width="2.5"/>
+        <rect x="395" y="90" width="160" height="140" rx="6" fill="#FEF3ED"/>
+        <text x="475" y="118" text-anchor="middle" font-size="13" fill="#C4522A" font-weight="700">RECURRENT</text>
+        <text x="475" y="138" text-anchor="middle" font-size="11" fill="#7c2d12">동일 가중치 × T회 반복</text>
+        <text x="475" y="160" text-anchor="middle" font-size="11" fill="#6B6B66">각 반복마다 e 주입</text>
+        <text x="475" y="178" text-anchor="middle" font-size="11" fill="#6B6B66">은닉 상태 hₜ 갱신</text>
+        <text x="475" y="200" text-anchor="middle" font-size="12" fill="#C4522A" font-weight="700">T ≤ 16</text>
+        <!-- 루프 화살표 -->
+        <path d="M565 150 Q610 120 610 160 Q610 200 565 180" fill="none" stroke="#C4522A" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowRed)"/>
+        <text x="620" y="165" font-size="11" fill="#C4522A" font-weight="600">반복</text>
+
+        <!-- 화살표 3 -->
+        <line x1="565" y1="160" x2="640" y2="160" stroke="#D4D4CF" stroke-width="2" marker-end="url(#arrow)"/>
+
+        <!-- Coda -->
+        <rect x="640" y="100" width="140" height="120" rx="8" fill="#FFFFFF" stroke="#C4522A" stroke-width="2"/>
+        <text x="710" y="130" text-anchor="middle" font-size="13" fill="#C4522A" font-weight="700">CODA</text>
+        <text x="710" y="150" text-anchor="middle" font-size="11" fill="#6B6B66">최종 은닉 상태</text>
+        <text x="710" y="168" text-anchor="middle" font-size="11" fill="#6B6B66">hT 처리 (1회)</text>
+        <text x="710" y="192" text-anchor="middle" font-size="12" fill="#3D3D3A" font-weight="600">→ 출력 생성</text>
+
+        <!-- 화살표 4 -->
+        <line x1="780" y1="160" x2="835" y2="160" stroke="#D4D4CF" stroke-width="2" marker-end="url(#arrow)"/>
+
+        <!-- 출력 -->
+        <rect x="835" y="120" width="45" height="80" rx="8" fill="#F0FDF4" stroke="#1A7F5A" stroke-width="1.5"/>
+        <text x="857" y="155" text-anchor="middle" font-size="11" fill="#1A7F5A" font-weight="600">OUT</text>
+        <text x="857" y="173" text-anchor="middle" font-size="10" fill="#064e3b">토큰</text>
+
+        <!-- 하단 설명 -->
+        <text x="450" y="285" text-anchor="middle" font-size="12" fill="#A8A8A3">출처: Parcae 논문 (arXiv:2604.12946) 기반 OpenMythos 구현</text>
+
+        <!-- 화살표 마커 -->
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#D4D4CF"/>
+          </marker>
+          <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#C4522A"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">💡 루프의 의미</div>
+      각 루프 반복은 체인-오브-소트(Chain-of-Thought)의 한 스텝과 기능적으로 동등합니다. 더 어려운 문제는 더 많은 루프(계산)를 받고, 간단한 문제는 조기 종료가 가능합니다. 재훈련 없이 추론 시 루프 횟수를 조절할 수 있습니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: Parcae 안정성 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 Parcae 안정성 프레임워크</div>
+    <h2 class="section-title">왜 루프 트랜스포머는 불안정했나?</h2>
+    <p class="section-desc">
+      기존 루프형 모델은 동일 블록을 반복하면 기울기 폭발·소멸과 표현 붕괴(Representation Collapse)가 발생했습니다. Parcae는 제어 이론(Control Theory)을 도입해 이 문제를 해결합니다.
+    </p>
+
+    <!-- SVG: 문제 vs 해결 비교 다이어그램 -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 820 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:820px;font-family:'Inter',sans-serif;">
+        <!-- 왼쪽: 기존 문제 -->
+        <rect x="20" y="20" width="370" height="180" rx="10" fill="#FFF5F5" stroke="#FCA5A5" stroke-width="1.5"/>
+        <text x="205" y="50" text-anchor="middle" font-size="14" fill="#DC2626" font-weight="700">❌ 기존 루프 트랜스포머</text>
+
+        <rect x="40" y="70" width="330" height="40" rx="6" fill="#FFFFFF" stroke="#FCA5A5"/>
+        <text x="205" y="86" text-anchor="middle" font-size="12" fill="#6B6B66">루프 반복 → 기울기 폭발(Gradient Explosion)</text>
+        <text x="205" y="102" text-anchor="middle" font-size="12" fill="#DC2626">손실 스파이크 / 학습 불안정</text>
+
+        <rect x="40" y="120" width="330" height="40" rx="6" fill="#FFFFFF" stroke="#FCA5A5"/>
+        <text x="205" y="136" text-anchor="middle" font-size="12" fill="#6B6B66">은닉 상태가 무한 증가 → 잔차 폭발</text>
+        <text x="205" y="152" text-anchor="middle" font-size="12" fill="#DC2626">표현 붕괴(Representation Collapse)</text>
+
+        <!-- 오른쪽: Parcae 해결 -->
+        <rect x="430" y="20" width="370" height="180" rx="10" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1.5"/>
+        <text x="615" y="50" text-anchor="middle" font-size="14" fill="#1A7F5A" font-weight="700">✅ Parcae LTI 안정성 프레임워크</text>
+
+        <rect x="450" y="70" width="330" height="40" rx="6" fill="#FFFFFF" stroke="#86EFAC"/>
+        <text x="615" y="86" text-anchor="middle" font-size="12" fill="#6B6B66">스펙트럼 반경 ρ(Ā) &lt; 1 강제</text>
+        <text x="615" y="102" text-anchor="middle" font-size="12" fill="#1A7F5A">LTI 조건 → 안정적 수렴 보장</text>
+
+        <rect x="450" y="120" width="330" height="40" rx="6" fill="#FFFFFF" stroke="#86EFAC"/>
+        <text x="615" y="136" text-anchor="middle" font-size="12" fill="#6B6B66">주입 파라미터 A, B 제약 적용</text>
+        <text x="615" y="152" text-anchor="middle" font-size="12" fill="#1A7F5A">학습률·노이즈에 무관한 안정성</text>
+      </svg>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">LTI 시스템으로 재정의</div>
+          <div class="step-body">루프형 모델의 forward pass를 잔차 스트림 위의 비선형 시변 동적 시스템으로 수식화합니다. R̄을 제거하면 이산 LTI 시스템이 됩니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">안정성 조건 적용</div>
+          <div class="step-body">고전 제어 이론의 안정성 조건 <strong>ρ(Ā) &lt; 1</strong> (스펙트럼 반경이 1보다 작아야 함)을 주입 행렬에 구성적으로 강제합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">결과: 예측 가능한 스케일링 법칙</div>
+          <div class="step-body">Parcae 논문(arXiv:2604.12946)은 루프형 모델에 대한 <strong>첫 번째 예측 가능한 스케일링 법칙</strong>을 확립했습니다. 최적 재귀 횟수와 최적 토큰 수 모두 일관된 지수로 멱함수 법칙을 따릅니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: 성능 비교 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 성능 비교</div>
+    <h2 class="section-title">770M RDT vs 1.3B 표준 트랜스포머</h2>
+    <p class="section-desc">
+      Parcae 원본 논문(Together AI 블로그)의 실증 결과 기반. OpenMythos는 이 수치를 근거로 파라미터 효율성 주장을 합니다.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th>표준 트랜스포머</th>
+            <th>Parcae/RDT</th>
+            <th>출처</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>파라미터 수 (동등 품질)</strong></td>
+            <td>1.3B</td>
+            <td><span class="tag green">770M (↓41%)</span></td>
+            <td>MarkTechPost, 2026-04-19</td>
+          </tr>
+          <tr>
+            <td><strong>검증 Perplexity (350M, Huginn)</strong></td>
+            <td>기준선</td>
+            <td><span class="tag green">최대 6.3% 감소</span></td>
+            <td>arXiv:2604.12946</td>
+          </tr>
+          <tr>
+            <td><strong>WikiText Perplexity</strong></td>
+            <td>기준선</td>
+            <td><span class="tag green">최대 9.1% 감소</span></td>
+            <td>Together AI 블로그</td>
+          </tr>
+          <tr>
+            <td><strong>최대 루프 반복 횟수</strong></td>
+            <td>해당 없음</td>
+            <td>최대 16회</td>
+            <td>OpenMythos GitHub</td>
+          </tr>
+          <tr>
+            <td><strong>추론 유연성</strong></td>
+            <td><span class="tag gray">고정</span></td>
+            <td><span class="tag green">동적 조정 가능</span></td>
+            <td>Parcae 논문</td>
+          </tr>
+          <tr>
+            <td><strong>온디바이스 배포 적합성</strong></td>
+            <td><span class="tag gray">제한적</span></td>
+            <td><span class="tag green">컴팩트 메모리</span></td>
+            <td>Together AI 블로그</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: 코드 예시 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 코드</div>
+    <h2 class="section-title">GitHub 저장소 구조 및 실행</h2>
+    <p class="section-desc">
+      공식 저장소: <strong>kyegomez/OpenMythos</strong> (MIT 라이선스)
+    </p>
+
+    <div class="callout tip">
+      <div class="callout-title">학습 스크립트 데이터셋</div>
+      FineWeb-Edu 데이터셋 기반. 분산 학습은 PyTorch DDP(Distributed Data Parallel), 정밀도는 bfloat16 사용.
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-bar">
+        <div class="code-dot" style="background:#ef4444;"></div>
+        <div class="code-dot" style="background:#f59e0b;"></div>
+        <div class="code-dot" style="background:#22c55e;"></div>
+        <span class="code-lang">저장소 구조</span>
+      </div>
+      <pre class="code-body">OpenMythos/
+├── open_mythos/
+│   └── main.py              ← 핵심 모델 구현 (Parcae + MoE)
+├── training/
+│   └── 3b_fine_web_edu.py   ← 3B 모델 FineWeb-Edu 학습 스크립트
+├── docs/
+│   ├── open_mythos.md       ← 기술 문서
+│   └── datasets.md          ← 데이터셋 가이드
+└── README.md</pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-bar">
+        <div class="code-dot" style="background:#ef4444;"></div>
+        <div class="code-dot" style="background:#f59e0b;"></div>
+        <div class="code-dot" style="background:#22c55e;"></div>
+        <span class="code-lang">bash</span>
+      </div>
+      <pre class="code-body"># 분산 학습 실행 (GPU 자동 감지)
+torchrun \
+  --nproc_per_node=$(python -c "import torch; print(torch.cuda.device_count())") \
+  training/3b_fine_web_edu.py</pre>
+    </div>
+
+    <div class="table-wrap" style="margin-top:28px;">
+      <table>
+        <thead>
+          <tr>
+            <th>사전 구성 모델</th>
+            <th>파라미터</th>
+            <th>비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>mythos_1b</td>
+            <td>~1B</td>
+            <td>소형, 실험용</td>
+          </tr>
+          <tr>
+            <td>mythos_3b</td>
+            <td>~3B</td>
+            <td>FineWeb-Edu 학습 스크립트 제공</td>
+          </tr>
+          <tr>
+            <td>mythos_1t</td>
+            <td>~1T</td>
+            <td>대형, 연구용</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: 한계 및 주의사항 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">06 한계</div>
+    <h2 class="section-title">알려진 한계 및 주의사항</h2>
+    <p class="section-desc">
+      학술 문헌(arXiv:2604.11791, arXiv:2604.07822) 기반의 실제 한계점입니다.
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">⚠️</div>
+          <div class="card__title">과도한 재귀의 역효과 ("Overthinking")</div>
+        </div>
+        <div class="card__body">
+          <p>특정 깊이를 초과하면 예측 성능이 오히려 저하됩니다. 은닉 상태가 해답을 넘어 노이즈로 표류하며, 최적 루프 횟수를 초과하면 일반화 성능이 제한됩니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">arXiv:2604.11791</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔬</div>
+          <div class="card__title">잠재 추론 증거 부족</div>
+        </div>
+        <div class="card__body">
+          <p>루프가 실제로 "체인-오브-소트" 추론을 수행한다는 가정이 완전히 입증되지 않았습니다. 토큰 순위 궤적에 급격한 드롭과 불연속적 패턴이 관찰됩니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">arXiv:2604.11791</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🎯</div>
+          <div class="card__title">이론적 재구성의 한계</div>
+        </div>
+        <div class="card__body">
+          <p>Anthropic이 공식 아키텍처 세부사항을 공개하지 않았으므로, OpenMythos가 실제 Claude Mythos와 정확히 일치한다는 보장이 없습니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">공식 성명</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">⏱️</div>
+          <div class="card__title">추론 지연 가능성</div>
+        </div>
+        <div class="card__body">
+          <p>메모리는 루프 당 고정이지만 계산량은 선형 증가합니다. 16회 이상 루프 시 추론 지연이 발생할 수 있으며, 동적 루프 결정 메커니즘(ACT 등)이 아직 완전히 표준화되지 않았습니다.</p>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">설계 트레이드오프</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn" style="margin-top:28px;">
+      <div class="callout-title">미해결 이론적 과제 (arXiv:2604.07822)</div>
+      비선형 설정의 학습 가능성 이론, 계층적 루프 아키텍처 설계, 깊이 vs 루프 최적 균형의 원리 기반 방법론은 아직 개방 문제로 남아 있습니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 7: 출처 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">07 출처</div>
+    <h2 class="section-title">참고 자료</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>자료</th>
+            <th>링크</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AI Times 기사</td>
+            <td><a href="https://www.aitimes.com/news/articleView.html?idxno=209470" style="color:var(--accent);">AI Times</a></td>
+            <td>오픈미소스 최초 보도 (2026-04)</td>
+          </tr>
+          <tr>
+            <td>OpenMythos GitHub</td>
+            <td><code>kyegomez/OpenMythos</code></td>
+            <td>MIT 라이선스, Stars 9,400+</td>
+          </tr>
+          <tr>
+            <td>Parcae 논문</td>
+            <td><code>arXiv:2604.12946</code></td>
+            <td>UCSD + Together AI, 루프형 LM 안정화</td>
+          </tr>
+          <tr>
+            <td>Together AI 블로그</td>
+            <td>together.ai/blog/parcae</td>
+            <td>Parcae 성능 결과 및 기술 상세</td>
+          </tr>
+          <tr>
+            <td>MarkTechPost</td>
+            <td>marktechpost.com</td>
+            <td>770M ≈ 1.3B 비교 수치 출처 (2026-04-19)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>클로드 미소스를 PyTorch로 재현한 오픈미소스</span>
+  <span>2026-04-23</span>
+</footer>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="L9DPNWN" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
