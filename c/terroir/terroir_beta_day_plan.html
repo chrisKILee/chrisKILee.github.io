@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terroir Beta Day 실행 계획서</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'w-bg':      '#f7f6f2',
+            'w-sidebar': '#eceae2',
+            'w-accent':  '#c0392b',
+            'w-text':    '#1a1a1a',
+            'w-border':  '#d1cdc5',
+            'w-hover':   '#dfddd4',
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #f7f6f2; color: #1a1a1a; overflow: hidden; padding-top: 48px; }
+    .nav-link { transition: all 0.2s; border-left: 4px solid transparent; cursor: pointer; }
+    .nav-link.active { border-left: 4px solid #c0392b; background-color: #dfddd4; font-weight: 700; color: #c0392b; }
+    .nav-link:hover:not(.active) { background-color: #e5e3da; }
+    .content-section { display: none; animation: fadeIn 0.3s cubic-bezier(0.16,1,0.3,1); }
+    .content-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .scroll-custom::-webkit-scrollbar { width: 5px; }
+    .scroll-custom::-webkit-scrollbar-thumb { background: #d1cdc5; border-radius: 10px; }
+
+    /* 테이블 */
+    .doc-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .doc-table th { background: #eceae2; padding: 10px 14px; text-align: left; font-weight: 700; font-size: 12px; border: 1px solid #d1cdc5; }
+    .doc-table td { padding: 10px 14px; border: 1px solid #d1cdc5; vertical-align: top; line-height: 1.6; }
+    .doc-table tr:nth-child(even) td { background: #faf9f6; }
+
+    /* 뱃지 */
+    .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+    .badge-red    { background: #fde8e8; color: #c0392b; }
+    .badge-orange { background: #fef3e2; color: #d97706; }
+    .badge-gray   { background: #eceae2; color: #6b7280; }
+    .badge-green  { background: #ecfdf5; color: #059669; }
+    .badge-blue   { background: #eff6ff; color: #2563eb; }
+
+    /* Callout */
+    .callout { border-left: 3px solid #c0392b; background: #fdf5f4; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 14px; line-height: 1.7; }
+    .callout-title { font-weight: 700; margin-bottom: 6px; color: #c0392b; }
+    .callout.info { border-color: #2563eb; background: #eff6ff; }
+    .callout.info .callout-title { color: #1e40af; }
+    .callout.warn { border-color: #d97706; background: #fffbeb; }
+    .callout.warn .callout-title { color: #92400e; }
+    .callout.green { border-color: #059669; background: #ecfdf5; }
+    .callout.green .callout-title { color: #065f46; }
+
+    /* 섹션 헤더 */
+    .sec-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; letter-spacing: -0.01em; }
+    .sec-sub { font-size: 13px; color: #6b6b66; margin-bottom: 24px; }
+    .sec-h2 { font-size: 16px; font-weight: 700; color: #1a1a1a; margin: 28px 0 10px; padding-bottom: 6px; border-bottom: 1px solid #d1cdc5; }
+    .sec-h3 { font-size: 14px; font-weight: 700; color: #c0392b; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.04em; font-size: 11px; }
+
+    /* 스텝 번호 목록 */
+    .step-list { display: flex; flex-direction: column; gap: 10px; }
+    .step-item { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; line-height: 1.6; }
+    .step-num { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: #c0392b; color: white; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+
+    /* 체크리스트 */
+    .checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .checklist li { font-size: 14px; line-height: 1.6; padding-left: 24px; position: relative; }
+    .checklist li::before { content: '□'; position: absolute; left: 0; color: #c0392b; font-size: 14px; }
+
+    /* 카드 그리드 */
+    .award-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
+    .award-card { background: white; border: 1px solid #d1cdc5; border-radius: 8px; padding: 14px 16px; font-size: 13px; line-height: 1.5; }
+    .award-icon { font-size: 18px; margin-bottom: 6px; }
+    .award-name { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+    .award-desc { font-size: 12px; color: #6b6b66; }
+
+    /* 타임라인 */
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+    .tl-item { display: grid; grid-template-columns: 72px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid #e5e3da; align-items: start; }
+    .tl-item:last-child { border-bottom: none; }
+    .tl-time { font-size: 13px; font-weight: 700; color: #c0392b; font-variant-numeric: tabular-nums; padding-top: 2px; }
+    .tl-session { font-size: 13px; font-weight: 700; color: #1a1a1a; margin-bottom: 2px; }
+    .tl-desc { font-size: 13px; color: #6b6b66; line-height: 1.5; }
+
+    @media (prefers-reduced-motion: reduce) { .content-section { animation: none; } }
+  </style>
+</head>
+<body class="bg-w-bg text-w-text h-screen flex flex-col">
+
+  <!-- 탑 헤더 -->
+  <header class="border-b border-w-border bg-w-sidebar px-6 py-3 flex items-center justify-between flex-shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-sm text-white" style="background:#c0392b;">T</div>
+      <span class="font-bold text-base">TERROIR · Beta Day 실행 계획서</span>
+    </div>
+    <div class="flex items-center gap-3 text-sm text-w-text/60">
+      <span class="badge badge-red">v1.0</span>
+      <span class="text-xs font-mono">2026-04-23 · CTO Org · R&D실</span>
+    </div>
+  </header>
+
+  <!-- 바디 -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- 사이드바 -->
+    <aside class="w-60 bg-w-sidebar border-r border-w-border flex-shrink-0 overflow-y-auto scroll-custom py-4">
+
+      <div class="px-4 mb-4">
+        <p class="text-xs font-bold text-w-text/40 uppercase tracking-widest mb-2">개요</p>
+        <div class="space-y-0.5">
+          <div class="nav-link active px-3 py-2 rounded-r text-sm" onclick="go(this,'s0')">Executive Summary</div>
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s1')">목표 & Exit Criteria</div>
+        </div>
+      </div>
+
+      <div class="px-4 mb-4">
+        <p class="text-xs font-bold text-w-text/40 uppercase tracking-widest mb-2">검증 범위</p>
+        <div class="space-y-0.5">
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s2')">In / Out Scope</div>
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s3')">Greenfield 계열</div>
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s4')">Migration · Chaos 계열</div>
+        </div>
+      </div>
+
+      <div class="px-4 mb-4">
+        <p class="text-xs font-bold text-w-text/40 uppercase tracking-widest mb-2">방법론 & 실행</p>
+        <div class="space-y-0.5">
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s5')">SDD 검증 프로토콜</div>
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s6')">이벤트 구조</div>
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s7')">Day-of Timeline</div>
+        </div>
+      </div>
+
+      <div class="px-4 mb-4">
+        <p class="text-xs font-bold text-w-text/40 uppercase tracking-widest mb-2">운영</p>
+        <div class="space-y-0.5">
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s8')">Bug Bash & Live Fix</div>
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s9')">평가 & 시상</div>
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s10')">리스크 & 완화</div>
+        </div>
+      </div>
+
+      <div class="px-4">
+        <p class="text-xs font-bold text-w-text/40 uppercase tracking-widest mb-2">준비 & 부록</p>
+        <div class="space-y-0.5">
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s11')">사전 준비 체크리스트</div>
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s12')">사후 작업 (D+1~D+14)</div>
+          <div class="nav-link px-3 py-2 rounded-r text-sm" onclick="go(this,'s13')">Appendix</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="flex-1 overflow-y-auto scroll-custom bg-w-bg px-10 py-8">
+
+      <!-- ─── s0: Executive Summary ─── -->
+      <div id="s0" class="content-section active">
+        <div class="sec-title">Executive Summary</div>
+        <div class="sec-sub">Terroir Beta — Development Readiness Validation</div>
+
+        <p class="text-sm leading-relaxed text-w-text/80 mb-4">
+          Terroir는 기존 SIS(.NET/TFS) 환경을 대체하는 차세대 AI-Native 개발 플랫폼이다. Nx Monorepo · NestJS/React · GitHub Actions + ArgoCD(GitOps) · GKE · Kafka · LGTM · Backstage IDP를 축으로 5월 Beta Release를 앞두고 있으며, 6월 Chapter 3에서 Vinification/Élevage 실전 프로젝트가 본격 진입한다.
+        </p>
+        <p class="text-sm leading-relaxed text-w-text/80 mb-6">
+          본 Beta Day는 Chapter 3 진입 전에 <strong>"플랫폼 자체가 개발 환경으로 완결되어 있는가"</strong>를 플랫폼 개발자들 본인이 1일 동안 집중적으로 실증하는 이벤트다. Production 서비스 검증이 아니라 <strong>Development Readiness 확정</strong>이 목표다.
+        </p>
+
+        <!-- 개요 메타 표 -->
+        <div class="overflow-hidden rounded-xl border border-w-border mb-6">
+          <table class="doc-table">
+            <tbody>
+              <tr><td class="font-semibold w-32" style="background:#eceae2;">검증 대상</td><td>Terroir Beta — Development 환경 완결성 (개발 → 빌드 → 배포 → 관측)</td></tr>
+              <tr><td class="font-semibold" style="background:#eceae2;">포맷</td><td>플랫폼 개발자 Dogfooding Hackathon + Live Bug Bash</td></tr>
+              <tr><td class="font-semibold" style="background:#eceae2;">참가자</td><td>R&D실 Terroir 플랫폼 개발자 (본인들)</td></tr>
+              <tr><td class="font-semibold" style="background:#eceae2;">배포 대상</td><td>중앙 GCP(GKE) 한정 · 지역 IDC 배포는 추후 별도</td></tr>
+              <tr><td class="font-semibold" style="background:#eceae2;">개발 방법론</td><td>SDD(Spec-Driven Dev) + Cursor/Claude Code Pair · 이번 검증의 핵심 축</td></tr>
+              <tr><td class="font-semibold" style="background:#eceae2;">검증의 성격</td><td>Production 검증 아님 · Chapter 3 진입 전 Development Readiness 확정</td></tr>
+              <tr><td class="font-semibold" style="background:#eceae2;">소요 시간</td><td>1일 (10:00 –) · D+1 Cold Retro 포함</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout">
+          <div class="callout-title">이번 Beta Day가 반드시 다뤄야 할 3가지</div>
+          <div class="space-y-3 text-sm">
+            <div class="flex gap-2"><span class="font-bold text-w-accent flex-shrink-0">①</span><span><strong>플랫폼 완결성</strong> — Backstage Scaffolder로 프로젝트 생성 → 로컬 개발 → PR → GitHub Actions 빌드 → ArgoCD 배포 → LGTM 관측까지 Golden Path가 실제로 끊기지 않는가.</span></div>
+            <div class="flex gap-2"><span class="font-bold text-w-accent flex-shrink-0">②</span><span><strong>SDD(Spec-Driven Development) 실증</strong> — SPEC 작성 → Cursor/Claude Code 기반 구현 → 테스트까지의 AI 개발 방법론이 Terroir 환경에서 생산적으로 돌아가는가.</span></div>
+            <div class="flex gap-2"><span class="font-bold text-w-accent flex-shrink-0">③</span><span><strong>이관(Onboarding) 경로</strong> — Terroir 밖에서 이미 개발된 기존 프로젝트를 Terroir 환경에 올리는 경로가 실제로 가능한가. Chapter 3에서 Vinification/Élevage에 직결되는 리얼 시나리오.</span></div>
+          </div>
+        </div>
+
+        <div class="sec-h2">핵심 산출물</div>
+        <ul class="space-y-2 text-sm text-w-text/80">
+          <li class="flex gap-2"><span class="text-w-accent font-bold">•</span>Beta → 운영 전개(Sandbox) Go/No-Go 판정서</li>
+          <li class="flex gap-2"><span class="text-w-accent font-bold">•</span>Golden Path End-to-End 검증 레코드 (단계별 Time · 실패 지점)</li>
+          <li class="flex gap-2"><span class="text-w-accent font-bold">•</span>SDD 방법론 실증 리포트 — 생산성 Metric + 마찰 지점 + Cursor/Claude Code 활용 패턴</li>
+          <li class="flex gap-2"><span class="text-w-accent font-bold">•</span>외부 프로젝트 → Terroir Onboarding Playbook v1 (Chapter 3 Vinification에 직결)</li>
+          <li class="flex gap-2"><span class="text-w-accent font-bold">•</span>Backstage IDP · CI/CD · LGTM · <code class="text-xs bg-w-sidebar px-1 rounded">@vntg/ui-kit</code> · <code class="text-xs bg-w-sidebar px-1 rounded">@vntg/core</code> 각 컴포넌트별 이슈 우선순위</li>
+        </ul>
+      </div>
+
+      <!-- ─── s1: 목표 & Exit Criteria ─── -->
+      <div id="s1" class="content-section">
+        <div class="sec-title">목표 및 Exit Criteria</div>
+        <div class="sec-sub">Beta → Chapter 3 진입 기준</div>
+
+        <div class="sec-h2">4대 목표</div>
+        <div class="overflow-hidden rounded-xl border border-w-border mb-6">
+          <table class="doc-table">
+            <thead><tr><th class="w-16">구분</th><th class="w-36">목표</th><th>성공의 모습</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-red">G1</span></td>
+                <td class="font-semibold">Golden Path 완결</td>
+                <td>Scaffolder → Nx 개발 → GitHub Actions → ArgoCD → GKE 배포 → LGTM 관측까지 모든 팀이 최소 1회 완주</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-orange">G2</span></td>
+                <td class="font-semibold">SDD 실증</td>
+                <td>SPEC 문서 작성 → Cursor/Claude Code로 구현 → 테스트 자동화까지 정량적 생산성 측정치 확보 (팀별 LOC/hr, SPEC 적합도, 재작업률)</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-blue">G3</span></td>
+                <td class="font-semibold">Migration 실증</td>
+                <td>Terroir 밖에서 이미 만들어진 프로젝트 1건 이상을 Terroir 환경에 올려 배포까지 성공</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-green">G4</span></td>
+                <td class="font-semibold">Live Fix 발견</td>
+                <td>P0/P1 이슈를 당일 Hotfix 또는 Feature Flag Off 처리, P2 이하는 Sprint 배정으로 명확히 종결</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sec-h2">Exit Criteria (Beta → Chapter 3 Readiness)</div>
+        <div class="overflow-hidden rounded-xl border border-w-border mb-6">
+          <table class="doc-table">
+            <thead><tr><th>지표</th><th class="w-44">Go 기준</th><th>측정 방법</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="font-semibold">P0 (Critical) 잔여</td>
+                <td><span class="badge badge-red">0건</span></td>
+                <td>당일 Close 또는 명시적 Risk Accept + Feature Flag Off</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">P1 (High) 잔여</td>
+                <td><span class="badge badge-orange">≤ 2건</span></td>
+                <td>D+3 Fix 계획 합의 시에만 Accept</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Golden Path 완주율</td>
+                <td><span class="badge badge-red">100% (전 팀)</span></td>
+                <td>팀별 Scaffolder→GKE 배포→LGTM 대시보드 확인 레코드</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Time-to-First-Deploy (TTFD)</td>
+                <td><span class="badge badge-orange">≤ 90분</span></td>
+                <td>Scaffolder 실행 → GKE Pod Running까지 (신규 프로젝트 기준)</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Migration 성공</td>
+                <td><span class="badge badge-blue">≥ 1팀 성공</span></td>
+                <td>외부 기개발 프로젝트의 GKE 배포 성공</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">SDD SPEC 적합도</td>
+                <td><span class="badge badge-orange">≥ 80%</span></td>
+                <td>작성 SPEC 항목 중 구현 산출물이 충족한 비율 (팀 자가평가 + Observer 교차)</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">LGTM 관측성</td>
+                <td><span class="badge badge-green">3/3 (Log/Metric/Trace)</span></td>
+                <td>배포된 서비스에서 Loki 로그, Mimir 메트릭, Tempo 트레이스 모두 Grafana에서 조회 가능</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">롤백 실증</td>
+                <td><span class="badge badge-blue">1회 성공</span></td>
+                <td>의도적 배포 실패 → ArgoCD 자동 롤백 또는 수동 Revert 5분 내</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">NPS (참가자 설문)</td>
+                <td><span class="badge badge-green">≥ +20</span></td>
+                <td>Retro 직전 익명 설문</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">판정 원칙</div>
+          <ul class="text-sm space-y-1.5">
+            <li>• 9개 지표 중 8개 이상 충족 → Beta 공식화 · Chapter 3 진입 승인.</li>
+            <li>• P0가 1건이라도 남으면 나머지 전부 충족해도 No-Go — 다만 Feature Flag Off로 전환 시 Accept 가능.</li>
+            <li>• Golden Path 완주율은 타협 불가 — 플랫폼 개발자 본인이 완주 못 하면 Service Dev는 당연히 못 한다.</li>
+            <li>• 판정은 19:30 이전 Slack <code class="text-xs bg-amber-100 px-1 rounded">#terroir-beta</code> 채널에 CTO 명의로 공개.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ─── s2: 검증 범위 In/Out Scope ─── -->
+      <div id="s2" class="content-section">
+        <div class="sec-title">검증 범위</div>
+        <div class="sec-sub">3. In-Scope · Out-of-Scope</div>
+
+        <div class="overflow-hidden rounded-xl border border-w-border">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th class="w-28">영역</th>
+                <th>In-Scope (검증)</th>
+                <th>Out-of-Scope (이번 대상 아님)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="font-semibold">개발 환경</td>
+                <td>Nx Monorepo / NestJS / React / TypeScript / <code class="text-xs bg-w-sidebar px-1 rounded">@vntg/ui-kit</code> · VSCode+Cursor · Claude Code · SDD 워크플로</td>
+                <td class="text-w-text/60">Service Dev 조직 교육 · 전사 코딩 컨벤션 재정립</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">배포 환경</td>
+                <td>GitHub Actions · ArgoCD GitOps · Registry · Helm · 중앙 GCP(GKE) 배포</td>
+                <td class="text-w-text/60">지역 IDC 배포 · 온프레미스 K8s · 블루그린/카나리 고도화</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">인프라</td>
+                <td>GKE 네임스페이스 격리 · Terraform 프로비저닝 확인 · Kafka 연결성 Smoke</td>
+                <td class="text-w-text/60">Multi-Region · DR · Spot Instance 비용 최적화 튜닝</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">관측</td>
+                <td>LGTM 스택 (Loki/Grafana/Tempo/Mimir) · AlertManager · DORA 기본 지표 4종</td>
+                <td class="text-w-text/60">AI Ops 고도화 · 예측 알림 · SLO 기반 자동 대응</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">IDP</td>
+                <td>Backstage Scaffolder · Software Catalog · TechDocs · 템플릿</td>
+                <td class="text-w-text/60">Tech Radar 완성판 · Cost Dashboard 세분화</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">방법론</td>
+                <td>SDD 전체 사이클 · Claude Code 협업 · SPEC 재작성 반영 · AI 생산성 측정</td>
+                <td class="text-w-text/60">멀티에이전트 오케스트레이션(tmux+worktree) 고도화 — 별도 검증 주제</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">마이그레이션</td>
+                <td>외부 기개발 프로젝트 1건 이상 onboarding · 이관 Playbook 초안</td>
+                <td class="text-w-text/60">대규모 Vinification(ERP 등) 실전 — Chapter 3 본편</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Data Platform</td>
+                <td class="text-w-text/40">—</td>
+                <td class="text-w-text/60">전체 Out-of-Scope · 별도 계획</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">보안</td>
+                <td>Trivy 이미지 스캔 · SonarQube 1회 통과 · Secret Scan 확인</td>
+                <td class="text-w-text/60">Red Team 침투 테스트 · ISO27001 심사 · OT 보안</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">성능</td>
+                <td>기본 헬스체크 · Smoke 부하 (100 RPS, 5분)</td>
+                <td class="text-w-text/60">대규모 부하 테스트 · 튜닝 — 별도 Load Week</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ─── s3: 해커톤 주제 Greenfield ─── -->
+      <div id="s3" class="content-section">
+        <div class="sec-title">해커톤 주제 — Greenfield 계열</div>
+        <div class="sec-sub">신규 구축 · Scaffolder 첫 경험 검증</div>
+
+        <p class="text-sm text-w-text/70 mb-4">R&D실 플랫폼 개발자들이 본인이 만든 플랫폼을 직접 써서 개발·배포·관측까지 완주한다. 모든 주제는 SDD 사이클을 따른다 — ① SPEC 작성 ② Cursor/Claude Code로 구현 ③ 테스트 ④ 배포 ⑤ LGTM 확인.</p>
+
+        <div class="callout info">
+          <div class="callout-title">주제 배정 원칙</div>
+          주제는 3개 계열 × 멤버 배정을 강제한다: <strong>Greenfield / Migration / Chaos</strong>. 각 계열에 배정한다.
+        </div>
+
+        <div class="sec-h2">Greenfield 계열 (신규 구축)</div>
+        <div class="overflow-hidden rounded-xl border border-w-border mb-6">
+          <table class="doc-table">
+            <thead><tr><th class="w-12">ID</th><th class="w-36">주제</th><th>요구사항 (SPEC 소재)</th><th class="w-48">완료 정의 (DoD)</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-blue">G1</span></td>
+                <td class="font-semibold">내부 공지 서비스</td>
+                <td>NestJS API + React UI. 제목/본문/대상/발송시각. 공통 컴포넌트 사용 필수. Kafka로 이벤트 발행, Consumer는 Mock Mail로 로그만.</td>
+                <td class="text-xs text-w-text/70">GKE Running · Swagger 노출 · Loki 로그 · Tempo Trace · DORA 배포 1회 집계</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-blue">G2</span></td>
+                <td class="font-semibold">팀 온콜 로테이션</td>
+                <td>팀원 명단과 주간 일정을 관리. Slack Webhook으로 당일 온콜 자동 알림. AlertManager 연동으로 장애 알림 라우팅 시나리오 포함.</td>
+                <td class="text-xs text-w-text/70">GKE Running · Slack 알림 수신 확인 · Grafana 대시보드 1개</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-blue">G3</span></td>
+                <td class="font-semibold">기술문서 검색 API</td>
+                <td>TechDocs(Markdown) 기반 간이 Full-text 검색. Backstage Plugin이 아닌 독립 마이크로서비스. Redis 캐시 포함.</td>
+                <td class="text-xs text-w-text/70">Software Catalog에 등록 · Redis 연결 메트릭 노출</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-blue">G4</span></td>
+                <td class="font-semibold">라이브러리 확장</td>
+                <td>공통 로거/에러 핸들러 모듈을 추가. Nx publishable lib으로 패키징, 다른 팀이 import 가능해야 함.</td>
+                <td class="text-xs text-w-text/70">npm 내부 레지스트리 게시 · 다른 팀이 실제 import해서 빌드 성공 확인</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ─── s4: Migration & Chaos 계열 ─── -->
+      <div id="s4" class="content-section">
+        <div class="sec-title">해커톤 주제 — Migration · Chaos 계열</div>
+        <div class="sec-sub">외부 이관 · 장애/경계 조건 검증</div>
+
+        <div class="sec-h2">Migration 계열 (외부 → Terroir Onboarding) — Chapter 3 직결</div>
+        <div class="overflow-hidden rounded-xl border border-w-border mb-4">
+          <table class="doc-table">
+            <thead><tr><th class="w-12">ID</th><th class="w-40">주제</th><th>원 상태 · 이관 과제</th><th class="w-48">완료 정의 (DoD)</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-orange">M1</span></td>
+                <td class="font-semibold">NestJS 단독 앱 → Nx 편입</td>
+                <td>평소 개발자가 토이로 만든 NestJS 단독 리포(2,000~5,000 LOC 규모). Nx Workspace의 app으로 편입, Dockerize, Helm chart 생성, ArgoCD 등록.</td>
+                <td class="text-xs text-w-text/70">GKE 배포 성공 · LGTM 3/3 · 이관 과정 문서화 1부</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-orange">M2</span></td>
+                <td class="font-semibold">React CRA 앱 → Nx+Next.js</td>
+                <td>Create React App으로 만들어진 프론트. Nx app으로 편입 후 Next.js 14로 전환, <code class="text-xs bg-w-sidebar px-1 rounded">@vntg/ui-kit</code> 컴포넌트 교체, Storybook 등록.</td>
+                <td class="text-xs text-w-text/70">GKE 배포 · UI 동등성 최소 80% (주요 화면 기준)</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-orange">M3</span></td>
+                <td class="font-semibold">Python 배치 → 컨테이너화</td>
+                <td>단일 Python 스크립트 배치. Dockerize → CronJob으로 GKE 배포. Loki로 로그 수집, Prometheus로 실행 시간 메트릭 노출.</td>
+                <td class="text-xs text-w-text/70">CronJob 스케줄 1회 실행 성공 · 로그/메트릭 확인</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-orange">M4</span></td>
+                <td class="font-semibold">레거시 스펙 → 재구축</td>
+                <td>미니 Vinification 리허설. 짧은 레거시 코드(.NET 콘솔 앱 1개)를 SPEC으로 역추출하고 NestJS로 재구축. 동등성 테스트 포함.</td>
+                <td class="text-xs text-w-text/70">SPEC 문서 · NestJS 구현 · 회귀 동등성 테스트 통과</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout green">
+          <div class="callout-title">Migration 주제 선정 원칙</div>
+          <ul class="text-sm space-y-1">
+            <li>• 참가자가 "평소 사이드로 만든 것"이나 "팀에서 실제 쓰는 작은 도구"를 반입할 수 있게 허용.</li>
+            <li>• 이관 중 발견되는 모든 마찰은 그대로 Chapter 3 Vinification Playbook의 Day-1 자료가 된다.</li>
+            <li>• 이관 주제는 팀 2명 중 1명이 원 코드에 익숙한 사람이도록 배정.</li>
+          </ul>
+        </div>
+
+        <div class="sec-h2">Chaos 계열 (장애·경계 조건) — 플랫폼의 회복성 검증</div>
+        <div class="overflow-hidden rounded-xl border border-w-border mb-4">
+          <table class="doc-table">
+            <thead><tr><th class="w-12">ID</th><th class="w-44">주제</th><th>의도적 시나리오</th><th class="w-52">완료 정의 (DoD)</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-red">C1</span></td>
+                <td class="font-semibold">의도적 배포 실패 & 롤백</td>
+                <td>의도적으로 빌드는 되지만 런타임에 크래시 나는 이미지를 배포. ArgoCD 자동 회귀 또는 수동 Revert가 5분 내에 가능한지.</td>
+                <td class="text-xs text-w-text/70">Pod Running 복원 · Revert Commit · LGTM에 이상 감지 기록</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-red">C2</span></td>
+                <td class="font-semibold">Secret/Config 오설정</td>
+                <td>DB 비밀번호 틀림, 잘못된 Kafka 토픽 이름 등 흔한 실수 3종. 오류 메시지가 개발자 친화적인지, LGTM으로 원인 추적 가능한지.</td>
+                <td class="text-xs text-w-text/70">세 오류 모두 로그/트레이스에서 원인 5분 내 식별</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-red">C3</span></td>
+                <td class="font-semibold">멀티 테넌시 격리</td>
+                <td>두 팀이 같은 네임스페이스 이름을 선점 시도, 동일 DB 스키마 이름 충돌.</td>
+                <td class="text-xs text-w-text/70">충돌 감지 및 명확한 가드레일 작동 · 가드레일 없으면 이슈로</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-red">C4</span></td>
+                <td class="font-semibold">LGTM 없이 디버깅 불가 증명</td>
+                <td>의도적으로 난이도 있는 버그(비동기 경합, 간헐적 Kafka 소비 누락)를 심음. LGTM만으로 15분 내에 원인 식별 가능한지.</td>
+                <td class="text-xs text-w-text/70">Trace 또는 Log 기반 원인 식별 스크린샷 제출</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout">
+          <div class="callout-title">Chaos 주제의 역할</div>
+          <p class="text-sm">Chaos 주제는 "플랫폼이 좋은 날 돌아간다"가 아니라 <strong>"나쁜 날 개발자를 구해주는가"</strong>를 검증한다. C1~C4는 모두 실제로 Chapter 3 Vinification/Élevage에서 재현될 가능성이 높은 시나리오다. 팀 자체 진행뿐 아니라 16:30 Bug Bash 시간에 타 팀 산출물에 대해 교차 실행하는 공격 시나리오로도 재활용.</p>
+        </div>
+      </div>
+
+      <!-- ─── s5: SDD 검증 프로토콜 ─── -->
+      <div id="s5" class="content-section">
+        <div class="sec-title">SDD 검증 프로토콜</div>
+        <div class="sec-sub">이번 Beta Day의 가장 중요한 축 중 하나</div>
+
+        <p class="text-sm text-w-text/70 mb-6">모든 팀은 공통 SDD 프로토콜을 따르며 각 단계에서 정량·정성 데이터를 남긴다. 데이터는 Chapter 3 방법론 확정의 근거가 된다.</p>
+
+        <div class="sec-h2">5단계 SDD 루프 (팀 공통)</div>
+        <div class="overflow-hidden rounded-xl border border-w-border mb-6">
+          <table class="doc-table">
+            <thead><tr><th class="w-12">단계</th><th class="w-36">이름</th><th>산출물 · 행동</th><th class="w-24">시간 목표</th><th class="w-36">기록 항목</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-gray">S0</span></td>
+                <td class="font-semibold">Scope Freeze</td>
+                <td>주제 확인 · DoD 재확인 · 범위 축소 (60분 안에 할 수 있는 핵심)</td>
+                <td>15분</td>
+                <td class="text-xs text-w-text/70">제외한 것 3개</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-blue">S1</span></td>
+                <td class="font-semibold">SPEC Draft</td>
+                <td>요구사항 · 데이터 모델 · API 계약 · 비기능 요건을 Markdown SPEC으로. <strong>반드시 사람이 먼저 작성.</strong></td>
+                <td>45분</td>
+                <td class="text-xs text-w-text/70">SPEC LOC, 항목 수</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-orange">S2</span></td>
+                <td class="font-semibold">AI Implementation</td>
+                <td>Cursor 또는 Claude Code에 SPEC 주입 → 구현. 프롬프트 로그 저장. Human 개입은 Code Review 형태로.</td>
+                <td>180분</td>
+                <td class="text-xs text-w-text/70">AI 세션 수, 수용률</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-orange">S3</span></td>
+                <td class="font-semibold">Test & Refine</td>
+                <td>Jest/Playwright 테스트, 실패 시 SPEC 수정 → 재구현 (SPEC ←→ Code 루프 재현)</td>
+                <td>60분</td>
+                <td class="text-xs text-w-text/70">루프 횟수, 실패 유형</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-green">S4</span></td>
+                <td class="font-semibold">Deploy & Observe</td>
+                <td>GitHub Actions → ArgoCD → GKE → LGTM 확인. Golden Path 완주.</td>
+                <td>60분</td>
+                <td class="text-xs text-w-text/70">단계별 Time</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sec-h2">SDD 정량 지표</div>
+        <div class="overflow-hidden rounded-xl border border-w-border mb-6">
+          <table class="doc-table">
+            <thead><tr><th>지표</th><th>정의</th><th>수집 방법</th></tr></thead>
+            <tbody>
+              <tr><td class="font-semibold">SPEC 적합도</td><td>SPEC 항목 중 최종 구현이 만족한 비율</td><td>팀 자가 체크 + Observer 교차 확인</td></tr>
+              <tr><td class="font-semibold">AI 수용률</td><td>AI가 제안한 코드 중 최종 커밋된 비율</td><td>Cursor/Claude Code 세션 로그, Git Blame 샘플</td></tr>
+              <tr><td class="font-semibold">SPEC ↔ Code 루프 수</td><td>SPEC을 고쳐서 재구현한 횟수</td><td>팀 기록표</td></tr>
+              <tr><td class="font-semibold">Human Override 빈도</td><td>AI 제안을 사람이 수동 재작성한 횟수 (LOC 기준)</td><td>팀 기록표 + 커밋 diff 샘플링</td></tr>
+              <tr><td class="font-semibold">TTFD (Time-to-First-Deploy)</td><td>Scaffolder 시작부터 GKE Pod Running까지</td><td>자동 타임스탬프 (ArgoCD + Actions 로그)</td></tr>
+              <tr><td class="font-semibold">Deploy Frequency</td><td>팀별 성공 배포 횟수 (당일)</td><td>ArgoCD Sync Log</td></tr>
+              <tr><td class="font-semibold">Change Failure Rate</td><td>배포 중 롤백 또는 실패 비율</td><td>ArgoCD 상태 + 수동 기록</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout">
+          <div class="callout-title">SDD 검증의 결정적 질문</div>
+          <ul class="text-sm space-y-1.5">
+            <li><strong>Q1.</strong> SPEC 작성 시간이 전체의 몇 %였는가? (너무 적으면 SDD가 아니라 AI 자유 코딩)</li>
+            <li><strong>Q2.</strong> SPEC을 얼마나 자주 고쳤는가? (0회면 검증 부족, 10회 이상이면 SPEC 훈련 부족)</li>
+            <li><strong>Q3.</strong> Cursor와 Claude Code를 어떻게 나눠 썼는가? (역할 분담 실패 패턴 파악)</li>
+            <li><strong>Q4.</strong> 팀이 가장 많이 반복한 프롬프트 3개는? (향후 재사용 템플릿 자산)</li>
+            <li><strong>Q5.</strong> 기존 방식(AI 없이) 대비 추정 시간 단축률은? (참가자 주관 평가, 허위 숨김 주의)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ─── s6: 이벤트 구조 ─── -->
+      <div id="s6" class="content-section">
+        <div class="sec-title">이벤트 구조</div>
+        <div class="sec-sub">참가자 역할 · 환경 구성</div>
+
+        <div class="callout info" style="margin-bottom:24px;">
+          <div class="callout-title">이번 Beta Day의 특수성</div>
+          참가자 = R&D실 Terroir 플랫폼 개발자들. 본인들이 만든 플랫폼을 본인이 쓴다. 따라서 모든 참가자는 잠재적으로 <strong>"플랫폼 Fix 권한"</strong>을 가진다. 이게 가장 큰 장점이자 관리 포인트다.
+        </div>
+
+        <div class="sec-h2">참가자 역할</div>
+        <div class="overflow-hidden rounded-xl border border-w-border mb-6">
+          <table class="doc-table">
+            <thead><tr><th class="w-36">역할</th><th class="w-16">인원</th><th>책임</th><th>배정 기준</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="font-semibold">Contestant</td>
+                <td>n명</td>
+                <td>주제 수행 · SDD 루프 준수 · 이슈 리포트</td>
+                <td>R&D실 플랫폼 개발자 전원이 팀 구성. 본인이 책임진 컴포넌트 팀과 다른 팀에 배정 (자기 영역 자기 검증 방지)</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Platform On-Call</td>
+                <td>n명</td>
+                <td>Live Fix 주도 · Hotfix 배포 · 가장 심각한 이슈 즉시 대응</td>
+                <td>컴포넌트 오너 3명 (CI/CD · Backstage · LGTM) — 번갈아 Contestant ↔ On-Call 전환</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Bug Triager</td>
+                <td>n명</td>
+                <td>이슈 수집 · P0~P3 등급 판정 · Slack 브로드캐스트</td>
+                <td>PMO + Product Lead</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Observer / 심사</td>
+                <td>n명</td>
+                <td>정성 관찰 · 마찰 지점 기록 · Go/No-Go 의견</td>
+                <td>CTO · R&D 실장 · 외부 Advisor 1명 (선택)</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Scribe / 기록</td>
+                <td>n명</td>
+                <td>타임라인 기록 · Retro 진행 · 최종 리포트 초안</td>
+                <td>TPM 또는 PMO</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">Dogfooding의 함정 회피 규칙</div>
+          <ul class="text-sm space-y-1.5">
+            <li><strong>①</strong> 자기 영역 자기 검증 금지 — Backstage 담당자는 Backstage를 직접 검증하는 팀에 배정하지 않는다.</li>
+            <li><strong>②</strong> "이건 원래 이래" 금지 — 평소 우회한 패턴도 이번엔 이슈로 올린다. 우회가 정당화되면 Service Dev는 쓸 수 없다.</li>
+            <li><strong>③</strong> Contestant가 자기 컴포넌트 Fix 시 — PR은 반드시 On-Call 리뷰를 통과해야 하며, 구현 시간은 Contestant 시간에 포함 (공정성 유지).</li>
+            <li><strong>④</strong> 성취감 &gt; 완결 — 완주 압박으로 DoD를 낮추지 않는다. DoD 미달 시 솔직 공개가 시상 가산점.</li>
+          </ul>
+        </div>
+
+        <div class="sec-h2">환경 구성</div>
+        <ul class="space-y-2 text-sm text-w-text/80">
+          <li class="flex gap-2"><span class="text-w-accent">•</span>전용 GCP 프로젝트 <code class="text-xs bg-w-sidebar px-1 rounded">terroir-beta-day</code> — 기존 Staging과 분리. 팀당 네임스페이스 지급.</li>
+          <li class="flex gap-2"><span class="text-w-accent">•</span>Backstage Beta 테넌트 — Scaffolder 템플릿 3종 (<code class="text-xs bg-w-sidebar px-1 rounded">nest-service</code>, <code class="text-xs bg-w-sidebar px-1 rounded">next-app</code>, <code class="text-xs bg-w-sidebar px-1 rounded">batch-job</code>) 사전 등록.</li>
+          <li class="flex gap-2"><span class="text-w-accent">•</span>GitHub Organization <code class="text-xs bg-w-sidebar px-1 rounded">vntg-terroir-beta</code> 또는 기존 Org 내 <code class="text-xs bg-w-sidebar px-1 rounded">beta-day-*</code> prefix 리포지토리 그룹.</li>
+          <li class="flex gap-2"><span class="text-w-accent">•</span>Harbor 프로젝트 <code class="text-xs bg-w-sidebar px-1 rounded">beta-day/*</code> · Trivy 정책: High 이상 Block.</li>
+          <li class="flex gap-2"><span class="text-w-accent">•</span>ArgoCD Application 자동 등록 훅 — 리포지토리 생성 시 Scaffolder가 ArgoCD App 생성 트리거.</li>
+          <li class="flex gap-2"><span class="text-w-accent">•</span>LGTM · 공용 Grafana에 "Beta Day Live" 폴더 생성, 팀별 대시보드 서브폴더 자동 생성.</li>
+          <li class="flex gap-2"><span class="text-w-accent">•</span>Google Chat 스페이스 3개 — <code class="text-xs bg-w-sidebar px-1 rounded">#terroir-beta</code> (공지), <code class="text-xs bg-w-sidebar px-1 rounded">#terroir-bugs</code> (이슈), <code class="text-xs bg-w-sidebar px-1 rounded">#terroir-help</code> (Q&A).</li>
+          <li class="flex gap-2"><span class="text-w-accent">•</span>Jira 라벨 <code class="text-xs bg-w-sidebar px-1 rounded">BETA-DAY</code> · 전용 Kanban 보드 (Triage → Fixing → Verify → Done).</li>
+          <li class="flex gap-2"><span class="text-w-accent">•</span>Cursor / Claude Code — 참가자 계정 사전 배포. 세션 로그는 팀별 공용 저장소 (<code class="text-xs bg-w-sidebar px-1 rounded">beta-day-ai-logs</code>)에 익명화 저장.</li>
+        </ul>
+      </div>
+
+      <!-- ─── s7: Day-of Timeline ─── -->
+      <div id="s7" class="content-section">
+        <div class="sec-title">Day-of Timeline</div>
+        <div class="sec-sub">전체 10.5시간 + 익일 Cold Retro 1시간 · SDD 5단계와 Bug Bash가 타임라인에 정확히 맞물려 있다</div>
+
+        <div class="timeline">
+          <div class="tl-item"><div class="tl-time">09:30</div><div><div class="tl-session">운영팀 집결</div><div class="tl-desc">Smoke Test, 이슈보드 초기화, Scaffolder 템플릿 마지막 확인</div></div></div>
+          <div class="tl-item"><div class="tl-time">10:00</div><div><div class="tl-session">🎬 Kickoff <span class="text-xs font-normal text-w-text/50">(30분)</span></div><div class="tl-desc">CTO 오프닝 · SDD 프로토콜 재확인 · Exit Criteria 공유 · 주제 배정 확정</div></div></div>
+          <div class="tl-item"><div class="tl-time">10:30</div><div><div class="tl-session"><span class="badge badge-blue mr-1">SDD S0</span> Scope Freeze <span class="text-xs font-normal text-w-text/50">(15분)</span></div><div class="tl-desc">주제 범위 축소, DoD 재확인, "제외한 3가지" 명시</div></div></div>
+          <div class="tl-item"><div class="tl-time">10:45</div><div><div class="tl-session"><span class="badge badge-blue mr-1">SDD S1</span> SPEC Draft <span class="text-xs font-normal text-w-text/50">(45분)</span></div><div class="tl-desc">Markdown SPEC 작성. AI 사용 금지 (사람이 먼저 쓴다).</div></div></div>
+          <div class="tl-item"><div class="tl-time">11:30</div><div><div class="tl-session">🔄 SPEC Peer Review <span class="text-xs font-normal text-w-text/50">(15분)</span></div><div class="tl-desc">팀 간 옆 팀과 SPEC 교차 리뷰. "이해 가능한가" 확인.</div></div></div>
+          <div class="tl-item"><div class="tl-time">11:45</div><div><div class="tl-session"><span class="badge badge-orange mr-1">SDD S2</span> AI Implementation 1부 <span class="text-xs font-normal text-w-text/50">(105분)</span></div><div class="tl-desc">Cursor/Claude Code로 구현 시작. 프롬프트 로그 저장 필수.</div></div></div>
+          <div class="tl-item"><div class="tl-time">13:30</div><div><div class="tl-session">점심 <span class="text-xs font-normal text-w-text/50">(45분)</span></div><div class="tl-desc">On-Call은 반반 교대 식사. 이슈 보드 모니터링 유지.</div></div></div>
+          <div class="tl-item"><div class="tl-time">14:15</div><div><div class="tl-session">⚠️ Rollback Drill <span class="text-xs font-normal text-w-text/50">(15분)</span></div><div class="tl-desc">ArgoCD 롤백 드릴. Contestant는 관찰만. 드릴 결과 즉시 공개.</div></div></div>
+          <div class="tl-item"><div class="tl-time">14:30</div><div><div class="tl-session"><span class="badge badge-orange mr-1">SDD S2</span> AI Implementation 2부 <span class="text-xs font-normal text-w-text/50">(90분)</span></div><div class="tl-desc">구현 마무리, 첫 Push 시도. TTFD 측정 시작.</div></div></div>
+          <div class="tl-item"><div class="tl-time">16:00</div><div><div class="tl-session">중간 체크인 <span class="text-xs font-normal text-w-text/50">(15분)</span></div><div class="tl-desc">팀별 60초 상태 공유, 막힘 집계. Triager 우선순위 재평가.</div></div></div>
+          <div class="tl-item"><div class="tl-time">16:15</div><div><div class="tl-session"><span class="badge badge-orange mr-1">SDD S3</span> Test & Refine <span class="text-xs font-normal text-w-text/50">(60분)</span></div><div class="tl-desc">테스트, SPEC 루프. Change Failure 측정.</div></div></div>
+          <div class="tl-item"><div class="tl-time">17:15</div><div><div class="tl-session"><span class="badge badge-green mr-1">SDD S4</span> Deploy & Observe <span class="text-xs font-normal text-w-text/50">(75분)</span></div><div class="tl-desc">GKE 배포 완주, LGTM 3/3 확인, DoD 통과.</div></div></div>
+          <div class="tl-item"><div class="tl-time">17:30</div><div><div class="tl-session">🎬 Final Demo <span class="text-xs font-normal text-w-text/50">(30분)</span></div><div class="tl-desc">팀별 2.5분 데모 + Q&A. SPEC · 구현 · 배포 · LGTM 스크린샷.</div></div></div>
+          <div class="tl-item"><div class="tl-time">18:30</div><div><div class="tl-session">🔴 Bug Bash <span class="text-xs font-normal text-w-text/50">(45분)</span></div><div class="tl-desc">모든 팀 개발 중단, 타 팀 결과물 교차 공격 (C1~C4 시나리오 포함).</div></div></div>
+          <div class="tl-item"><div class="tl-time">19:15</div><div><div class="tl-session">🧊 Hotfix Freeze 선언 · Demo 준비 <span class="text-xs font-normal text-w-text/50">(15분)</span></div><div class="tl-desc">이 시점 이후 배포 금지. 팀별 데모 자료 정리.</div></div></div>
+          <div class="tl-item"><div class="tl-time">20:00</div><div><div class="tl-session">📝 Retro + Pulse Survey <span class="text-xs font-normal text-w-text/50">(20분)</span></div><div class="tl-desc">Start/Stop/Continue · NPS · Go/No-Go 즉석 투표 (참고용)</div></div></div>
+          <div class="tl-item"><div class="tl-time">20:20</div><div><div class="tl-session">🏁 Go/No-Go 발표 (CTO)</div><div class="tl-desc">Exit Criteria 집계, Chapter 3 진입 여부 공지</div></div></div>
+          <div class="tl-item"><div class="tl-time">익일 10:00</div><div><div class="tl-session">🧊 Cold Retro <span class="text-xs font-normal text-w-text/50">(60분)</span></div><div class="tl-desc">뜨거운 감정 빠진 냉정한 Retro, 1:1 인터뷰 샘플링</div></div></div>
+        </div>
+
+        <div class="callout warn" style="margin-top:24px;">
+          <div class="callout-title">Rollback Drill (14:15) 상세</div>
+          <ul class="text-sm space-y-1">
+            <li>• <strong>시나리오:</strong> ArgoCD에 고의로 크래시 이미지를 Sync → 5분 내 자동/수동 롤백을 On-Call 팀이 수행.</li>
+            <li>• Contestant는 관찰만 — 하지만 드릴 도중 발견되는 UX 문제는 이슈로 제보 가능.</li>
+            <li>• 드릴 대상은 전용 Sandbox 네임스페이스 <code class="text-xs bg-amber-100 px-1 rounded">beta-day-drill</code> 한정. 참가자 네임스페이스에는 영향 없음.</li>
+            <li>• <strong>Abort 기준:</strong> 5분 경과 후 복구 실패 시 드릴 중단, 이를 P0 이슈로 자동 기록.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ─── s8: Bug Bash & Live Fix ─── -->
+      <div id="s8" class="content-section">
+        <div class="sec-title">Bug Bash 및 Live Fix 플레이북</div>
+        <div class="sec-sub">이슈 등급 정의 · Live Fix 루프</div>
+
+        <div class="sec-h2">이슈 등급 정의</div>
+        <div class="overflow-hidden rounded-xl border border-w-border mb-6">
+          <table class="doc-table">
+            <thead><tr><th class="w-16">등급</th><th class="w-20">심각도</th><th>예시 (Terroir Beta 맥락)</th><th class="w-36">대응 SLA</th><th class="w-28">Go/No-Go</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-red">P0</span></td>
+                <td class="font-semibold">Critical</td>
+                <td>Scaffolder 자체 실패, ArgoCD Sync 전면 멈춤, 이미지 Push 불가, Grafana 접근 불가, Secret 노출</td>
+                <td>당일 Fix 또는 Feature Flag Off</td>
+                <td class="font-bold text-red-600">잔여 시 No-Go</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-orange">P1</span></td>
+                <td class="font-semibold">High</td>
+                <td>특정 템플릿에서 30% 이상 실패, LGTM에서 Trace 누락, 공통 컴포넌트 오류, 특정 조건에서 롤백 실패</td>
+                <td>당일 또는 D+3</td>
+                <td>≤ 2건까지 허용</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-blue">P2</span></td>
+                <td class="font-semibold">Medium</td>
+                <td>TechDocs 검색 정확도 낮음, 알림 지연, Backstage 플러그인 UX 혼란, 로그 레벨 부적절</td>
+                <td>다음 Sprint</td>
+                <td class="text-w-text/50">영향 없음</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-gray">P3</span></td>
+                <td class="font-semibold">Low</td>
+                <td>문서 오타, 템플릿 기본값 개선, 메뉴 순서, 로그 포맷 미세 조정</td>
+                <td>Backlog</td>
+                <td class="text-w-text/50">영향 없음</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sec-h2">Live Fix 루프</div>
+        <div class="step-list mb-6">
+          <div class="step-item"><div class="step-num">1</div><div><strong>제보</strong>: Jira <code class="text-xs bg-w-sidebar px-1 rounded">BETA-DAY</code> + Google Chat <code class="text-xs bg-w-sidebar px-1 rounded">#terroir-bugs</code> 동시 포스트 (봇 자동 연동)</div></div>
+          <div class="step-item"><div class="step-num">2</div><div><strong>Triage</strong>: Triager 2인이 2분 내 등급 판정, 컴포넌트 Owner 지목</div></div>
+          <div class="step-item"><div class="step-num">3</div><div><strong>Claim</strong>: On-Call이 Claim → 상태 Fixing (해당 컴포넌트 Owner가 Contestant여도 On-Call이 우선 처리)</div></div>
+          <div class="step-item"><div class="step-num">4</div><div><strong>Fix</strong>: 동시 P0/P1 병렬 최대 2건 — 과부하 방지</div></div>
+          <div class="step-item"><div class="step-num">5</div><div><strong>Hotfix 배포</strong>: PR → 2명 리뷰 → CI → Beta 테넌트 반영 (목표 30분)</div></div>
+          <div class="step-item"><div class="step-num">6</div><div><strong>Verify</strong>: 원 제보자가 재현 불가 확인 → Done</div></div>
+          <div class="step-item"><div class="step-num">7</div><div><strong>공지</strong>: Done 전환 시 Google Chat <code class="text-xs bg-w-sidebar px-1 rounded">#terroir-beta</code> 자동 공지</div></div>
+        </div>
+
+        <div class="callout">
+          <div class="callout-title">Live Fix 안전장치</div>
+          <ul class="text-sm space-y-1">
+            <li><strong>①</strong> 모든 Hotfix는 Feature Flag 뒤. 문제 재발 시 즉시 Off.</li>
+            <li><strong>②</strong> 동시 배포 최대 2건. 초과 시 큐잉.</li>
+            <li><strong>③</strong> 18:15 이후 Freeze — Demo 안정성 확보.</li>
+            <li><strong>④</strong> 모든 Hotfix는 D+3까지 Proper Fix 리뷰 필수 (기술부채 가시화).</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ─── s9: 평가 & 시상 ─── -->
+      <div id="s9" class="content-section">
+        <div class="sec-title">평가 및 시상</div>
+        <div class="sec-sub">경쟁보다 "본인이 만든 플랫폼에서 얼마나 솔직하게 막혔고 잘 고쳤는가"를 평가한다</div>
+
+        <div class="sec-h2">심사 기준 (100점)</div>
+        <div class="overflow-hidden rounded-xl border border-w-border mb-6">
+          <table class="doc-table">
+            <thead><tr><th>카테고리</th><th class="w-20">배점</th><th>평가 포인트</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="font-semibold">Golden Path 완주</td>
+                <td class="font-bold text-center">20</td>
+                <td>S0~S4 모두 통과, LGTM 3/3 확인, DoD 달성</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">SDD 준수도</td>
+                <td class="font-bold text-center">25</td>
+                <td>SPEC 품질, SPEC↔Code 루프 기록, AI 세션 로그 제출, 정량 지표 기록 완전성</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">이슈 기여 (Bug/Insight)</td>
+                <td class="font-bold text-center">30</td>
+                <td>제보 이슈의 질과 양 (P0 = 15점, P1 = 8점, P2 = 3점, 마찰 기록 = 2점, 최대 30점)</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Dogfooding 진정성</td>
+                <td class="font-bold text-center">15</td>
+                <td>우회·은폐 없이 솔직하게 문제 기록, "원래 그런 거" 언급 없음, DoD 미달 솔직 공개</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Demo & 문서화</td>
+                <td class="font-bold text-center">10</td>
+                <td>2.5분 Demo 명료성, SPEC · 이관 과정 문서 재현성</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sec-h2">시상 (상징적)</div>
+        <div class="award-grid">
+          <div class="award-card"><div class="award-icon">🏆</div><div class="award-name">Best Beta Team</div><div class="award-desc">종합 1위</div></div>
+          <div class="award-card"><div class="award-icon">🐛</div><div class="award-name">Golden Bug</div><div class="award-desc">가장 가치 있는 P0 발견</div></div>
+          <div class="award-card"><div class="award-icon">📝</div><div class="award-name">Best SPEC</div><div class="award-desc">가장 좋은 SDD 기록</div></div>
+          <div class="award-card"><div class="award-icon">🔁</div><div class="award-name">Honest Dogfooder</div><div class="award-desc">가장 솔직한 마찰 기록 (Observer 선정)</div></div>
+          <div class="award-card"><div class="award-icon">⚡</div><div class="award-name">Fastest Migration</div><div class="award-desc">이관 주제에서 가장 짧은 TTFD</div></div>
+          <div class="award-card"><div class="award-icon">🧊</div><div class="award-name">Coolest Fix</div><div class="award-desc">Live Fix 중 가장 우아한 수정 (On-Call 개인상)</div></div>
+        </div>
+      </div>
+
+      <!-- ─── s10: 리스크 & 완화 ─── -->
+      <div id="s10" class="content-section">
+        <div class="sec-title">리스크 및 완화</div>
+        <div class="sec-sub">사전 식별된 리스크와 대응 전략</div>
+
+        <div class="overflow-hidden rounded-xl border border-w-border">
+          <table class="doc-table">
+            <thead><tr><th>리스크</th><th class="w-16">확률</th><th class="w-16">영향</th><th>완화책</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="font-semibold">"원래 이렇다"로 이슈 누락</td>
+                <td><span class="badge badge-red">높음</span></td>
+                <td><span class="badge badge-red">높음</span></td>
+                <td>Dogfooding 함정 회피 규칙 Kickoff에서 명시, Observer가 "원래" 단어 사용 추적, Honest Dogfooder 상으로 유인</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">자기 컴포넌트 자기 검증 편향</td>
+                <td><span class="badge badge-red">높음</span></td>
+                <td><span class="badge badge-orange">중</span></td>
+                <td>팀 배정 시 컴포넌트 Owner를 타 영역 주제로 강제 분산</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">On-Call 번아웃 (본인이 Contestant 이탈)</td>
+                <td><span class="badge badge-orange">중</span></td>
+                <td><span class="badge badge-red">높음</span></td>
+                <td>On-Call 3인 중 상시 1명만 활성, 로테이션 2시간 · D+1 전원 휴가 보장</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">SDD 생략 · AI 자유 코딩으로 전락</td>
+                <td><span class="badge badge-orange">중</span></td>
+                <td><span class="badge badge-red">높음</span></td>
+                <td>S1 SPEC Draft 중 AI 사용 금지 엄수, S1 SPEC Peer Review로 강제, SPEC 미제출 팀 심사 감점</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Migration 주제의 실데이터 반입</td>
+                <td><span class="badge badge-orange">중</span></td>
+                <td><span class="badge badge-red">치명</span></td>
+                <td>합성/익명 데이터만 반입, 위반 시 Disqualify + CISO 보고</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">GCP 비용 폭증 (테스트 인프라)</td>
+                <td><span class="badge badge-orange">중</span></td>
+                <td><span class="badge badge-orange">중</span></td>
+                <td>Sandbox 프로젝트에 Budget Alert 300만원 설정, 상한 500만원에 자동 차단</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Rollback Drill 실제 영향 확산</td>
+                <td><span class="badge badge-gray">저</span></td>
+                <td><span class="badge badge-red">높음</span></td>
+                <td>Drill은 <code class="text-xs bg-w-sidebar px-1 rounded">beta-day-drill</code> 네임스페이스 한정, Istio 라우팅 사전 점검</td>
+              </tr>
+              <tr>
+                <td class="font-semibold">Go 판단의 편향 (본인 플랫폼이라 후함)</td>
+                <td><span class="badge badge-orange">중</span></td>
+                <td><span class="badge badge-red">높음</span></td>
+                <td>CTO + 외부 Advisor (선택 1명)의 독립 판단 가중, Exit Criteria 기계적 집계 우선</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ─── s11: 사전 준비 체크리스트 ─── -->
+      <div id="s11" class="content-section">
+        <div class="sec-title">사전 준비 체크리스트</div>
+        <div class="sec-sub">D-10부터 D-Day 오전까지</div>
+
+        <div class="sec-h2">D-10 ~ D-5</div>
+        <ul class="checklist mb-6">
+          <li>주제 Set 확정 · 팀 배정 초안 (자기영역 회피 규칙 적용)</li>
+          <li>GCP <code class="text-xs bg-w-sidebar px-1 rounded">terroir-beta-day</code> 프로젝트 생성 · Budget Alert · 팀별 네임스페이스</li>
+          <li>Backstage Scaffolder 템플릿 3종 등록 및 Dry-run 검증</li>
+          <li>Migration 반입 후보 리스트 CISO 간이 심사</li>
+          <li>SDD 기록 양식 · Observer Kit · 평가 Rubric 배포</li>
+        </ul>
+
+        <div class="sec-h2">D-4 ~ D-1</div>
+        <ul class="checklist mb-6">
+          <li>Golden Path Rehearsal — PMO 또는 TPM이 직접 Scaffolder부터 LGTM까지 1회 완주</li>
+          <li>On-Call 3인 Hotfix 런북 리허설 (목표 Lead Time 30분 검증)</li>
+          <li>ArgoCD Rollback Drill 리허설 2회 (Sandbox)</li>
+          <li>Cursor / Claude Code 계정 · 세션 로그 자동 저장 스크립트 배포</li>
+          <li>Google Chat 채널 개설 · Jira 라벨 · 봇 (Jira ↔ Google Chat, ArgoCD Sync ↔ Google Chat)</li>
+        </ul>
+
+        <div class="sec-h2">D-Day 오전</div>
+        <ul class="checklist">
+          <li>Smoke Test 1회 전체 실행</li>
+          <li>Welcome Kit — 계정 정보, SPEC 템플릿, 주제 카탈로그, 일정표, Cheat Sheet</li>
+          <li>식음료 · 커피 배치</li>
+          <li>Observer 배치 및 관찰 체크리스트 최종 점검</li>
+        </ul>
+      </div>
+
+      <!-- ─── s12: 사후 작업 ─── -->
+      <div id="s12" class="content-section">
+        <div class="sec-title">사후 작업</div>
+        <div class="sec-sub">D+1 ~ D+14</div>
+
+        <div class="overflow-hidden rounded-xl border border-w-border">
+          <table class="doc-table">
+            <thead><tr><th class="w-24">타임라인</th><th>작업</th><th class="w-36">주체</th><th class="w-48">산출물</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="font-bold">D+1</td>
+                <td>Cold Retro · 1:1 인터뷰 샘플링 4명 (Contestant 2 + On-Call 2)</td>
+                <td>PMO + Product</td>
+                <td>Cold Retro 노트</td>
+              </tr>
+              <tr>
+                <td class="font-bold">D+2</td>
+                <td>이슈 리트리아지 · Hotfix의 Proper Fix 필요도 재검토</td>
+                <td>Platform Lead</td>
+                <td>리트리아지 리스트</td>
+              </tr>
+              <tr>
+                <td class="font-bold">D+3</td>
+                <td>Hotfix의 Proper Fix 완료 · Feature Flag 전환 결정</td>
+                <td>컴포넌트 Owners</td>
+                <td>PR Merge 완료</td>
+              </tr>
+              <tr>
+                <td class="font-bold">D+5</td>
+                <td>Beta Day 종합 리포트 초안 · SDD 생산성 분석 · Migration Playbook v1</td>
+                <td>Scribe + PMO</td>
+                <td>Report v0.9 / Playbook v1</td>
+              </tr>
+              <tr>
+                <td class="font-bold">D+7</td>
+                <td>CTO 리뷰 · Beta 공식화 여부 · Chapter 3 Kickoff 일정 확정</td>
+                <td>CTO + 리더십</td>
+                <td>Chapter 3 Kickoff 공지</td>
+              </tr>
+              <tr>
+                <td class="font-bold">D+14</td>
+                <td>Playbook v2 개정 · 다음 대형 릴리즈(GA)에서 재사용 가능한 프레임으로 정리</td>
+                <td>PMO</td>
+                <td>Beta Day Playbook v2</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ─── s13: Appendix ─── -->
+      <div id="s13" class="content-section">
+        <div class="sec-title">Appendix</div>
+        <div class="sec-sub">10 Commandments · 컴포넌트별 검증 중점 · SDD 기록 양식</div>
+
+        <div class="callout" style="border-color:#c0392b; background:#fdf5f4;">
+          <div class="callout-title" style="font-size:15px;">Terroir Beta Day — 10 Commandments</div>
+          <ol class="text-sm space-y-2 list-none">
+            <li class="flex gap-2"><span class="font-bold text-w-accent w-5 flex-shrink-0">1.</span><span>본인이 만든 플랫폼을 본인이 쓴다. 친절하지 말고 솔직하라.</span></li>
+            <li class="flex gap-2"><span class="font-bold text-w-accent w-5 flex-shrink-0">2.</span><span>SPEC은 AI가 아니라 사람이 먼저 쓴다. 이건 타협 없다.</span></li>
+            <li class="flex gap-2"><span class="font-bold text-w-accent w-5 flex-shrink-0">3.</span><span>"원래 그래요"는 금기어. 원래 그런 것이 Service Dev에게 통할 리 없다.</span></li>
+            <li class="flex gap-2"><span class="font-bold text-w-accent w-5 flex-shrink-0">4.</span><span>자기 영역 자기 검증 금지. 자기 컴포넌트 이슈는 타 팀이 낸 것을 우선 신뢰.</span></li>
+            <li class="flex gap-2"><span class="font-bold text-w-accent w-5 flex-shrink-0">5.</span><span>Hotfix는 Feature Flag 뒤에. 18:15 이후 Freeze.</span></li>
+            <li class="flex gap-2"><span class="font-bold text-w-accent w-5 flex-shrink-0">6.</span><span>P0 1건이라도 남으면 No-Go. Chapter 3는 No-Go 위에 세울 수 없다.</span></li>
+            <li class="flex gap-2"><span class="font-bold text-w-accent w-5 flex-shrink-0">7.</span><span>실데이터 반입 금지. 위반 즉시 Disqualify + CISO 보고.</span></li>
+            <li class="flex gap-2"><span class="font-bold text-w-accent w-5 flex-shrink-0">8.</span><span>On-Call은 로테이션. 번아웃은 더 큰 장애를 낳는다.</span></li>
+            <li class="flex gap-2"><span class="font-bold text-w-accent w-5 flex-shrink-0">9.</span><span>Dogfooding은 경쟁이 아니라 증언이다. Honest Dogfooder가 Best Team과 동급.</span></li>
+          </ol>
+        </div>
+
+        <div class="sec-h2">컴포넌트별 검증 중점</div>
+        <div class="overflow-hidden rounded-xl border border-w-border mb-6">
+          <table class="doc-table">
+            <thead><tr><th class="w-44">컴포넌트</th><th>검증 중점</th></tr></thead>
+            <tbody>
+              <tr><td class="font-semibold">Backstage IDP</td><td>Scaffolder 템플릿 3종 성공률 · Software Catalog 자동 등록 · TechDocs 접근성 · 첫 경험 UX</td></tr>
+              <tr><td class="font-semibold">Nx Monorepo</td><td><code class="text-xs bg-w-sidebar px-1 rounded">@vntg/core</code> · <code class="text-xs bg-w-sidebar px-1 rounded">@vntg/ui-kit</code> import 매끄러움 · Nx Affected 정확도 · 빌드 캐시 효과</td></tr>
+              <tr><td class="font-semibold">GitHub Actions</td><td>빌드 시간 · 테스트 자동 실행 · Trivy/Sonar 통과율 · 실패 시 에러 메시지 명료도</td></tr>
+              <tr><td class="font-semibold">ArgoCD GitOps</td><td>Sync 지연 · 롤백 성공률 · Helm Chart 관리 UX · Drift Detection 신뢰도</td></tr>
+              <tr><td class="font-semibold">GKE / Istio / Kafka</td><td>네임스페이스 격리 · Istio 기본 라우팅 안정성 · Kafka 연결 Smoke · 리소스 쿼터 작동</td></tr>
+              <tr><td class="font-semibold">LGTM Stack</td><td>Loki 로그 수집 누락률 · Mimir 메트릭 지연 · Tempo Trace 연결성 · Grafana 대시보드 즉시성</td></tr>
+              <tr><td class="font-semibold">AlertManager → Slack</td><td>알림 적시성 · 중복 억제 · 라우팅 정확도</td></tr>
+              <tr><td class="font-semibold">SDD 방법론</td><td>SPEC 양식 적합성 · Cursor vs Claude Code 역할 · AI 수용률 · 재작성률</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sec-h2">SDD 기록 양식 (팀 공용 — 예시: G1 내부 공지 서비스)</div>
+        <div class="overflow-hidden rounded-xl border border-w-border">
+          <table class="doc-table">
+            <tbody>
+              <tr><td class="font-semibold w-40" style="background:#eceae2;">S0 제외 항목</td><td>① 인증 우회 불가 ② 다국어 미지원 ③ 예약발송 미지원 (60분 범위 밖)</td></tr>
+              <tr><td class="font-semibold" style="background:#eceae2;">S1 SPEC 요약</td><td>API 엔드포인트 4개, 데이터모델 2개, 비기능 요건 3개 (인증 · 로깅 · 메트릭)</td></tr>
+              <tr><td class="font-semibold" style="background:#eceae2;">S2 AI 세션 수</td><td>Cursor 7세션 · Claude Code 3세션. AI 수용률 약 __%</td></tr>
+              <tr><td class="font-semibold" style="background:#eceae2;">S3 루프 횟수</td><td>SPEC 수정 2회, 테스트 실패 → 수정 4회</td></tr>
+              <tr><td class="font-semibold" style="background:#eceae2;">S4 TTFD</td><td>Scaffolder 시작 → Pod Running까지 __ 분</td></tr>
+              <tr><td class="font-semibold" style="background:#eceae2;">DoD 달성</td><td>Y/N · 미달 시 사유</td></tr>
+              <tr><td class="font-semibold" style="background:#eceae2;">제보 이슈</td><td>P0 0 · P1 2 · P2 3 · P3 1 (티켓 번호 리스트)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="text-xs text-w-text/40 text-center mt-8">Confidential · VNTG / CTO Org · 2026-04-23 · v1.0</p>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    function go(el, id) {
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById(id).classList.add('active');
+    }
+  </script>
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="2XTQ4SE" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
