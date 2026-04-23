@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code 포스트모템</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:     #0E0E0B;
+      --ink-2:   #3A3A36;
+      --ink-3:   #6B6B64;
+      --ink-4:   #A8A8A0;
+      --paper:   #F7F7F4;
+      --paper-2: #EFEFEB;
+      --white:   #FFFFFF;
+      --rule:    #D8D8D0;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+      padding-top: 48px;
+    }
+
+    /* Masthead */
+    .masthead {
+      border-bottom: 3px solid var(--ink);
+      padding: 20px 40px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .masthead-name {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .masthead-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-4);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Lead */
+    .lead {
+      border-bottom: 1px solid var(--rule);
+      padding: 80px 40px 64px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .lead-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .lead-eyebrow::before { content: '//'; color: var(--ink-4); }
+    .lead h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 6vw, 4.8rem);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      margin-bottom: 28px;
+      max-width: 900px;
+    }
+    .lead h1 em { font-style: italic; font-weight: 400; }
+    .lead-deck {
+      font-size: 19px;
+      color: var(--ink-2);
+      max-width: 640px;
+      line-height: 1.65;
+      border-left: 3px solid var(--ink);
+      padding-left: 20px;
+      margin-bottom: 40px;
+    }
+    .lead-byline {
+      font-size: 13px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .lead-byline span::before { content: '— '; }
+
+    /* Page body */
+    .page-body { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+
+    /* Section */
+    .doc-section { padding: 56px 0; border-bottom: 1px solid var(--rule); }
+    .doc-section:last-child { border-bottom: none; }
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-4);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
+    .section-lead {
+      font-size: 15px;
+      color: var(--ink-3);
+      max-width: 600px;
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+
+    /* Two-col */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+    .col-item { padding: 28px; border: 1px solid var(--rule); }
+    .col-item + .col-item { border-left: none; }
+    @media (max-width: 680px) { .col-item + .col-item { border-left: 1px solid var(--rule); border-top: none; } }
+    .col-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 10px; font-family: var(--font-mono); }
+    .col-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
+    .col-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* Three-col */
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+    @media (max-width: 768px) { .three-col { grid-template-columns: 1fr; } }
+    .three-col .col-item + .col-item { border-left: none; }
+    @media (max-width: 768px) { .three-col .col-item + .col-item { border-left: 1px solid var(--rule); border-top: none; } }
+
+    /* Pull quote */
+    .pullquote { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--rule); padding: 32px 0; margin: 40px 0; }
+    .pullquote p { font-family: var(--font-display); font-size: clamp(1.2rem, 2.5vw, 1.7rem); font-style: italic; font-weight: 400; line-height: 1.4; color: var(--ink); }
+    .pullquote cite { display: block; margin-top: 12px; font-size: 13px; font-family: var(--font-mono); color: var(--ink-4); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { border-bottom: 2px solid var(--ink); padding: 10px 16px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-family: var(--font-mono); }
+    td { border-bottom: 1px solid var(--rule); padding: 14px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--paper-2); }
+
+    /* Code */
+    pre.code { background: var(--ink); color: #E8E8E0; border-radius: 4px; padding: 20px 24px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; margin: 20px 0; }
+    code.inline { background: var(--paper-2); border: 1px solid var(--rule); border-radius: 3px; padding: 1px 6px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+
+    /* Fact strip */
+    .facts { display: flex; gap: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+    .fact { flex: 1; padding: 24px 28px; border-right: 1px solid var(--rule); }
+    .fact:last-child { border-right: none; }
+    .fact-num { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; color: var(--ink); line-height: 1; margin-bottom: 6px; }
+    .fact-label { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    /* Timeline */
+    .timeline { margin-top: 32px; }
+    .tl-row { display: flex; gap: 0; align-items: stretch; }
+    .tl-date { width: 120px; flex-shrink: 0; padding: 20px 16px; border-right: 2px solid var(--ink); text-align: right; }
+    .tl-date-text { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--ink-3); }
+    .tl-dot-wrap { width: 24px; flex-shrink: 0; display: flex; align-items: flex-start; padding-top: 26px; justify-content: center; position: relative; }
+    .tl-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ink); flex-shrink: 0; margin-left: -6px; }
+    .tl-content { flex: 1; padding: 18px 20px; }
+    .tl-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-4); font-family: var(--font-mono); margin-bottom: 4px; }
+    .tl-text { font-size: 14px; color: var(--ink-2); line-height: 1.6; }
+    .tl-row + .tl-row .tl-date { border-top: none; }
+
+    /* Issue badge */
+    .issue-badge { display: inline-block; font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border: 1px solid var(--rule); color: var(--ink-3); margin-right: 6px; }
+
+    /* Measure note */
+    .measure-list { margin-top: 28px; list-style: none; }
+    .measure-item { display: flex; gap: 20px; padding: 22px 0; border-bottom: 1px solid var(--rule); align-items: flex-start; }
+    .measure-item:last-child { border-bottom: none; }
+    .measure-num { font-family: var(--font-display); font-size: 28px; font-weight: 900; color: var(--rule); line-height: 1; flex-shrink: 0; width: 40px; }
+    .measure-title { font-size: 15px; font-weight: 700; margin-bottom: 5px; color: var(--ink); }
+    .measure-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* Footer */
+    footer { border-top: 3px solid var(--ink); padding: 28px 40px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12px; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--ink); }
+
+    @media (max-width: 640px) {
+      .masthead, .lead, footer { padding-left: 16px; padding-right: 16px; }
+      .page-body { padding: 0 16px; }
+      .facts { flex-direction: column; }
+      .fact { border-right: none; border-bottom: 1px solid var(--rule); }
+      .fact:last-child { border-bottom: none; }
+      .tl-date { width: 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <span class="masthead-name">Claude Code</span>
+  <span class="masthead-meta">2025-04-23 &nbsp;·&nbsp; Incident Postmortem</span>
+</header>
+
+<!-- LEAD -->
+<div class="lead">
+  <div class="lead-eyebrow">Anthropic Engineering · 공식 포스트모템</div>
+  <h1>Claude Code<br><em>품질 저하 사고 분석</em></h1>
+  <p class="lead-deck">2025년 3월 4일부터 4월 20일까지 약 7주 동안 세 가지 독립적인 버그·설정 변경이 누적되어 Claude Code 응답 품질이 저하됐다. API 레이어에는 직접적인 영향이 없었으며, 의도적 품질 저하는 없었다.</p>
+  <div class="lead-byline">
+    <span>원문: Anthropic Engineering Blog</span>
+    <span>발행: 2025-04-23</span>
+    <span>출처: 공식 포스트모템 기반</span>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- FACT STRIP -->
+  <div class="facts" style="margin: 40px 0;">
+    <div class="fact">
+      <div class="fact-num">7주</div>
+      <div class="fact-label">전체 사고 기간</div>
+    </div>
+    <div class="fact">
+      <div class="fact-num">3개</div>
+      <div class="fact-label">독립적 이슈</div>
+    </div>
+    <div class="fact">
+      <div class="fact-num">3%</div>
+      <div class="fact-label">코딩 품질 저하<br>(Issue 3)</div>
+    </div>
+    <div class="fact">
+      <div class="fact-num">4개</div>
+      <div class="fact-label">재발 방지 조치</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: 사고 개요 -->
+  <section class="doc-section">
+    <div class="section-num">01</div>
+    <h2 class="section-heading">사고 개요</h2>
+    <p class="section-lead">세 이슈가 서로 다른 시기에 배포되어 누적 효과로 "광범위한 품질 저하"처럼 인식됐다.</p>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">영향 범위</div>
+        <div class="col-title">Claude Code 구독자 전체</div>
+        <div class="col-body">API 레이어에는 직접 영향 없음. Claude Code 애플리케이션에 특화된 이슈. 단, Issue 2(캐싱 버그)로 인한 캐시 미스 증가로 간접적 토큰 소모 증가 발생.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">Anthropic 입장</div>
+        <div class="col-title">의도적 품질 저하 없음</div>
+        <div class="col-body">세 이슈는 모두 의도치 않은 버그 또는 부작용. 내부 테스트 환경과 운영 환경 간 차이로 일부 이슈가 배포 전 감지되지 않았음. 전체 구독자 사용 한도 리셋(2025-04-23).</div>
+      </div>
+    </div>
+
+    <div class="pullquote">
+      <p>"의도적인 모델 품질 저하는 없었습니다. 세 개의 독립적인 버그와 설정 변경이 누적되어 문제가 발생했으며, 이를 신속하게 해결하지 못한 점을 반성합니다."</p>
+      <cite>Anthropic 공식 포스트모템</cite>
+    </div>
+  </section>
+
+  <!-- SECTION 2: 세 가지 이슈 -->
+  <section class="doc-section">
+    <div class="section-num">02</div>
+    <h2 class="section-heading">세 가지 독립적 이슈</h2>
+    <p class="section-lead">각 이슈는 별도 날짜에 배포됐으며, 서로 다른 원인과 증상을 갖는다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>이슈</th>
+            <th>배포</th>
+            <th>수정</th>
+            <th>기간</th>
+            <th>원인</th>
+            <th>주요 증상</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="issue-badge">Issue 1</span><strong>Reasoning Effort 기본값 변경</strong></td>
+            <td style="white-space:nowrap;">2025-03-04</td>
+            <td style="white-space:nowrap;">2025-04-07</td>
+            <td>34일</td>
+            <td>UI 프리징 완화 목적으로 기본값 <code class="inline">high</code> → <code class="inline">medium</code> 변경</td>
+            <td>"모델이 덜 똑똑해졌다"는 사용자 보고</td>
+          </tr>
+          <tr>
+            <td><span class="issue-badge">Issue 2</span><strong>캐싱 최적화 버그</strong></td>
+            <td style="white-space:nowrap;">2025-03-26</td>
+            <td style="white-space:nowrap;">2025-04-10</td>
+            <td>15일</td>
+            <td>thinking 캐시 정리 함수가 세션당 1회 예정이었으나 매 턴마다 실행됨</td>
+            <td>이전 내용 기억 불가, 중복 제안 반복, 캐시 미스로 사용 한도 급소모</td>
+          </tr>
+          <tr>
+            <td><span class="issue-badge">Issue 3</span><strong>출력 간결화 제약</strong></td>
+            <td style="white-space:nowrap;">2025-04-16</td>
+            <td style="white-space:nowrap;">2025-04-20</td>
+            <td>4일</td>
+            <td>시스템 프롬프트에 "tool call 사이 ≤25단어, 최종 응답 ≤100단어" 제약 추가</td>
+            <td>코딩 품질 3% 저하, 복잡한 코드 설명 불가, 절단된 응답</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Issue 1 상세 -->
+    <div style="margin-top:40px;">
+      <div style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:16px;">ISSUE 1 상세 — Reasoning Effort</div>
+      <div class="three-col">
+        <div class="col-item">
+          <div class="col-label">변경 내용</div>
+          <div class="col-title">high → medium</div>
+          <div class="col-body">UI 프리징·레이턴시 감소 목적으로 기본 reasoning effort를 낮춤. 복구 후 Opus 4.7은 <code class="inline">xhigh</code>, 기타 모델은 <code class="inline">high</code>로 설정.</div>
+        </div>
+        <div class="col-item">
+          <div class="col-label">감지 경로</div>
+          <div class="col-title">사용자 피드백</div>
+          <div class="col-body">내부 평가에서는 탐지되지 않았고 사용자 보고를 통해 인지. 배포 후 34일 만에 수정.</div>
+        </div>
+        <div class="col-item">
+          <div class="col-label">교훈</div>
+          <div class="col-title">UX 개선 ≠ 품질 저하 허용</div>
+          <div class="col-body">레이턴시 개선을 위한 reasoning 감소가 응답 품질에 직접 영향을 미침. 두 지표의 trade-off를 동시에 평가해야 함.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Issue 2 상세 -->
+    <div style="margin-top:24px;">
+      <div style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:16px;">ISSUE 2 상세 — Thinking Cache Bug</div>
+      <div class="three-col">
+        <div class="col-item">
+          <div class="col-label">의도된 동작</div>
+          <div class="col-title">유휴 1시간 후 1회 정리</div>
+          <div class="col-body">세션 비활성 1시간 이상 후 이전 추론 기록을 세션당 1회만 정리하도록 설계됨.</div>
+        </div>
+        <div class="col-item">
+          <div class="col-label">실제 동작 (버그)</div>
+          <div class="col-title">매 턴마다 반복 실행</div>
+          <div class="col-body">캐시 정리 함수의 실행 조건 설정 오류로 인해 대화의 매 턴(turn)마다 thinking 캐시가 삭제됨.</div>
+        </div>
+        <div class="col-item">
+          <div class="col-label">부가 피해</div>
+          <div class="col-title">사용 한도 급소모</div>
+          <div class="col-body">캐시 미스 증가 → 의도치 않은 토큰 재생성 → 구독 사용 한도 빠른 소모. 이 피해에 대한 보상으로 전체 한도 리셋 조치.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: 타임라인 -->
+  <section class="doc-section">
+    <div class="section-num">03</div>
+    <h2 class="section-heading">사고 타임라인</h2>
+    <p class="section-lead">3개 이슈의 배포·감지·수정 시점을 시계열로 정리한다.</p>
+
+    <!-- SVG 타임라인 다이어그램 -->
+    <div style="background:var(--white);border:1px solid var(--rule);border-radius:4px;padding:32px 24px;margin-top:24px;overflow-x:auto;">
+      <svg viewBox="0 0 860 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:860px;display:block;margin:0 auto;font-family:var(--font-mono);">
+        <!-- 배경 띠 (각 이슈) -->
+        <rect x="120" y="30" width="252" height="28" rx="3" fill="#F0F0EC" opacity="0.8"/>
+        <rect x="120" y="90" width="126" height="28" rx="3" fill="#E8E8E4" opacity="0.8"/>
+        <rect x="120" y="150" width="36" height="28" rx="3" fill="#E4E4E0" opacity="0.8"/>
+
+        <!-- 기준선 -->
+        <line x1="60" y1="20" x2="60" y2="220" stroke="#0E0E0B" stroke-width="2"/>
+
+        <!-- 날짜 레이블 (X축) -->
+        <!-- 3/4=0, 3/26=+22days, 4/7=+34days, 4/10=+37days, 4/16=+43days, 4/20=+47days, 4/23=+50days -->
+        <!-- 총 50일 span, 700px width → 14px/day -->
+        <text x="120" y="245" text-anchor="middle" font-size="10" fill="#A8A8A0">3/4</text>
+        <text x="428" y="245" text-anchor="middle" font-size="10" fill="#A8A8A0">3/26</text>
+        <text x="596" y="245" text-anchor="middle" font-size="10" fill="#A8A8A0">4/7</text>
+        <text x="638" y="245" text-anchor="middle" font-size="10" fill="#A8A8A0">4/10</text>
+        <text x="722" y="245" text-anchor="middle" font-size="10" fill="#A8A8A0">4/16</text>
+        <text x="778" y="245" text-anchor="middle" font-size="10" fill="#A8A8A0">4/20</text>
+
+        <!-- 눈금 -->
+        <line x1="120" y1="218" x2="120" y2="225" stroke="#D8D8D0" stroke-width="1"/>
+        <line x1="428" y1="218" x2="428" y2="225" stroke="#D8D8D0" stroke-width="1"/>
+        <line x1="596" y1="218" x2="596" y2="225" stroke="#D8D8D0" stroke-width="1"/>
+        <line x1="638" y1="218" x2="638" y2="225" stroke="#D8D8D0" stroke-width="1"/>
+        <line x1="722" y1="218" x2="722" y2="225" stroke="#D8D8D0" stroke-width="1"/>
+        <line x1="778" y1="218" x2="778" y2="225" stroke="#D8D8D0" stroke-width="1"/>
+
+        <!-- X축 선 -->
+        <line x1="60" y1="218" x2="820" y2="218" stroke="#D8D8D0" stroke-width="1"/>
+
+        <!-- 이슈 1: 3/4 ~ 4/7 (120 ~ 596) -->
+        <rect x="120" y="32" width="476" height="24" rx="3" fill="#0E0E0B" opacity="0.08"/>
+        <rect x="120" y="32" width="476" height="24" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+        <circle cx="120" cy="44" r="5" fill="#0E0E0B"/>
+        <circle cx="596" cy="44" r="5" fill="#0E0E0B"/>
+        <text x="14" y="48" text-anchor="middle" font-size="10" font-weight="600" fill="#6B6B64">Issue 1</text>
+        <text x="355" y="48" text-anchor="middle" font-size="10" fill="#3A3A36">Reasoning Effort · 34일</text>
+
+        <!-- 이슈 2: 3/26 ~ 4/10 (428 ~ 638) -->
+        <rect x="428" y="92" width="210" height="24" rx="3" fill="#0E0E0B" opacity="0.14"/>
+        <rect x="428" y="92" width="210" height="24" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+        <circle cx="428" cy="104" r="5" fill="#0E0E0B"/>
+        <circle cx="638" cy="104" r="5" fill="#0E0E0B"/>
+        <text x="14" y="108" text-anchor="middle" font-size="10" font-weight="600" fill="#6B6B64">Issue 2</text>
+        <text x="533" y="108" text-anchor="middle" font-size="10" fill="#3A3A36">Caching Bug · 15일</text>
+
+        <!-- 이슈 3: 4/16 ~ 4/20 (722 ~ 778) -->
+        <rect x="722" y="152" width="56" height="24" rx="3" fill="#0E0E0B" opacity="0.2"/>
+        <rect x="722" y="152" width="56" height="24" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+        <circle cx="722" cy="164" r="5" fill="#0E0E0B"/>
+        <circle cx="778" cy="164" r="5" fill="#0E0E0B"/>
+        <text x="14" y="168" text-anchor="middle" font-size="10" font-weight="600" fill="#6B6B64">Issue 3</text>
+        <text x="750" y="168" text-anchor="middle" font-size="9" fill="#3A3A36">Verbosity · 4일</text>
+
+        <!-- 범례 -->
+        <circle cx="100" cy="265" r="5" fill="#0E0E0B"/>
+        <text x="110" y="269" font-size="10" fill="#6B6B64">배포/수정 시점</text>
+      </svg>
+    </div>
+
+    <div class="table-wrap" style="margin-top:28px;">
+      <table>
+        <thead>
+          <tr><th>날짜</th><th>이벤트</th><th>이슈</th></tr>
+        </thead>
+        <tbody>
+          <tr><td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px;">2025-03-04</td><td>Reasoning Effort <code class="inline">high</code> → <code class="inline">medium</code> 배포</td><td><span class="issue-badge">Issue 1</span></td></tr>
+          <tr><td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px;">2025-03-26</td><td>Thinking Cache 정리 버그 배포</td><td><span class="issue-badge">Issue 2</span></td></tr>
+          <tr><td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px;">2025-04-07</td><td>Reasoning Effort <code class="inline">high</code>/<code class="inline">xhigh</code>로 복구</td><td><span class="issue-badge">Issue 1</span> 수정</td></tr>
+          <tr><td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px;">2025-04-10</td><td>Caching 버그 수정 (세션당 1회 실행으로 복원)</td><td><span class="issue-badge">Issue 2</span> 수정</td></tr>
+          <tr><td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px;">2025-04-16</td><td>출력 간결화 시스템 프롬프트 제약 추가 (≤25/100단어)</td><td><span class="issue-badge">Issue 3</span></td></tr>
+          <tr><td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px;">2025-04-17</td><td>내부 평가에서 코딩 품질 3% 저하 감지</td><td><span class="issue-badge">Issue 3</span></td></tr>
+          <tr><td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px;">2025-04-20</td><td>출력 제약 시스템 프롬프트 완전 제거 (v2.1.116)</td><td><span class="issue-badge">Issue 3</span> 수정</td></tr>
+          <tr><td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px;">2025-04-23</td><td>포스트모템 공개 발표 + 전체 구독자 사용 한도 리셋</td><td>공식 대응</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 4: 재발 방지 대책 -->
+  <section class="doc-section">
+    <div class="section-num">04</div>
+    <h2 class="section-heading">재발 방지 대책</h2>
+    <p class="section-lead">Anthropic이 공식 발표한 4가지 구체적 조치.</p>
+
+    <ul class="measure-list">
+      <li class="measure-item">
+        <div class="measure-num">01</div>
+        <div>
+          <div class="measure-title">직원 공개 빌드 사용 의무화</div>
+          <div class="measure-body">Anthropic 직원들이 내부 빌드가 아닌 공개 버전(public builds)을 직접 사용하도록 강제. 내부 테스트 환경과 운영 환경 간 격차를 줄여 문제를 더 빠르게 감지한다.</div>
+        </div>
+      </li>
+      <li class="measure-item">
+        <div class="measure-num">02</div>
+        <div>
+          <div class="measure-title">시스템 프롬프트 변경 관리 강화</div>
+          <div class="measure-body">모델 성능에 영향을 미치는 시스템 프롬프트 변경에 더 광범위한 코드 리뷰 도입. 모델별 세분화된 평가 스위트로 다양한 시나리오에서 품질 영향을 사전 검증.</div>
+        </div>
+      </li>
+      <li class="measure-item">
+        <div class="measure-num">03</div>
+        <div>
+          <div class="measure-title">코드 리뷰 저장소 컨텍스트 확대</div>
+          <div class="measure-body">캐싱·상태 관리 로직 리뷰 시 관련 코드를 더 넓은 범위로 검토. Issue 2와 같은 정교한 캐싱 버그를 배포 전에 발견하기 위한 조치.</div>
+        </div>
+      </li>
+      <li class="measure-item">
+        <div class="measure-num">04</div>
+        <div>
+          <div class="measure-title">사용자 커뮤니케이션 채널 구축</div>
+          <div class="measure-body"><code class="inline">@ClaudeDevs</code> 공식 커뮤니티 채널 개설. 사용자 피드백이 내부 팀에 더 빠르게 전달되어 조기 대응이 가능해진다.</div>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- SECTION 5: 핵심 수치 -->
+  <section class="doc-section">
+    <div class="section-num">05</div>
+    <h2 class="section-heading">핵심 수치 요약</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>수치</th><th>내용</th><th>출처</th></tr>
+        </thead>
+        <tbody>
+          <tr><td style="font-family:var(--font-mono);font-weight:600;">3%</td><td>Issue 3으로 인한 코딩 품질 저하율</td><td>공식 포스트모템</td></tr>
+          <tr><td style="font-family:var(--font-mono);font-weight:600;">7주</td><td>전체 사고 기간 (2025-03-04 ~ 2025-04-20)</td><td>타임라인 계산</td></tr>
+          <tr><td style="font-family:var(--font-mono);font-weight:600;">34일</td><td>Issue 1 지속 기간 (최장)</td><td>타임라인 계산</td></tr>
+          <tr><td style="font-family:var(--font-mono);font-weight:600;">4일</td><td>Issue 3 지속 기간 (최단)</td><td>타임라인 계산</td></tr>
+          <tr><td style="font-family:var(--font-mono);font-weight:600;">1시간</td><td>캐시 정리 예정 유휴 기준 시간</td><td>공식 설명</td></tr>
+          <tr><td style="font-family:var(--font-mono);font-weight:600;">≤25단어</td><td>Issue 3의 tool call 사이 텍스트 제약</td><td>공식 시스템 프롬프트</td></tr>
+          <tr><td style="font-family:var(--font-mono);font-weight:600;">≤100단어</td><td>Issue 3의 최종 응답 제약</td><td>공식 시스템 프롬프트</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div><!-- /page-body -->
+
+<!-- FOOTER -->
+<footer>
+  <span>Claude Code 포스트모템 · 2025-04-23</span>
+  <span>
+    <a href="https://www.anthropic.com/engineering/april-23-postmortem" target="_blank">원문 (Anthropic)</a>
+    &nbsp;·&nbsp;
+    <a href="https://news.hada.io/topic?id=28828" target="_blank">GeekNews</a>
+  </span>
+</footer>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="EQABT4F" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
