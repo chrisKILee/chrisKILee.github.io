@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>떼루아 베타 릴리즈 크리티컬 패스</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F9FAFB;
+      --surface: #FFFFFF;
+      --border: #E5E7EB;
+      --border-light: #F3F4F6;
+      --text-primary: #111827;
+      --text-secondary: #6B7280;
+      --text-muted: #9CA3AF;
+      --green: #10B981;
+      --green-bg: #ECFDF5;
+      --green-text: #065F46;
+      --blue: #3B82F6;
+      --blue-bg: #EFF6FF;
+      --blue-text: #1E40AF;
+      --yellow: #F59E0B;
+      --yellow-bg: #FFFBEB;
+      --yellow-text: #92400E;
+      --gray-bg: #F3F4F6;
+      --gray-text: #374151;
+      --red: #EF4444;
+      --red-bg: #FEF2F2;
+      --red-text: #991B1B;
+      --radius: 8px;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      font-size: 15px;
+      line-height: 1.6;
+      padding-top: 64px;
+    }
+
+    .page-wrap {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* Header */
+    .doc-header {
+      margin-bottom: 40px;
+      padding-bottom: 28px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .doc-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .doc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      background: #EEF2FF;
+      color: #4338CA;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .doc-date {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .doc-title {
+      font-size: clamp(22px, 4vw, 30px);
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+
+    .doc-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+    }
+
+    /* Summary Cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .summary-card .number {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .summary-card .label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .card-total .number { color: #4F46E5; }
+    .card-done .number { color: var(--green); }
+    .card-progress .number { color: var(--blue); }
+    .card-review .number { color: var(--yellow); }
+    .card-todo .number { color: var(--text-muted); }
+
+    /* Section */
+    .section { margin-bottom: 56px; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-count {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--border-light);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* Progress Bar */
+    .progress-wrap {
+      margin-bottom: 20px;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--border-light);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10B981, #34D399);
+      border-radius: 100px;
+      transition: width 0.4s ease;
+    }
+
+    /* Table */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background: var(--border-light);
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-light);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #FAFAFA; }
+
+    td {
+      padding: 11px 16px;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .ticket-id {
+      font-family: 'SF Mono', 'Consolas', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6366F1;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .ticket-id:hover { text-decoration: underline; }
+
+    .task-name {
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .assignee {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .estimation {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      font-family: 'SF Mono', 'Consolas', monospace;
+    }
+
+    /* Status Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .badge-done {
+      background: var(--green-bg);
+      color: var(--green-text);
+    }
+    .badge-done::before { background: var(--green); }
+
+    .badge-progress {
+      background: var(--blue-bg);
+      color: var(--blue-text);
+    }
+    .badge-progress::before { background: var(--blue); }
+
+    .badge-review {
+      background: var(--yellow-bg);
+      color: var(--yellow-text);
+    }
+    .badge-review::before { background: var(--yellow); }
+
+    .badge-todo {
+      background: var(--gray-bg);
+      color: var(--gray-text);
+    }
+    .badge-todo::before { background: #9CA3AF; }
+
+    /* Group rows */
+    .group-row td {
+      background: #F0FDF4;
+      font-size: 12px;
+      font-weight: 700;
+      color: #065F46;
+      letter-spacing: 0.04em;
+      padding: 7px 16px;
+      text-transform: uppercase;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 48px 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .page-wrap { padding: 24px 16px 60px; }
+      .summary-grid { grid-template-columns: repeat(3, 1fr); }
+      .hide-mobile { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .progress-fill { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- 헤더 -->
+  <div class="doc-header">
+    <div class="doc-meta">
+      <span class="doc-badge">⛰️ Terroir Beta</span>
+      <span class="doc-date">2026-04-23 · 스프린트 회고 자료</span>
+    </div>
+    <h1 class="doc-title">떼루아 베타 릴리즈 크리티컬 패스</h1>
+    <p class="doc-subtitle">챕터2 마무리 1주차 (4/20~4/23) — 개발파트 22개 티켓 + 플랫폼엔지니어링 파트 진행 현황</p>
+  </div>
+
+  <!-- 전체 요약 -->
+  <div class="summary-grid">
+    <div class="summary-card card-total">
+      <div class="number">36</div>
+      <div class="label">전체 태스크</div>
+    </div>
+    <div class="summary-card card-done">
+      <div class="number">26</div>
+      <div class="label">완료</div>
+    </div>
+    <div class="summary-card card-progress">
+      <div class="number">3</div>
+      <div class="label">진행 중</div>
+    </div>
+    <div class="summary-card card-review">
+      <div class="number">3</div>
+      <div class="label">검토 중</div>
+    </div>
+    <div class="summary-card card-todo">
+      <div class="number">5</div>
+      <div class="label">해야 할 일</div>
+    </div>
+  </div>
+
+  <!-- ──────────────────── 개발파트 ──────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title">🛠️ 개발파트</h2>
+      <span class="section-count">22개 티켓 · 조진우 / 정윤식 / 서지원</span>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span>완료율</span>
+        <span>19/22 (86%)</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 86%"></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:#10B981"></span>완료</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#3B82F6"></span>진행 중</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#F59E0B"></span>검토 중</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#9CA3AF"></span>해야 할 일</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:110px">티켓</th>
+            <th>태스크</th>
+            <th style="width:90px">담당자</th>
+            <th style="width:100px">상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 에픽 1: 외부 프로젝트 제공 -->
+          <tr class="group-row"><td colspan="4">1. 외부 프로젝트 제공 (2개)</td></tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-575" target="_blank">RDDP-575</a></td>
+            <td class="task-name">[1.1] 백스테이지에 '테루아에 등록' 메뉴 추가</td>
+            <td class="assignee">서지원</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-576" target="_blank">RDDP-576</a></td>
+            <td class="task-name">[1.2] 외부 프로젝트 제공 가이드 문서 작성 (Confluence 공개)</td>
+            <td class="assignee">정윤식</td>
+            <td><span class="badge badge-review">검토 중</span></td>
+          </tr>
+
+          <!-- 에픽 2: 리파지토리 분리 -->
+          <tr class="group-row"><td colspan="4">2. 리파지토리 분리 (8개)</td></tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-578" target="_blank">RDDP-578</a></td>
+            <td class="task-name">[2.1] KMM에 repo URL 저장 및 매니페스트 조회 응답에 포함</td>
+            <td class="assignee">정윤식</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-579" target="_blank">RDDP-579</a></td>
+            <td class="task-name">[2.2] 백스테이지 클라이언트 빌드 시 매니페스트 repo URL로 CI 호출</td>
+            <td class="assignee">정윤식</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-580" target="_blank">RDDP-580</a></td>
+            <td class="task-name">[2.3] 리포 이름 변경: rnd-nx → terroir-common-projects</td>
+            <td class="assignee">조진우</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-581" target="_blank">RDDP-581</a></td>
+            <td class="task-name">[2.4] 브랜치 정리: develop-rnd → lab, develop 재생성</td>
+            <td class="assignee">조진우</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-582" target="_blank">RDDP-582</a></td>
+            <td class="task-name">[2.5] develop 브랜치 정리</td>
+            <td class="assignee">조진우</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-583" target="_blank">RDDP-583</a></td>
+            <td class="task-name">[2.6] CI에서 Prisma 밸리데이션 제거 (포맷 체크 유지)</td>
+            <td class="assignee">조진우</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-584" target="_blank">RDDP-584</a></td>
+            <td class="task-name">[2.7] E2E 검증 — 공용 프로젝트 리포에서 신규 프로젝트 생성·배포</td>
+            <td class="assignee">조진우</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-585" target="_blank">RDDP-585</a></td>
+            <td class="task-name">[2.8] E2E 검증 — 사내 사용자 프로젝트 리포에서 신규 프로젝트 생성·배포</td>
+            <td class="assignee">조진우</td>
+            <td><span class="badge badge-todo">해야 할 일</span></td>
+          </tr>
+
+          <!-- 에픽 3: 최소한의 롤백 -->
+          <tr class="group-row"><td colspan="4">3. 최소한의 롤백 (5개)</td></tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-587" target="_blank">RDDP-587</a></td>
+            <td class="task-name">[3.1] 백스테이지 롤백 버튼 구현 (Argo autoSync 제어 포함)</td>
+            <td class="assignee">서지원</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-588" target="_blank">RDDP-588</a></td>
+            <td class="task-name">[3.2] E2E 테스트 — 배포/자동배포 + 롤백 원복 검증 시나리오</td>
+            <td class="assignee">정윤식</td>
+            <td><span class="badge badge-progress">진행 중</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-589" target="_blank">RDDP-589</a></td>
+            <td class="task-name">[3.3] 백스테이지 롤백 팝업 Danger Zone 경고 표시</td>
+            <td class="assignee">서지원</td>
+            <td><span class="badge badge-todo">해야 할 일</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-590" target="_blank">RDDP-590</a></td>
+            <td class="task-name">[3.4] 백스테이지 롤백 화면에 대상 커밋 메시지 출력</td>
+            <td class="assignee">정윤식</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-591" target="_blank">RDDP-591</a></td>
+            <td class="task-name">[3.5] KMM 커밋 메시지 정확화 (이미지 버전 업데이트 / 콘피그 변경 2케이스)</td>
+            <td class="assignee">정윤식</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+
+          <!-- 에픽 5: 백스테이지 있어빌리티 -->
+          <tr class="group-row"><td colspan="4">5. 백스테이지 있어빌리티 (7개)</td></tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-597" target="_blank">RDDP-597</a></td>
+            <td class="task-name">[5.1] 배포 관리 화면 — staging/production 탭 제거 + develop 네이밍 변경</td>
+            <td class="assignee">정윤식</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-598" target="_blank">RDDP-598</a></td>
+            <td class="task-name">[5.2] 백스테이지 메뉴 정리 — 불필요 메뉴 제거 + 한글화</td>
+            <td class="assignee">정윤식</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-599" target="_blank">RDDP-599</a></td>
+            <td class="task-name">[5.3] 프로젝트 시작하기 페이지 신설 — 신규/기존 분기</td>
+            <td class="assignee">조진우</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-600" target="_blank">RDDP-600</a></td>
+            <td class="task-name">[5.4] 템플릿 생성 시 카탈로그 파일 네임스페이스 추가로 충돌 방지</td>
+            <td class="assignee">서지원</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-601" target="_blank">RDDP-601</a></td>
+            <td class="task-name">[5.5] E2E — lab 백스테이지에서 프로젝트 생성 → 공용 프로젝트 리포 새 브랜치 확인</td>
+            <td class="assignee">서지원</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-602" target="_blank">RDDP-602</a></td>
+            <td class="task-name">[5.6] E2E — dev 백스테이지에서 프로젝트 생성 → 사내 사용자 프로젝트 리포 새 브랜치 확인</td>
+            <td class="assignee">서지원</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-603" target="_blank">RDDP-603</a></td>
+            <td class="task-name">[5.7] 콘피그 입력 화면 저장 로직 변경 — 변경 내역 확인 후 delete 호출 포함</td>
+            <td class="assignee">서지원</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ──────────────────── 플랫폼엔지니어링 파트 ──────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title">⚙️ 플랫폼엔지니어링 파트</h2>
+      <span class="section-count">14개 태스크 · 조형준 / 윤종원 / 문태준 / 박세윤</span>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span>완료율</span>
+        <span>7/14 (50%)</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 50%"></div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:110px">티켓</th>
+            <th>태스크</th>
+            <th style="width:90px">담당자</th>
+            <th style="width:80px" class="hide-mobile">Estim.</th>
+            <th style="width:100px">상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 비용 리포트 -->
+          <tr class="group-row"><td colspan="5">1. 비용 리포트</td></tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-606" target="_blank">RDDP-606</a></td>
+            <td class="task-name">GCP 비용 리포트 — Google Chat 발송 (일별/월별/프로젝트별)</td>
+            <td class="assignee">윤종원</td>
+            <td class="estimation hide-mobile">0.5일</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+
+          <!-- GKE 재구성 -->
+          <tr class="group-row"><td colspan="5">2. GKE 신규 구성 (GKE Standard 전환)</td></tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-455" target="_blank">RDDP-455</a></td>
+            <td class="task-name">Dev 환경 GKE standard 클러스터 구축 (dev-infra, dev-service)</td>
+            <td class="assignee">조형준</td>
+            <td class="estimation hide-mobile">3일</td>
+            <td><span class="badge badge-review">검토 중</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-611" target="_blank">RDDP-611</a></td>
+            <td class="task-name">ArgoCD 도입 및 운영 정책 정리 (신규 GKE Standard)</td>
+            <td class="assignee">윤종원</td>
+            <td class="estimation hide-mobile">—</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-484" target="_blank">RDDP-484</a></td>
+            <td class="task-name">Lab 환경 인프라 컴포넌트 마이그레이션 (Dex 포함)</td>
+            <td class="assignee">조형준</td>
+            <td class="estimation hide-mobile">—</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-619" target="_blank">RDDP-619</a></td>
+            <td class="task-name">GKE standard 인프라 컴포넌트 마이그레이션 (external-dns, sealed-secret)</td>
+            <td class="assignee">문태준</td>
+            <td class="estimation hide-mobile">—</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-617" target="_blank">RDDP-617</a></td>
+            <td class="task-name">Lab 환경 GKE standard — Terroir 컴포넌트 마이그레이션 (Kafka, Backstage, KMM)</td>
+            <td class="assignee">조형준</td>
+            <td class="estimation hide-mobile">2일</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-618" target="_blank">RDDP-618</a></td>
+            <td class="task-name">Lab 환경 GKE standard — 신규 필수 컴포넌트 도출 및 도입 (kube-state-metrics 등)</td>
+            <td class="assignee">조형준</td>
+            <td class="estimation hide-mobile">2일</td>
+            <td><span class="badge badge-progress">진행 중</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-480" target="_blank">RDDP-480</a></td>
+            <td class="task-name">인프라 앱 도메인 일괄 변경 (URL 변경 후 KMM·Backstage 정상 동작 확인)</td>
+            <td class="assignee">박세윤</td>
+            <td class="estimation hide-mobile">1일</td>
+            <td><span class="badge badge-todo">해야 할 일</span></td>
+          </tr>
+
+          <!-- 외부 프로젝트 제공 -->
+          <tr class="group-row"><td colspan="5">3. 외부 프로젝트 제공</td></tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-604" target="_blank">RDDP-604</a></td>
+            <td class="task-name">멀티 레포 프로젝트의 terroir.json 사용 가능 여부 확인</td>
+            <td class="assignee">박세윤</td>
+            <td class="estimation hide-mobile">1일</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-608" target="_blank">RDDP-608</a></td>
+            <td class="task-name">외부 프로젝트 서비스의 GCP DB 연결 확인 (Cloud SQL, pod DB, IDC DB 시나리오)</td>
+            <td class="assignee">문태준</td>
+            <td class="estimation hide-mobile">2일</td>
+            <td><span class="badge badge-review">검토 중</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-607" target="_blank">RDDP-607</a></td>
+            <td class="task-name">변경된 FE 빌드 환경이 terroir.json 기반 애플리케이션에 문제 없는지 확인</td>
+            <td class="assignee">박세윤</td>
+            <td class="estimation hide-mobile">2일</td>
+            <td><span class="badge badge-done">완료</span></td>
+          </tr>
+
+          <!-- 옵저버빌리티 -->
+          <tr class="group-row"><td colspan="5">4. 옵저버빌리티 재구성</td></tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-609" target="_blank">RDDP-609</a></td>
+            <td class="task-name">옵저버빌리티 재구성 — GKE Standard 전환 시 Loki/Mimir/Grafana/Alloy 마이그레이션</td>
+            <td class="assignee">윤종원</td>
+            <td class="estimation hide-mobile">2일</td>
+            <td><span class="badge badge-todo">해야 할 일</span></td>
+          </tr>
+
+          <!-- QA -->
+          <tr class="group-row"><td colspan="5">QA — 크리티컬 패스 전체 시나리오</td></tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-613" target="_blank">RDDP-613</a></td>
+            <td class="task-name">크리티컬 패스 전체 시나리오 QA (시나리오 결과 + 문제점 도출 문서화)</td>
+            <td class="assignee">문태준</td>
+            <td class="estimation hide-mobile">1일</td>
+            <td><span class="badge badge-progress">진행 중</span></td>
+          </tr>
+          <tr>
+            <td><a class="ticket-id" href="https://vntg.atlassian.net/browse/RDDP-614" target="_blank">RDDP-614</a></td>
+            <td class="task-name">크리티컬 패스 전체 시나리오 QA (시나리오 결과 + 문제점 도출 문서화)</td>
+            <td class="assignee">윤종원</td>
+            <td class="estimation hide-mobile">1일</td>
+            <td><span class="badge badge-todo">해야 할 일</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="T4Q9FUT" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
