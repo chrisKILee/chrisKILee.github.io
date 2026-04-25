@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Claude Code 2.1.111–119 Changelog</title>
+<link rel="stylesheet" href="/templates/assets/common.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --accent: #16a34a;
+    --accent-soft: #e6f4ea;
+    --maxw: 1000px;
+    --c-add: #16a34a;
+    --c-fix: #2563eb;
+    --c-chg: #d97706;
+    --c-rm:  #b91c1c;
+    --c-sec: #7c3aed;
+    --c-imp: #0891b2;
+  }
+  [data-theme="dark"] {
+    --accent: #7ee29b;
+    --accent-soft: color-mix(in oklab, #7ee29b 16%, #18181a);
+    --c-add: #7ee29b;
+    --c-fix: #7aa2ff;
+    --c-chg: #f0b454;
+    --c-rm:  #ff8c80;
+    --c-sec: #b39bff;
+    --c-imp: #67e8f9;
+  }
+  body { font-family: var(--font-mono); }
+  .container { max-width: var(--maxw); margin: 0 auto; padding: 36px 28px 100px; }
+
+  .term-head {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg-elev);
+    overflow: hidden;
+    margin-bottom: 36px;
+    box-shadow: var(--shadow-sm);
+  }
+  .term-bar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg-sub);
+    border-bottom: 1px solid var(--line);
+    font-size: 12px; color: var(--ink-3);
+  }
+  .term-dots { display: inline-flex; gap: 6px; }
+  .term-dots span { width: 11px; height: 11px; border-radius: 50%; }
+  .term-dots span:nth-child(1) { background: #ed6b5e; }
+  .term-dots span:nth-child(2) { background: #f3bf4f; }
+  .term-dots span:nth-child(3) { background: #61c554; }
+  .term-body { padding: 22px 26px 28px; }
+  .term-prompt { color: var(--accent); }
+  .term-prompt::before { content: "$ "; }
+  .term-line { color: var(--ink-2); font-size: 13px; line-height: 1.7; }
+  .term-line .out { color: var(--ink); }
+  .term-line .mute { color: var(--ink-3); }
+  .term-line .hi { color: var(--accent); font-weight: 700; }
+
+  h1.product {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(24px, 3.5vw, 36px);
+    margin: 14px 0 6px;
+    letter-spacing: -.01em;
+    color: var(--ink);
+  }
+  .product-deck { font-family: var(--font-sans); font-size: 15px; color: var(--ink-2); margin: 0 0 16px; line-height: 1.6; max-width: 640px; }
+  .product-meta { display: flex; gap: 18px; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); }
+  .product-meta strong { color: var(--accent); font-weight: 600; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 28px 0; }
+  @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+  .stats-grid .s { padding: 16px 12px; border-right: 1px solid var(--line); }
+  .stats-grid .s:last-child { border-right: 0; }
+  .stats-grid .v { font-size: 24px; color: var(--ink); font-weight: 700; }
+  .stats-grid .l { font-size: 11px; color: var(--ink-3); margin-top: 4px; letter-spacing: .04em; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 28px; }
+  .filter-btn {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em;
+    padding: 6px 11px; border: 1px solid var(--line); background: var(--bg-elev);
+    border-radius: 999px; color: var(--ink-2); cursor: pointer;
+    text-transform: lowercase; transition: all .15s ease;
+  }
+  .filter-btn:hover { border-color: var(--ink-3); }
+  .filter-btn.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  .release {
+    border: 1px solid var(--line); border-radius: 10px;
+    background: var(--bg-elev); margin: 0 0 20px; overflow: hidden;
+  }
+  .release-head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 20px; border-bottom: 1px solid var(--line);
+    background: var(--bg-sub); flex-wrap: wrap;
+  }
+  .ver { font-family: var(--font-mono); font-weight: 700; font-size: 16px; color: var(--accent); }
+  .ver-tag {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em;
+    padding: 2px 8px; border-radius: 999px; text-transform: uppercase;
+  }
+  .ver-tag.major { background: color-mix(in oklab, var(--accent) 22%, transparent); color: var(--accent); }
+  .ver-tag.minor { background: var(--bg); color: var(--ink-3); border: 1px solid var(--line); }
+  .ver-tag.patch { background: color-mix(in oklab, var(--c-fix) 18%, transparent); color: var(--c-fix); }
+  .ver-tag.hotfix { background: color-mix(in oklab, var(--c-rm) 18%, transparent); color: var(--c-rm); }
+  .ver-date { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); margin-left: auto; }
+  .ver-codename { font-family: var(--font-sans); font-size: 13px; color: var(--ink-2); font-style: italic; }
+
+  .release-body { padding: 16px 22px 20px; }
+  .release-headline {
+    font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+    color: var(--ink); margin: 0 0 14px; line-height: 1.5;
+  }
+
+  .change-list { list-style: none; padding: 0; margin: 0; }
+  .change-list li {
+    display: grid; grid-template-columns: 74px 1fr;
+    gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--line);
+    align-items: flex-start; font-size: 13px; line-height: 1.55; color: var(--ink-2);
+  }
+  .change-list li:last-child { border-bottom: 0; }
+  .badge {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .04em;
+    padding: 2px 7px; border-radius: 4px; text-align: center;
+    text-transform: uppercase; font-weight: 600; margin-top: 2px;
+  }
+  .badge.add { background: color-mix(in oklab, var(--c-add) 18%, transparent); color: var(--c-add); }
+  .badge.fix { background: color-mix(in oklab, var(--c-fix) 18%, transparent); color: var(--c-fix); }
+  .badge.chg { background: color-mix(in oklab, var(--c-chg) 18%, transparent); color: var(--c-chg); }
+  .badge.rm  { background: color-mix(in oklab, var(--c-rm)  18%, transparent); color: var(--c-rm); }
+  .badge.sec { background: color-mix(in oklab, var(--c-sec) 18%, transparent); color: var(--c-sec); }
+  .badge.imp { background: color-mix(in oklab, var(--c-imp) 18%, transparent); color: var(--c-imp); }
+
+  .change-list code {
+    font-family: var(--font-mono); font-size: 12px;
+    background: var(--bg-sub); padding: 1px 5px; border-radius: 3px; border: 1px solid var(--line);
+  }
+
+  h2.section {
+    font-family: var(--font-mono); font-size: 12px; color: var(--ink-3);
+    letter-spacing: .14em; text-transform: uppercase;
+    margin: 44px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line);
+  }
+
+  .summary-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 14px; margin: 14px 0; }
+  .summary-table th, .summary-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+  .summary-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); border-bottom: 1px solid var(--line-strong); font-family: var(--font-mono); }
+  .summary-table .ver-cell { color: var(--accent); font-family: var(--font-mono); font-weight: 600; }
+  .summary-table .date-cell { color: var(--ink-3); font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="container" data-search-root>
+
+  <header class="term-head">
+    <div class="term-bar">
+      <span class="term-dots"><span></span><span></span><span></span></span>
+      <span>~/claude-code · changelog · 2026-04</span>
+    </div>
+    <div class="term-body">
+      <div class="term-line"><span class="term-prompt"></span>claude --version</div>
+      <div class="term-line out">Claude Code <span class="hi">2.1.119</span> <span class="mute">(latest · 2026-04-23)</span></div>
+      <div class="term-line mute" style="margin-top:6px;">— 8 releases · 2.1.111 → 2.1.119 · Apr 16–23, 2026</div>
+
+      <h1 class="product">Claude Code · Release Notes</h1>
+      <p class="product-deck">
+        v2.1.111부터 v2.1.119까지 8개 릴리즈 변경 이력.<br>
+        Vim 모드, 커스텀 테마, MCP 대폭 강화, Opus 4.7 xhigh, 설정 영속성, 다양한 UX 개선.
+      </p>
+      <div class="product-meta">
+        <span><strong>docs</strong> code.claude.com/docs/en/changelog</span>
+        <span><strong>기간</strong> 2026-04-16 ~ 2026-04-23</span>
+        <span><strong>최신</strong> 2026-04-23</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="filters" id="filters">
+    <button class="filter-btn active" data-f="all">all</button>
+    <button class="filter-btn" data-f="add">add</button>
+    <button class="filter-btn" data-f="fix">fix</button>
+    <button class="filter-btn" data-f="chg">change</button>
+    <button class="filter-btn" data-f="rm">remove</button>
+    <button class="filter-btn" data-f="imp">improved</button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="s"><div class="v">8</div><div class="l">RELEASES</div></div>
+    <div class="s"><div class="v">~180</div><div class="l">CHANGES</div></div>
+    <div class="s"><div class="v">8</div><div class="l">DAYS</div></div>
+    <div class="s"><div class="v">2</div><div class="l">REMOVED</div></div>
+  </div>
+
+  <!-- v2.1.119 -->
+  <article class="release" id="v2-1-119">
+    <header class="release-head">
+      <span class="ver">v2.1.119</span>
+      <span class="ver-tag major">major</span>
+      <span class="ver-codename">— settings persistence · MCP 강화 · 대규모 fix</span>
+      <span class="ver-date">2026-04-23</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">설정 영속성 완성, MCP 훅 강화, 35개 버그 수정 — 이 시리즈 최대 릴리즈.</p>
+      <ul class="change-list">
+        <li><span class="badge add">add</span><div><code>/config</code> 설정이 <code>~/.claude/settings.json</code>에 영속 저장 (project/local/policy 우선순위 적용)</div></li>
+        <li><span class="badge add">add</span><div><code>prUrlTemplate</code> 설정 — 커스텀 코드리뷰 URL 지원</div></li>
+        <li><span class="badge add">add</span><div><code>CLAUDE_CODE_HIDE_CWD</code> 환경변수 — 시작 로고에서 작업 디렉토리 숨김</div></li>
+        <li><span class="badge add">add</span><div><code>--from-pr</code>가 GitLab MR, Bitbucket PR, GitHub Enterprise URL도 수락</div></li>
+        <li><span class="badge add">add</span><div><code>PostToolUse</code> / <code>PostToolUseFailure</code> 훅 입력에 <code>duration_ms</code> 포함</div></li>
+        <li><span class="badge add">add</span><div>서브에이전트 및 SDK 재설정 시 MCP 서버 병렬 연결</div></li>
+        <li><span class="badge add">add</span><div>버전 제약으로 고정된 플러그인 자동 업데이트</div></li>
+        <li><span class="badge add">add</span><div>OpenTelemetry: <code>tool_result</code>·<code>tool_decision</code> 이벤트에 <code>tool_use_id</code> 추가; <code>tool_result</code>에 <code>tool_input_size_bytes</code> 추가</div></li>
+        <li><span class="badge add">add</span><div>Status line stdin JSON에 <code>effort.level</code>·<code>thinking.enabled</code> 포함</div></li>
+        <li><span class="badge fix">fix</span><div>CRLF 내용 붙여넣기 시 빈 줄 추가 삽입 현상</div></li>
+        <li><span class="badge fix">fix</span><div>kitty 키보드 프로토콜 터미널에서 다중 줄 붙여넣기 시 개행 유실</div></li>
+        <li><span class="badge fix">fix</span><div>Bash 도구 거부 시 Glob·Grep 도구가 사라지는 문제</div></li>
+        <li><span class="badge fix">fix</span><div>전체화면 모드에서 스크롤이 맨 아래로 스냅되는 현상</div></li>
+        <li><span class="badge fix">fix</span><div>MCP HTTP 연결 시 비-JSON 응답에 OAuth 오류 발생</div></li>
+        <li><span class="badge fix">fix</span><div>Rewind 오버레이에서 이미지 첨부 시 "(no prompt)" 표시</div></li>
+        <li><span class="badge fix">fix</span><div>Auto 모드와 plan 모드 지시 충돌 시 plan 모드 덮어쓰기</div></li>
+        <li><span class="badge fix">fix</span><div>비동기 <code>PostToolUse</code> 훅이 빈 항목을 기록하는 문제</div></li>
+        <li><span class="badge fix">fix</span><div>Vertex AI에서 도구 검색 비활성화 (<code>ENABLE_TOOL_SEARCH</code>로 opt-in)</div></li>
+        <li><span class="badge fix">fix</span><div><code>@</code>-파일 Tab 자동완성이 전체 프롬프트를 대체하는 문제</div></li>
+        <li><span class="badge fix">fix</span><div>macOS Terminal.app 시작 시 떠다니는 <code>p</code> 문자</div></li>
+        <li><span class="badge fix">fix</span><div>MCP 헤더의 <code>${ENV_VAR}</code> 플레이스홀더 미치환</div></li>
+        <li><span class="badge fix">fix</span><div>MCP OAuth 클라이언트 시크릿이 <code>client_secret_post</code>에 미전송</div></li>
+        <li><span class="badge fix">fix</span><div><code>/skills</code> Enter 키가 사전입력 대신 다이얼로그를 닫는 문제</div></li>
+        <li><span class="badge fix">fix</span><div><code>/agents</code>가 사용 불가 도구를 "Unrecognized"로 잘못 표시</div></li>
+        <li><span class="badge fix">fix</span><div>불완전한 플러그인 캐시로 Windows에서 MCP 서버 미시작</div></li>
+        <li><span class="badge fix">fix</span><div><code>/export</code>에서 실제 사용 모델 대신 기본 모델 표시</div></li>
+        <li><span class="badge fix">fix</span><div>Verbose 설정 미영속 문제</div></li>
+        <li><span class="badge fix">fix</span><div><code>/usage</code> 진행 바 겹침 현상</div></li>
+        <li><span class="badge fix">fix</span><div><code>TaskList</code>가 임의 순서로 태스크 반환</div></li>
+        <li><span class="badge fix">fix</span><div>Agent 도구의 <code>isolation: "worktree"</code> 오래된 worktree 재사용</div></li>
+        <li><span class="badge fix">fix</span><div>비활성화된 MCP 서버가 "failed"로 표시</div></li>
+        <li><span class="badge fix">fix</span><div>SDK <code>read_file</code>의 크기 제한 미적용</div></li>
+        <li><span class="badge fix">fix</span><div>git worktree에서 PR 미연결</div></li>
+        <li><span class="badge fix">fix</span><div>VSCode에서 macOS 음성 받아쓰기 입력 없음</div></li>
+        <li><span class="badge chg">chg</span><div>Vim 모드: INSERT에서 Esc가 대기 메시지를 더 이상 복원하지 않음</div></li>
+        <li><span class="badge chg">chg</span><div>슬래시 명령어 제안에서 일치 문자 강조 표시</div></li>
+        <li><span class="badge chg">chg</span><div>슬래시 명령어 설명이 잘리지 않고 두 번째 줄로 래핑</div></li>
+        <li><span class="badge chg">chg</span><div><code>owner/repo#N</code> 링크가 github.com 대신 git remote 호스트 사용</div></li>
+        <li><span class="badge sec">sec</span><div><code>blockedMarketplaces</code>가 <code>hostPattern</code>·<code>pathPattern</code> 강제 적용</div></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- v2.1.118 -->
+  <article class="release" id="v2-1-118">
+    <header class="release-head">
+      <span class="ver">v2.1.118</span>
+      <span class="ver-tag minor">minor</span>
+      <span class="ver-codename">— Vim 모드 · 커스텀 테마 · MCP 훅</span>
+      <span class="ver-date">2026-04-23</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">Vim 비주얼 모드, JSON 커스텀 테마, MCP 훅 내 도구 호출, Windows WSL 설정 상속.</p>
+      <ul class="change-list">
+        <li><span class="badge add">add</span><div>Vim 비주얼 모드 (<code>v</code>) 및 비주얼-라인 모드 (<code>V</code>)</div></li>
+        <li><span class="badge add">add</span><div><code>/usage</code> 명령어 (<code>/cost</code>와 <code>/stats</code> 통합)</div></li>
+        <li><span class="badge add">add</span><div><code>/theme</code>으로 커스텀 테마 적용 — <code>~/.claude/themes/</code>의 JSON 파일 지원</div></li>
+        <li><span class="badge add">add</span><div>플러그인 테마 지원 — 플러그인의 <code>themes/</code> 디렉토리</div></li>
+        <li><span class="badge add">add</span><div>훅에서 <code>type: "mcp_tool"</code>으로 MCP 도구 호출 가능</div></li>
+        <li><span class="badge add">add</span><div><code>DISABLE_UPDATES</code> 환경변수 — 모든 업데이트 경로 차단</div></li>
+        <li><span class="badge add">add</span><div>WSL on Windows에서 <code>wslInheritsWindowsSettings</code>로 Windows 설정 상속</div></li>
+        <li><span class="badge add">add</span><div><code>autoMode</code> 규칙에 <code>"$defaults"</code> 지원</div></li>
+        <li><span class="badge add">add</span><div>Auto 모드 opt-in에 "다시 묻지 않기" 옵션</div></li>
+        <li><span class="badge add">add</span><div><code>claude plugin tag</code> — 플러그인 릴리즈 버전 태깅</div></li>
+        <li><span class="badge add">add</span><div><code>--continue</code>/<code>--resume</code>에서 <code>/add-dir</code>로 추가된 세션 검색 가능</div></li>
+        <li><span class="badge add">add</span><div><code>/color</code> — Remote Control과 claude.ai 세션 강조색 동기화</div></li>
+        <li><span class="badge add">add</span><div><code>/model</code> 피커에서 <code>ANTHROPIC_DEFAULT_*_MODEL_NAME</code> 환경변수 반영</div></li>
+        <li><span class="badge fix">fix</span><div>MCP OAuth 토큰에 <code>expires_in</code> 없을 시 매시간 재인증 요구</div></li>
+        <li><span class="badge fix">fix</span><div>macOS 키체인 경쟁 조건으로 OAuth 토큰 손상</div></li>
+        <li><span class="badge fix">fix</span><div>자격증명 저장 충돌로 <code>~/.claude/.credentials.json</code> 손상</div></li>
+        <li><span class="badge fix">fix</span><div><code>CLAUDE_CODE_OAUTH_TOKEN</code> 사용 시 <code>/login</code> 무효 문제</div></li>
+        <li><span class="badge fix">fix</span><div>"새 메시지" 알림 및 배지 텍스트 가독성 저하</div></li>
+        <li><span class="badge fix">fix</span><div>Plan 수락 시 잘못된 모드 옵션 제시</div></li>
+        <li><span class="badge fix">fix</span><div>Agent 유형 훅이 "Messages required"로 실패</div></li>
+        <li><span class="badge fix">fix</span><div><code>prompt</code> 훅이 agent-hook 검증기 호출 시 재실행</div></li>
+        <li><span class="badge fix">fix</span><div><code>/fork</code>가 포인터 대신 전체 부모 대화를 기록</div></li>
+        <li><span class="badge fix">fix</span><div>Alt+K/X/^/_ 입력 시 키보드 입력 동결</div></li>
+        <li><span class="badge fix">fix</span><div>Remote 세션이 로컬 모델 설정 덮어쓰기</div></li>
+        <li><span class="badge fix">fix</span><div><code>/</code> 파일 경로에서 타입어헤드 오류 표시</div></li>
+        <li><span class="badge fix">fix</span><div>Remote Control 세션이 일시적 중단 시 아카이브됨</div></li>
+        <li><span class="badge fix">fix</span><div><code>SendMessage</code>로 재개된 서브에이전트의 <code>cwd</code> 유실</div></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- v2.1.117 -->
+  <article class="release" id="v2-1-117">
+    <header class="release-head">
+      <span class="ver">v2.1.117</span>
+      <span class="ver-tag patch">patch</span>
+      <span class="ver-codename">— 병렬 MCP · 포크 서브에이전트</span>
+      <span class="ver-date">2026-04-22</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">병렬 MCP 연결이 기본 활성화되어 시작 속도가 개선됩니다.</p>
+      <ul class="change-list">
+        <li><span class="badge add">add</span><div>외부 빌드용 포크 서브에이전트 <code>CLAUDE_CODE_FORK_SUBAGENT=1</code></div></li>
+        <li><span class="badge add">add</span><div><code>--agent</code>로 실행 시 Agent frontmatter <code>mcpServers</code> 메인 스레드 로드</div></li>
+        <li><span class="badge add">add</span><div>병렬 MCP 연결 기본 활성화 (시작 속도 향상)</div></li>
+        <li><span class="badge imp">imp</span><div><code>/model</code> 선택이 프로젝트 핀 있어도 재시작 후 유지</div></li>
+        <li><span class="badge imp">imp</span><div>시작 헤더에 모델이 project/managed 설정에서 왔음을 표시</div></li>
+        <li><span class="badge imp">imp</span><div><code>plugin install</code>이 재실행 시 누락된 의존성 자동 설치</div></li>
+        <li><span class="badge imp">imp</span><div>플러그인 의존성 오류 명확화 및 <code>claude plugin marketplace add</code> 자동 해결</div></li>
+        <li><span class="badge fix">fix</span><div>플러그인 작업 시 Managed settings 강제 적용</div></li>
+        <li><span class="badge fix">fix</span><div>Advisor 도구가 모든 프롬프트에서 오류 발생</div></li>
+        <li><span class="badge fix">fix</span><div><code>/release-notes</code>에서 현재 버전 정보 미표시</div></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- v2.1.116 -->
+  <article class="release" id="v2-1-116">
+    <header class="release-head">
+      <span class="ver">v2.1.116</span>
+      <span class="ver-tag patch">patch</span>
+      <span class="ver-codename">— 생각 중 스피너 · 빠른 /resume</span>
+      <span class="ver-date">2026-04-20</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">Thinking 진행 스피너, /resume 최대 67% 빠르게, MCP 시작 속도 개선.</p>
+      <ul class="change-list">
+        <li><span class="badge add">add</span><div>Thinking 스피너 진행 텍스트 ("still thinking", "more", "almost done")</div></li>
+        <li><span class="badge add">add</span><div><code>/config</code> 검색이 옵션 값도 매칭</div></li>
+        <li><span class="badge add">add</span><div>Claude가 응답 중에도 <code>/doctor</code> 실행 가능</div></li>
+        <li><span class="badge add">add</span><div><code>/reload-plugins</code>가 누락된 의존성 자동 설치</div></li>
+        <li><span class="badge add">add</span><div>Bash 도구에 GitHub API rate limit 힌트 추가</div></li>
+        <li><span class="badge add">add</span><div><code>--agent</code> 실행 시 Agent frontmatter 훅 발동</div></li>
+        <li><span class="badge fix">fix</span><div>Devanagari 스크립트 컬럼 정렬 문제</div></li>
+        <li><span class="badge fix">fix</span><div>kitty 프로토콜에서 Ctrl+- 실행 취소 미작동</div></li>
+        <li><span class="badge fix">fix</span><div>kitty 프로토콜에서 Cmd+Left/Right 미작동</div></li>
+        <li><span class="badge fix">fix</span><div>래퍼 프로세스에서 Ctrl+Z 행 걸림</div></li>
+        <li><span class="badge fix">fix</span><div>인라인 모드에서 스크롤백 중복 표시</div></li>
+        <li><span class="badge fix">fix</span><div>낮은 높이에서 모달 검색 오버플로우</div></li>
+        <li><span class="badge fix">fix</span><div>VS Code 터미널에서 산발적 빈 셀</div></li>
+        <li><span class="badge fix">fix</span><div>API 400 캐시 제어 TTL 순서 문제</div></li>
+        <li><span class="badge fix">fix</span><div><code>/branch</code>에서 50MB+ 트랜스크립트 거부</div></li>
+        <li><span class="badge fix">fix</span><div><code>/resume</code>에서 대용량 파일 조용한 실패</div></li>
+        <li><span class="badge fix">fix</span><div><code>/update</code>/<code>/tui</code>가 worktree 진입 후 실패</div></li>
+        <li><span class="badge imp">imp</span><div><code>/resume</code>: 40MB+ 세션에서 최대 67% 빠르게</div></li>
+        <li><span class="badge imp">imp</span><div>전체화면 스크롤 부드러움 향상</div></li>
+        <li><span class="badge imp">imp</span><div>여러 stdio MCP 서버의 시작 속도 개선</div></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- v2.1.114 -->
+  <article class="release" id="v2-1-114">
+    <header class="release-head">
+      <span class="ver">v2.1.114</span>
+      <span class="ver-tag hotfix">hotfix</span>
+      <span class="ver-codename">— 권한 다이얼로그 크래시</span>
+      <span class="ver-date">2026-04-18</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">에이전트 팀원의 도구 권한 요청 시 발생하던 크래시 긴급 수정.</p>
+      <ul class="change-list">
+        <li><span class="badge fix">fix</span><div>에이전트 팀원이 도구 권한 요청 시 권한 다이얼로그 크래시</div></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- v2.1.113 -->
+  <article class="release" id="v2-1-113">
+    <header class="release-head">
+      <span class="ver">v2.1.113</span>
+      <span class="ver-tag minor">minor</span>
+      <span class="ver-codename">— 네이티브 바이너리 · 샌드박스 도메인 · /ultrareview</span>
+      <span class="ver-date">2026-04-17</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">플랫폼별 네이티브 Claude Code 바이너리, sandbox.network.deniedDomains, /ultrareview 병렬 검토.</p>
+      <ul class="change-list">
+        <li><span class="badge add">add</span><div>플랫폼별 네이티브 Claude Code 바이너리 (optional dependency)</div></li>
+        <li><span class="badge add">add</span><div><code>sandbox.network.deniedDomains</code> 설정</div></li>
+        <li><span class="badge add">add</span><div>전체화면 선택 모드에서 Shift+↑/↓ 스크롤</div></li>
+        <li><span class="badge add">add</span><div>다중 줄 입력에서 <code>Ctrl+A</code>/<code>Ctrl+E</code>로 줄 시작/끝 이동</div></li>
+        <li><span class="badge add">add</span><div>Windows <code>Ctrl+Backspace</code>로 이전 단어 삭제</div></li>
+        <li><span class="badge add">add</span><div>여러 줄에 걸친 URL 클릭 가능</div></li>
+        <li><span class="badge add">add</span><div><code>/loop</code> 개선: Esc로 wakeup 취소, 디스플레이 명확화</div></li>
+        <li><span class="badge add">add</span><div>Remote Control에서 <code>/extra-usage</code> 지원</div></li>
+        <li><span class="badge add">add</span><div>Remote Control <code>@</code>-파일 자동완성</div></li>
+        <li><span class="badge add">add</span><div><code>/ultrareview</code> — 병렬 검사 + diffstat 포함 클라우드 코드리뷰</div></li>
+        <li><span class="badge add">add</span><div>서브에이전트 정체 시 10분 타임아웃</div></li>
+        <li><span class="badge fix">fix</span><div>Bash 도구에서 초기 주석이 있는 다중 줄 명령어 처리</div></li>
+        <li><span class="badge fix">fix</span><div><code>cd &lt;current-directory&gt; &amp;&amp;</code>가 불필요하게 프롬프트 요청</div></li>
+        <li><span class="badge fix">fix</span><div>macOS에서 <code>/private/{etc,var,tmp,home}</code> 위험 삭제 방지</div></li>
+        <li><span class="badge fix">fix</span><div>Bash deny 규칙이 래핑된 명령어와 미매칭</div></li>
+        <li><span class="badge fix">fix</span><div><code>Bash(find:*)</code>가 <code>-exec</code>/<code>-delete</code>를 자동 승인하지 않는 문제</div></li>
+        <li><span class="badge fix">fix</span><div>MCP 동시 호출 타임아웃 해제 문제</div></li>
+        <li><span class="badge fix">fix</span><div>마크다운 테이블의 인라인 코드 내 파이프 문자 처리</div></li>
+        <li><span class="badge fix">fix</span><div>세션 요약이 입력 중에 자동 실행</div></li>
+        <li><span class="badge fix">fix</span><div>서브에이전트 트랜스크립트 귀속</div></li>
+        <li><span class="badge fix">fix</span><div>Bedrock Inference Profile에서 Thinking 타입 지원</div></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- v2.1.112 -->
+  <article class="release" id="v2-1-112">
+    <header class="release-head">
+      <span class="ver">v2.1.112</span>
+      <span class="ver-tag hotfix">hotfix</span>
+      <span class="ver-codename">— Opus 4.7 가용성</span>
+      <span class="ver-date">2026-04-16</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">Auto 모드에서 Opus 4.7 "temporarily unavailable" 오류 긴급 수정.</p>
+      <ul class="change-list">
+        <li><span class="badge fix">fix</span><div>Auto 모드에서 "claude-opus-4-7 is temporarily unavailable" 오류</div></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- v2.1.111 -->
+  <article class="release" id="v2-1-111">
+    <header class="release-head">
+      <span class="ver">v2.1.111</span>
+      <span class="ver-tag major">major</span>
+      <span class="ver-codename">— Opus 4.7 xhigh · Auto 모드 · /effort 슬라이더</span>
+      <span class="ver-date">2026-04-16</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">Claude Opus 4.7 xhigh effort 출시, Max 구독자 Auto 모드, /effort 인터랙티브 슬라이더, Windows PowerShell 도구.</p>
+      <ul class="change-list">
+        <li><span class="badge add">add</span><div>Claude Opus 4.7 xhigh effort 레벨</div></li>
+        <li><span class="badge add">add</span><div>Max 구독자를 위한 Opus 4.7 Auto 모드</div></li>
+        <li><span class="badge add">add</span><div><code>/effort</code> 인터랙티브 슬라이더</div></li>
+        <li><span class="badge add">add</span><div>"자동 (터미널 맞춤)" 테마 옵션</div></li>
+        <li><span class="badge add">add</span><div><code>/less-permission-prompts</code> 스킬</div></li>
+        <li><span class="badge add">add</span><div><code>/ultrareview</code> — 클라우드 기반 코드 리뷰</div></li>
+        <li><span class="badge add">add</span><div>Windows PowerShell 도구 (<code>CLAUDE_CODE_USE_POWERSHELL_TOOL</code>로 opt-in/out)</div></li>
+        <li><span class="badge add">add</span><div>읽기 전용 Bash 자동 승인 — glob·<code>cd &lt;project&gt; &amp;&amp;</code> 패턴</div></li>
+        <li><span class="badge add">add</span><div>CLI 명령어 오타 제안</div></li>
+        <li><span class="badge add">add</span><div>Plan 파일이 프롬프트 이름으로 명명됨</div></li>
+        <li><span class="badge add">add</span><div><code>/skills</code> 토큰 수 정렬 (키 <code>t</code>)</div></li>
+        <li><span class="badge add">add</span><div><code>Ctrl+U</code>로 전체 입력 버퍼 지우기</div></li>
+        <li><span class="badge add">add</span><div><code>Ctrl+E</code>로 줄 끝으로 이동</div></li>
+        <li><span class="badge add">add</span><div>트랜스크립트 푸터 단축키 (<code>[</code> 덤프, <code>v</code> 편집)</div></li>
+        <li><span class="badge add">add</span><div>"+N lines" 마커를 전체 폭 구분선으로 표시</div></li>
+        <li><span class="badge add">add</span><div>헤드리스용 init 이벤트에 <code>plugin_errors</code> 포함</div></li>
+        <li><span class="badge add">add</span><div><code>OTEL_LOG_RAW_API_BODIES</code> 환경변수</div></li>
+        <li><span class="badge fix">fix</span><div>iTerm2 + tmux 환경에서 터미널 화면 뜯김(tearing)</div></li>
+        <li><span class="badge fix">fix</span><div><code>@</code>-파일이 전체 프로젝트를 재스캔하는 문제</div></li>
+        <li><span class="badge fix">fix</span><div>편집 후 LSP 진단이 나타나는 문제</div></li>
+        <li><span class="badge fix">fix</span><div><code>/resume</code> Tab 자동완성이 임의 세션을 재개</div></li>
+        <li><span class="badge fix">fix</span><div><code>/context</code> 그리드 빈 줄 문제</div></li>
+        <li><span class="badge fix">fix</span><div><code>/clear</code>가 세션 이름을 지우는 문제</div></li>
+        <li><span class="badge fix">fix</span><div>플러그인 오류 처리 및 오래된 버전 정리</div></li>
+        <li><span class="badge fix">fix</span><div>Windows 경로 대소문자 민감도 문제</div></li>
+        <li><span class="badge fix">fix</span><div>드라이브 문자가 포함된 권한 규칙</div></li>
+        <li><span class="badge chg">chg</span><div>Auto 모드 일반 제공 (플래그 불필요)</div></li>
+        <li><span class="badge chg">chg</span><div>Pro/Max의 4.6+ 기본 effort를 <code>high</code>로 변경</div></li>
+        <li><span class="badge chg">chg</span><div><code>/setup-vertex</code> 및 <code>/setup-bedrock</code> 개선</div></li>
+        <li><span class="badge rm">rm</span><div><code>/tag</code> 명령어 제거</div></li>
+        <li><span class="badge rm">rm</span><div><code>/vim</code> 명령어 제거 (대신 <code>/config</code> → Editor mode 사용)</div></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 버전 요약 표 -->
+  <h2 class="section">버전 요약 — v2.1.111 ~ v2.1.119</h2>
+  <table class="summary-table">
+    <thead>
+      <tr><th>버전</th><th>날짜</th><th>태그</th><th>핵심 변경사항</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="ver-cell">2.1.119</td><td class="date-cell">Apr 23</td><td><span class="ver-tag major" style="display:inline-block;">major</span></td><td style="font-family:var(--font-sans);font-size:13px;">설정 영속성, <code>prUrlTemplate</code>, MCP 병렬 연결, OTel 강화, 35개 버그 수정</td></tr>
+      <tr><td class="ver-cell">2.1.118</td><td class="date-cell">Apr 23</td><td><span class="ver-tag minor" style="display:inline-block;">minor</span></td><td style="font-family:var(--font-sans);font-size:13px;">Vim v/V 모드, 커스텀 테마 <code>/theme</code>, MCP 훅 내 도구 호출, WSL 설정 상속</td></tr>
+      <tr><td class="ver-cell">2.1.117</td><td class="date-cell">Apr 22</td><td><span class="ver-tag patch" style="display:inline-block;">patch</span></td><td style="font-family:var(--font-sans);font-size:13px;">병렬 MCP 기본 활성화, 포크 서브에이전트, 플러그인 의존성 개선</td></tr>
+      <tr><td class="ver-cell">2.1.116</td><td class="date-cell">Apr 20</td><td><span class="ver-tag patch" style="display:inline-block;">patch</span></td><td style="font-family:var(--font-sans);font-size:13px;">Thinking 스피너, /resume 최대 67% 향상, MCP 시작 속도 개선</td></tr>
+      <tr><td class="ver-cell">2.1.114</td><td class="date-cell">Apr 18</td><td><span class="ver-tag hotfix" style="display:inline-block;">hotfix</span></td><td style="font-family:var(--font-sans);font-size:13px;">에이전트 팀원 도구 권한 요청 시 크래시 수정</td></tr>
+      <tr><td class="ver-cell">2.1.113</td><td class="date-cell">Apr 17</td><td><span class="ver-tag minor" style="display:inline-block;">minor</span></td><td style="font-family:var(--font-sans);font-size:13px;">네이티브 바이너리, <code>sandbox.network.deniedDomains</code>, <code>/ultrareview</code>, 서브에이전트 타임아웃</td></tr>
+      <tr><td class="ver-cell">2.1.112</td><td class="date-cell">Apr 16</td><td><span class="ver-tag hotfix" style="display:inline-block;">hotfix</span></td><td style="font-family:var(--font-sans);font-size:13px;">Auto 모드에서 Opus 4.7 가용성 오류 긴급 수정</td></tr>
+      <tr><td class="ver-cell">2.1.111</td><td class="date-cell">Apr 16</td><td><span class="ver-tag major" style="display:inline-block;">major</span></td><td style="font-family:var(--font-sans);font-size:13px;">Opus 4.7 xhigh effort, Max 구독자 Auto 모드, <code>/effort</code> 슬라이더, PowerShell 도구</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="section">업그레이드 체크리스트</h2>
+  <ul class="cc-checklist" id="cc-upgrade" style="font-family: var(--font-sans);">
+    <li><span><code>claude --version</code> 확인 — 2.1.119 이상인지 확인</span></li>
+    <li><span><code>/vim</code> 사용 중이었다면 → <code>/config</code> → Editor mode로 전환</span></li>
+    <li><span><code>/tag</code> 명령어 제거됨 — 대체 방법 확인</span></li>
+    <li><span>Pro/Max 사용자: 기본 effort가 <code>high</code>로 변경됨 — 비용 영향 확인</span></li>
+    <li><span>Vim 모드 사용자: Esc in INSERT이 더 이상 대기 메시지를 복원하지 않음</span></li>
+    <li><span>Windows 사용자: PowerShell 도구 opt-in 여부 결정 (<code>CLAUDE_CODE_USE_POWERSHELL_TOOL</code>)</span></li>
+    <li><span>MCP OAuth 설정 있다면: 토큰 갱신 로직 재확인</span></li>
+  </ul>
+
+  <h2 class="section">주요 용어</h2>
+  <dl class="cc-glossary" style="font-family: var(--font-sans);">
+    <dt>xhigh effort <small>초고 노력 레벨</small></dt>
+    <dd>Opus 4.7에서 추가된 최상위 사고 단계. <code>/effort</code> 슬라이더로 조절 가능.</dd>
+    <dt>Auto 모드 <small>자동 모델 라우팅</small></dt>
+    <dd>작업 복잡도에 따라 Opus·Sonnet 간 자동 전환. 2.1.111부터 Max 구독자 전체 제공.</dd>
+    <dt>MCP <small>Model Context Protocol</small></dt>
+    <dd>외부 도구·데이터 소스를 Claude에 연결하는 표준 프로토콜. 훅 내 호출 지원(2.1.118+).</dd>
+    <dt>PostToolUse 훅 <small>도구 후처리 훅</small></dt>
+    <dd>도구 실행 완료 후 자동으로 실행되는 훅. 2.1.119부터 <code>duration_ms</code> 포함.</dd>
+  </dl>
+
+</div>
+
+<script>
+  document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const f = btn.dataset.f;
+      document.querySelectorAll(".change-list li").forEach(li => {
+        const badge = li.querySelector(".badge");
+        const cls = badge ? Array.from(badge.classList).find(c => c !== "badge") : "";
+        li.style.display = (f === "all" || cls === f) ? "" : "none";
+      });
+    });
+  });
+</script>
+<script src="/templates/assets/common.js"></script>
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="CH2ZPKS" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
