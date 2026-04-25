@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>T1 — Daily AI Digest</title>
+<link rel="stylesheet" href="/templates/assets/common.css" />
+<style>
+  :root {
+    --accent: #c0392b;
+    --accent-soft: #fbeae6;
+    --maxw: 1100px;
+  }
+  [data-theme="dark"] {
+    --accent: #ff7a66;
+    --accent-soft: color-mix(in oklab, #ff7a66 18%, #18181a);
+  }
+  .masthead {
+    border-bottom: 3px double var(--ink);
+    padding: 28px 0 18px;
+    margin-bottom: 28px;
+  }
+  .masthead-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; color: var(--ink-3); text-transform: uppercase; }
+  .masthead h1 {
+    font-family: "Playfair Display", "Noto Serif KR", Georgia, serif;
+    font-weight: 900;
+    font-size: clamp(40px, 6vw, 72px);
+    margin: 6px 0 4px;
+    letter-spacing: -.02em;
+    line-height: 1;
+  }
+  .masthead .tagline { font-style: italic; color: var(--ink-3); font-size: 14px; }
+  .container { max-width: var(--maxw); margin: 0 auto; padding: 0 32px 80px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 36px;
+  }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+
+  .lead-headline {
+    font-family: "Playfair Display", serif;
+    font-weight: 800;
+    font-size: clamp(28px, 3.4vw, 44px);
+    line-height: 1.1;
+    margin: 0 0 12px;
+    letter-spacing: -.015em;
+  }
+  .lead-deck {
+    font-size: 18px; color: var(--ink-2); line-height: 1.55; margin: 0 0 18px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 18px;
+  }
+  .byline {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .col-rule { border-left: 1px solid var(--line); padding-left: 28px; }
+  @media (max-width: 820px) { .col-rule { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 24px; } }
+
+  .digest-section {
+    margin: 36px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .section-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin: 0 0 8px;
+    font-weight: 700;
+  }
+  .section-h { font-family: "Playfair Display", serif; font-weight: 700; font-size: 26px; margin: 0 0 18px; letter-spacing: -.01em; }
+
+  .news-item { padding: 14px 0; border-bottom: 1px dotted var(--line-strong); display: grid; grid-template-columns: 60px 1fr; gap: 18px; align-items: flex-start; }
+  .news-item:last-child { border-bottom: 0; }
+  .news-num { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); padding-top: 4px; letter-spacing: .04em; }
+  .news-title { font-family: "Playfair Display", serif; font-weight: 700; font-size: 19px; line-height: 1.3; margin: 0 0 4px; }
+  .news-excerpt { color: var(--ink-2); font-size: 14.5px; line-height: 1.5; margin: 0 0 6px; }
+  .news-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .04em; }
+  .news-meta a { color: var(--ink-3); text-decoration: underline; text-decoration-color: var(--line-strong); }
+
+  .sidebar h3 {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em;
+    color: var(--accent); text-transform: uppercase; margin: 0 0 10px; font-weight: 700;
+  }
+  .sidebar h3:not(:first-child) { margin-top: 28px; }
+
+  .ticker {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 0;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .ticker-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 6px 0;
+    font-family: var(--font-mono); font-size: 13px;
+    border-bottom: 1px dotted var(--line);
+  }
+  .ticker-row:last-child { border-bottom: 0; }
+  .ticker-name { color: var(--ink-2); }
+  .ticker-val { font-weight: 600; color: var(--ink); }
+  .ticker-delta.up { color: #2f8a3a; }
+  .ticker-delta.down { color: var(--accent); }
+  [data-theme="dark"] .ticker-delta.up { color: #6ec47a; }
+
+  .pull-quote {
+    font-family: "Playfair Display", serif;
+    font-style: italic;
+    font-size: 22px;
+    line-height: 1.35;
+    color: var(--ink);
+    border-top: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    padding: 18px 0;
+    margin: 24px 0;
+    text-align: center;
+  }
+  .pull-quote cite { display: block; margin-top: 10px; font-style: normal; font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; }
+
+  .gallery-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 22px 0; }
+  @media (max-width: 600px) { .gallery-strip { grid-template-columns: 1fr 1fr; } }
+
+  .footer-rule {
+    margin-top: 60px;
+    padding-top: 18px;
+    border-top: 3px double var(--ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: .08em;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    text-transform: uppercase;
+  }
+
+  /* tag pill */
+  .news-tags { display: inline-flex; gap: 6px; margin-left: 6px; flex-wrap: wrap; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;800;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<div class="container" data-search-root>
+
+  <header class="masthead">
+    <div class="masthead-row">
+      <span>VOL. 142 · 2026년 4월 25일 토요일</span>
+      <span>오늘 7분 읽기 · 큐레이터 노트 포함</span>
+    </div>
+    <h1>The Daily AI Digest</h1>
+    <div class="masthead-row">
+      <span class="tagline">매일 아침, 어제의 AI를 정리해 드립니다.</span>
+      <span>ISSUE #142 · DIGEST</span>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <main>
+      <div class="byline">LEAD STORY · MODEL RELEASE</div>
+      <h2 class="lead-headline" id="lead">오픈소스 진영, 1B급 모델로 GPT-4o 90%선까지 추격</h2>
+      <p class="lead-deck">
+        지난주 공개된 새 1B 파라미터 모델이 MMLU 84점, HumanEval 78점을 기록하며 폐쇄형 모델과의 격차를 한 자릿수로 좁혔다.
+        파인튜닝 비용은 단일 H100 한 장으로 6시간 — 스타트업과 학계의 손이 다시 닿는 거리에 들어왔다.
+      </p>
+
+      <figure>
+        <div class="cc-placeholder cc-wide" data-caption="리드 스토리 메인 이미지 — 16:9, 모델 릴리즈 키비주얼">
+          <span class="cc-ph-label">[ 리드 이미지 — 1600×900 ]<br/>모델 릴리즈 키비주얼 / 차트 합성</span>
+        </div>
+      </figure>
+
+      <div class="cc-tldr">
+        <h3>TL;DR · 오늘 꼭 알아야 할 5가지</h3>
+        <ul>
+          <li>오픈소스 1B 모델, 폐쇄형 모델 대비 <strong>벤치마크 평균 92%</strong> 도달.</li>
+          <li>주요 클라우드 3사, 추론 가격 <strong>최대 40% 인하</strong> 발표.</li>
+          <li>EU AI Act 후속 가이드라인, <strong>고위험 시스템 정의</strong> 구체화.</li>
+          <li>국내 대기업 2곳, sLLM 자체 구축으로 선회.</li>
+          <li>음성 합성 모델 부정 사용 사례 급증, <strong>워터마킹 의무화</strong> 논의.</li>
+        </ul>
+      </div>
+
+      <section class="digest-section">
+        <p class="section-eyebrow">Top stories</p>
+        <h2 class="section-h">오늘의 주요 뉴스</h2>
+
+        <article class="news-item">
+          <div class="news-num">01</div>
+          <div>
+            <h3 class="news-title">클라우드 3사, 추론 단가 일제히 인하</h3>
+            <p class="news-excerpt">
+              경쟁사 발표 24시간 내에 후속 인하가 이어지며 추론 가격은 6개월 새 절반 수준으로 내려왔다.
+              엔터프라이즈 도입 ROI 계산이 다시 쓰여야 하는 시점이다.
+            </p>
+            <div class="news-meta">
+              IDG · 5분 읽기 ·
+              <a href="#" data-copy="https://example.com/news/cloud-pricing">링크 복사</a>
+              <span class="news-tags"><span class="cc-chip">가격</span><span class="cc-chip">엔터프라이즈</span></span>
+            </div>
+          </div>
+        </article>
+
+        <article class="news-item">
+          <div class="news-num">02</div>
+          <div>
+            <h3 class="news-title">EU AI Act 후속 가이드라인 — 고위험 시스템 범위 확정</h3>
+            <p class="news-excerpt">
+              채용·신용·치안 영역의 자동화 시스템에 대한 사전 영향평가가 의무화되며,
+              위반 시 매출 7% 또는 €3,500만 중 큰 금액의 과징금이 부과된다.
+            </p>
+            <div class="news-meta">
+              EU Commission · 8분 읽기 · <a href="#" data-copy="https://example.com/news/eu-ai-act">링크 복사</a>
+              <span class="news-tags"><span class="cc-chip">규제</span><span class="cc-chip">EU</span></span>
+            </div>
+          </div>
+        </article>
+
+        <article class="news-item">
+          <div class="news-num">03</div>
+          <div>
+            <h3 class="news-title">음성 클로닝 사기 급증 — 워터마킹 의무화 논의</h3>
+            <p class="news-excerpt">
+              주요 합성 음성 API에 inaudible watermark 삽입을 강제하는 표준화 회의가
+              ITU-T 산하에서 6월 개시 예정이다.
+            </p>
+            <div class="news-meta">
+              ITU · 4분 읽기 · <a href="#" data-copy="https://example.com/news/voice-watermark">링크 복사</a>
+              <span class="news-tags"><span class="cc-chip">보안</span><span class="cc-chip">표준</span></span>
+            </div>
+          </div>
+        </article>
+
+        <article class="news-item">
+          <div class="news-num">04</div>
+          <div>
+            <h3 class="news-title">국내 대기업 2곳, sLLM 자체 구축으로 선회</h3>
+            <p class="news-excerpt">
+              민감 데이터 온프레미스 운용 요구가 커지면서, 7B~13B급 도메인 특화 모델을 사내 구축하는 전환이 뚜렷해지고 있다.
+            </p>
+            <div class="news-meta">
+              매일경제 · 6분 읽기 · <a href="#" data-copy="https://example.com/news/sllm">링크 복사</a>
+              <span class="news-tags"><span class="cc-chip">국내</span><span class="cc-chip">sLLM</span></span>
+            </div>
+          </div>
+        </article>
+
+        <article class="news-item">
+          <div class="news-num">05</div>
+          <div>
+            <h3 class="news-title">학술 — Long-context 강화 기법 두 편 동시 공개</h3>
+            <p class="news-excerpt">
+              YaRN-2와 Ring-Attention v3 모두 200K 토큰 영역에서 perplexity를 6~9% 개선했다고 보고했다.
+            </p>
+            <div class="news-meta">
+              arXiv · 10분 읽기 · <a href="#" data-copy="https://arxiv.org/abs/2604.xxxxx">링크 복사</a>
+              <span class="news-tags"><span class="cc-chip">논문</span><span class="cc-chip">long-context</span></span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <p class="pull-quote">
+        “이제 모델은 충분히 좋다. 진짜 싸움은 도구·평가·운영에서 일어난다.”
+        <cite>— 익명의 전 OpenAI 엔지니어, 어제 팟캐스트에서</cite>
+      </p>
+
+      <section class="digest-section">
+        <p class="section-eyebrow">Visual brief</p>
+        <h2 class="section-h">한눈에 보는 오늘</h2>
+        <div class="gallery-strip">
+          <figure>
+            <div class="cc-placeholder cc-square" data-caption="추론 가격 추이 차트 — 6개월">
+              <span class="cc-ph-label">[ 차트 1 ]<br/>추론 가격 추이 (6mo)</span>
+            </div>
+            <figcaption>FIG.1 · 추론 가격 추이</figcaption>
+          </figure>
+          <figure>
+            <div class="cc-placeholder cc-square" data-caption="벤치마크 비교 — 오픈 vs 폐쇄">
+              <span class="cc-ph-label">[ 차트 2 ]<br/>벤치마크: 오픈 vs 폐쇄</span>
+            </div>
+            <figcaption>FIG.2 · 벤치마크 비교</figcaption>
+          </figure>
+          <figure>
+            <div class="cc-placeholder cc-square" data-caption="EU AI Act 위반 과징금 구조">
+              <span class="cc-ph-label">[ 도식 3 ]<br/>EU 과징금 구조</span>
+            </div>
+            <figcaption>FIG.3 · 과징금 구조</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="digest-section">
+        <p class="section-eyebrow">By the numbers</p>
+        <h2 class="section-h">한 줄 비교표 — 주요 모델 가격 변화</h2>
+        <table class="cc-table">
+          <thead>
+            <tr><th>제공자</th><th>모델</th><th>입력 / 1M tok</th><th>출력 / 1M tok</th><th>변동</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>OpenAI</td><td>GPT-4o</td><td>$2.50</td><td>$10.00</td><td class="cc-best">−20%</td></tr>
+            <tr><td>Anthropic</td><td>Claude Sonnet 4.5</td><td>$3.00</td><td>$15.00</td><td class="cc-best">−25%</td></tr>
+            <tr><td>Google</td><td>Gemini 2.5 Pro</td><td>$1.25</td><td>$5.00</td><td class="cc-best">−40%</td></tr>
+            <tr><td>오픈소스 (자가호스팅)</td><td>Llama-4 70B</td><td colspan="2"><span class="cc-mute">H100 시간당 $2.50 기준 자체 추산</span></td><td>—</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size: 12px; color: var(--ink-3); font-family: var(--font-mono);">출처: 각 사 공식 발표(2026.04.24) / 자체 정리</p>
+      </section>
+
+      <section class="digest-section">
+        <p class="section-eyebrow">Editor's checklist</p>
+        <h2 class="section-h">이번 주 안에 점검할 것</h2>
+        <ul class="cc-checklist" id="t1-check">
+          <li><span>API 키 사용량 — 가격 인하 반영 후 단가 다시 계산</span></li>
+          <li><span>EU AI Act 영향 받는 자사 시스템 목록 만들기</span></li>
+          <li><span>음성 합성 사용 중인 제품의 워터마킹 옵션 확인</span></li>
+          <li><span>새 1B 모델 자체 평가셋으로 한 번 돌려보기</span></li>
+          <li><span>다음 주 뉴스레터 리드 후보 3개 픽업</span></li>
+        </ul>
+      </section>
+
+    </main>
+
+    <aside class="col-rule sidebar">
+      <h3>오늘의 마켓 티커</h3>
+      <div class="ticker">
+        <div class="ticker-row"><span class="ticker-name">NVDA</span><span><span class="ticker-val">$1,124</span> <span class="ticker-delta up">+2.4%</span></span></div>
+        <div class="ticker-row"><span class="ticker-name">MSFT</span><span><span class="ticker-val">$478</span> <span class="ticker-delta up">+0.6%</span></span></div>
+        <div class="ticker-row"><span class="ticker-name">GOOG</span><span><span class="ticker-val">$182</span> <span class="ticker-delta down">−1.1%</span></span></div>
+        <div class="ticker-row"><span class="ticker-name">META</span><span><span class="ticker-val">$612</span> <span class="ticker-delta up">+0.3%</span></span></div>
+        <div class="ticker-row"><span class="ticker-name">PLTR</span><span><span class="ticker-val">$28.40</span> <span class="ticker-delta down">−2.0%</span></span></div>
+      </div>
+
+      <h3>3줄 요약</h3>
+      <p style="font-size: 14.5px; color: var(--ink-2); margin: 0 0 10px;">
+        ① 오픈소스 모델이 폐쇄형의 90%선에 진입.<br/>
+        ② 클라우드 3사 가격 동시 인하.<br/>
+        ③ 규제는 빨라지고 도구는 싸지는 중.
+      </p>
+
+      <h3>오늘의 한 줄</h3>
+      <blockquote class="cc-quote" style="margin: 0;">
+        모델이 평준화될수록, 평가셋이 곧 자산이다.
+        <cite>리서치 노트 #87</cite>
+      </blockquote>
+
+      <h3>용어 사전</h3>
+      <dl class="cc-glossary">
+        <dt>RAG <small>Retrieval-Augmented Generation</small></dt>
+        <dd>외부 지식을 검색해 프롬프트에 끼워 넣는 기법. 도메인 지식 주입에 표준처럼 쓰인다.</dd>
+        <dt>워터마킹 <small>Watermarking</small></dt>
+        <dd>합성 콘텐츠에 사람이 듣거나 보지 못하는 식별자를 새기는 기법.</dd>
+        <dt>sLLM <small>small LLM</small></dt>
+        <dd>대체로 1B~13B 파라미터, 단일 서버에서 운용 가능한 경량 LLM.</dd>
+      </dl>
+
+      <h3>다음 호 예고</h3>
+      <p style="font-size: 14px; color: var(--ink-3);">
+        월요일 — 코딩 어시스턴트 4종 릴리즈 비교.<br/>
+        화요일 — Anthropic 신규 SDK 정리.
+      </p>
+    </aside>
+
+  </div>
+
+  <footer class="footer-rule">
+    <span>© 2026 Daily AI Digest</span>
+    <span>구독 · 아카이브 · 광고문의</span>
+    <span>NEXT ISSUE — 04.26 SUN</span>
+  </footer>
+
+</div>
+
+<script src="/templates/assets/common.js"></script>
+</body>
+</html>

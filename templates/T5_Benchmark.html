@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>T5 — A vs B 벤치마크</title>
+<link rel="stylesheet" href="/templates/assets/common.css" />
+<style>
+  :root {
+    --accent: #7c3aed;
+    --accent-soft: #f1ecfe;
+    --a-color: #7c3aed;
+    --b-color: #d97706;
+    --maxw: 1180px;
+  }
+  [data-theme="dark"] {
+    --accent: #b39bff;
+    --accent-soft: color-mix(in oklab, #b39bff 16%, #18181a);
+    --a-color: #b39bff;
+    --b-color: #f0b454;
+  }
+  body { font-family: var(--font-sans); }
+  .container { max-width: var(--maxw); margin: 0 auto; padding: 56px 28px 100px; }
+
+  .hero { text-align: center; margin-bottom: 50px; }
+  .hero .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  .hero h1 { font-size: clamp(36px, 5vw, 64px); margin: 0 0 14px; letter-spacing: -.025em; line-height: 1.1; font-weight: 800; }
+  .hero h1 .vs { display: inline-block; padding: 0 .15em; color: var(--ink-3); font-style: italic; font-weight: 400; }
+  .hero .deck { font-size: 18px; color: var(--ink-2); max-width: 640px; margin: 0 auto; line-height: 1.55; }
+  .hero .meta { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); margin-top: 18px; letter-spacing: .04em; }
+
+  .verdict {
+    max-width: 820px; margin: 0 auto 50px;
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 12px;
+    padding: 24px 28px;
+    text-align: center;
+  }
+  .verdict .label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+  .verdict .winner { font-size: 22px; font-weight: 700; margin: 0 0 8px; }
+  .verdict .winner strong { color: var(--accent); }
+  .verdict p { font-size: 15px; color: var(--ink-2); margin: 0; line-height: 1.55; }
+
+  .vs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 50px;
+  }
+  @media (max-width: 720px) { .vs-grid { grid-template-columns: 1fr; } }
+  .vs-col { padding: 28px 26px; }
+  .vs-col.a { background: color-mix(in oklab, var(--a-color) 6%, var(--bg)); border-right: 1px solid var(--line); }
+  .vs-col.b { background: color-mix(in oklab, var(--b-color) 6%, var(--bg)); }
+  @media (max-width: 720px) { .vs-col.a { border-right: 0; border-bottom: 1px solid var(--line); } }
+
+  .tool-mark {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase; font-family: var(--font-mono);
+    margin-bottom: 14px;
+  }
+  .tool-mark .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .vs-col.a .tool-mark .dot { background: var(--a-color); }
+  .vs-col.a .tool-mark { color: var(--a-color); }
+  .vs-col.b .tool-mark .dot { background: var(--b-color); }
+  .vs-col.b .tool-mark { color: var(--b-color); }
+
+  .tool-name { font-size: 28px; font-weight: 700; margin: 0 0 6px; letter-spacing: -.015em; }
+  .tool-tag { font-size: 13px; color: var(--ink-3); margin: 0 0 16px; font-family: var(--font-mono); }
+  .tool-deck { font-size: 14.5px; color: var(--ink-2); line-height: 1.6; margin: 0 0 18px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .stat-row .stat { padding: 12px 8px; border-right: 1px solid var(--line); text-align: center; }
+  .stat-row .stat:last-child { border-right: 0; }
+  .stat-row .v { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+  .stat-row .l { font-size: 10px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; font-family: var(--font-mono); margin-top: 3px; }
+
+  .pc-list { list-style: none; padding: 0; margin: 18px 0 0; }
+  .pc-list li { padding: 6px 0; padding-left: 22px; font-size: 14px; color: var(--ink-2); position: relative; line-height: 1.5; }
+  .pc-list.up li::before { content: "+"; color: var(--accent); position: absolute; left: 0; font-weight: 700; }
+  .pc-list.down li::before { content: "−"; color: #b3261e; position: absolute; left: 0; font-weight: 700; }
+  [data-theme="dark"] .pc-list.down li::before { color: #ff8c80; }
+
+  /* bar comparison */
+  .bench-table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+  .bench-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line-strong); font-weight: 600; }
+  .bench-table th.right { text-align: right; }
+  .bench-table td { padding: 14px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; font-size: 14.5px; }
+  .bench-bar { display: flex; align-items: center; gap: 8px; }
+  .bench-bar .b { height: 8px; border-radius: 4px; min-width: 1px; transition: width .3s ease; }
+  .bench-bar.a .b { background: var(--a-color); }
+  .bench-bar.b .b { background: var(--b-color); }
+  .bench-bar .num { font-family: var(--font-mono); font-size: 13px; color: var(--ink-2); width: 60px; text-align: right; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+  .winner-cell { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; padding: 2px 8px; border-radius: 999px; }
+  .winner-cell.a { background: color-mix(in oklab, var(--a-color) 18%, transparent); color: var(--a-color); }
+  .winner-cell.b { background: color-mix(in oklab, var(--b-color) 18%, transparent); color: var(--b-color); }
+  .winner-cell.tie { background: var(--bg-sub); color: var(--ink-3); }
+
+  h2.section { font-size: 26px; margin: 60px 0 18px; letter-spacing: -.01em; font-weight: 700; padding-bottom: 10px; border-bottom: 2px solid var(--ink); }
+
+  /* feature matrix */
+  .feature-matrix { width: 100%; border-collapse: collapse; }
+  .feature-matrix th, .feature-matrix td { padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 14.5px; vertical-align: top; }
+  .feature-matrix thead th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); border-bottom: 1px solid var(--line-strong); }
+  .feature-matrix th.col-a { color: var(--a-color); }
+  .feature-matrix th.col-b { color: var(--b-color); }
+  .feature-matrix td.cell-y { color: var(--accent); font-weight: 600; }
+  .feature-matrix td.cell-n { color: var(--ink-4); }
+  .feature-matrix td.cell-p { color: var(--ink-2); }
+
+  .scenarios { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0 50px; }
+  @media (max-width: 800px) { .scenarios { grid-template-columns: 1fr; } }
+  .sc-card { border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; background: var(--bg-elev); }
+  .sc-card .sc-h { font-size: 11px; font-family: var(--font-mono); color: var(--ink-3); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
+  .sc-card h4 { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
+  .sc-card p { margin: 0 0 12px; font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+  .sc-card .sc-pick { font-family: var(--font-mono); font-size: 12px; padding: 6px 10px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); display: inline-block; }
+  .sc-card.pick-a .sc-pick { background: color-mix(in oklab, var(--a-color) 16%, transparent); color: var(--a-color); }
+  .sc-card.pick-b .sc-pick { background: color-mix(in oklab, var(--b-color) 16%, transparent); color: var(--b-color); }
+  .sc-card.pick-tie .sc-pick { background: var(--bg-sub); color: var(--ink-2); }
+
+  .gallery-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 30px 0; }
+</style>
+</head>
+<body>
+
+<div class="container" data-search-root>
+
+  <header class="hero">
+    <div class="eyebrow">Benchmark · April 2026</div>
+    <h1>Aurora-7B <span class="vs">vs.</span> Borealis-7B</h1>
+    <p class="deck">동일 가격대의 두 코딩 어시스턴트를, 같은 80문항·같은 평가셋·같은 채점자로 정면 비교했습니다.</p>
+    <div class="meta">테스트: 80 prompts · 4가지 도메인 · 사람·LLM 이중 채점 · 2026.04.20–24</div>
+  </header>
+
+  <div class="verdict">
+    <div class="label">한 줄 결론</div>
+    <p class="winner">평균 점수는 <strong>Aurora-7B</strong>, 비용·지연은 <strong style="color:var(--b-color)">Borealis-7B</strong>.</p>
+    <p>둘을 함께 쓰는 라우팅 시 비용 1/2 · 품질 −2.1%로, 대부분의 팀에는 “라우팅이 정답”에 가까웠습니다.</p>
+  </div>
+
+  <section class="vs-grid" id="profiles">
+    <div class="vs-col a">
+      <div class="tool-mark"><span class="dot"></span> TOOL A</div>
+      <h2 class="tool-name">Aurora-7B</h2>
+      <p class="tool-tag">v2.4 · Aurora Labs · 2026-03</p>
+      <p class="tool-deck">코드·추론에 강점. 도구 호출 정확도가 동급 최고 수준. 단, 지연이 다소 길고 가격이 높다.</p>
+      <div class="stat-row">
+        <div class="stat"><div class="v">$3.0</div><div class="l">/ 1M tok</div></div>
+        <div class="stat"><div class="v">820ms</div><div class="l">first token</div></div>
+        <div class="stat"><div class="v">128K</div><div class="l">context</div></div>
+      </div>
+      <ul class="pc-list up">
+        <li>HumanEval, SWE-bench 모두 동급 최고</li>
+        <li>도구 호출 스키마 준수율 99.1%</li>
+        <li>한국어 코드 주석에서 환각이 가장 적음</li>
+      </ul>
+      <ul class="pc-list down">
+        <li>first-token 지연이 평균 200ms 더 길다</li>
+        <li>가격이 Borealis 대비 2배</li>
+      </ul>
+    </div>
+    <div class="vs-col b">
+      <div class="tool-mark"><span class="dot"></span> TOOL B</div>
+      <h2 class="tool-name">Borealis-7B</h2>
+      <p class="tool-tag">v1.2 · Borealis Inc. · 2026-04</p>
+      <p class="tool-deck">속도와 가격 우위. 단순 분류·요약·SQL 생성에서 충분한 품질을 더 싸고 빠르게 낸다.</p>
+      <div class="stat-row">
+        <div class="stat"><div class="v">$1.5</div><div class="l">/ 1M tok</div></div>
+        <div class="stat"><div class="v">620ms</div><div class="l">first token</div></div>
+        <div class="stat"><div class="v">200K</div><div class="l">context</div></div>
+      </div>
+      <ul class="pc-list up">
+        <li>가격이 절반 · 지연이 짧음</li>
+        <li>긴 컨텍스트(150K+)에서 더 안정적</li>
+        <li>단순 작업 비용 효율이 압도적</li>
+      </ul>
+      <ul class="pc-list down">
+        <li>도구 호출 스키마 일탈이 5.4%</li>
+        <li>멀티스텝 추론에서 점수 격차가 크다</li>
+      </ul>
+    </div>
+  </section>
+
+  <h2 class="section" id="bench">벤치마크 · 8개 지표</h2>
+  <table class="bench-table">
+    <thead>
+      <tr>
+        <th>지표 (높을수록 좋음, ↓는 낮을수록)</th>
+        <th>Aurora-7B</th>
+        <th>Borealis-7B</th>
+        <th class="right">우세</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>HumanEval (pass@1)</td>
+        <td><div class="bench-bar a"><div class="b" style="width: 87%"></div><span class="num">87.0</span></div></td>
+        <td><div class="bench-bar b"><div class="b" style="width: 78%"></div><span class="num">78.0</span></div></td>
+        <td class="right"><span class="winner-cell a">A</span></td>
+      </tr>
+      <tr>
+        <td>SWE-bench Verified</td>
+        <td><div class="bench-bar a"><div class="b" style="width: 54%"></div><span class="num">54.0</span></div></td>
+        <td><div class="bench-bar b"><div class="b" style="width: 38%"></div><span class="num">38.0</span></div></td>
+        <td class="right"><span class="winner-cell a">A</span></td>
+      </tr>
+      <tr>
+        <td>MMLU (5-shot)</td>
+        <td><div class="bench-bar a"><div class="b" style="width: 84%"></div><span class="num">84.2</span></div></td>
+        <td><div class="bench-bar b"><div class="b" style="width: 81%"></div><span class="num">81.4</span></div></td>
+        <td class="right"><span class="winner-cell a">A</span></td>
+      </tr>
+      <tr>
+        <td>도구 호출 스키마 준수율</td>
+        <td><div class="bench-bar a"><div class="b" style="width: 99%"></div><span class="num">99.1</span></div></td>
+        <td><div class="bench-bar b"><div class="b" style="width: 94%"></div><span class="num">94.6</span></div></td>
+        <td class="right"><span class="winner-cell a">A</span></td>
+      </tr>
+      <tr>
+        <td>한국어 사실성 (자체셋)</td>
+        <td><div class="bench-bar a"><div class="b" style="width: 76%"></div><span class="num">76.0</span></div></td>
+        <td><div class="bench-bar b"><div class="b" style="width: 78%"></div><span class="num">78.0</span></div></td>
+        <td class="right"><span class="winner-cell b">B</span></td>
+      </tr>
+      <tr>
+        <td>첫 토큰 지연 ↓ (ms)</td>
+        <td><div class="bench-bar a"><div class="b" style="width: 41%"></div><span class="num">820</span></div></td>
+        <td><div class="bench-bar b"><div class="b" style="width: 31%"></div><span class="num">620</span></div></td>
+        <td class="right"><span class="winner-cell b">B</span></td>
+      </tr>
+      <tr>
+        <td>출력 처리량 (tok/s)</td>
+        <td><div class="bench-bar a"><div class="b" style="width: 60%"></div><span class="num">120</span></div></td>
+        <td><div class="bench-bar b"><div class="b" style="width: 80%"></div><span class="num">160</span></div></td>
+        <td class="right"><span class="winner-cell b">B</span></td>
+      </tr>
+      <tr>
+        <td>$ / 1M 출력 토큰 ↓</td>
+        <td><div class="bench-bar a"><div class="b" style="width: 100%"></div><span class="num">$15.0</span></div></td>
+        <td><div class="bench-bar b"><div class="b" style="width: 50%"></div><span class="num">$7.5</span></div></td>
+        <td class="right"><span class="winner-cell b">B</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="gallery-strip">
+    <figure>
+      <div class="cc-placeholder cc-wide" data-caption="레이더 차트 — 두 도구의 6축 비교">
+        <span class="cc-ph-label">[ CHART 1 ]<br/>레이더 차트 6축</span>
+      </div>
+      <figcaption style="font-size:12px;color:var(--ink-3);margin-top:6px;font-family:var(--font-mono);">FIG.1 · 6축 레이더</figcaption>
+    </figure>
+    <figure>
+      <div class="cc-placeholder cc-wide" data-caption="가격 대비 점수 산점도">
+        <span class="cc-ph-label">[ CHART 2 ]<br/>가격 대비 점수</span>
+      </div>
+      <figcaption style="font-size:12px;color:var(--ink-3);margin-top:6px;font-family:var(--font-mono);">FIG.2 · 가격 vs 점수</figcaption>
+    </figure>
+  </div>
+
+  <h2 class="section" id="features">기능 매트릭스</h2>
+  <table class="feature-matrix">
+    <thead>
+      <tr><th>기능</th><th class="col-a">Aurora-7B</th><th class="col-b">Borealis-7B</th><th>비고</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>스트리밍</td><td class="cell-y">✓</td><td class="cell-y">✓</td><td class="cc-mute">SSE 동일</td></tr>
+      <tr><td>도구 호출 (parallel)</td><td class="cell-y">✓</td><td class="cell-p">제한적</td><td class="cc-mute">B는 동시 호출 ≤ 2</td></tr>
+      <tr><td>비전 입력</td><td class="cell-y">✓</td><td class="cell-n">×</td><td class="cc-mute">A only</td></tr>
+      <tr><td>JSON 모드</td><td class="cell-y">✓</td><td class="cell-y">✓</td><td class="cc-mute"></td></tr>
+      <tr><td>긴 컨텍스트 캐시</td><td class="cell-p">베타</td><td class="cell-y">✓</td><td class="cc-mute">B는 가격 50% 할인</td></tr>
+      <tr><td>온프렘 가능</td><td class="cell-n">×</td><td class="cell-y">✓</td><td class="cc-mute">B는 라이선스 별도</td></tr>
+      <tr><td>SOC2 / ISO27001</td><td class="cell-y">둘 다</td><td class="cell-y">둘 다</td><td class="cc-mute"></td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="section" id="scenarios">상황별 추천</h2>
+  <div class="scenarios">
+    <div class="sc-card pick-a">
+      <div class="sc-h">시나리오 1</div>
+      <h4>코드 자동완성·리팩토링</h4>
+      <p>SWE-bench 16점 차이가 곧 PR 통과율의 차이로 이어졌습니다. 정확도가 곧 비용입니다.</p>
+      <span class="sc-pick">PICK · Aurora-7B</span>
+    </div>
+    <div class="sc-card pick-b">
+      <div class="sc-h">시나리오 2</div>
+      <h4>대용량 로그·문서 요약</h4>
+      <p>200K 컨텍스트 + 가격 절반. 단순 추출·요약에서는 품질 차이를 느끼기 어려웠습니다.</p>
+      <span class="sc-pick">PICK · Borealis-7B</span>
+    </div>
+    <div class="sc-card pick-tie">
+      <div class="sc-h">시나리오 3</div>
+      <h4>고객 응대·상담 어시스턴트</h4>
+      <p>분류 → Borealis, 멀티스텝 추론 → Aurora로 라우팅 시 비용 −48% / 품질 −2.1%.</p>
+      <span class="sc-pick">PICK · 라우팅</span>
+    </div>
+  </div>
+
+  <h2 class="section" id="method">평가 방법</h2>
+  <ul class="cc-checklist" id="t5-method">
+    <li><span>80개 프롬프트 (코드 32 / 추론 16 / 한국어 사실성 16 / 도구 호출 16)</span></li>
+    <li><span>모든 호출은 temperature=0, top_p=1, max_tokens=1024</span></li>
+    <li><span>각 응답은 사람 채점자 2명 + LLM-as-judge로 이중 채점</span></li>
+    <li><span>비용·지연은 같은 IDC 리전, 같은 시간대(KST 14:00–18:00)에 측정</span></li>
+    <li><span>각 모델 동률 시 “선호도 투표”로 결정</span></li>
+  </ul>
+
+  <h2 class="section" id="picks">최종 픽 — 의사결정 가이드</h2>
+  <div class="cc-tldr">
+    <h3>3-step 결정 트리</h3>
+    <ul>
+      <li>① 코드·추론·도구 호출이 핵심? → <strong>Aurora-7B</strong></li>
+      <li>② 비용·지연이 핵심이고 작업이 단순? → <strong>Borealis-7B</strong></li>
+      <li>③ 둘 다? → 라우터로 분기 (대다수 팀의 정답).</li>
+    </ul>
+  </div>
+
+  <h2 class="section" id="glossary">용어 사전</h2>
+  <dl class="cc-glossary">
+    <dt>HumanEval <small>코딩 벤치마크</small></dt>
+    <dd>164개 함수 시그니처를 주고 구현 정확도를 측정. <code class="cc-inline-code">pass@1</code>은 한 번에 맞힐 확률.</dd>
+    <dt>SWE-bench <small>실세계 코딩</small></dt>
+    <dd>실제 GitHub 이슈를 LLM이 패치로 닫는 비율을 측정. 코드 어시스턴트의 진짜 시험대.</dd>
+    <dt>라우팅 <small>routing</small></dt>
+    <dd>요청을 분류해 적합한 모델로 분기. 비용·지연·품질의 3축에서 가장 큰 효율 개선을 주는 패턴.</dd>
+  </dl>
+
+</div>
+
+<script src="/templates/assets/common.js"></script>
+</body>
+</html>

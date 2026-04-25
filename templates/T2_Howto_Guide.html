@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>T2 — AI 도구 How-to 가이드</title>
+<link rel="stylesheet" href="/templates/assets/common.css" />
+<style>
+  :root {
+    --accent: #4f46e5;
+    --accent-soft: #eef0fe;
+  }
+  [data-theme="dark"] {
+    --accent: #8a85ff;
+    --accent-soft: color-mix(in oklab, #8a85ff 18%, #18181a);
+  }
+  body { font-family: var(--font-sans); }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 0;
+    min-height: 100vh;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .toc-wrap { position: relative !important; height: auto !important; border-right: 0 !important; border-bottom: 1px solid var(--line); } }
+
+  .toc-wrap {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    border-right: 1px solid var(--line);
+    padding: 28px 22px 28px 28px;
+    background: var(--bg);
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 22px;
+  }
+  .brand-mark {
+    width: 24px; height: 24px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .brand-name { font-size: 14px; font-weight: 600; }
+  .brand-sub { font-size: 11px; color: var(--ink-3); font-family: var(--font-mono); letter-spacing: .04em; }
+
+  .toc-search {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--ink-3);
+    font-size: 13px;
+    margin-bottom: 22px;
+    background: var(--bg-elev);
+  }
+  .toc-search kbd {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    background: var(--bg-sub);
+    padding: 1px 5px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+  }
+
+  .toc h4 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ink-3);
+    margin: 22px 0 8px;
+    font-weight: 600;
+  }
+  .toc ul { list-style: none; padding: 0; margin: 0; }
+  .toc li { margin: 0; }
+  .toc a {
+    display: block;
+    padding: 5px 10px;
+    color: var(--ink-2);
+    font-size: 13.5px;
+    border-radius: 5px;
+    border-left: 2px solid transparent;
+    line-height: 1.4;
+  }
+  .toc a:hover { background: var(--bg-sub); text-decoration: none; }
+  .toc a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: var(--accent-soft);
+    font-weight: 600;
+  }
+  .toc .toc-l3 { padding-left: 22px; font-size: 12.5px; color: var(--ink-3); }
+
+  .content {
+    padding: 56px clamp(24px, 6vw, 80px) 120px;
+    max-width: 820px;
+  }
+
+  .doc-header { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+  .doc-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    margin-bottom: 8px;
+  }
+  .doc-eyebrow::before {
+    content: ""; width: 8px; height: 8px; border-radius: 999px; background: var(--accent);
+  }
+  .doc-title { font-size: clamp(30px, 4vw, 44px); margin: 0 0 10px; letter-spacing: -.02em; line-height: 1.15; font-weight: 700; }
+  .doc-deck { color: var(--ink-2); font-size: 18px; margin: 0; line-height: 1.5; max-width: 640px; }
+  .doc-meta {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    margin-top: 18px;
+    font-size: 13px; color: var(--ink-3);
+    font-family: var(--font-mono);
+  }
+  .doc-meta strong { color: var(--ink-2); font-weight: 500; }
+
+  h2.section { font-size: 26px; margin: 60px 0 16px; letter-spacing: -.01em; scroll-margin-top: 24px; font-weight: 700; }
+  h3.subsection { font-size: 18px; margin: 36px 0 10px; letter-spacing: -.005em; scroll-margin-top: 24px; font-weight: 600; }
+
+  .step {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 16px;
+    margin: 22px 0;
+  }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    font-family: var(--font-mono);
+    margin-top: 2px;
+  }
+  .step h4 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+  .step p { margin: 4px 0; color: var(--ink-2); font-size: 15px; line-height: 1.6; }
+
+  .callout {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    background: var(--bg-elev);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 14.5px;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+  .callout-tag { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; display: block; font-family: var(--font-mono); }
+  .callout.warn { border-left-color: #d97706; }
+  .callout.warn .callout-tag { color: #d97706; }
+
+  .kbd-row { display: inline-flex; gap: 4px; align-items: center; }
+  .kbd { font-family: var(--font-mono); font-size: 11px; padding: 2px 6px; border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 4px; background: var(--bg-elev); color: var(--ink-2); }
+
+  .gallery-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 22px 0; }
+  @media (max-width: 600px) { .gallery-2 { grid-template-columns: 1fr; } }
+
+  .pager {
+    display: flex; justify-content: space-between; gap: 14px; margin-top: 60px;
+    padding-top: 24px; border-top: 1px solid var(--line);
+  }
+  .pager a {
+    flex: 1;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    background: var(--bg-elev);
+  }
+  .pager a:hover { border-color: var(--accent); text-decoration: none; }
+  .pager .label { font-size: 11px; color: var(--ink-3); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .08em; }
+  .pager .title { font-weight: 600; margin-top: 4px; }
+  .pager .next { text-align: right; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <aside class="toc-wrap">
+    <div class="brand">
+      <span class="brand-mark">/</span>
+      <div>
+        <div class="brand-name">AI Toolkit Guides</div>
+        <div class="brand-sub">v2026.04 · how-to series</div>
+      </div>
+    </div>
+
+    <div class="toc-search" onclick="window.CC && window.CC.openSearch()">
+      🔍 검색…
+      <kbd>⌘K</kbd>
+    </div>
+
+    <nav class="toc">
+      <h4>시작하기</h4>
+      <ul>
+        <li><a href="#overview" class="active">개요</a></li>
+        <li><a href="#prereq">사전 준비</a></li>
+        <li><a href="#install">설치 및 인증</a></li>
+      </ul>
+      <h4>핵심 워크플로우</h4>
+      <ul>
+        <li><a href="#first-call">첫 호출</a></li>
+        <li><a href="#prompting">프롬프트 작성법</a></li>
+        <li><a href="#streaming" class="toc-l3">스트리밍 응답</a></li>
+        <li><a href="#tools" class="toc-l3">도구 호출(Tool use)</a></li>
+        <li><a href="#cost">비용 최적화</a></li>
+      </ul>
+      <h4>실전 레시피</h4>
+      <ul>
+        <li><a href="#recipe-rag">RAG 파이프라인</a></li>
+        <li><a href="#recipe-eval">평가셋 만들기</a></li>
+      </ul>
+      <h4>참고</h4>
+      <ul>
+        <li><a href="#troubleshoot">문제 해결</a></li>
+        <li><a href="#glossary">용어 사전</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="content" data-search-root>
+
+    <header class="doc-header">
+      <div class="doc-eyebrow">How-to · 30분 코스</div>
+      <h1 class="doc-title">처음 만나는 LLM API — 0에서 프로덕션까지</h1>
+      <p class="doc-deck">계정 생성부터 첫 호출, 스트리밍, 도구 호출, 그리고 비용 최적화까지. 한 페이지로 끝내는 입문 가이드.</p>
+      <div class="doc-meta">
+        <span><strong>난이도</strong> · 입문</span>
+        <span><strong>읽기</strong> · 18분</span>
+        <span><strong>업데이트</strong> · 2026.04.25</span>
+        <span><strong>코드</strong> · Python / TypeScript</span>
+      </div>
+    </header>
+
+    <section id="overview">
+      <h2 class="section">개요</h2>
+      <p>이 문서는 LLM API를 처음 다루는 개발자를 위한 핸즈온 가이드입니다. 마지막에 도달하면 다음을 할 수 있습니다.</p>
+      <ul class="cc-checklist" id="t2-goals">
+        <li><span>API 키를 안전하게 발급·보관한다</span></li>
+        <li><span>SDK로 첫 응답을 받고 스트리밍을 켠다</span></li>
+        <li><span>도구 호출(tool use)로 외부 함수를 연결한다</span></li>
+        <li><span>토큰 단가를 보고 월 비용을 추산한다</span></li>
+        <li><span>RAG 한 줄 파이프라인을 만든다</span></li>
+      </ul>
+
+      <div class="cc-tldr">
+        <h3>TL;DR</h3>
+        <p>
+          ① <code class="cc-inline-code">pip install</code> → ② 환경변수에 키 등록 → ③ 5줄짜리 첫 호출 → ④ 스트리밍 켜기 → ⑤ 평가셋으로 검증.
+          기본기를 잡는 데 30분이면 충분합니다.
+        </p>
+      </div>
+    </section>
+
+    <section id="prereq">
+      <h2 class="section">사전 준비</h2>
+      <p>
+        본 가이드는 Python 3.10+ 또는 Node 20+ 환경을 가정합니다. 신용카드는 결제 등록만 하고, 실 사용은 무료 크레딧 안에서 끝납니다.
+      </p>
+      <table class="cc-table">
+        <thead>
+          <tr><th>항목</th><th>요구 버전</th><th>비고</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Python</td><td>3.10 이상</td><td>3.12 권장</td></tr>
+          <tr><td>Node.js</td><td>20 LTS</td><td>fetch 내장 사용</td></tr>
+          <tr><td>API 크레딧</td><td>$5 무료</td><td>본 가이드는 ~$0.4 소모</td></tr>
+          <tr><td>OS</td><td>macOS / Linux / WSL</td><td>Windows 네이티브 가능</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="install">
+      <h2 class="section">설치 및 인증</h2>
+      <p>키 발급은 콘솔의 <strong>API Keys → New Key</strong>에서 합니다. 발급된 값은 한 번만 보이므로, 비밀 저장소에 즉시 옮깁니다.</p>
+
+      <div class="callout warn">
+        <span class="callout-tag">주의 · 키 노출 금지</span>
+        깃 리포지토리, 클라이언트 사이드 JS, 공유 노트에 키를 직접 넣지 마세요. 환경 변수 또는 시크릿 매니저를 사용하세요.
+      </div>
+
+      <h3 class="subsection">Python</h3>
+      <div class="cc-code"><pre>pip install ai-sdk
+export AI_API_KEY="sk-..."</pre></div>
+
+      <h3 class="subsection">TypeScript</h3>
+      <div class="cc-code"><pre>npm install ai-sdk
+echo 'AI_API_KEY=sk-...' &gt;&gt; .env</pre></div>
+    </section>
+
+    <section id="first-call">
+      <h2 class="section">첫 호출</h2>
+      <p>아래는 가장 작은 단위의 호출입니다. 클라이언트를 만들고, 메시지를 보내고, 응답 텍스트를 꺼냅니다.</p>
+
+      <div class="cc-code"><pre>from ai_sdk import Client
+
+client = Client()  # 환경변수에서 키 자동 인식
+resp = client.chat.create(
+    model="model-mini",
+    messages=[{"role": "user", "content": "안녕, 한 줄로 자기소개해."}],
+)
+print(resp.text)</pre></div>
+
+      <div class="step">
+        <span class="step-num">1</span>
+        <div>
+          <h4>모델을 고른다</h4>
+          <p><code class="cc-inline-code">model-mini</code>는 빠르고 저렴합니다. 깊은 추론이 필요하면 <code class="cc-inline-code">model-pro</code>로 바꾸세요.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">2</span>
+        <div>
+          <h4>메시지 배열을 만든다</h4>
+          <p>역할(role)과 내용(content)을 가진 객체들의 리스트입니다. <code class="cc-inline-code">system</code>으로 페르소나를 고정할 수 있습니다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <div>
+          <h4>응답을 파싱한다</h4>
+          <p><code class="cc-inline-code">resp.text</code>는 평탄화된 텍스트, <code class="cc-inline-code">resp.choices[0]</code>는 원본 객체.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="prompting">
+      <h2 class="section">프롬프트 작성법</h2>
+      <p>
+        “좋은 프롬프트”의 90%는 구조에서 나옵니다. <strong>역할 → 작업 → 입력 → 출력 형식</strong>의 4-구획을 지키세요.
+      </p>
+
+      <figure>
+        <div class="cc-placeholder cc-wide" data-caption="프롬프트 4-구획 구조 도식 — 역할/작업/입력/출력">
+          <span class="cc-ph-label">[ 도식 ]<br/>프롬프트 4-구획 구조<br/>(역할 → 작업 → 입력 → 출력 형식)</span>
+        </div>
+        <figcaption style="font-size:12px;color:var(--ink-3);margin-top:6px;font-family:var(--font-mono);">FIG.1 · 프롬프트 4-구획 구조</figcaption>
+      </figure>
+
+      <h3 class="subsection" id="streaming">스트리밍 응답</h3>
+      <p>대화형 UI에서는 첫 토큰까지의 지연을 줄이는 것이 핵심입니다.</p>
+      <div class="cc-code"><pre>for chunk in client.chat.stream(model="model-mini", messages=msgs):
+    print(chunk.delta, end="", flush=True)</pre></div>
+
+      <h3 class="subsection" id="tools">도구 호출 (Tool use)</h3>
+      <p>모델이 직접 함수를 호출하도록 시키려면 JSON 스키마로 도구를 선언합니다.</p>
+      <div class="cc-code"><pre>tools = [{
+  "name": "get_weather",
+  "description": "도시의 현재 날씨",
+  "input_schema": {
+    "type": "object",
+    "properties": {"city": {"type": "string"}},
+    "required": ["city"],
+  },
+}]
+resp = client.chat.create(model="model-pro", messages=msgs, tools=tools)</pre></div>
+    </section>
+
+    <section id="cost">
+      <h2 class="section">비용 최적화</h2>
+      <p>토큰 = 돈. 다음 표는 대표 모델의 1M 토큰당 단가입니다(2026-04 기준).</p>
+      <table class="cc-table">
+        <thead><tr><th>모델</th><th>입력 / 1M</th><th>출력 / 1M</th><th>특징</th></tr></thead>
+        <tbody>
+          <tr><td>model-mini</td><td>$0.15</td><td>$0.60</td><td class="cc-mute">빠름·라이트 작업</td></tr>
+          <tr><td>model-base</td><td>$1.00</td><td>$3.00</td><td class="cc-mute">균형</td></tr>
+          <tr><td class="cc-best">model-pro</td><td class="cc-best">$3.00</td><td class="cc-best">$15.00</td><td>심층 추론·도구 호출</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <span class="callout-tag">경험칙</span>
+        분류·요약은 <strong>mini</strong>, 멀티스텝 추론과 도구 호출은 <strong>pro</strong>. 둘을 함께 쓰는 라우팅이 비용 대비 효과가 가장 좋습니다.
+      </div>
+    </section>
+
+    <section id="recipe-rag">
+      <h2 class="section">레시피 — RAG 한 줄 파이프라인</h2>
+      <p>문서를 임베딩하고, 질문 시 가장 가까운 K개를 가져와 프롬프트에 끼워 넣는 가장 작은 RAG입니다.</p>
+      <div class="cc-code"><pre>docs = [open(p).read() for p in glob("docs/*.md")]
+emb = client.embed(texts=docs, model="embed-3")
+def answer(q):
+    q_emb = client.embed(texts=[q], model="embed-3")[0]
+    top = topk(q_emb, emb, docs, k=4)
+    ctx = "\n\n".join(top)
+    return client.chat.create(model="model-base",
+        messages=[{"role":"system","content":f"근거:\n{ctx}"},
+                  {"role":"user","content":q}]).text</pre></div>
+
+      <div class="gallery-2">
+        <figure>
+          <div class="cc-placeholder" data-caption="RAG 파이프라인 다이어그램">
+            <span class="cc-ph-label">[ 다이어그램 ]<br/>RAG 흐름</span>
+          </div>
+          <figcaption style="font-size:12px;color:var(--ink-3);margin-top:6px;font-family:var(--font-mono);">FIG.2 · RAG 흐름</figcaption>
+        </figure>
+        <figure>
+          <div class="cc-placeholder" data-caption="검색 정확도와 K 값의 관계">
+            <span class="cc-ph-label">[ 차트 ]<br/>검색 정확도 vs K</span>
+          </div>
+          <figcaption style="font-size:12px;color:var(--ink-3);margin-top:6px;font-family:var(--font-mono);">FIG.3 · K 값 영향</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="recipe-eval">
+      <h2 class="section">레시피 — 평가셋 만들기</h2>
+      <p>50개의 입력·기대출력 쌍을 만들고, 각 모델의 응답을 사람·LLM 둘 다로 채점합니다. 회귀 방지의 시작.</p>
+      <table class="cc-table">
+        <thead><tr><th>케이스</th><th>입력 요지</th><th>기대 출력 형식</th><th>난이도</th></tr></thead>
+        <tbody>
+          <tr><td>EVAL-001</td><td>약관에서 해지 조항 추출</td><td>JSON {clause, page}</td><td>쉬움</td></tr>
+          <tr><td>EVAL-014</td><td>두 의견의 충돌점 요약</td><td>마크다운 3줄</td><td>중간</td></tr>
+          <tr><td>EVAL-027</td><td>SQL → 자연어 설명</td><td>한 단락</td><td>중간</td></tr>
+          <tr><td>EVAL-049</td><td>모순 탐지</td><td>boolean + 근거</td><td>어려움</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="troubleshoot">
+      <h2 class="section">문제 해결</h2>
+      <dl class="cc-glossary">
+        <dt>401 Unauthorized <small>인증 실패</small></dt>
+        <dd>키 환경변수 누락 또는 만료. <span class="kbd-row"><span class="kbd">echo $AI_API_KEY</span></span>로 확인.</dd>
+        <dt>429 Rate Limited <small>속도 제한</small></dt>
+        <dd>분당 요청 또는 토큰 한도 초과. 지수 백오프로 재시도하거나 티어를 올리세요.</dd>
+        <dt>맥락 길이 초과 <small>context length exceeded</small></dt>
+        <dd>입력+출력 합이 모델의 컨텍스트 한도를 넘음. 청크 분할 또는 long-context 모델로 전환.</dd>
+      </dl>
+    </section>
+
+    <section id="glossary">
+      <h2 class="section">용어 사전</h2>
+      <dl class="cc-glossary">
+        <dt>토큰 <small>token</small></dt>
+        <dd>모델이 텍스트를 다루는 최소 단위. 영어 ~4자, 한국어 ~1.5자/토큰.</dd>
+        <dt>스트리밍 <small>streaming</small></dt>
+        <dd>완성을 기다리지 않고 토큰이 생성되는 즉시 클라이언트로 흘려보내는 응답 모드.</dd>
+        <dt>도구 호출 <small>tool / function calling</small></dt>
+        <dd>모델이 사용자 함수를 직접 호출하도록 스키마로 선언하는 기능.</dd>
+        <dt>임베딩 <small>embedding</small></dt>
+        <dd>텍스트를 고정 길이 벡터로 변환한 표현. 의미적 유사도 계산에 사용.</dd>
+      </dl>
+    </section>
+
+    <nav class="pager">
+      <a href="#"><div class="label">← 이전</div><div class="title">설치 가이드 모음</div></a>
+      <a href="#" class="next"><div class="label">다음 →</div><div class="title">에이전트 만들기</div></a>
+    </nav>
+
+  </main>
+</div>
+
+<script>
+  // active TOC highlighting
+  (function() {
+    const links = Array.from(document.querySelectorAll(".toc a"));
+    const sections = links.map(a => document.querySelector(a.getAttribute("href"))).filter(Boolean);
+    function onScroll() {
+      let active = sections[0];
+      const y = window.scrollY + 120;
+      for (const s of sections) { if (s.offsetTop <= y) active = s; }
+      links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + active.id));
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+<script src="/templates/assets/common.js"></script>
+</body>
+</html>

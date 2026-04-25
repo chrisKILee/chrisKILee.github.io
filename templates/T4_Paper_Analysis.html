@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>T4 — Model & Paper Analysis</title>
+<link rel="stylesheet" href="/templates/assets/common.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --accent: #0f766e;
+    --accent-soft: #e3f1ef;
+    --maxw: 880px;
+  }
+  [data-theme="dark"] {
+    --accent: #5fd0c2;
+    --accent-soft: color-mix(in oklab, #5fd0c2 16%, #18181a);
+  }
+  body { font-family: var(--font-serif); }
+
+  .container { max-width: var(--maxw); margin: 0 auto; padding: 64px 28px 100px; }
+
+  .paper-head { border-bottom: 1px solid var(--ink); padding-bottom: 28px; margin-bottom: 36px; }
+  .paper-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; color: var(--accent); text-transform: uppercase; margin-bottom: 14px; }
+  .paper-title { font-family: var(--font-serif); font-weight: 700; font-size: clamp(28px, 4vw, 44px); line-height: 1.18; letter-spacing: -.015em; margin: 0 0 14px; }
+  .paper-authors { font-size: 15px; color: var(--ink-2); margin: 0 0 6px; line-height: 1.5; }
+  .paper-authors sup { color: var(--accent); font-size: 0.75em; }
+  .paper-affil { font-size: 12px; color: var(--ink-3); font-family: var(--font-mono); }
+  .paper-meta { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 16px; font-size: 12px; font-family: var(--font-mono); color: var(--ink-3); }
+  .paper-meta strong { color: var(--accent); font-weight: 600; }
+
+  .abstract {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 20px 24px;
+    margin: 0 0 30px;
+    font-size: 15.5px;
+    line-height: 1.7;
+    color: var(--ink-2);
+    border-radius: 4px;
+  }
+  .abstract h3 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; color: var(--accent); text-transform: uppercase; margin: 0 0 8px; font-weight: 700; }
+
+  .twocol { display: grid; grid-template-columns: 200px 1fr; gap: 28px; align-items: flex-start; }
+  @media (max-width: 720px) { .twocol { grid-template-columns: 1fr; } }
+  .twocol .lab { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); padding-top: 4px; }
+
+  h2.s { font-family: var(--font-serif); font-size: 24px; font-weight: 700; margin: 50px 0 14px; letter-spacing: -.005em; padding-bottom: 8px; border-bottom: 1px solid var(--line); scroll-margin-top: 24px; }
+  h3.ss { font-family: var(--font-serif); font-size: 18px; font-weight: 700; margin: 28px 0 8px; }
+
+  p { font-size: 17px; line-height: 1.78; color: var(--ink); margin: 0 0 16px; }
+  p .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+  .eq {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin: 18px 0;
+    color: var(--ink);
+    overflow-x: auto;
+    text-align: center;
+    line-height: 1.8;
+  }
+  .eq .label { float: right; color: var(--ink-3); font-size: 12px; }
+
+  .figure-caption { font-size: 13px; color: var(--ink-3); font-family: var(--font-sans); margin-top: 8px; line-height: 1.55; }
+  .figure-caption strong { color: var(--ink-2); font-weight: 600; }
+
+  .results-table .cc-best { color: var(--accent); }
+
+  .takeaways {
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 18px 22px;
+    margin: 30px 0;
+  }
+  .takeaways h3 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; color: var(--accent); text-transform: uppercase; margin: 0 0 10px; font-weight: 700; }
+  .takeaways ol { margin: 0; padding-left: 20px; }
+  .takeaways li { margin: 6px 0; font-size: 15px; color: var(--ink-2); line-height: 1.55; }
+
+  .cite-box { font-family: var(--font-mono); font-size: 12px; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 6px; padding: 14px; color: var(--ink-2); position: relative; margin: 16px 0; line-height: 1.55; white-space: pre-wrap; }
+
+  .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0; }
+  @media (max-width: 600px) { .pros-cons { grid-template-columns: 1fr; } }
+  .pc-card { border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; background: var(--bg-elev); }
+  .pc-card h4 { margin: 0 0 8px; font-size: 13px; font-family: var(--font-mono); letter-spacing: .1em; text-transform: uppercase; }
+  .pc-card.up h4 { color: var(--accent); }
+  .pc-card.down h4 { color: #b3261e; }
+  [data-theme="dark"] .pc-card.down h4 { color: #ff8c80; }
+  .pc-card ul { margin: 0; padding-left: 18px; font-size: 14.5px; color: var(--ink-2); line-height: 1.6; font-family: var(--font-sans); }
+
+  .footnote-list { font-size: 13px; color: var(--ink-3); padding-left: 18px; font-family: var(--font-sans); line-height: 1.65; }
+  .footnote-list li { margin: 4px 0; }
+</style>
+</head>
+<body>
+
+<div class="container" data-search-root>
+
+  <header class="paper-head">
+    <div class="paper-tag">Paper analysis · LLM efficiency · 2026</div>
+    <h1 class="paper-title">RingAttention v3: 200K 토큰 컨텍스트에서의 perplexity-효율 한계 재검토</h1>
+    <p class="paper-authors">
+      A. Rho<sup>1,2</sup>, M. Tanaka<sup>1</sup>, S. Patel<sup>3</sup>, J. Kim<sup>2</sup>
+    </p>
+    <p class="paper-affil"><sup>1</sup>Riverlab AI · <sup>2</sup>Seoul Tech University · <sup>3</sup>Independent</p>
+    <div class="paper-meta">
+      <span><strong>arXiv</strong> 2604.01829v1</span>
+      <span><strong>읽기</strong> 12분</span>
+      <span><strong>난이도</strong> 중상</span>
+      <span><strong>코드</strong> github.com/riverlab/ringattn-v3</span>
+      <span><a href="#" data-copy="https://arxiv.org/abs/2604.01829">링크 복사</a></span>
+    </div>
+  </header>
+
+  <div class="abstract">
+    <h3>Abstract — 한 단락 요약</h3>
+    본 연구는 200K 토큰 영역에서 RingAttention의 메모리·연산 트레이드오프를 재검토하고,
+    KV-cache 분산 전략과 토큰 그룹핑을 결합한 v3을 제안한다.
+    동일 GPU 클러스터에서 v2 대비 perplexity는 평균 8.4% 개선되었고, 실측 wall-clock은 1.7배 빨라졌다.
+    저자들은 long-context 학습이 “모델 크기”가 아니라 “주의(attention) 스케줄링”의 문제로 환원될 수 있다고 주장한다.
+  </div>
+
+  <div class="twocol">
+    <div class="lab">큐레이터 노트</div>
+    <div>
+      <p>
+        이 논문이 흥미로운 이유는 결과보다 <strong>전제의 전환</strong>에 있다. “더 큰 모델이 답”이라는 디폴트가 아닌, “어텐션 스케줄링이 답”이라는 가설을 본격적으로 측정해 본 첫 작업으로 보아도 무방하다.
+      </p>
+      <p>
+        한 줄로 정리하면, 같은 H100 16장을 가진 두 팀에게 “모델을 키우지 말고 어텐션을 더 잘 분할하라”는 새로운 선택지를 준 셈이다.
+      </p>
+    </div>
+  </div>
+
+  <div class="cc-tldr">
+    <h3>3-bullet TL;DR</h3>
+    <ul>
+      <li><strong>What.</strong> 200K 컨텍스트에서 KV-cache를 토큰 그룹 단위로 분산.</li>
+      <li><strong>Why it matters.</strong> 모델을 키우지 않고도 long-context perplexity가 개선됨.</li>
+      <li><strong>Caveat.</strong> 16-노드 미만 클러스터에서는 v2와 격차가 크지 않다.</li>
+    </ul>
+  </div>
+
+  <h2 class="s" id="problem">1. 문제 설정</h2>
+  <p>
+    long-context 학습의 기본 비용 함수는 <em>O(n²)</em>의 self-attention 항이 지배한다. 기존 RingAttention(v1, v2)은 토큰을 노드에 라운드로빈으로 분배하지만, KV-cache 재사용 패턴이 비균질해지면 통신 오버헤드가 다시 커지는 문제가 보고되어 왔다.
+  </p>
+  <div class="eq">
+    L<sub>total</sub> &nbsp;=&nbsp; L<sub>compute</sub> &nbsp;+&nbsp; α · L<sub>comm</sub>(KV) &nbsp;+&nbsp; β · L<sub>idle</sub>
+    <span class="label">(1)</span>
+  </div>
+
+  <h2 class="s" id="method">2. 방법 — RingAttention v3</h2>
+  <p>
+    저자들의 핵심 아이디어는 두 가지다.
+    (a) <strong>토큰 그룹핑</strong>: 토큰을 의미 유사도가 아니라 <em>접근 패턴 유사도</em>로 묶는다.
+    (b) <strong>KV-cache shard 재맵핑</strong>: 각 그룹의 첫 접근 시점에 KV shard를 노드에 고정 핀(pin)한다.
+  </p>
+
+  <figure>
+    <div class="cc-placeholder cc-wide" data-caption="Figure 1 — RingAttention v3 아키텍처 다이어그램">
+      <span class="cc-ph-label">[ FIG.1 ]<br/>RingAttention v3 아키텍처<br/>(토큰 그룹핑 + KV-cache pin)</span>
+    </div>
+    <p class="figure-caption"><strong>Figure 1.</strong> v2 대비 v3의 KV-shard 재맵핑 단계가 노드 간 통신 라운드를 평균 41% 줄인다.</p>
+  </figure>
+
+  <h3 class="ss">2.1 토큰 그룹핑</h3>
+  <p>
+    그룹은 슬라이딩 윈도우로 정해지며, 각 그룹의 hash는 KV 접근 빈도 통계로부터 추정된다. 학습 초반 200 step 동안 통계를 수집한 뒤 그룹 정의를 갱신한다.
+  </p>
+
+  <h3 class="ss">2.2 손실 함수</h3>
+  <div class="eq">
+    L &nbsp;=&nbsp; L<sub>LM</sub> &nbsp;+&nbsp; λ · KL(q<sub>group</sub> ‖ p<sub>access</sub>)
+    <span class="label">(2)</span>
+  </div>
+
+  <h2 class="s" id="results">3. 실험 결과</h2>
+  <table class="cc-table results-table">
+    <thead><tr><th>모델 / 방법</th><th>Params</th><th>Ctx</th><th>PPL ↓</th><th>Wall-time ↓</th></tr></thead>
+    <tbody>
+      <tr><td>Baseline (v1)</td><td>7B</td><td>32K</td><td>3.84</td><td>1.00×</td></tr>
+      <tr><td>RingAttn v2</td><td>7B</td><td>200K</td><td>3.21</td><td>2.40×</td></tr>
+      <tr><td><strong>RingAttn v3 (ours)</strong></td><td>7B</td><td>200K</td><td class="cc-best"><strong>2.94</strong></td><td class="cc-best"><strong>1.41×</strong></td></tr>
+      <tr><td>+ FlashAttn-3 hybrid</td><td>7B</td><td>200K</td><td class="cc-best">2.91</td><td class="cc-best">1.32×</td></tr>
+    </tbody>
+  </table>
+  <p class="figure-caption"><strong>Table 1.</strong> 동일 H100 16-노드. Wall-time은 v1 = 1.00× 정규화. PPL은 PG-19 long subset.</p>
+
+  <figure style="margin-top:24px;">
+    <div class="cc-placeholder" data-caption="Figure 2 — perplexity vs context length">
+      <span class="cc-ph-label">[ FIG.2 ]<br/>PPL vs Context length<br/>(v1 / v2 / v3)</span>
+    </div>
+    <p class="figure-caption"><strong>Figure 2.</strong> 컨텍스트 길이가 증가해도 v3은 perplexity 곡선의 기울기가 완만하다.</p>
+  </figure>
+
+  <h2 class="s" id="evaluation">4. 비판적 평가</h2>
+  <div class="pros-cons">
+    <div class="pc-card up">
+      <h4>강점</h4>
+      <ul>
+        <li>모델 크기를 늘리지 않고 long-context 성능을 견인.</li>
+        <li>코드가 공개되어 있고, 의존성이 명확.</li>
+        <li>KV-cache 재맵핑은 다른 백본에 직접 이식 가능해 보인다.</li>
+      </ul>
+    </div>
+    <div class="pc-card down">
+      <h4>한계</h4>
+      <ul>
+        <li>16-노드 미만에서는 v2와 차이가 작다 (Appendix C).</li>
+        <li>그룹핑 통계 수집 200 step의 cold-start 비용이 누락되어 있다.</li>
+        <li>도메인 코퍼스(PG-19) 외 일반화 실험이 부족하다.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cc-quote">
+    핵심은 “더 큰 모델”이 아니라 “더 잘 분할된 어텐션”이라는 것을 정량적으로 보였다. 단, 그 효과는 일정 규모의 클러스터에서만 의미가 있다.
+    <cite>큐레이터의 한 줄</cite>
+  </div>
+
+  <h2 class="s" id="reproduce">5. 재현 노트</h2>
+  <p>아래는 저자 공개 코드 기준의 최소 재현 명령이다.</p>
+  <div class="cc-code"><pre>git clone https://github.com/riverlab/ringattn-v3
+cd ringattn-v3
+pip install -e ".[train]"
+torchrun --nproc-per-node=8 train.py --config configs/ring_v3_7b.yaml \
+  --ctx 200000 --grad-accum 8 --precision bf16</pre></div>
+
+  <div class="takeaways">
+    <h3>실무 시사점 — 5가지</h3>
+    <ol>
+      <li>long-context는 “모델 키우기”가 아니라 “스케줄링”의 문제로 재정의되는 중.</li>
+      <li>KV-cache 핀은 추론 서빙 단의 RingAttention에도 이식 시도해 볼 가치가 있다.</li>
+      <li>16-노드 미만 환경에서는 v2 유지가 합리적이다.</li>
+      <li>도메인 코퍼스 일반화는 자체 평가셋으로 추가 검증 필요.</li>
+      <li>cold-start 200 step은 SLA 시뮬레이션에 반드시 포함시켜야 한다.</li>
+    </ol>
+  </div>
+
+  <h2 class="s" id="glossary">부록 — 용어 사전</h2>
+  <dl class="cc-glossary">
+    <dt>Perplexity (PPL) <small>혼란도</small></dt>
+    <dd>언어모델이 다음 토큰을 얼마나 잘 예측하는지의 척도. 낮을수록 좋다.</dd>
+    <dt>KV-cache <small>키·값 캐시</small></dt>
+    <dd>self-attention 계산 시 재사용되는 키·값 텐서. long-context의 메모리 병목.</dd>
+    <dt>RingAttention <small>링 어텐션</small></dt>
+    <dd>토큰을 노드에 분배하고 KV를 링 토폴로지로 순환시키는 분산 어텐션 알고리즘.</dd>
+    <dt>FlashAttention <small>플래시 어텐션</small></dt>
+    <dd>메모리 IO를 줄여 self-attention의 실제 연산 시간을 단축하는 커널.</dd>
+  </dl>
+
+  <h2 class="s" id="cite">인용 (BibTeX)</h2>
+  <div class="cc-code cite-box"><pre>@misc{rho2026ringattention3,
+  title={RingAttention v3: Revisiting Perplexity-Efficiency Limits at 200K Context},
+  author={Rho, A. and Tanaka, M. and Patel, S. and Kim, J.},
+  year={2026},
+  eprint={2604.01829},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG}
+}</pre></div>
+
+  <h2 class="s" id="refs">참고 문헌 (선별)</h2>
+  <ol class="footnote-list">
+    <li>Liu et al., RingAttention v1, NeurIPS 2024.</li>
+    <li>Tanaka, RingAttention v2: balancing comm and compute, ICLR 2025.</li>
+    <li>Dao et al., FlashAttention-3, 2025.</li>
+    <li>Anthropic, On long-context evaluations, technical report, 2025.</li>
+  </ol>
+
+</div>
+
+<script src="/templates/assets/common.js"></script>
+</body>
+</html>

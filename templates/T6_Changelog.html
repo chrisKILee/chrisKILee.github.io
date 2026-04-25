@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>T6 — Changelog & Release Notes</title>
+<link rel="stylesheet" href="/templates/assets/common.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --accent: #16a34a;
+    --accent-soft: #e6f4ea;
+    --maxw: 980px;
+    --c-add: #16a34a;
+    --c-fix: #2563eb;
+    --c-chg: #d97706;
+    --c-rm:  #b91c1c;
+    --c-sec: #7c3aed;
+  }
+  [data-theme="dark"] {
+    --accent: #7ee29b;
+    --accent-soft: color-mix(in oklab, #7ee29b 16%, #18181a);
+    --c-add: #7ee29b;
+    --c-fix: #7aa2ff;
+    --c-chg: #f0b454;
+    --c-rm:  #ff8c80;
+    --c-sec: #b39bff;
+  }
+  body { font-family: var(--font-mono); }
+  .container { max-width: var(--maxw); margin: 0 auto; padding: 36px 28px 100px; }
+
+  /* terminal-ish header */
+  .term-head {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg-elev);
+    overflow: hidden;
+    margin-bottom: 36px;
+    box-shadow: var(--shadow-sm);
+  }
+  .term-bar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg-sub);
+    border-bottom: 1px solid var(--line);
+    font-size: 12px; color: var(--ink-3);
+  }
+  .term-dots { display: inline-flex; gap: 6px; }
+  .term-dots span { width: 11px; height: 11px; border-radius: 50%; background: var(--line-strong); }
+  .term-dots span:nth-child(1) { background: #ed6b5e; }
+  .term-dots span:nth-child(2) { background: #f3bf4f; }
+  .term-dots span:nth-child(3) { background: #61c554; }
+  .term-path { font-size: 12px; color: var(--ink-3); }
+  .term-body { padding: 26px 26px 30px; }
+  .term-prompt { color: var(--accent); }
+  .term-prompt::before { content: "$ "; }
+  .term-line { color: var(--ink-2); font-size: 13px; line-height: 1.7; }
+  .term-line .out { color: var(--ink); }
+  .term-line .mute { color: var(--ink-3); }
+
+  h1.product {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(28px, 4vw, 40px);
+    margin: 14px 0 6px;
+    letter-spacing: -.01em;
+    color: var(--ink);
+  }
+  .product-deck { font-family: var(--font-sans); font-size: 16px; color: var(--ink-2); margin: 0 0 16px; line-height: 1.55; max-width: 640px; }
+  .product-meta { display: flex; gap: 18px; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); }
+  .product-meta strong { color: var(--accent); font-weight: 600; }
+
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin: 0 0 28px;
+  }
+  .filter-btn {
+    font-family: var(--font-mono);
+    font-size: 11px; letter-spacing: .04em;
+    padding: 6px 11px;
+    border: 1px solid var(--line);
+    background: var(--bg-elev);
+    border-radius: 999px;
+    color: var(--ink-2);
+    cursor: pointer;
+    text-transform: lowercase;
+    transition: all .15s ease;
+  }
+  .filter-btn:hover { border-color: var(--ink-3); }
+  .filter-btn.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  /* timeline */
+  .release {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg-elev);
+    margin: 0 0 22px;
+    overflow: hidden;
+  }
+  .release-head {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-sub);
+    flex-wrap: wrap;
+  }
+  .ver {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--accent);
+    letter-spacing: -.005em;
+  }
+  .ver-tag {
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: .1em;
+    padding: 2px 8px; border-radius: 999px;
+    text-transform: uppercase;
+  }
+  .ver-tag.major { background: color-mix(in oklab, var(--accent) 22%, transparent); color: var(--accent); }
+  .ver-tag.minor { background: var(--bg); color: var(--ink-3); border: 1px solid var(--line); }
+  .ver-tag.patch { background: color-mix(in oklab, var(--c-fix) 18%, transparent); color: var(--c-fix); }
+  .ver-tag.hotfix { background: color-mix(in oklab, var(--c-rm) 18%, transparent); color: var(--c-rm); }
+  .ver-date { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); margin-left: auto; }
+  .ver-codename { font-family: var(--font-sans); font-size: 13px; color: var(--ink-2); font-style: italic; }
+
+  .release-body { padding: 18px 22px 22px; }
+
+  .release-headline {
+    font-family: var(--font-sans);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 14px;
+    line-height: 1.45;
+  }
+
+  .change-list { list-style: none; padding: 0; margin: 0; }
+  .change-list li {
+    display: grid; grid-template-columns: 76px 1fr;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--line);
+    align-items: flex-start;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .change-list li:last-child { border-bottom: 0; }
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: .04em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .badge.add { background: color-mix(in oklab, var(--c-add) 18%, transparent); color: var(--c-add); }
+  .badge.fix { background: color-mix(in oklab, var(--c-fix) 18%, transparent); color: var(--c-fix); }
+  .badge.chg { background: color-mix(in oklab, var(--c-chg) 18%, transparent); color: var(--c-chg); }
+  .badge.rm  { background: color-mix(in oklab, var(--c-rm)  18%, transparent); color: var(--c-rm); }
+  .badge.sec { background: color-mix(in oklab, var(--c-sec) 18%, transparent); color: var(--c-sec); }
+
+  .change-list code { font-family: var(--font-mono); font-size: 12px; background: var(--bg-sub); padding: 1px 5px; border-radius: 3px; border: 1px solid var(--line); }
+  .pr-link { color: var(--ink-3); margin-left: 6px; font-family: var(--font-mono); }
+
+  .breaking {
+    border: 1px solid var(--c-rm);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 14px 0 18px;
+    background: color-mix(in oklab, var(--c-rm) 8%, var(--bg));
+    font-family: var(--font-sans);
+    font-size: 14.5px;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+  .breaking strong { color: var(--c-rm); font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; display: block; margin-bottom: 4px; }
+  .breaking ul { margin: 6px 0 0; padding-left: 20px; }
+
+  /* migration table */
+  .migration-table {
+    width: 100%; border-collapse: collapse;
+    margin: 14px 0;
+    font-family: var(--font-sans);
+    font-size: 14px;
+  }
+  .migration-table th, .migration-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    text-align: left;
+  }
+  .migration-table th {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--ink-3); font-family: var(--font-mono);
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .migration-table code { font-family: var(--font-mono); font-size: 12px; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 28px 0; }
+  @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+  .stats-grid .s { padding: 16px 12px; border-right: 1px solid var(--line); }
+  .stats-grid .s:last-child { border-right: 0; }
+  .stats-grid .v { font-size: 22px; color: var(--ink); font-weight: 700; }
+  .stats-grid .l { font-size: 11px; color: var(--ink-3); margin-top: 4px; letter-spacing: .04em; }
+
+  .gallery-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0 22px; }
+
+  h2.section {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-3);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin: 50px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+
+<div class="container" data-search-root>
+
+  <header class="term-head">
+    <div class="term-bar">
+      <span class="term-dots"><span></span><span></span><span></span></span>
+      <span class="term-path">~/changelog · ai-sdk · main</span>
+    </div>
+    <div class="term-body">
+      <div class="term-line"><span class="term-prompt"></span>cat CHANGELOG.md | head</div>
+      <div class="term-line out">━ ai-sdk @ <strong style="color:var(--accent)">v3.4.0 → v3.6.2</strong></div>
+      <div class="term-line mute">— 7 releases · 2026-03-04 → 2026-04-23 · 38 contributors</div>
+
+      <h1 class="product">ai-sdk · Release Notes</h1>
+      <p class="product-deck">
+        지난 7주간의 ai-sdk 변경 이력. 굵은 글씨 한 줄과 카테고리 배지로, 5분이면 따라잡을 수 있게 정리했습니다.
+      </p>
+      <div class="product-meta">
+        <span><strong>repo</strong> github.com/ai-sdk/ai-sdk</span>
+        <span><strong>docs</strong> docs.ai-sdk.dev</span>
+        <span><strong>last</strong> 2026-04-23</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="filters" id="filters">
+    <button class="filter-btn active" data-f="all">all (47)</button>
+    <button class="filter-btn" data-f="add">add (18)</button>
+    <button class="filter-btn" data-f="fix">fix (16)</button>
+    <button class="filter-btn" data-f="chg">change (8)</button>
+    <button class="filter-btn" data-f="rm">remove (3)</button>
+    <button class="filter-btn" data-f="sec">security (2)</button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="s"><div class="v">7</div><div class="l">RELEASES</div></div>
+    <div class="s"><div class="v">47</div><div class="l">CHANGES</div></div>
+    <div class="s"><div class="v">38</div><div class="l">CONTRIBUTORS</div></div>
+    <div class="s"><div class="v">2</div><div class="l">BREAKING</div></div>
+  </div>
+
+  <!-- ============ v3.6.2 ============ -->
+  <article class="release">
+    <header class="release-head">
+      <span class="ver">v3.6.2</span>
+      <span class="ver-tag patch">patch</span>
+      <span class="ver-codename">— streaming hardening</span>
+      <span class="ver-date">2026-04-23 · KST</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">스트리밍 응답에서 드물게 발생하던 토큰 누락을 잡았습니다. 운영팀 권장 즉시 업그레이드.</p>
+
+      <ul class="change-list">
+        <li><span class="badge fix">fix</span><div>SSE 파서가 4KB 경계에서 청크를 잃던 문제 해결 (<code>client/stream</code>) <span class="pr-link">#1284</span></div></li>
+        <li><span class="badge fix">fix</span><div>도구 호출 응답 시 <code>finish_reason</code>이 비어있던 케이스 보완 <span class="pr-link">#1289</span></div></li>
+        <li><span class="badge fix">fix</span><div>Windows에서 <code>asyncio</code> 셧다운 워닝 제거 <span class="pr-link">#1291</span></div></li>
+        <li><span class="badge sec">sec</span><div>의존성 <code>requests</code> CVE-2026-3104 패치 버전으로 업데이트 <span class="pr-link">#1295</span></div></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- ============ v3.6.0 ============ -->
+  <article class="release">
+    <header class="release-head">
+      <span class="ver">v3.6.0</span>
+      <span class="ver-tag minor">minor</span>
+      <span class="ver-codename">— router</span>
+      <span class="ver-date">2026-04-15 · KST</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">모델 라우팅 빌트인. <code>route()</code> 한 줄로 mini ↔ pro 분기를 끝낼 수 있습니다.</p>
+
+      <div class="cc-code"><pre>from ai_sdk import Client, route
+
+client = Client()
+resp = route(client,
+  classify="model-mini",      # 1차: 분류
+  reason="model-pro",         # 2차: 추론·도구 호출
+).chat("이 메일을 분류하고 적절히 답변해.")</pre></div>
+
+      <ul class="change-list">
+        <li><span class="badge add">add</span><div><code>route()</code> 헬퍼: 분류 → 추론 2단계 라우팅 (커스텀 정책 지원) <span class="pr-link">#1240</span></div></li>
+        <li><span class="badge add">add</span><div><code>client.observability</code>: 토큰 단위 트레이스 로그를 OTel 형식으로 export <span class="pr-link">#1244</span></div></li>
+        <li><span class="badge add">add</span><div>비전 입력 (<code>image_url</code>, <code>data:</code>) 스키마 정식 지원 <span class="pr-link">#1251</span></div></li>
+        <li><span class="badge chg">chg</span><div>기본 타임아웃 60s → 90s. 스트리밍은 영향 없음. <span class="pr-link">#1257</span></div></li>
+        <li><span class="badge fix">fix</span><div>JSON 모드에서 trailing comma가 가끔 새던 문제 <span class="pr-link">#1262</span></div></li>
+      </ul>
+
+      <div class="gallery-strip">
+        <figure>
+          <div class="cc-placeholder cc-wide" data-caption="라우팅 도식 — classify → reason">
+            <span class="cc-ph-label">[ DIAGRAM ]<br/>route() 흐름</span>
+          </div>
+          <figcaption style="font-family:var(--font-mono);font-size:11px;color:var(--ink-3);margin-top:6px;">FIG.1 · 라우팅 흐름</figcaption>
+        </figure>
+        <figure>
+          <div class="cc-placeholder cc-wide" data-caption="OTel 트레이스 스크린샷">
+            <span class="cc-ph-label">[ SCREENSHOT ]<br/>OTel 트레이스</span>
+          </div>
+          <figcaption style="font-family:var(--font-mono);font-size:11px;color:var(--ink-3);margin-top:6px;">FIG.2 · 트레이스 UI</figcaption>
+        </figure>
+      </div>
+    </div>
+  </article>
+
+  <!-- ============ v3.5.0 ============ -->
+  <article class="release">
+    <header class="release-head">
+      <span class="ver">v3.5.0</span>
+      <span class="ver-tag major">major</span>
+      <span class="ver-codename">— breaking: client API</span>
+      <span class="ver-date">2026-03-30 · KST</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">클라이언트 진입점이 <code>Client()</code>로 통일됐습니다. 마이그레이션 30분 예상.</p>
+
+      <div class="breaking">
+        <strong>⚑ Breaking Changes</strong>
+        v3.4 이전 코드는 다음 두 줄이 그대로 동작하지 않습니다.
+        <ul>
+          <li><code>OpenAI()</code>, <code>Anthropic()</code>, <code>Bedrock()</code> 등 벤더별 진입점 → <code>Client(provider=...)</code></li>
+          <li><code>resp.completion</code> → <code>resp.text</code></li>
+        </ul>
+      </div>
+
+      <table class="migration-table">
+        <thead><tr><th>v3.4 이전</th><th>v3.5+</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>OpenAI().chat(...)</code></td>
+            <td><code>Client(provider="openai").chat(...)</code></td>
+            <td class="cc-mute">자동 마이그레이션 스크립트 제공</td>
+          </tr>
+          <tr>
+            <td><code>resp.completion</code></td>
+            <td><code>resp.text</code></td>
+            <td class="cc-mute">v3.5에서 alias 유지(deprecated), v4.0에서 제거</td>
+          </tr>
+          <tr>
+            <td><code>stream=True</code></td>
+            <td><code>client.chat.stream(...)</code></td>
+            <td class="cc-mute">메서드 분리</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ul class="change-list">
+        <li><span class="badge chg">chg</span><div><strong>BREAKING</strong> · 벤더 진입점 통합 (<code>Client(provider=...)</code>) <span class="pr-link">#1180</span></div></li>
+        <li><span class="badge chg">chg</span><div><strong>BREAKING</strong> · <code>resp.completion</code> → <code>resp.text</code> <span class="pr-link">#1182</span></div></li>
+        <li><span class="badge add">add</span><div>마이그레이션 스크립트 <code>ai-sdk migrate</code> 추가 <span class="pr-link">#1188</span></div></li>
+        <li><span class="badge add">add</span><div>type stub: 모든 응답 타입 <code>TypedDict</code>로 export <span class="pr-link">#1192</span></div></li>
+        <li><span class="badge rm">rm</span><div>레거시 <code>chat_completion()</code> 함수 제거 (v2 시절 유물) <span class="pr-link">#1195</span></div></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- ============ v3.4.3 ============ -->
+  <article class="release">
+    <header class="release-head">
+      <span class="ver">v3.4.3</span>
+      <span class="ver-tag hotfix">hotfix</span>
+      <span class="ver-codename">— rate-limit retry</span>
+      <span class="ver-date">2026-03-12 · KST</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">429 응답 시 백오프가 적용되지 않던 회귀 버그를 긴급 수정했습니다.</p>
+      <ul class="change-list">
+        <li><span class="badge fix">fix</span><div>지수 백오프가 첫 1회만 적용되고 이후 즉시 재시도되던 회귀 <span class="pr-link">#1170</span></div></li>
+        <li><span class="badge fix">fix</span><div><code>Retry-After</code> 헤더가 초 단위가 아닌 HTTP-date일 때의 파싱 오류 <span class="pr-link">#1172</span></div></li>
+        <li><span class="badge sec">sec</span><div>로그에 API 키가 마스킹 없이 찍히던 케이스 차단 <span class="pr-link">#1175</span></div></li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- ============ v3.4.0 ============ -->
+  <article class="release">
+    <header class="release-head">
+      <span class="ver">v3.4.0</span>
+      <span class="ver-tag minor">minor</span>
+      <span class="ver-codename">— long context</span>
+      <span class="ver-date">2026-03-04 · KST</span>
+    </header>
+    <div class="release-body">
+      <p class="release-headline">200K 토큰 컨텍스트 모델 정식 지원. 캐시 할인이 자동 적용됩니다.</p>
+      <ul class="change-list">
+        <li><span class="badge add">add</span><div>200K 컨텍스트 모델 핸들링 (<code>model-pro-200k</code>) <span class="pr-link">#1120</span></div></li>
+        <li><span class="badge add">add</span><div>프롬프트 캐시 자동 활성화 (할인 50%) <span class="pr-link">#1128</span></div></li>
+        <li><span class="badge add">add</span><div>토큰 카운터 비공식 모델 추정치 지원 <span class="pr-link">#1131</span></div></li>
+        <li><span class="badge chg">chg</span><div>기본 인코더 tiktoken → 자체 BPE (3배 빠름) <span class="pr-link">#1135</span></div></li>
+        <li><span class="badge rm">rm</span><div>Python 3.9 지원 종료. 3.10+로 업그레이드 필요. <span class="pr-link">#1138</span></div></li>
+      </ul>
+    </div>
+  </article>
+
+  <h2 class="section">알아두면 좋은 메모</h2>
+  <div class="cc-tldr" style="font-family: var(--font-sans);">
+    <h3>버전 명명 규약</h3>
+    <ul>
+      <li><strong>major</strong> · 호환성 깨짐. 마이그레이션 가이드 필수.</li>
+      <li><strong>minor</strong> · 신기능, 호환 유지.</li>
+      <li><strong>patch</strong> · 버그 수정만.</li>
+      <li><strong>hotfix</strong> · 긴급 보안·회귀 수정. 평일·주말 무관 릴리스.</li>
+    </ul>
+  </div>
+
+  <h2 class="section">업그레이드 체크리스트</h2>
+  <ul class="cc-checklist" id="t6-upgrade" style="font-family: var(--font-sans);">
+    <li><span>의존성 잠금 파일 갱신 (<code>uv lock</code> 또는 <code>poetry lock</code>)</span></li>
+    <li><span>마이그레이션 스크립트 <code>ai-sdk migrate</code> 적용</span></li>
+    <li><span>스트리밍·도구 호출 e2e 테스트 1회 실행</span></li>
+    <li><span>관측 대시보드의 토큰 단위 로그 활성화 확인</span></li>
+    <li><span>로그에 키가 마스킹되는지 grep 으로 재확인</span></li>
+  </ul>
+
+  <h2 class="section">용어 사전</h2>
+  <dl class="cc-glossary" style="font-family: var(--font-sans);">
+    <dt>SemVer <small>Semantic Versioning</small></dt>
+    <dd>MAJOR.MINOR.PATCH 규칙. 호환성 변화는 MAJOR 자릿수만 올린다.</dd>
+    <dt>Hotfix <small>핫픽스</small></dt>
+    <dd>릴리스 사이클 외 시점에 긴급 배포되는 수정. 보안·회귀 사고에서 주로 사용.</dd>
+    <dt>Migration script <small>마이그레이션 스크립트</small></dt>
+    <dd>코드 변경을 자동 패치하는 도구. 깨지는 변경을 가능한 한 자동으로 흡수한다.</dd>
+  </dl>
+
+</div>
+
+<script>
+  // simple filter (does not actually count, demonstrates UX)
+  document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const f = btn.dataset.f;
+      document.querySelectorAll(".change-list li").forEach(li => {
+        const badge = li.querySelector(".badge");
+        const cls = badge ? Array.from(badge.classList).find(c => c !== "badge") : "";
+        li.style.display = (f === "all" || cls === f) ? "" : "none";
+      });
+    });
+  });
+</script>
+<script src="/templates/assets/common.js"></script>
+</body>
+</html>
