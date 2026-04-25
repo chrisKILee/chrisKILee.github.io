@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TypeScript 7.0 Beta</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --color-primary: #111111;
+      --color-secondary: #f1f1f1;
+      --color-surface: #FFFFFF;
+      --color-text: #111827;
+      --color-success: #16A34A;
+      --color-warning: #D97706;
+      --color-danger: #DC2626;
+      --color-go: #00ADD8;
+      --font-primary: 'Gelasio', Georgia, serif;
+      --font-mono: 'Ubuntu Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-surface);
+      color: var(--color-text);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .editorial-rule { border: none; border-top: 2px solid var(--color-primary); margin: 0; }
+    .editorial-rule-thin { border: none; border-top: 1px solid #e5e7eb; }
+
+    .site-header {
+      border-bottom: 2px solid var(--color-primary);
+      padding: 20px 24px;
+    }
+    .site-header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .site-logo {
+      font-family: var(--font-primary);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+    }
+    .site-nav { display: flex; gap: 32px; }
+    .site-nav a {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      text-decoration: none;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+    .site-nav a:hover { opacity: 1; }
+    .site-date {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #6b7280;
+      letter-spacing: 0.05em;
+    }
+
+    .hero-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 24px 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: end;
+    }
+    .hero-kicker {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--color-surface);
+      background-color: var(--color-primary);
+      padding: 4px 10px;
+      margin-bottom: 28px;
+    }
+    .hero-heading {
+      font-family: var(--font-primary);
+      font-size: clamp(42px, 6vw, 72px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+    }
+    .hero-heading em { font-style: italic; font-weight: 400; }
+    .hero-heading-em {
+      font-family: var(--font-primary);
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--color-primary);
+      opacity: 0.4;
+      margin-bottom: 32px;
+    }
+    .hero-description {
+      font-size: 18px;
+      line-height: 1.7;
+      color: #374151;
+      max-width: 480px;
+    }
+    .hero-meta {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 24px;
+      margin-top: 40px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .hero-meta-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+    .hero-meta-value {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-primary);
+    }
+    .hero-pullquote {
+      border-left: 4px solid var(--color-primary);
+      padding: 32px 40px;
+      background: var(--color-secondary);
+    }
+    .hero-pullquote blockquote {
+      font-size: clamp(17px, 2.2vw, 24px);
+      font-style: italic;
+      font-weight: 500;
+      line-height: 1.55;
+      color: var(--color-primary);
+      margin-bottom: 20px;
+    }
+    .hero-pullquote cite {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-style: normal;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    .content-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e5e7eb;
+    }
+
+    /* 아티클 그리드 */
+    .article-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 64px;
+    }
+    .article-card {
+      padding: 32px;
+      border-right: 1px solid var(--color-primary);
+      display: flex;
+      flex-direction: column;
+    }
+    .article-card:last-child { border-right: none; }
+    .article-card-featured { border-right: 2px solid var(--color-primary); }
+    .article-category {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+    .article-category.highlighted {
+      color: var(--color-surface);
+      background: var(--color-primary);
+      display: inline-block;
+      padding: 2px 8px;
+    }
+    .article-title {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--color-primary);
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+    .article-card:not(.article-card-featured) .article-title { font-size: 17px; }
+    .article-excerpt {
+      font-size: 15px;
+      line-height: 1.65;
+      color: #4b5563;
+      margin-bottom: 16px;
+      flex: 1;
+    }
+    .article-byline {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 16px;
+      margin-top: auto;
+    }
+
+    /* SVG 아키텍처 다이어그램 */
+    .diagram-wrap {
+      border: 1px solid var(--color-primary);
+      padding: 40px;
+      margin-bottom: 64px;
+      background: #fafafa;
+    }
+
+    /* 벤치마크 카드 */
+    .bench-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 64px;
+    }
+    .bench-card {
+      padding: 28px 32px;
+      border-right: 1px solid var(--color-primary);
+    }
+    .bench-card:last-child { border-right: none; }
+    .bench-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+    .bench-codebase {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--color-primary);
+      margin-bottom: 20px;
+    }
+    .bench-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .bench-name {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .bench-val {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .bench-val.old { color: #dc2626; }
+    .bench-val.new { color: #16a34a; }
+    .bench-speedup {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e7eb;
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+    .bench-speedup span {
+      font-size: 13px;
+      font-weight: 400;
+      color: #9ca3af;
+    }
+
+    /* 데이터 섹션 */
+    .data-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 64px;
+    }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      text-align: left;
+      padding: 0 0 12px 0;
+      border-bottom: 2px solid var(--color-primary);
+    }
+    .data-table td {
+      font-size: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid #e5e7eb;
+      color: var(--color-text);
+      vertical-align: top;
+    }
+    .data-table td:first-child {
+      font-weight: 600;
+      color: var(--color-primary);
+      width: 35%;
+      padding-right: 12px;
+    }
+    .data-table .mono-val {
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .data-table .tag-new {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 1px 6px;
+      background: var(--color-primary);
+      color: white;
+      text-transform: uppercase;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .data-table .tag-removed {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 1px 6px;
+      background: #dc2626;
+      color: white;
+      text-transform: uppercase;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* 코드 블록 */
+    .code-block {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-left: 4px solid var(--color-primary);
+      padding: 24px 28px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      color: #374151;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .code-comment { color: #9ca3af; }
+    .code-key { color: var(--color-primary); font-weight: 700; }
+    .code-val { color: #059669; }
+    .code-str { color: #7c3aed; }
+    .code-cmd { color: #00ADD8; }
+
+    /* 상태 스트립 */
+    .status-strip {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 64px;
+    }
+    .status-item {
+      flex: 1;
+      padding: 20px 24px;
+      border-right: 1px solid var(--color-primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .status-item:last-child { border-right: none; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .status-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .status-desc { font-size: 13px; color: #6b7280; margin-left: auto; text-align: right; }
+
+    /* 기업 그리드 */
+    .company-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0;
+      border: 1px solid var(--color-primary);
+      margin-bottom: 64px;
+    }
+    .company-chip {
+      padding: 16px 20px;
+      border-right: 1px solid #e5e7eb;
+      border-bottom: 1px solid #e5e7eb;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-primary);
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    /* 타임라인 */
+    .timeline-wrap {
+      border: 1px solid var(--color-primary);
+      padding: 40px;
+      margin-bottom: 64px;
+    }
+    .timeline-row {
+      display: grid;
+      grid-template-columns: 160px 32px 1fr;
+      gap: 0 24px;
+      align-items: start;
+      margin-bottom: 32px;
+    }
+    .timeline-row:last-child { margin-bottom: 0; }
+    .timeline-date {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #9ca3af;
+      letter-spacing: 0.08em;
+      padding-top: 2px;
+    }
+    .timeline-dot-col { display: flex; flex-direction: column; align-items: center; }
+    .timeline-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--color-primary);
+      background: white;
+      flex-shrink: 0;
+    }
+    .timeline-dot.filled { background: var(--color-primary); }
+    .timeline-line {
+      width: 1px;
+      flex: 1;
+      background: #e5e7eb;
+      min-height: 40px;
+      margin-top: 4px;
+    }
+    .timeline-content-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 4px;
+    }
+    .timeline-content-desc {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.6;
+    }
+
+    /* 풋터 */
+    .site-footer {
+      border-top: 2px solid var(--color-primary);
+      padding: 32px 24px;
+    }
+    .site-footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-text {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #9ca3af;
+      letter-spacing: 0.05em;
+    }
+    .footer-rule-word {
+      font-family: var(--font-primary);
+      font-size: 13px;
+      font-style: italic;
+      color: #d1d5db;
+      letter-spacing: 0.05em;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+
+    @media (max-width: 900px) {
+      .hero-section { grid-template-columns: 1fr; gap: 40px; }
+      .article-grid { grid-template-columns: 1fr; }
+      .article-card { border-right: none; border-bottom: 1px solid var(--color-primary); }
+      .bench-grid { grid-template-columns: 1fr; }
+      .bench-card { border-right: none; border-bottom: 1px solid var(--color-primary); }
+      .data-section { grid-template-columns: 1fr; }
+      .company-grid { grid-template-columns: repeat(3, 1fr); }
+      .status-strip { flex-wrap: wrap; }
+      .status-item { border-right: none; border-bottom: 1px solid var(--color-primary); flex: 1 1 50%; }
+      .site-nav { display: none; }
+      .timeline-row { grid-template-columns: 100px 24px 1fr; gap: 0 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="site-header-inner">
+      <span class="site-logo">R&amp;D Hot News</span>
+      <nav class="site-nav">
+        <a href="/rnd-news/">News</a>
+        <a href="/ai-study/">AI Study</a>
+        <a href="/">Home</a>
+      </nav>
+      <span class="site-date">2026-04-25</span>
+    </div>
+  </header>
+
+  <section class="hero-section">
+    <div>
+      <span class="hero-kicker">Breaking — TypeScript</span>
+      <h1 class="hero-heading">TypeScript<br>7.0 <em>Beta</em></h1>
+      <p class="hero-heading-em">Go 네이티브 컴파일러</p>
+      <p class="hero-description">
+        Microsoft가 TypeScript 코드베이스 전체를 Go로 포팅한 7.0 Beta를 공개했습니다.
+        기존 TypeScript 6.0 대비 최대 <strong>10배 빠른 컴파일 속도</strong>와
+        <strong>50% 메모리 절감</strong>을 제공합니다. Project Corsa(코드명)는
+        JavaScript 기반 컴파일러 10년 역사의 전환점입니다.
+      </p>
+      <div class="hero-meta">
+        <span class="hero-meta-label">발표일</span>
+        <span class="hero-meta-value">2026-04-21</span>
+        <span class="hero-meta-label" style="margin-left:16px;">출처</span>
+        <span class="hero-meta-value">devblogs.microsoft.com</span>
+        <span class="hero-meta-label" style="margin-left:16px;">구현 언어</span>
+        <span class="hero-meta-value" style="color:var(--color-go);">Go</span>
+      </div>
+    </div>
+    <div class="hero-pullquote">
+      <blockquote>"TypeScript 6.0은 JavaScript 기반의 마지막 메이저 릴리스. 7.0은 완전히 새로운 기반(completely new foundation) 위에 구축됩니다."</blockquote>
+      <cite>— TypeScript 7.0 Beta 공식 발표문</cite>
+    </div>
+  </section>
+
+  <div class="content-wrap">
+
+    <!-- 핵심 요약 카드 3개 -->
+    <p class="section-label">핵심 변경사항</p>
+    <div class="article-grid">
+      <div class="article-card article-card-featured">
+        <p class="article-category highlighted">Lead Story</p>
+        <h2 class="article-title">10년 만의 대전환 — TypeScript 컴파일러를 Go로 완전 재작성</h2>
+        <p class="article-excerpt">
+          Microsoft는 TypeScript 컴파일러(파서, 타입 체커, 이미터)를 Go 언어로 완전히 포팅했습니다.
+          코드명 Project Corsa로 진행된 이 작업은 기존 TypeScript/JavaScript 의미론(semantics)과
+          타입 체크 동작을 최대한 보존하면서 네이티브 바이너리로 동작하도록 설계되었습니다.
+        </p>
+        <p class="article-excerpt">
+          Go의 고루틴(goroutine)을 활용해 파싱, 타입 체킹, emit을 병렬로 처리할 수 있게 되었으며,
+          이는 JavaScript 런타임이 구조적으로 제공하기 어려운 수준의 병렬화입니다.
+          성능 향상의 약 50%는 네이티브 코드 속도, 나머지 50%는 병렬화에서 비롯됩니다.
+        </p>
+        <p class="article-byline">Microsoft TypeScript Team · 2026-04-21 · 공식 발표</p>
+      </div>
+
+      <div class="article-card">
+        <p class="article-category">Breaking Changes</p>
+        <h2 class="article-title">ES5 타겟 제거, CommonJS 기본값 변경 등 주요 호환성 변경</h2>
+        <p class="article-excerpt">
+          <code>target: es5</code>, CommonJS 모듈, AMD/UMD/SystemJS 등 레거시 옵션이 제거됩니다.
+          <code>strict</code>가 기본 true로 바뀌며, <code>module</code>의 기본값도
+          <code>esnext</code>로 전환됩니다.
+        </p>
+        <p class="article-byline">호환성 주의 · 마이그레이션 필요</p>
+      </div>
+
+      <div class="article-card">
+        <p class="article-category">Limitation</p>
+        <h2 class="article-title">안정적 Programmatic API 부재 — 린터·포매터·IDE 확장 미지원</h2>
+        <p class="article-excerpt">
+          기존 Strada API 기반 도구(ESLint, Prettier 등)가 TS 7.0에서 작동하지 않습니다.
+          새 Corsa API는 TypeScript 7.1 이후 안정화 예정입니다.
+        </p>
+        <p class="article-byline">도구 개발자 주의 · TS 7.1 이후 해결</p>
+      </div>
+    </div>
+
+    <!-- SVG 아키텍처 다이어그램 -->
+    <p class="section-label">아키텍처 비교 다이어그램</p>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 960 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'Ubuntu Mono',monospace;">
+        <!-- 타이틀 -->
+        <text x="240" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#111111" letter-spacing="2">TypeScript 6.0 (JS 기반)</text>
+        <text x="720" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#111111" letter-spacing="2">TypeScript 7.0 (Go 네이티브)</text>
+
+        <!-- 구분선 -->
+        <line x1="480" y1="10" x2="480" y2="310" stroke="#111111" stroke-width="2" stroke-dasharray="6,4"/>
+
+        <!-- TS6: 직렬 파이프라인 -->
+        <rect x="40" y="50" width="380" height="240" rx="0" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+
+        <!-- TS6 박스들 -->
+        <rect x="80" y="70" width="140" height="44" rx="0" fill="#f1f1f1" stroke="#111111" stroke-width="1.5"/>
+        <text x="150" y="97" text-anchor="middle" font-size="12" fill="#111111" font-weight="600">Parser (JS)</text>
+
+        <line x1="150" y1="114" x2="150" y2="138" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrow-gray)"/>
+
+        <rect x="80" y="138" width="140" height="44" rx="0" fill="#f1f1f1" stroke="#111111" stroke-width="1.5"/>
+        <text x="150" y="165" text-anchor="middle" font-size="12" fill="#111111" font-weight="600">Type Checker (JS)</text>
+
+        <line x1="150" y1="182" x2="150" y2="206" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrow-gray)"/>
+
+        <rect x="80" y="206" width="140" height="44" rx="0" fill="#f1f1f1" stroke="#111111" stroke-width="1.5"/>
+        <text x="150" y="233" text-anchor="middle" font-size="12" fill="#111111" font-weight="600">Emitter (JS)</text>
+
+        <!-- TS6 라벨 -->
+        <text x="280" y="100" font-size="11" fill="#9ca3af">단일 스레드</text>
+        <text x="280" y="165" font-size="11" fill="#9ca3af">순차 처리</text>
+        <text x="280" y="233" font-size="11" fill="#9ca3af">JS 런타임 제약</text>
+
+        <!-- TS6 속도 -->
+        <rect x="60" y="262" width="180" height="22" rx="0" fill="#fee2e2"/>
+        <text x="150" y="277" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="700">VS Code: 78초 (tsc)</text>
+
+        <!-- TS7: 병렬 파이프라인 -->
+        <rect x="500" y="50" width="420" height="240" rx="0" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+
+        <!-- 병렬 표시 -->
+        <text x="710" y="68" text-anchor="middle" font-size="11" fill="#9ca3af" letter-spacing="1">고루틴 병렬 처리</text>
+
+        <!-- Worker 그룹 -->
+        <rect x="520" y="80" width="110" height="40" rx="0" fill="#e0f7fa" stroke="#00ADD8" stroke-width="1.5"/>
+        <text x="575" y="105" text-anchor="middle" font-size="11" fill="#00767a" font-weight="600">Parser ×N</text>
+
+        <rect x="645" y="80" width="110" height="40" rx="0" fill="#e0f7fa" stroke="#00ADD8" stroke-width="1.5"/>
+        <text x="700" y="105" text-anchor="middle" font-size="11" fill="#00767a" font-weight="600">Checker ×N</text>
+
+        <rect x="770" y="80" width="110" height="40" rx="0" fill="#e0f7fa" stroke="#00ADD8" stroke-width="1.5"/>
+        <text x="825" y="105" text-anchor="middle" font-size="11" fill="#00767a" font-weight="600">Emitter ×N</text>
+
+        <!-- 화살표 연결 -->
+        <line x1="630" y1="100" x2="643" y2="100" stroke="#00ADD8" stroke-width="2" marker-end="url(#arrow-blue)"/>
+        <line x1="755" y1="100" x2="768" y2="100" stroke="#00ADD8" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+        <!-- Go 바이너리 박스 -->
+        <rect x="560" y="150" width="300" height="48" rx="0" fill="#111111"/>
+        <text x="710" y="178" text-anchor="middle" font-size="13" fill="#ffffff" font-weight="700">Go 네이티브 바이너리</text>
+
+        <line x1="575" y1="120" x2="630" y2="150" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3,2"/>
+        <line x1="700" y1="120" x2="700" y2="150" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3,2"/>
+        <line x1="825" y1="120" x2="780" y2="150" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3,2"/>
+
+        <!-- TS7 옵션 -->
+        <rect x="520" y="216" width="130" height="36" rx="0" fill="#f1f1f1" stroke="#e5e7eb" stroke-width="1"/>
+        <text x="585" y="238" text-anchor="middle" font-size="11" fill="#6b7280">--checkers N</text>
+
+        <rect x="664" y="216" width="130" height="36" rx="0" fill="#f1f1f1" stroke="#e5e7eb" stroke-width="1"/>
+        <text x="729" y="238" text-anchor="middle" font-size="11" fill="#6b7280">--builders N</text>
+
+        <!-- TS7 속도 -->
+        <rect x="520" y="264" width="180" height="22" rx="0" fill="#dcfce7"/>
+        <text x="610" y="279" text-anchor="middle" font-size="12" fill="#16a34a" font-weight="700">VS Code: 7.5초 (tsgo)</text>
+
+        <!-- 화살표 마커 -->
+        <defs>
+          <marker id="arrow-gray" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af"/>
+          </marker>
+          <marker id="arrow-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#00ADD8"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <!-- 벤치마크 수치 -->
+    <p class="section-label">공식 벤치마크 (TypeScript 6.0 → 7.0)</p>
+    <div class="bench-grid">
+      <div class="bench-card">
+        <p class="bench-label">VS Code 코드베이스</p>
+        <p class="bench-codebase">1.5백만 줄</p>
+        <div class="bench-row">
+          <span class="bench-name">tsc (TS 6.0)</span>
+          <span class="bench-val old">78초</span>
+        </div>
+        <div class="bench-row">
+          <span class="bench-name">tsgo (TS 7.0)</span>
+          <span class="bench-val new">7.5초</span>
+        </div>
+        <div class="bench-speedup">~10× <span>faster</span></div>
+      </div>
+      <div class="bench-card">
+        <p class="bench-label">Sentry 코드베이스</p>
+        <p class="bench-codebase">대규모 모노레포</p>
+        <div class="bench-row">
+          <span class="bench-name">타입 체크 (TS 6)</span>
+          <span class="bench-val old">133초</span>
+        </div>
+        <div class="bench-row">
+          <span class="bench-name">타입 체크 (TS 7)</span>
+          <span class="bench-val new">16초</span>
+        </div>
+        <div class="bench-speedup">~8× <span>faster</span></div>
+      </div>
+      <div class="bench-card">
+        <p class="bench-label">대규모 모노레포</p>
+        <p class="bench-codebase">500K+ 줄</p>
+        <div class="bench-row">
+          <span class="bench-name">전체 타입 체크 (6)</span>
+          <span class="bench-val old">3~5분</span>
+        </div>
+        <div class="bench-row">
+          <span class="bench-name">전체 타입 체크 (7)</span>
+          <span class="bench-val new">20~40초</span>
+        </div>
+        <div class="bench-speedup">7~15× <span>faster</span></div>
+      </div>
+    </div>
+
+    <!-- 설치 & 기본값 변경 -->
+    <div class="data-section">
+      <div>
+        <p class="section-label">설치 및 사용법</p>
+        <div class="code-block"><span class="code-comment"># 베타 패키지 설치</span>
+<span class="code-cmd">npm</span> install -D @typescript/native-preview@beta
+
+<span class="code-comment"># 타입 체크 실행 (tsc 대신 tsgo)</span>
+<span class="code-cmd">npx</span> tsgo
+
+<span class="code-comment"># 병렬도 조절 옵션</span>
+<span class="code-cmd">npx</span> tsgo --checkers 8
+<span class="code-cmd">npx</span> tsgo --build --builders 4
+
+<span class="code-comment"># 단일 스레드 (디버깅용)</span>
+<span class="code-cmd">npx</span> tsgo --singleThreaded
+
+<span class="code-comment"># TS 6 호환성 패키지 공존</span>
+<span class="code-cmd">npm</span> install @typescript/typescript6</div>
+      </div>
+      <div>
+        <p class="section-label">기본값 변경사항 (Breaking)</p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>옵션</th>
+              <th>TS 6.0</th>
+              <th>TS 7.0</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="mono-val">strict</span></td>
+              <td class="mono-val">false</td>
+              <td class="mono-val">true <span class="tag-new">변경</span></td>
+            </tr>
+            <tr>
+              <td><span class="mono-val">module</span></td>
+              <td class="mono-val">commonjs</td>
+              <td class="mono-val">esnext <span class="tag-new">변경</span></td>
+            </tr>
+            <tr>
+              <td><span class="mono-val">target</span></td>
+              <td class="mono-val">es5</td>
+              <td class="mono-val" style="color:#dc2626;">es5 제거 <span class="tag-removed">삭제</span></td>
+            </tr>
+            <tr>
+              <td><span class="mono-val">types</span></td>
+              <td class="mono-val">자동 발견</td>
+              <td class="mono-val">[ ] <span class="tag-new">변경</span></td>
+            </tr>
+            <tr>
+              <td><span class="mono-val">module:commonjs</span></td>
+              <td class="mono-val">지원</td>
+              <td class="mono-val" style="color:#dc2626;">제거 <span class="tag-removed">삭제</span></td>
+            </tr>
+            <tr>
+              <td><span class="mono-val">module:amd/umd</span></td>
+              <td class="mono-val">지원</td>
+              <td class="mono-val" style="color:#dc2626;">제거 <span class="tag-removed">삭제</span></td>
+            </tr>
+            <tr>
+              <td><span class="mono-val">noUncheckedSideEffects</span></td>
+              <td class="mono-val">false</td>
+              <td class="mono-val">true <span class="tag-new">변경</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 현재 지원 상태 스트립 -->
+    <p class="section-label">현재 지원 상태</p>
+    <div class="status-strip">
+      <div class="status-item">
+        <span class="status-dot" style="background:#16A34A;"></span>
+        <span class="status-label" style="color:#16A34A;">병렬 타입 체크</span>
+        <span class="status-desc">–checkers N</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:#16A34A;"></span>
+        <span class="status-label" style="color:#16A34A;">VS Code 확장</span>
+        <span class="status-desc">Native Preview</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:#D97706;"></span>
+        <span class="status-label" style="color:#D97706;">Programmatic API</span>
+        <span class="status-desc">TS 7.1 예정</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" style="background:#DC2626;"></span>
+        <span class="status-label" style="color:#DC2626;">린터/포매터</span>
+        <span class="status-desc">미지원 (ESLint 등)</span>
+      </div>
+    </div>
+
+    <!-- 베타 테스트 참여 기업 -->
+    <p class="section-label">베타 테스트 참여 기업 (약 20,000개 테스트 케이스 검증)</p>
+    <div class="company-grid">
+      <div class="company-chip">Bloomberg</div>
+      <div class="company-chip">Canva</div>
+      <div class="company-chip">Figma</div>
+      <div class="company-chip">Google</div>
+      <div class="company-chip">Lattice</div>
+      <div class="company-chip">Linear</div>
+      <div class="company-chip">Miro</div>
+      <div class="company-chip">Notion</div>
+      <div class="company-chip">Slack</div>
+      <div class="company-chip">Vanta</div>
+      <div class="company-chip">Vercel</div>
+      <div class="company-chip">VoidZero</div>
+    </div>
+
+    <!-- 출시 로드맵 타임라인 -->
+    <p class="section-label">출시 로드맵</p>
+    <div class="timeline-wrap">
+      <div class="timeline-row">
+        <span class="timeline-date">2026-04-21</span>
+        <div class="timeline-dot-col">
+          <div class="timeline-dot filled"></div>
+          <div class="timeline-line"></div>
+        </div>
+        <div>
+          <p class="timeline-content-title">TypeScript 7.0 Beta 공개</p>
+          <p class="timeline-content-desc">@typescript/native-preview@beta npm 패키지, VS Code Native Preview 확장 출시. tsgo 명령어 사용 가능.</p>
+        </div>
+      </div>
+      <div class="timeline-row">
+        <span class="timeline-date">2026년 5~6월 (예상)</span>
+        <div class="timeline-dot-col">
+          <div class="timeline-dot"></div>
+          <div class="timeline-line"></div>
+        </div>
+        <div>
+          <p class="timeline-content-title">TypeScript 7.0 RC</p>
+          <p class="timeline-content-desc">베타 피드백 반영 후 Release Candidate. 안정성 강화 및 마이너 버그 수정.</p>
+        </div>
+      </div>
+      <div class="timeline-row">
+        <span class="timeline-date">2026년 6~7월 (예상)</span>
+        <div class="timeline-dot-col">
+          <div class="timeline-dot"></div>
+          <div class="timeline-line"></div>
+        </div>
+        <div>
+          <p class="timeline-content-title">TypeScript 7.0 Stable</p>
+          <p class="timeline-content-desc">공식 안정 버전. 베타 발표 후 약 2개월 이내 목표. tsc 대체제로 tsgo 권장.</p>
+        </div>
+      </div>
+      <div class="timeline-row">
+        <span class="timeline-date">TypeScript 7.1+</span>
+        <div class="timeline-dot-col">
+          <div class="timeline-dot"></div>
+        </div>
+        <div>
+          <p class="timeline-content-title">안정적 Corsa API + JavaScript Emit 완성</p>
+          <p class="timeline-content-desc">프로그래밍 API(린터·포매터·IDE 확장 개발용) 안정화. Decorator 완전 지원. TS 6 도구 마이그레이션 가능.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 호환성 노트 -->
+    <p class="section-label">호환성 원칙</p>
+    <div style="border:1px solid var(--color-primary);padding:32px 40px;margin-bottom:64px;background:#fafafa;">
+      <p style="font-size:15px;line-height:1.8;color:#374151;margin-bottom:16px;">
+        <strong style="color:var(--color-primary);">공식 호환성 보장:</strong>
+        TypeScript 6.0에서 <code style="font-family:var(--font-mono);font-size:13px;background:#f1f1f1;padding:1px 6px;">stableTypeOrdering</code> 플래그 활성화 및
+        <code style="font-family:var(--font-mono);font-size:13px;background:#f1f1f1;padding:1px 6px;">ignoreDeprecations</code> 플래그 미사용 상태로 정상 컴파일되는 코드는
+        TypeScript 7.0에서도 동일하게 컴파일됨이 보장됩니다.
+      </p>
+      <p style="font-size:14px;color:#6b7280;font-family:var(--font-mono);letter-spacing:0.02em;">
+        출처: Announcing TypeScript 7.0 Beta — devblogs.microsoft.com · 2026-04-21
+      </p>
+    </div>
+
+  </div>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <span class="footer-text">2026-04-25 · R&amp;D Hot News · TypeScript 7.0 Beta</span>
+      <span class="footer-rule-word">«Project Corsa»</span>
+      <span class="footer-text">출처: devblogs.microsoft.com/typescript</span>
+    </div>
+  </footer>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="2K98RXU" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
