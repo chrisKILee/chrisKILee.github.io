@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 도구 지원 신청서</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow:   #FDC800;
+      --indigo:   #432DD7;
+      --surface:  #FBFBF9;
+      --ink:      #1C293C;
+      --white:    #FFFFFF;
+      --border:   2px solid #1C293C;
+      --shadow:   4px 4px 0px #1C293C;
+      --shadow-sm:3px 3px 0px #1C293C;
+      --shadow-lg:6px 6px 0px #1C293C;
+      --danger:   #DC2626;
+      --success:  #16A34A;
+      --font:     'Inter', system-ui, sans-serif;
+      --mono:     'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      background: var(--white);
+      border-bottom: var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      font-weight: 900;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-brand-dot {
+      width: 28px; height: 28px;
+      background: var(--yellow);
+      border: var(--border);
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+    }
+    .nav-back {
+      font-size: 14px; font-weight: 700;
+      color: var(--ink); text-decoration: none;
+      border: var(--border); box-shadow: var(--shadow-sm);
+      padding: 6px 14px; background: var(--white);
+      transition: transform 0.1s, box-shadow 0.1s;
+      display: inline-block;
+    }
+    .nav-back:hover { transform: translate(-1px,-1px); box-shadow: var(--shadow); }
+    .nav-back:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+
+    /* ── Hero ── */
+    .hero {
+      background: var(--yellow);
+      border-bottom: var(--border);
+      padding: 52px 24px 48px;
+    }
+    .hero-inner { max-width: 720px; margin: 0 auto; }
+    .hero-badge {
+      display: inline-block;
+      background: var(--indigo); color: var(--white);
+      border: var(--border); box-shadow: var(--shadow-sm);
+      font-size: 12px; font-weight: 700; font-family: var(--mono);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 5px 14px; margin-bottom: 20px;
+    }
+    .hero-title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      margin-bottom: 14px;
+    }
+    .hero-desc {
+      font-size: 16px;
+      color: var(--ink);
+      max-width: 540px;
+      opacity: 0.75;
+    }
+
+    /* ── Form wrap ── */
+    .form-wrap {
+      max-width: 720px;
+      margin: 40px auto 80px;
+      padding: 0 24px;
+    }
+
+    /* ── Section label ── */
+    .sec-label {
+      font-size: 12px; font-weight: 700;
+      font-family: var(--mono); letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--indigo);
+      margin: 40px 0 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sec-label::after {
+      content: '';
+      flex: 1;
+      height: 2px;
+      background: var(--ink);
+    }
+
+    /* ── Agreement items ── */
+    .agree-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .agree-item {
+      display: flex; align-items: flex-start; gap: 16px;
+      background: var(--white);
+      border: var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 20px;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
+      user-select: none;
+    }
+    .agree-item:hover { transform: translate(-1px,-1px); box-shadow: var(--shadow); }
+    .agree-item.checked {
+      background: var(--yellow);
+      transform: translate(-1px,-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .agree-box {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      border: var(--border);
+      background: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 1px;
+      transition: background 0.1s;
+    }
+    .agree-item.checked .agree-box { background: var(--ink); }
+    .agree-box svg { display: none; }
+    .agree-item.checked .agree-box svg { display: block; }
+
+    .agree-input { display: none; }
+
+    .agree-text { font-size: 15px; line-height: 1.6; color: var(--ink); }
+    .agree-text strong { font-weight: 800; }
+
+    /* ── Field group ── */
+    .field-group { display: flex; flex-direction: column; gap: 20px; }
+
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 520px) { .field-row { grid-template-columns: 1fr; } }
+
+    .field-label {
+      font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .field-label .req { color: var(--danger); font-size: 15px; line-height: 1; }
+    .field-opt { font-size: 12px; font-family: var(--mono); font-weight: 400; color: #6b7280; }
+
+    .field-input, .field-textarea, .field-date {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--white);
+      border: var(--border);
+      box-shadow: var(--shadow-sm);
+      font-family: var(--font); font-size: 15px;
+      color: var(--ink); outline: none;
+      transition: box-shadow 0.1s, border-color 0.1s;
+    }
+    .field-input:focus, .field-textarea:focus, .field-date:focus {
+      box-shadow: 4px 4px 0 var(--indigo);
+      border-color: var(--indigo);
+    }
+    .field-input::placeholder, .field-textarea::placeholder { color: #9ca3af; }
+    .field-textarea { resize: vertical; min-height: 88px; line-height: 1.65; }
+    .field-date { cursor: pointer; }
+    .field-date:disabled { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; box-shadow: none; }
+
+    .field-error {
+      font-size: 12px; color: var(--danger);
+      font-weight: 700; display: none; margin-top: 2px;
+    }
+    .field-input.invalid, .field-textarea.invalid {
+      border-color: var(--danger);
+      box-shadow: 3px 3px 0 var(--danger);
+    }
+
+    /* ── 기한 없음 ── */
+    .no-expire-wrap {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 8px; cursor: pointer;
+    }
+    .no-expire-box {
+      width: 20px; height: 20px;
+      border: var(--border); background: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background 0.1s;
+    }
+    .no-expire-box.checked { background: var(--ink); }
+    .no-expire-label { font-size: 14px; font-weight: 600; color: var(--ink); }
+
+    /* ── Submit ── */
+    .submit-area { margin-top: 36px; }
+    .submit-hint {
+      font-size: 13px; font-family: var(--mono);
+      color: #6b7280; margin-bottom: 16px; line-height: 1.65;
+      border-left: 3px solid var(--ink);
+      padding-left: 12px;
+    }
+
+    .btn-submit {
+      width: 100%; padding: 16px;
+      background: var(--indigo); color: var(--white);
+      border: var(--border); box-shadow: var(--shadow);
+      font-family: var(--font); font-size: 16px; font-weight: 900;
+      cursor: pointer; letter-spacing: -0.01em;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .btn-submit:hover:not(:disabled) {
+      transform: translate(-2px,-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    .btn-submit:active:not(:disabled) {
+      transform: translate(2px,2px);
+      box-shadow: 1px 1px 0 var(--ink);
+    }
+    .btn-submit:disabled {
+      background: #d1d5db; color: #9ca3af;
+      cursor: not-allowed; box-shadow: var(--shadow-sm);
+    }
+
+    /* ── 상태 박스 ── */
+    .status-box {
+      padding: 20px 22px;
+      border: var(--border);
+      font-size: 15px; line-height: 1.65;
+      display: none; margin-top: 16px;
+    }
+    .status-box.success { background: #ECFDF5; box-shadow: var(--shadow-sm); }
+    .status-box.error   { background: #FEF2F2; box-shadow: 3px 3px 0 var(--danger); border-color: var(--danger); }
+    .status-title { font-weight: 900; font-size: 17px; margin-bottom: 8px; }
+    .status-box.success .status-title { color: var(--success); }
+    .status-box.error   .status-title { color: var(--danger); }
+
+    /* spinner */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle; margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .form-wrap { padding: 0 20px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body>
+
+  <!-- ── Nav ── -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <div class="nav-brand-dot"></div>
+        AI-WORKER
+      </div>
+      <a class="nav-back" href="/c/ai-worker/ai_tool_support_faq.html">← FAQ 보기</a>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">AI 도구 지원 · 신청서</div>
+      <h1 class="hero-title">Claude 공유 계정<br>사용 신청</h1>
+      <p class="hero-desc">아래 동의 항목을 확인하고 신청 정보를 작성해주세요.<br>제출 후 3영업일 이내에 계정 정보를 전달드립니다.</p>
+    </div>
+  </section>
+
+  <!-- ── Form ── -->
+  <div class="form-wrap">
+    <form id="applyForm" novalidate>
+
+      <!-- 동의 항목 -->
+      <p class="sec-label">동의 항목 · 전체 동의 필수</p>
+      <div class="agree-list">
+
+        <label class="agree-item" id="ag1-label">
+          <input type="checkbox" class="agree-input" id="ag1" name="agree1">
+          <span class="agree-box">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,7 5.5,10.5 12,3" stroke="#FDC800" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="agree-text"><strong>개인 부담금에 동의합니다.</strong> 월 1만 원이 급여에서 차감되며, 지원이 종료되면 차감이 중단됩니다.</span>
+        </label>
+
+        <label class="agree-item" id="ag2-label">
+          <input type="checkbox" class="agree-input" id="ag2" name="agree2">
+          <span class="agree-box">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,7 5.5,10.5 12,3" stroke="#FDC800" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="agree-text"><strong>계정 이관 요청에 동의합니다.</strong> 사용 계정의 사용량에 따라 다른 계정으로의 이관을 요청받을 수 있습니다.</span>
+        </label>
+
+        <label class="agree-item" id="ag3-label">
+          <input type="checkbox" class="agree-input" id="ag3" name="agree3">
+          <span class="agree-box">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,7 5.5,10.5 12,3" stroke="#FDC800" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="agree-text"><strong>공유 계정 방식에 동의합니다.</strong> 배정받는 계정은 <strong>5~7명이 함께 사용하는 공유 계정</strong>입니다.</span>
+        </label>
+
+        <label class="agree-item" id="ag4-label">
+          <input type="checkbox" class="agree-input" id="ag4" name="agree4">
+          <span class="agree-box">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,7 5.5,10.5 12,3" stroke="#FDC800" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="agree-text"><strong>사용량 제한 가능성에 동의합니다.</strong> 모니터링을 통해 사용자 이동으로 사용량을 조절하지만, 전체 사용량이 급증하면 일시적으로 제한에 걸릴 수 있습니다.</span>
+        </label>
+
+      </div>
+
+      <!-- 신청 정보 -->
+      <p class="sec-label" style="margin-top:48px;">신청 정보</p>
+      <div class="field-group">
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label" for="dept">부서명 <span class="req">*</span></label>
+            <input type="text" id="dept" name="dept" class="field-input" placeholder="센터/실 - 팀" autocomplete="organization" required>
+            <span class="field-error" id="dept-err">부서명을 입력해주세요.</span>
+          </div>
+          <div class="field">
+            <label class="field-label" for="name">이름 <span class="req">*</span></label>
+            <input type="text" id="name" name="name" class="field-input" placeholder="홍길동" autocomplete="name" required>
+            <span class="field-error" id="name-err">이름을 입력해주세요.</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="purpose">사용 용도 <span class="req">*</span></label>
+          <textarea id="purpose" name="purpose" class="field-input field-textarea" placeholder="어떤 업무에 주로 활용할 계획인지 간략히 적어주세요." required></textarea>
+          <span class="field-error" id="purpose-err">사용 용도를 입력해주세요.</span>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="expiry">사용 기한</label>
+          <input type="date" id="expiry" name="expiry" class="field-date">
+          <label class="no-expire-wrap" id="noExpireWrap">
+            <span class="no-expire-box" id="noExpireBox">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" id="noExpireSvg" style="display:none;"><polyline points="1.5,6 4.5,9 10.5,3" stroke="#FDC800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="no-expire-label">기한 없음</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="memo">기타 <span class="field-opt">선택</span></label>
+          <textarea id="memo" name="memo" class="field-input field-textarea" placeholder="특이사항, 요청사항 등 자유롭게 작성해주세요." style="min-height:72px;"></textarea>
+        </div>
+
+      </div>
+
+      <!-- 제출 -->
+      <div class="submit-area">
+        <p class="submit-hint">위 동의 항목을 모두 확인하고 정보를 입력하셨으면 제출 버튼을 눌러주세요.</p>
+        <button type="submit" class="btn-submit" id="submitBtn" disabled>신청서 제출하기 →</button>
+        <div class="status-box success" id="successBox">
+          <div class="status-title">✓ 신청이 접수되었습니다</div>
+          <div>3영업일 이내에 계정 정보를 전달드리겠습니다. 문의사항이 있으시면 AI-Worker 채널로 연락 주세요.</div>
+        </div>
+        <div class="status-box error" id="errorBox">
+          <div class="status-title">⚠ 제출 중 오류가 발생했습니다</div>
+          <div id="errorMsg">잠시 후 다시 시도해주세요.</div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <script>
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+
+    // 동의 체크박스
+    document.querySelectorAll('.agree-item').forEach(label => {
+      label.addEventListener('click', () => {
+        const cb = label.querySelector('.agree-input');
+        cb.checked = !cb.checked;
+        label.classList.toggle('checked', cb.checked);
+        updateSubmitBtn();
+      });
+    });
+
+    function allAgreed() {
+      return ['ag1','ag2','ag3','ag4'].every(id => document.getElementById(id).checked);
+    }
+    function updateSubmitBtn() {
+      document.getElementById('submitBtn').disabled = !allAgreed();
+    }
+
+    // 기한 없음 토글
+    let noExpire = false;
+    document.getElementById('noExpireWrap').addEventListener('click', () => {
+      noExpire = !noExpire;
+      const box = document.getElementById('noExpireBox');
+      const svg = document.getElementById('noExpireSvg');
+      const dateInput = document.getElementById('expiry');
+      box.classList.toggle('checked', noExpire);
+      svg.style.display = noExpire ? 'block' : 'none';
+      dateInput.disabled = noExpire;
+      if (noExpire) dateInput.value = '';
+    });
+
+    // 유효성 검사
+    function validate() {
+      let ok = true;
+      [['dept','dept-err'],['name','name-err'],['purpose','purpose-err']].forEach(([id, errId]) => {
+        const el = document.getElementById(id);
+        const err = document.getElementById(errId);
+        if (!el.value.trim()) {
+          el.classList.add('invalid'); err.style.display = 'block'; ok = false;
+        } else {
+          el.classList.remove('invalid'); err.style.display = 'none';
+        }
+      });
+      return ok;
+    }
+    ['dept','name','purpose'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        const el = document.getElementById(id);
+        if (el.value.trim()) {
+          el.classList.remove('invalid');
+          document.getElementById(id+'-err').style.display = 'none';
+        }
+      });
+    });
+
+    // 제출
+    document.getElementById('applyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!validate()) return;
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>제출 중…';
+
+      const expiryVal = noExpire ? '기한 없음' : (document.getElementById('expiry').value || '미입력');
+
+      const payload = {
+        timestamp: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+        dept:    document.getElementById('dept').value.trim(),
+        name:    document.getElementById('name').value.trim(),
+        purpose: document.getElementById('purpose').value.trim(),
+        expiry:  expiryVal,
+        memo:    document.getElementById('memo').value.trim(),
+        agree1: '동의', agree2: '동의', agree3: '동의', agree4: '동의',
+      };
+
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST', mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        document.getElementById('applyForm').style.display = 'none';
+        document.getElementById('successBox').style.display = 'block';
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '신청서 제출하기 →';
+        const errBox = document.getElementById('errorBox');
+        document.getElementById('errorMsg').textContent = err.message || '네트워크 오류가 발생했습니다.';
+        errBox.style.display = 'block';
+      }
+    });
+  </script>
+
+  <!--
+  ════════════════════════════════════════════════════════════════════
+  Google Apps Script 설정 방법
+  ════════════════════════════════════════════════════════════════════
+
+  1. script.google.com 에서 새 프로젝트 생성
+  2. 아래 코드를 붙여넣기
+  3. 배포 → 웹 앱 → "모든 사용자" 액세스 → 배포
+  4. 배포 URL을 이 파일 상단 APPS_SCRIPT_URL 에 교체
+
+  ─── Apps Script 코드 ───────────────────────────────────────────────
+
+  const SHEET_ID    = 'YOUR_GOOGLE_SHEET_ID';
+  const SHEET_NAME  = 'AI도구신청';
+  const CHAT_WEBHOOK = 'https://chat.googleapis.com/v1/spaces/YOUR_SPACE/messages?key=...';
+
+  function doPost(e) {
+    const data = JSON.parse(e.postData.contents);
+
+    // 1. Google Sheet 저장
+    const ss    = SpreadsheetApp.openById(SHEET_ID);
+    const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(['접수일시','부서명','이름','사용용도','사용기한','기타','동의1','동의2','동의3','동의4']);
+    }
+    sheet.appendRow([
+      data.timestamp, data.dept, data.name,
+      data.purpose,   data.expiry, data.memo,
+      data.agree1,    data.agree2, data.agree3, data.agree4,
+    ]);
+
+    // 2. Google Chat 알림
+    const msg = `🆕 *AI 도구 지원 신청*\n• 부서: ${data.dept}\n• 이름: ${data.name}\n• 용도: ${data.purpose}\n• 기한: ${data.expiry}\n• 기타: ${data.memo || '없음'}\n• 접수: ${data.timestamp}`;
+    UrlFetchApp.fetch(CHAT_WEBHOOK, {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({ text: msg }),
+    });
+
+    return ContentService.createTextOutput(JSON.stringify({ result: 'ok' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  ─────────────────────────────────────────────────────────────────────
+  -->
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="SLSLBAG" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
