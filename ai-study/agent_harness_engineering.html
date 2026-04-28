@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>에이전트 하네스 엔지니어링 — Addy Osmani</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:     #0E0E0B;
+      --ink-2:   #3A3A36;
+      --ink-3:   #6B6B64;
+      --ink-4:   #A8A8A0;
+      --paper:   #F7F7F4;
+      --paper-2: #EFEFEB;
+      --white:   #FFFFFF;
+      --rule:    #D8D8D0;
+      --accent:  #0E0E0B;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+    .masthead {
+      border-bottom: 3px solid var(--ink);
+      padding: 20px 40px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .masthead-name { font-family: var(--font-display); font-size: 14px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+    .masthead-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); letter-spacing: 0.06em; text-transform: uppercase; }
+    .lead { border-bottom: 1px solid var(--rule); padding: 80px 40px 64px; max-width: 1100px; margin: 0 auto; }
+    .lead-eyebrow {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--ink-3); margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+    }
+    .lead-eyebrow::before { content: '//'; color: var(--ink-4); }
+    .lead h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 900; line-height: 1.0; letter-spacing: -0.03em;
+      color: var(--ink); margin-bottom: 28px; max-width: 900px;
+    }
+    .lead h1 em { font-style: italic; font-weight: 400; }
+    .lead-deck {
+      font-size: 19px; color: var(--ink-2); max-width: 680px; line-height: 1.65;
+      border-left: 3px solid var(--ink); padding-left: 20px; margin-bottom: 40px;
+    }
+    .lead-byline { font-size: 13px; color: var(--ink-4); font-family: var(--font-mono); display: flex; gap: 20px; flex-wrap: wrap; }
+    .lead-byline span::before { content: '— '; }
+    .page-body { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+    .doc-section { padding: 56px 0; border-bottom: 1px solid var(--rule); }
+    .doc-section:last-child { border-bottom: none; }
+    .section-num { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+    .section-heading { font-family: var(--font-display); font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 14px; }
+    .section-lead { font-size: 16px; color: var(--ink-3); max-width: 640px; margin-bottom: 40px; line-height: 1.7; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+    .col-item { padding: 28px; border: 1px solid var(--rule); }
+    .col-item + .col-item { border-left: none; }
+    @media (max-width: 680px) { .col-item + .col-item { border-left: 1px solid var(--rule); border-top: none; } }
+    .col-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 10px; font-family: var(--font-mono); }
+    .col-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
+    .col-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .col-list { font-size: 14px; color: var(--ink-3); line-height: 1.8; padding-left: 0; list-style: none; }
+    .col-list li::before { content: '→ '; color: var(--ink-4); font-family: var(--font-mono); }
+    .pullquote { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--rule); padding: 32px 0; margin: 40px 0; }
+    .pullquote p { font-family: var(--font-display); font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-style: italic; font-weight: 400; line-height: 1.4; color: var(--ink); }
+    .pullquote cite { display: block; margin-top: 12px; font-size: 13px; font-family: var(--font-mono); color: var(--ink-4); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; }
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { border-bottom: 2px solid var(--ink); padding: 10px 16px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-family: var(--font-mono); }
+    td { border-bottom: 1px solid var(--rule); padding: 14px 16px; font-size: 14px; color: var(--ink-2); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--paper-2); }
+    pre.code {
+      background: var(--ink); color: #E8E8E0; border-radius: 4px; padding: 20px 24px;
+      font-family: var(--font-mono); font-size: 13px; line-height: 1.7;
+      overflow-x: auto; white-space: pre; margin: 20px 0;
+    }
+    code.inline { background: var(--paper-2); border: 1px solid var(--rule); border-radius: 3px; padding: 1px 6px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+    .facts { display: flex; gap: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+    .fact { flex: 1; padding: 24px 28px; border-right: 1px solid var(--rule); }
+    .fact:last-child { border-right: none; }
+    .fact-num { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; color: var(--ink); line-height: 1; margin-bottom: 6px; }
+    .fact-label { font-size: 13px; color: var(--ink-4); font-family: var(--font-mono); }
+    footer { border-top: 3px solid var(--ink); padding: 28px 40px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12px; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+    .body-text { font-size: 15px; color: var(--ink-2); max-width: 680px; line-height: 1.75; margin-bottom: 20px; }
+
+    /* image-pair */
+    .image-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 32px 0; }
+    @media (max-width: 640px) { .image-pair { grid-template-columns: 1fr; } }
+    .image-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-4); margin-bottom: 8px; font-family: var(--font-mono); }
+    .lightbox-trigger { transition: opacity 0.15s ease; cursor: zoom-in; width: 100%; }
+    .lightbox-trigger:hover { opacity: 0.85; }
+
+    /* three col */
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
+    @media (max-width: 780px) { .three-col { grid-template-columns: 1fr; } }
+    .three-col .col-item + .col-item { border-left: none; }
+    @media (max-width: 780px) { .three-col .col-item + .col-item { border-left: 1px solid var(--rule); border-top: none; } }
+
+    /* component cards */
+    .component-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0; border: 1px solid var(--rule); margin-top: 24px; }
+    .component-item { padding: 24px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+    .component-item:nth-child(2n) { border-right: none; }
+    @media (max-width: 640px) { .component-item { border-right: none; } }
+    .component-icon { font-family: var(--font-mono); font-size: 20px; margin-bottom: 10px; color: var(--ink-3); }
+    .component-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--ink); }
+    .component-desc { font-size: 13px; color: var(--ink-3); line-height: 1.6; }
+
+    @media (max-width: 640px) {
+      .masthead, .lead, footer { padding-left: 16px; padding-right: 16px; }
+      .page-body { padding: 0 16px; }
+      .facts { flex-direction: column; }
+      .fact { border-right: none; border-bottom: 1px solid var(--rule); }
+      .fact:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="masthead">
+  <span class="masthead-name">AI Study</span>
+  <span class="masthead-meta">2026-04-28 &nbsp;·&nbsp; 에이전트 하네스 엔지니어링</span>
+</header>
+
+<div class="lead">
+  <div class="lead-eyebrow">Addy Osmani · agent-harness-engineering</div>
+  <h1>에이전트 하네스<br><em>엔지니어링</em></h1>
+  <p class="lead-deck">에이전트 = 모델 + 하네스. 코딩 에이전트의 진정한 정교함은 모델이 아니라 그것을 둘러싼 시스템에 있다. 하네스가 평범한 모델을 탁월한 에이전트로 변환한다.</p>
+  <div class="lead-byline">
+    <span>작성일: 2026-04-28</span>
+    <span>출처: Addy Osmani 블로그</span>
+    <span>분류: 에이전트 아키텍처</span>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <div class="facts" style="margin: 40px 0;">
+    <div class="fact"><div class="fact-num">7</div><div class="fact-label">하네스 핵심 구성 요소</div></div>
+    <div class="fact"><div class="fact-num">4</div><div class="fact-label">모델-하네스 학습 루프 단계</div></div>
+    <div class="fact"><div class="fact-num">3</div><div class="fact-label">HaaS 주요 플랫폼</div></div>
+    <div class="fact"><div class="fact-num">≤60</div><div class="fact-label">AGENTS.md 권장 줄 수</div></div>
+  </div>
+
+  <!-- SECTION 01 -->
+  <section class="doc-section">
+    <div class="section-num">01</div>
+    <h2 class="section-heading">핵심 공식: Agent = Model + Harness</h2>
+    <p class="section-lead">에이전트는 모델 단독이 아니다. 모델을 둘러싼 모든 코드, 설정, 실행 로직이 합쳐질 때 비로소 에이전트가 된다.</p>
+
+    <div class="image-pair">
+      <div>
+        <div class="image-label">원본 (English)</div>
+        <svg viewBox="0 0 760 210" class="lightbox-trigger" style="width:100%;border:1px solid #D8D8D0;background:#fff;">
+          <rect x="20" y="40" width="150" height="130" rx="4" fill="none" stroke="#0E0E0B" stroke-width="2"/>
+          <text x="95" y="80" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#A8A8A0" letter-spacing="2">MODEL</text>
+          <text x="95" y="105" text-anchor="middle" font-family="Georgia,serif" font-size="22" font-weight="900" fill="#0E0E0B">LLM</text>
+          <text x="95" y="128" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#6B6B64">(Claude, GPT, etc)</text>
+          <text x="95" y="150" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">Reasoning · Language</text>
+          <text x="195" y="113" text-anchor="middle" font-family="Georgia,serif" font-size="36" font-weight="900" fill="#0E0E0B">+</text>
+          <rect x="220" y="20" width="270" height="170" rx="4" fill="none" stroke="#0E0E0B" stroke-width="2"/>
+          <text x="355" y="48" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#A8A8A0" letter-spacing="2">HARNESS</text>
+          <text x="240" y="75" font-family="'JetBrains Mono',monospace" font-size="12" fill="#3A3A36">• Prompts &amp; AGENTS.md</text>
+          <text x="240" y="97" font-family="'JetBrains Mono',monospace" font-size="12" fill="#3A3A36">• Tools &amp; MCP servers</text>
+          <text x="240" y="119" font-family="'JetBrains Mono',monospace" font-size="12" fill="#3A3A36">• Sandbox &amp; filesystem</text>
+          <text x="240" y="141" font-family="'JetBrains Mono',monospace" font-size="12" fill="#3A3A36">• Hooks &amp; middleware</text>
+          <text x="240" y="163" font-family="'JetBrains Mono',monospace" font-size="12" fill="#3A3A36">• Orchestration · Memory</text>
+          <text x="515" y="113" text-anchor="middle" font-family="Georgia,serif" font-size="36" font-weight="900" fill="#0E0E0B">=</text>
+          <rect x="540" y="40" width="200" height="130" rx="4" fill="#0E0E0B"/>
+          <text x="640" y="80" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#A8A8A0" letter-spacing="2">AGENT</text>
+          <text x="640" y="108" text-anchor="middle" font-family="Georgia,serif" font-size="18" font-weight="700" fill="#F7F7F4">Real-world</text>
+          <text x="640" y="130" text-anchor="middle" font-family="Georgia,serif" font-size="18" font-style="italic" fill="#F7F7F4">Capabilities</text>
+          <text x="640" y="154" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">Code · Browse · Build</text>
+        </svg>
+      </div>
+      <div>
+        <div class="image-label">한글화</div>
+        <svg viewBox="0 0 760 210" class="lightbox-trigger" style="width:100%;border:1px solid #D8D8D0;background:#F7F7F4;">
+          <rect x="20" y="40" width="150" height="130" rx="4" fill="none" stroke="#0E0E0B" stroke-width="2"/>
+          <text x="95" y="80" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#A8A8A0" letter-spacing="2">모델</text>
+          <text x="95" y="105" text-anchor="middle" font-family="Georgia,serif" font-size="22" font-weight="900" fill="#0E0E0B">LLM</text>
+          <text x="95" y="128" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#6B6B64">(Claude, GPT 등)</text>
+          <text x="95" y="150" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">추론 · 언어</text>
+          <text x="195" y="113" text-anchor="middle" font-family="Georgia,serif" font-size="36" font-weight="900" fill="#0E0E0B">+</text>
+          <rect x="220" y="20" width="270" height="170" rx="4" fill="none" stroke="#0E0E0B" stroke-width="2"/>
+          <text x="355" y="48" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#A8A8A0" letter-spacing="2">하네스</text>
+          <text x="240" y="75" font-family="'JetBrains Mono',monospace" font-size="12" fill="#3A3A36">• 프롬프트 &amp; AGENTS.md</text>
+          <text x="240" y="97" font-family="'JetBrains Mono',monospace" font-size="12" fill="#3A3A36">• 도구 &amp; MCP 서버</text>
+          <text x="240" y="119" font-family="'JetBrains Mono',monospace" font-size="12" fill="#3A3A36">• 샌드박스 &amp; 파일시스템</text>
+          <text x="240" y="141" font-family="'JetBrains Mono',monospace" font-size="12" fill="#3A3A36">• 훅 &amp; 미들웨어</text>
+          <text x="240" y="163" font-family="'JetBrains Mono',monospace" font-size="12" fill="#3A3A36">• 오케스트레이션 · 메모리</text>
+          <text x="515" y="113" text-anchor="middle" font-family="Georgia,serif" font-size="36" font-weight="900" fill="#0E0E0B">=</text>
+          <rect x="540" y="40" width="200" height="130" rx="4" fill="#0E0E0B"/>
+          <text x="640" y="80" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#A8A8A0" letter-spacing="2">에이전트</text>
+          <text x="640" y="108" text-anchor="middle" font-family="Georgia,serif" font-size="18" font-weight="700" fill="#F7F7F4">실세계</text>
+          <text x="640" y="130" text-anchor="middle" font-family="Georgia,serif" font-size="18" font-style="italic" fill="#F7F7F4">실행 능력</text>
+          <text x="640" y="154" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">코딩 · 탐색 · 빌드</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-top:32px;">
+      <div class="col-item">
+        <div class="col-label">Model</div>
+        <div class="col-title">모델이 하는 것</div>
+        <ul class="col-list">
+          <li>자연어 추론 및 생성</li>
+          <li>코드 이해 및 작성</li>
+          <li>패턴 인식 및 계획 수립</li>
+          <li>도구 호출 결정</li>
+        </ul>
+      </div>
+      <div class="col-item">
+        <div class="col-label">Harness</div>
+        <div class="col-title">하네스가 하는 것</div>
+        <ul class="col-list">
+          <li>모델이 단독으로 할 수 없는 것을 보완</li>
+          <li>실패로부터 학습한 규칙을 영구 저장</li>
+          <li>안전한 실행 환경(샌드박스) 제공</li>
+          <li>장기 작업의 컨텍스트 유지 및 조율</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pullquote" style="margin-top:40px;">
+      <p>"평범한 모델과 훌륭한 하네스의 조합이, 훌륭한 모델과 나쁜 하네스의 조합을 이긴다."</p>
+      <cite>Addy Osmani — Agent Harness Engineering</cite>
+    </div>
+  </section>
+
+  <!-- SECTION 02 -->
+  <section class="doc-section">
+    <div class="section-num">02</div>
+    <h2 class="section-heading">하네스의 7가지 구성 요소</h2>
+    <p class="section-lead">하네스는 단일 컴포넌트가 아니다. 모델 주변을 감싸는 7가지 레이어가 협력하여 에이전트를 구성한다.</p>
+
+    <div class="component-grid">
+      <div class="component-item">
+        <div class="component-icon">[01]</div>
+        <div class="component-title">프롬프트 & 스킬 파일</div>
+        <div class="component-desc">시스템 프롬프트, AGENTS.md를 통한 행동 규칙 정의. 모든 요청의 최우선 컨텍스트.</div>
+      </div>
+      <div class="component-item">
+        <div class="component-icon">[02]</div>
+        <div class="component-title">도구 & MCP 서버</div>
+        <div class="component-desc">Bash, 파일시스템, Git, 웹 검색 등 실행 능력 확장. MCP로 외부 서비스 통합.</div>
+      </div>
+      <div class="component-item">
+        <div class="component-icon">[03]</div>
+        <div class="component-title">샌드박스 & 기본 환경</div>
+        <div class="component-desc">격리된 실행 환경, 위험 명령 화이트리스트, 헤드리스 브라우저 포함.</div>
+      </div>
+      <div class="component-item">
+        <div class="component-icon">[04]</div>
+        <div class="component-title">오케스트레이션 로직</div>
+        <div class="component-desc">Ralph 루프, 계획 수립, 자체 검증. 장기 실행 작업의 흐름 제어.</div>
+      </div>
+      <div class="component-item">
+        <div class="component-icon">[05]</div>
+        <div class="component-title">훅 & 미들웨어</div>
+        <div class="component-desc">도구 호출 전·후에 실행되는 스크립트. 타입체크, 린트, 위험 명령 차단.</div>
+      </div>
+      <div class="component-item">
+        <div class="component-icon">[06]</div>
+        <div class="component-title">메모리 & 검색</div>
+        <div class="component-desc">AGENTS.md 지속성 학습, 웹 검색으로 컷오프 극복, 코드베이스 탐색.</div>
+      </div>
+      <div class="component-item" style="border-right:none;">
+        <div class="component-icon">[07]</div>
+        <div class="component-title">관찰성</div>
+        <div class="component-desc">이벤트 버스, 배경 실행기, 성능 추적, 로깅. 에이전트 동작 가시성 확보.</div>
+      </div>
+      <div class="component-item" style="border-right:none;background:var(--paper-2);">
+        <div class="component-icon" style="color:var(--ink);">[∑]</div>
+        <div class="component-title">7가지의 합</div>
+        <div class="component-desc">각 컴포넌트는 "모델이 단독으로 할 수 없는 것"에 대한 가정을 인코딩한다. — Addy Osmani</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 03 -->
+  <section class="doc-section">
+    <div class="section-num">03</div>
+    <h2 class="section-heading">래칫 원칙 (Ratchet Principle)</h2>
+    <p class="section-lead">하네스 엔지니어링의 가장 강력한 설계 철학. 모든 실수는 되돌릴 수 없는 개선의 계기가 된다.</p>
+
+    <div class="pullquote">
+      <p>"모든 실수가 규칙이 된다. 모든 실패가 하네스를 한 단계 더 나아가게 한다."</p>
+      <cite>래칫 원칙 — Addy Osmani</cite>
+    </div>
+
+    <div class="image-pair">
+      <div>
+        <div class="image-label">원본 (English)</div>
+        <svg viewBox="0 0 420 380" class="lightbox-trigger" style="width:100%;border:1px solid #D8D8D0;background:#fff;">
+          <text x="210" y="30" text-anchor="middle" font-family="Georgia,serif" font-size="16" font-weight="700" fill="#0E0E0B">Ratchet Principle</text>
+          <!-- Circle background -->
+          <circle cx="210" cy="200" r="120" fill="none" stroke="#D8D8D0" stroke-width="1" stroke-dasharray="4,4"/>
+          <!-- Step 1: top -->
+          <rect x="140" y="55" width="140" height="50" rx="3" fill="#0E0E0B"/>
+          <text x="210" y="78" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#A8A8A0">01</text>
+          <text x="210" y="95" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#F7F7F4">Failure occurs</text>
+          <!-- Arrow down-right -->
+          <line x1="300" y1="105" x2="335" y2="155" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arrow-en)"/>
+          <!-- Step 2: right -->
+          <rect x="295" y="160" width="120" height="50" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="355" y="180" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">02</text>
+          <text x="355" y="197" text-anchor="middle" font-family="Georgia,serif" font-size="12" font-weight="700" fill="#0E0E0B">Root cause</text>
+          <!-- Arrow down-left -->
+          <line x1="310" y1="215" x2="295" y2="268" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arrow-en)"/>
+          <!-- Step 3: bottom -->
+          <rect x="140" y="270" width="140" height="50" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="210" y="290" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">03</text>
+          <text x="210" y="307" text-anchor="middle" font-family="Georgia,serif" font-size="12" font-weight="700" fill="#0E0E0B">Add harness rule</text>
+          <!-- Arrow up-left -->
+          <line x1="140" y1="268" x2="120" y2="215" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arrow-en)"/>
+          <!-- Step 4: left -->
+          <rect x="5" y="160" width="110" height="50" rx="3" fill="#EFEFEB" stroke="#0E0E0B" stroke-width="1"/>
+          <text x="60" y="180" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">04</text>
+          <text x="60" y="197" text-anchor="middle" font-family="Georgia,serif" font-size="12" font-weight="700" fill="#0E0E0B">Persist ∞</text>
+          <!-- Arrow back to top -->
+          <line x1="65" y1="160" x2="165" y2="105" stroke="#D8D8D0" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrow-en)"/>
+          <defs>
+            <marker id="arrow-en" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#0E0E0B"/>
+            </marker>
+          </defs>
+          <text x="210" y="210" text-anchor="middle" font-family="Georgia,serif" font-size="11" font-style="italic" fill="#A8A8A0">Never reverts</text>
+          <text x="210" y="225" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">(ratchet = one-way)</text>
+        </svg>
+      </div>
+      <div>
+        <div class="image-label">한글화</div>
+        <svg viewBox="0 0 420 380" class="lightbox-trigger" style="width:100%;border:1px solid #D8D8D0;background:#F7F7F4;">
+          <text x="210" y="30" text-anchor="middle" font-family="Georgia,serif" font-size="16" font-weight="700" fill="#0E0E0B">래칫 원칙</text>
+          <circle cx="210" cy="200" r="120" fill="none" stroke="#D8D8D0" stroke-width="1" stroke-dasharray="4,4"/>
+          <rect x="140" y="55" width="140" height="50" rx="3" fill="#0E0E0B"/>
+          <text x="210" y="78" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#A8A8A0">01</text>
+          <text x="210" y="95" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#F7F7F4">실패 발생</text>
+          <line x1="300" y1="105" x2="335" y2="155" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arrow-ko)"/>
+          <rect x="295" y="160" width="120" height="50" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="355" y="180" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">02</text>
+          <text x="355" y="197" text-anchor="middle" font-family="Georgia,serif" font-size="12" font-weight="700" fill="#0E0E0B">근본 원인 분석</text>
+          <line x1="310" y1="215" x2="295" y2="268" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arrow-ko)"/>
+          <rect x="140" y="270" width="140" height="50" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="210" y="290" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">03</text>
+          <text x="210" y="307" text-anchor="middle" font-family="Georgia,serif" font-size="12" font-weight="700" fill="#0E0E0B">하네스 규칙 추가</text>
+          <line x1="140" y1="268" x2="120" y2="215" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arrow-ko)"/>
+          <rect x="5" y="160" width="110" height="50" rx="3" fill="#EFEFEB" stroke="#0E0E0B" stroke-width="1"/>
+          <text x="60" y="180" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">04</text>
+          <text x="60" y="197" text-anchor="middle" font-family="Georgia,serif" font-size="12" font-weight="700" fill="#0E0E0B">영구 적용 ∞</text>
+          <line x1="65" y1="160" x2="165" y2="105" stroke="#D8D8D0" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrow-ko)"/>
+          <defs>
+            <marker id="arrow-ko" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#0E0E0B"/>
+            </marker>
+          </defs>
+          <text x="210" y="210" text-anchor="middle" font-family="Georgia,serif" font-size="11" font-style="italic" fill="#A8A8A0">되돌아가지 않는다</text>
+          <text x="210" y="225" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">(단방향 개선)</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>실패 유형</th><th>하네스 대응</th><th>적용 위치</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>모르는 코드 규약 사용</td><td>규약을 AGENTS.md에 명시</td><td>시스템 프롬프트</td></tr>
+          <tr><td>위험 명령 실행 (rm -rf 등)</td><td>실행 전 훅으로 차단</td><td>pre-tool 훅</td></tr>
+          <tr><td>테스트 비활성화 후 커밋</td><td>pre-commit 훅에 테스트 검사 추가</td><td>git hook</td></tr>
+          <tr><td>장시간 작업 중 방향 상실</td><td>플래너/실행자 분리 아키텍처</td><td>오케스트레이션</td></tr>
+          <tr><td>잘못된 파일 수정</td><td>편집 후 린트/타입체크 훅</td><td>post-edit 훅</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:14px;color:var(--ink-3);margin-top:16px;font-family:var(--font-mono);">
+      AGENTS.md 원칙: 60줄 이하 유지 · 각 줄은 과거 실패로 추적 가능 · 정기 검토로 불필요한 규칙 제거
+    </p>
+  </section>
+
+  <!-- SECTION 04 -->
+  <section class="doc-section">
+    <div class="section-num">04</div>
+    <h2 class="section-heading">핵심 하네스 컴포넌트 상세</h2>
+    <p class="section-lead">각 컴포넌트는 독립적으로 존재하지 않는다. 상호 보완하며 에이전트의 실행 능력을 구성한다.</p>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">파일시스템 & Git</div>
+        <div class="col-title">에이전트의 외부 기억</div>
+        <div class="col-body">모델이 컨텍스트 밖의 중간 작업을 저장하는 공간. 작업 진행 상황을 영속적으로 추적하고, 오류 시 간단한 롤백을 지원한다. 여러 에이전트 간 조율 매체 역할도 수행한다.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">Bash & 코드 실행</div>
+        <div class="col-title">ReAct 루프의 실행 엔진</div>
+        <div class="col-body">범용 도구로서 에이전트가 필요한 도구를 동적으로 구성할 수 있게 한다. 추론 → 행동 → 관찰 → 피드백의 ReAct 사이클을 구동하는 핵심 메커니즘.</div>
+      </div>
+    </div>
+    <div class="two-col" style="margin-top:0;">
+      <div class="col-item" style="border-top:none;">
+        <div class="col-label">컨텍스트 관리</div>
+        <div class="col-title">3가지 컨텍스트 로트 해결책</div>
+        <ul class="col-list">
+          <li><strong>압축(Compaction)</strong>: 오래된 컨텍스트를 지능형 요약으로 교체</li>
+          <li><strong>도구 아웃로딩</strong>: 대용량 출력을 파일시스템으로 이동</li>
+          <li><strong>점진적 공개</strong>: 필요할 때만 도구·지시사항 노출</li>
+        </ul>
+      </div>
+      <div class="col-item" style="border-top:none;">
+        <div class="col-label">훅 (Hooks)</div>
+        <div class="col-title">"성공은 침묵, 실패는 크게"</div>
+        <ul class="col-list">
+          <li>모든 편집 후 → 타입체크, 린트, 테스트</li>
+          <li>위험 Bash 명령 → 실행 전 차단</li>
+          <li>커밋 전 → 테스트 스위트 자동 실행</li>
+          <li>자동 포맷팅 적용</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;margin:40px 0 16px;letter-spacing:-0.01em;">Ralph 루프 — 장기 실행 작업</h3>
+    <p class="body-text">컨텍스트가 가득 차도 원본 의도를 잃지 않는 메커니즘. 에이전트가 종료를 시도할 때 원본 프롬프트를 새 컨텍스트에 재주입한다.</p>
+    <pre class="code">세션 1: [원본 프롬프트] + [초기 작업 실행]
+          ↓ (컨텍스트 소진)
+세션 2: [원본 프롬프트 재주입] + [이전 진행 상황 요약]
+          ↓ (컨텍스트 소진)
+세션 3: [원본 프롬프트 재주입] + [누적 진행 상황]
+          ↓
+         ... (무한 반복 가능, 원본 의도 유지)</pre>
+  </section>
+
+  <!-- SECTION 05 -->
+  <section class="doc-section">
+    <div class="section-num">05</div>
+    <h2 class="section-heading">Claude Code 프로덕션 하네스 아키텍처</h2>
+    <p class="section-lead">7개의 수직 계층으로 구성된 정교한 하네스. 입력부터 출력까지, 각 계층이 명확한 책임을 가진다.</p>
+
+    <div class="image-pair">
+      <div>
+        <div class="image-label">원본 (English)</div>
+        <svg viewBox="0 0 440 540" class="lightbox-trigger" style="width:100%;border:1px solid #D8D8D0;background:#fff;">
+          <text x="220" y="22" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#A8A8A0" letter-spacing="2">CLAUDE CODE ARCHITECTURE</text>
+          <!-- Layer 1 -->
+          <rect x="20" y="35" width="400" height="58" rx="3" fill="#0E0E0B"/>
+          <text x="220" y="57" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">INPUT LAYER</text>
+          <text x="220" y="75" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#F7F7F4">UI  ·  Session Manager  ·  Permission Gate</text>
+          <!-- Layer 2 -->
+          <rect x="20" y="103" width="400" height="58" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="220" y="125" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">KNOWLEDGE LAYER</text>
+          <text x="220" y="143" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#3A3A36">Skill Registry  ·  Context Compressor  ·  Task Graph</text>
+          <!-- Layer 3 -->
+          <rect x="20" y="171" width="400" height="58" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="220" y="193" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">INTEGRATION LAYER</text>
+          <text x="220" y="211" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#3A3A36">MCP Runtime  ·  External Servers  ·  Tool Ecosystem</text>
+          <!-- Layer 4 -->
+          <rect x="20" y="239" width="400" height="58" rx="3" fill="#EFEFEB" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="220" y="261" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">EXECUTION LAYER</text>
+          <text x="220" y="279" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#0E0E0B">Tool Dispatch  ·  Streaming Runtime  ·  ReAct Loop</text>
+          <!-- Layer 5 -->
+          <rect x="20" y="307" width="400" height="58" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="220" y="329" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">OUTPUT LAYER</text>
+          <text x="220" y="347" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#3A3A36">Validated Action Results  ·  Result Formatting</text>
+          <!-- Layer 6 -->
+          <rect x="20" y="375" width="400" height="58" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="220" y="397" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">OBSERVABILITY LAYER</text>
+          <text x="220" y="415" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#3A3A36">Event Bus  ·  Background Executor  ·  Logging</text>
+          <!-- Layer 7 -->
+          <rect x="20" y="443" width="400" height="80" rx="3" fill="none" stroke="#0E0E0B" stroke-width="2"/>
+          <text x="220" y="465" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">MULTI-AGENT LAYER</text>
+          <text x="220" y="482" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#3A3A36">Sub-agent Spawner  ·  Team Mailbox  ·  FSM Protocol</text>
+          <text x="220" y="500" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#3A3A36">Autonomy Board  ·  Worktree Isolator</text>
+          <!-- Arrows between layers -->
+          <line x1="220" y1="93" x2="220" y2="103" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr5)"/>
+          <line x1="220" y1="161" x2="220" y2="171" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr5)"/>
+          <line x1="220" y1="229" x2="220" y2="239" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr5)"/>
+          <line x1="220" y1="297" x2="220" y2="307" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr5)"/>
+          <line x1="220" y1="365" x2="220" y2="375" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr5)"/>
+          <line x1="220" y1="433" x2="220" y2="443" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr5)"/>
+          <defs>
+            <marker id="arr5" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+              <polygon points="0 0, 6 2.5, 0 5" fill="#D8D8D0"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+      <div>
+        <div class="image-label">한글화</div>
+        <svg viewBox="0 0 440 540" class="lightbox-trigger" style="width:100%;border:1px solid #D8D8D0;background:#F7F7F4;">
+          <text x="220" y="22" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#A8A8A0" letter-spacing="2">클로드 코드 아키텍처</text>
+          <rect x="20" y="35" width="400" height="58" rx="3" fill="#0E0E0B"/>
+          <text x="220" y="57" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">입력 계층</text>
+          <text x="220" y="75" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#F7F7F4">UI  ·  세션 관리자  ·  권한 게이트</text>
+          <rect x="20" y="103" width="400" height="58" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="220" y="125" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">지식 계층</text>
+          <text x="220" y="143" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#3A3A36">스킬 레지스트리  ·  컨텍스트 압축기  ·  작업 그래프</text>
+          <rect x="20" y="171" width="400" height="58" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="220" y="193" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">통합 계층</text>
+          <text x="220" y="211" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#3A3A36">MCP 런타임  ·  외부 서버  ·  도구 생태계</text>
+          <rect x="20" y="239" width="400" height="58" rx="3" fill="#EFEFEB" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="220" y="261" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">실행 계층</text>
+          <text x="220" y="279" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#0E0E0B">도구 디스패치  ·  스트리밍 런타임  ·  ReAct 루프</text>
+          <rect x="20" y="307" width="400" height="58" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="220" y="329" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">출력 계층</text>
+          <text x="220" y="347" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#3A3A36">검증된 실행 결과  ·  결과 포맷팅</text>
+          <rect x="20" y="375" width="400" height="58" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="220" y="397" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">관찰성 계층</text>
+          <text x="220" y="415" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#3A3A36">이벤트 버스  ·  배경 실행기  ·  로깅</text>
+          <rect x="20" y="443" width="400" height="80" rx="3" fill="none" stroke="#0E0E0B" stroke-width="2"/>
+          <text x="220" y="465" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="2">다중 에이전트 계층</text>
+          <text x="220" y="482" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#3A3A36">서브에이전트 생성  ·  팀 메일박스  ·  FSM 프로토콜</text>
+          <text x="220" y="500" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#3A3A36">자율 보드  ·  워크트리 격리기</text>
+          <line x1="220" y1="93" x2="220" y2="103" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr6)"/>
+          <line x1="220" y1="161" x2="220" y2="171" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr6)"/>
+          <line x1="220" y1="229" x2="220" y2="239" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr6)"/>
+          <line x1="220" y1="297" x2="220" y2="307" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr6)"/>
+          <line x1="220" y1="365" x2="220" y2="375" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr6)"/>
+          <line x1="220" y1="433" x2="220" y2="443" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr6)"/>
+          <defs>
+            <marker id="arr6" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+              <polygon points="0 0, 6 2.5, 0 5" fill="#D8D8D0"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:32px;">
+      <table>
+        <thead>
+          <tr><th>계층</th><th>핵심 책임</th><th>주요 컴포넌트</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>입력 계층</td><td>사용자 명령 수신 및 검증</td><td>UI, 세션 관리자, 권한 게이트</td></tr>
+          <tr><td>지식 계층</td><td>인식 능력 확장</td><td>스킬 레지스트리, 컨텍스트 압축기, 작업 그래프</td></tr>
+          <tr><td>통합 계층</td><td>외부 도구 연결</td><td>MCP 런타임, 외부 API</td></tr>
+          <tr><td>실행 계층</td><td>실제 작업 수행</td><td>도구 호출, 코드 실행, ReAct 루프</td></tr>
+          <tr><td>출력 계층</td><td>결과 검증 및 전달</td><td>포맷팅, 검증</td></tr>
+          <tr><td>관찰성 계층</td><td>시스템 성능 추적</td><td>이벤트 버스, 모니터링, 로깅</td></tr>
+          <tr><td>다중 에이전트 계층</td><td>병렬 작업 조율</td><td>서브에이전트, 팀 메일박스, 워크트리 격리</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 06 -->
+  <section class="doc-section">
+    <div class="section-num">06</div>
+    <h2 class="section-heading">모델-하네스 학습 루프</h2>
+    <p class="section-lead">하네스와 모델은 독립적으로 존재하지 않는다. 서로를 강화하는 공진화(Co-evolution) 사이클이 작동한다.</p>
+
+    <div class="image-pair">
+      <div>
+        <div class="image-label">원본 (English)</div>
+        <svg viewBox="0 0 440 380" class="lightbox-trigger" style="width:100%;border:1px solid #D8D8D0;background:#fff;">
+          <text x="220" y="28" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="700" fill="#0E0E0B">Model–Harness Learning Loop</text>
+          <!-- 4 boxes in cycle -->
+          <!-- Top -->
+          <rect x="130" y="45" width="160" height="62" rx="3" fill="#0E0E0B"/>
+          <text x="210" y="68" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="1">STEP 01</text>
+          <text x="210" y="86" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#F7F7F4">Discover patterns</text>
+          <text x="210" y="101" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">in harness</text>
+          <!-- Right -->
+          <rect x="295" y="165" width="135" height="62" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="362" y="188" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="1">STEP 02</text>
+          <text x="362" y="206" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#0E0E0B">Standardize</text>
+          <text x="362" y="221" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">into product</text>
+          <!-- Bottom -->
+          <rect x="130" y="285" width="160" height="62" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="210" y="308" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="1">STEP 03</text>
+          <text x="210" y="326" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#0E0E0B">Train into model</text>
+          <text x="210" y="341" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">next version</text>
+          <!-- Left -->
+          <rect x="10" y="165" width="120" height="62" rx="3" fill="#EFEFEB" stroke="#0E0E0B" stroke-width="1"/>
+          <text x="70" y="188" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="1">STEP 04</text>
+          <text x="70" y="206" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#0E0E0B">Model improves</text>
+          <text x="70" y="221" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">at pattern</text>
+          <!-- Arrows -->
+          <line x1="270" y1="107" x2="320" y2="165" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arr7)"/>
+          <line x1="295" y1="227" x2="290" y2="285" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arr7)"/>
+          <line x1="130" y1="316" x2="130" y2="227" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arr7)"/>
+          <line x1="130" y1="196" x2="130" y2="107" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arr7)"/>
+          <defs>
+            <marker id="arr7" markerWidth="7" markerHeight="5" refX="5" refY="2.5" orient="auto">
+              <polygon points="0 0, 7 2.5, 0 5" fill="#0E0E0B"/>
+            </marker>
+          </defs>
+          <text x="220" y="200" text-anchor="middle" font-family="Georgia,serif" font-size="11" font-style="italic" fill="#A8A8A0">co-evolution</text>
+        </svg>
+      </div>
+      <div>
+        <div class="image-label">한글화</div>
+        <svg viewBox="0 0 440 380" class="lightbox-trigger" style="width:100%;border:1px solid #D8D8D0;background:#F7F7F4;">
+          <text x="220" y="28" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="700" fill="#0E0E0B">모델-하네스 학습 루프</text>
+          <rect x="130" y="45" width="160" height="62" rx="3" fill="#0E0E0B"/>
+          <text x="210" y="68" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="1">단계 01</text>
+          <text x="210" y="86" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#F7F7F4">하네스에서 패턴 발견</text>
+          <text x="210" y="101" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">유용한 해결 구조 식별</text>
+          <rect x="295" y="165" width="135" height="62" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="362" y="188" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="1">단계 02</text>
+          <text x="362" y="206" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#0E0E0B">표준화</text>
+          <text x="362" y="221" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">제품으로 정형화</text>
+          <rect x="130" y="285" width="160" height="62" rx="3" fill="none" stroke="#0E0E0B" stroke-width="1.5"/>
+          <text x="210" y="308" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="1">단계 03</text>
+          <text x="210" y="326" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#0E0E0B">다음 모델 학습에 반영</text>
+          <text x="210" y="341" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">다음 버전 학습 데이터</text>
+          <rect x="10" y="165" width="120" height="62" rx="3" fill="#EFEFEB" stroke="#0E0E0B" stroke-width="1"/>
+          <text x="70" y="188" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0" letter-spacing="1">단계 04</text>
+          <text x="70" y="206" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#0E0E0B">모델 성능 향상</text>
+          <text x="70" y="221" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">해당 패턴 능력 증대</text>
+          <line x1="270" y1="107" x2="320" y2="165" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arr8)"/>
+          <line x1="295" y1="227" x2="290" y2="285" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arr8)"/>
+          <line x1="130" y1="316" x2="130" y2="227" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arr8)"/>
+          <line x1="130" y1="196" x2="130" y2="107" stroke="#0E0E0B" stroke-width="1.5" marker-end="url(#arr8)"/>
+          <defs>
+            <marker id="arr8" markerWidth="7" markerHeight="5" refX="5" refY="2.5" orient="auto">
+              <polygon points="0 0, 7 2.5, 0 5" fill="#0E0E0B"/>
+            </marker>
+          </defs>
+          <text x="220" y="200" text-anchor="middle" font-family="Georgia,serif" font-size="11" font-style="italic" fill="#A8A8A0">공진화 사이클</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="pullquote" style="margin-top:40px;">
+      <p>"Claude Code의 Opus 4.6은 동일 모델을 다른 하네스에 배치하면 더 낮은 성능을 보인다. 하네스와 모델은 공생 관계다."</p>
+      <cite>Addy Osmani — 모델-하네스 공진화</cite>
+    </div>
+
+    <p class="body-text">이 사이클이 의미하는 바: 하네스의 패턴이 모델 학습에 피드백되고, 개선된 모델이 더 고급 하네스 설계를 가능하게 한다. 하네스 수준의 혁신이 모델 버전 업그레이드만큼 중요한 이유다.</p>
+  </section>
+
+  <!-- SECTION 07 -->
+  <section class="doc-section">
+    <div class="section-num">07</div>
+    <h2 class="section-heading">HaaS — Harness-as-a-Service</h2>
+    <p class="section-lead">업계가 LLM API 제공에서 하네스 API 제공으로 전환 중이다. 사용자는 이제 도메인별 프롬프트와 도구 설계에만 집중할 수 있다.</p>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">이전 패러다임</div>
+        <div class="col-title">LLM API</div>
+        <div class="col-body" style="margin-bottom:16px;">API 호출 → 텍스트 완성(completion) 반환. 루프, 도구, 컨텍스트 관리를 사용자가 직접 구현해야 했다.</div>
+        <pre class="code" style="font-size:11px;padding:14px 16px;">// 직접 구현 필요
+const completion = await llm.complete(prompt);
+// 루프, 도구 호출, 컨텍스트 관리...
+// 모두 수작업</pre>
+      </div>
+      <div class="col-item">
+        <div class="col-label">현재 패러다임</div>
+        <div class="col-title">Harness API</div>
+        <div class="col-body" style="margin-bottom:16px;">API 호출 → 런타임(runtime) 반환. 루프, 도구, 컨텍스트 관리가 내장된 하네스를 그대로 활용.</div>
+        <pre class="code" style="font-size:11px;padding:14px 16px;">// 하네스가 내장됨
+const agent = await harness.create({
+  tools: [...],
+  rules: 'AGENTS.md',
+  // 나머지는 자동 처리
+});</pre>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:32px;">
+      <table>
+        <thead>
+          <tr><th>플랫폼</th><th>제공사</th><th>내장 하네스 요소</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Claude Agent SDK</td><td>Anthropic</td><td>루프, 도구 통합, 컨텍스트 관리, 서브에이전트</td></tr>
+          <tr><td>OpenAI Agents SDK</td><td>OpenAI</td><td>도구 체인, 상태 관리, 핸드오프</td></tr>
+          <tr><td>Codex SDK</td><td>GitHub / OpenAI</td><td>코드 생성 특화 하네스, 저장소 컨텍스트</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 08 -->
+  <section class="doc-section">
+    <div class="section-num">08</div>
+    <h2 class="section-heading">미래 방향</h2>
+    <p class="section-lead">하네스 엔지니어링이 해결해야 할 3가지 미결 문제. 각각이 에이전트 패러다임 전환의 핵심이다.</p>
+
+    <div class="three-col">
+      <div class="col-item">
+        <div class="col-label">방향 01</div>
+        <div class="col-title">병렬 다중 에이전트 조율</div>
+        <div class="col-body">공유 코드베이스에서 여러 에이전트가 동시에 협력. 에이전트 A는 버그 수정, 에이전트 B는 테스트 작성, 에이전트 C는 문서화 — 충돌 없이 병렬 진행.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">방향 02</div>
+        <div class="col-title">하네스 자동 최적화</div>
+        <div class="col-body">에이전트가 자신의 실행 추적(trace)을 분석하여 AGENTS.md 규칙을 자동 생성. 수동 설정에서 자율 개선으로의 전환.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">방향 03</div>
+        <div class="col-title">동적 도구 조립</div>
+        <div class="col-body">사전 고정된 도구 세트 대신, 주어진 작업에 맞게 도구를 실시간으로 구성. 하네스가 정적 설정에서 컴파일러에 가까운 것으로 진화.</div>
+      </div>
+    </div>
+
+    <div class="pullquote" style="margin-top:48px;">
+      <p>"하네스는 정적 설정에서 컴파일러에 가까운 것으로 진화할 수 있다."</p>
+      <cite>Addy Osmani — 미래 방향</cite>
+    </div>
+  </section>
+
+  <!-- SECTION 09 -->
+  <section class="doc-section">
+    <div class="section-num">09</div>
+    <h2 class="section-heading">핵심 격언</h2>
+    <p class="section-lead">원문에서 추출한 핵심 인사이트. 에이전트 하네스 엔지니어링의 철학을 압축한 문장들.</p>
+
+    <div class="pullquote">
+      <p>"에이전트 = 모델 + 하네스. 모델이 아닌 나머지 모든 것이 하네스다."</p>
+      <cite>Viv Trivedy (Anthropic) — 핵심 공식</cite>
+    </div>
+
+    <div class="pullquote">
+      <p>"기술 문제가 아니라 구성 문제다. 에이전트 실패의 대부분은 모델이 아닌 하네스 설정에 원인이 있다."</p>
+      <cite>HumanLayer — 실패 해석</cite>
+    </div>
+
+    <div class="pullquote">
+      <p>"성공은 침묵하고, 실패는 크게 알린다. 훅이 작동해야 할 때는 오직 실패했을 때뿐이다."</p>
+      <cite>Addy Osmani — 훅 설계 원칙</cite>
+    </div>
+
+    <div class="pullquote">
+      <p>"좋은 에이전트 구축은 반복의 기술이다. v0.1 없이는 반복할 수 없다."</p>
+      <cite>Addy Osmani — 구축 철학</cite>
+    </div>
+
+    <div class="table-wrap" style="margin-top:40px;">
+      <table>
+        <thead>
+          <tr><th>원문 (English)</th><th>한국어</th><th>핵심 원칙</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>"Every failure becomes a rule."</td><td>모든 실패가 규칙이 된다.</td><td>래칫 원칙</td></tr>
+          <tr><td>"Success is silent, failures are loud."</td><td>성공은 침묵, 실패는 크게.</td><td>훅 설계</td></tr>
+          <tr><td>"It's not a skill problem, it's a config problem."</td><td>기술이 아닌 구성 문제.</td><td>실패 해석</td></tr>
+          <tr><td>"The harness encodes assumptions about the model."</td><td>하네스는 모델의 한계를 인코딩한다.</td><td>설계 철학</td></tr>
+          <tr><td>"Building good agents is an iterative craft."</td><td>좋은 에이전트는 반복으로 완성된다.</td><td>개발 방법론</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <span>에이전트 하네스 엔지니어링 — Addy Osmani</span>
+  <span>2026-04-28</span>
+</footer>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;cursor:zoom-out;align-items:center;justify-content:center;padding:24px;">
+  <div id="lightbox-content" style="max-width:90vw;max-height:90vh;overflow:auto;"></div>
+</div>
+<script>
+(function(){
+  var lb=document.getElementById('lightbox');
+  var lbc=document.getElementById('lightbox-content');
+  document.querySelectorAll('.lightbox-trigger').forEach(function(el){
+    el.addEventListener('click',function(e){
+      e.stopPropagation();
+      lbc.innerHTML='';
+      var clone=el.cloneNode(true);
+      clone.removeAttribute('class');
+      clone.style.cursor='default';
+      if(clone.tagName==='IMG'){clone.style.maxWidth='90vw';clone.style.maxHeight='90vh';clone.style.display='block';clone.style.borderRadius='8px';}
+      else if(clone.tagName.toLowerCase()==='svg'){clone.style.width='min(90vw,1100px)';clone.style.height='auto';clone.style.display='block';}
+      lbc.appendChild(clone);
+      lb.style.display='flex';
+    });
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')lb.style.display='none';});
+})();
+</script>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="ADY2FU9" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
