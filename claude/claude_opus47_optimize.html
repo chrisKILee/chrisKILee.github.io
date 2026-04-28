@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Claude Opus 4.7 최적화 가이드</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #4f46e5;
+    --accent-soft: #eef0fe;
+    --bg:          #ffffff;
+    --bg-elev:     #f8f8fb;
+    --bg-sub:      #f2f2f7;
+    --ink:         #0f0f14;
+    --ink-2:       #3b3b4f;
+    --ink-3:       #6b6b80;
+    --ink-4:       #a0a0b8;
+    --line:        #e5e5ef;
+    --line-strong: #c8c8d8;
+    --font-sans:   'Inter', system-ui, sans-serif;
+    --font-mono:   'JetBrains Mono', 'Courier New', monospace;
+    --warn:        #d97706;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; font-size: 16px; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    padding-top: 48px;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Layout ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    min-height: calc(100vh - 48px);
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  /* ── TOC Sidebar ── */
+  .toc-wrap {
+    position: sticky;
+    top: 48px;
+    height: calc(100vh - 48px);
+    overflow-y: auto;
+    border-right: 1px solid var(--line);
+    padding: 28px 20px 28px 24px;
+    background: var(--bg);
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 20px;
+  }
+  .brand-mark {
+    width: 26px; height: 26px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .brand-name { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+  .brand-sub { font-size: 10.5px; color: var(--ink-3); font-family: var(--font-mono); letter-spacing: .04em; }
+
+  .toc h4 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--ink-3);
+    margin: 20px 0 6px;
+    font-weight: 700;
+  }
+  .toc ul { list-style: none; }
+  .toc a {
+    display: block;
+    padding: 5px 10px;
+    color: var(--ink-2);
+    font-size: 13px;
+    border-radius: 5px;
+    border-left: 2px solid transparent;
+    line-height: 1.4;
+  }
+  .toc a:hover { background: var(--bg-sub); text-decoration: none; }
+  .toc a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: var(--accent-soft);
+    font-weight: 600;
+  }
+  .toc .toc-l3 { padding-left: 20px; font-size: 12px; color: var(--ink-3); }
+
+  /* ── Main Content ── */
+  .content {
+    padding: 52px clamp(24px, 6vw, 72px) 120px;
+    max-width: 800px;
+  }
+
+  /* ── Doc Header ── */
+  .doc-header { margin-bottom: 40px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+  .doc-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent); font-family: var(--font-mono); margin-bottom: 10px;
+  }
+  .doc-eyebrow::before {
+    content: ""; width: 8px; height: 8px; border-radius: 999px; background: var(--accent);
+  }
+  .doc-title {
+    font-size: clamp(28px, 4vw, 42px); margin: 0 0 10px;
+    letter-spacing: -.025em; line-height: 1.15; font-weight: 800;
+  }
+  .doc-deck { color: var(--ink-2); font-size: 17px; margin: 0; line-height: 1.6; max-width: 620px; }
+  .doc-meta {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    margin-top: 18px; font-size: 12.5px; color: var(--ink-3);
+    font-family: var(--font-mono);
+  }
+  .doc-meta strong { color: var(--ink-2); font-weight: 500; }
+
+  /* ── Sections ── */
+  section { scroll-margin-top: 24px; }
+  h2.section {
+    font-size: clamp(20px, 3vw, 26px); margin: 56px 0 14px;
+    letter-spacing: -.015em; font-weight: 700; color: var(--ink);
+    scroll-margin-top: 24px;
+  }
+  h3.subsection {
+    font-size: 17px; margin: 32px 0 8px;
+    letter-spacing: -.005em; font-weight: 600; color: var(--ink);
+    scroll-margin-top: 24px;
+  }
+  p { font-size: 15px; line-height: 1.75; color: var(--ink-2); margin: 12px 0; }
+
+  /* ── Code ── */
+  .cc-code {
+    background: #111118;
+    border-radius: 8px;
+    margin: 16px 0;
+    overflow: hidden;
+  }
+  .cc-code pre {
+    padding: 18px 20px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+    color: #e2e2f0;
+  }
+  .code-lang {
+    display: block;
+    padding: 7px 14px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #6b6b90;
+    border-bottom: 1px solid #222234;
+    background: #0d0d18;
+  }
+  code { font-family: var(--font-mono); }
+  .cc-inline { background: var(--bg-sub); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 13px; color: var(--ink-2); }
+
+  /* ── Callout ── */
+  .callout {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-size: 14px;
+    color: var(--ink-2);
+    line-height: 1.65;
+  }
+  .callout-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 5px; display: block; font-family: var(--font-mono);
+  }
+  .callout.warn { border-left-color: var(--warn); background: #fffbf0; }
+  .callout.warn .callout-tag { color: var(--warn); }
+  .callout.tip { border-left-color: #059669; background: #f0fdf8; }
+  .callout.tip .callout-tag { color: #059669; }
+
+  /* ── Step ── */
+  .step {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 14px; margin: 20px 0; align-items: start;
+  }
+  .step-num {
+    width: 28px; height: 28px; border-radius: 999px;
+    background: var(--accent); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 700; font-family: var(--font-mono);
+    margin-top: 1px; flex-shrink: 0;
+  }
+  .step-body h4 { margin: 0 0 5px; font-size: 15px; font-weight: 600; color: var(--ink); }
+  .step-body p { margin: 3px 0; font-size: 14px; color: var(--ink-2); line-height: 1.6; }
+
+  /* ── Table ── */
+  .table-wrap { overflow-x: auto; margin: 18px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead tr { background: var(--bg-sub); }
+  th {
+    padding: 10px 14px; text-align: left;
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-3); border: 1px solid var(--line);
+  }
+  td {
+    padding: 10px 14px; border: 1px solid var(--line);
+    color: var(--ink-2); vertical-align: top; line-height: 1.6;
+  }
+  tr:hover td { background: var(--bg-elev); }
+  .badge {
+    display: inline-block; font-family: var(--font-mono); font-size: 11px;
+    font-weight: 600; padding: 2px 7px; border-radius: 4px;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .badge.warn { background: #fef3c7; color: #92400e; }
+  .badge.tip  { background: #d1fae5; color: #065f46; }
+  .badge.muted { background: var(--bg-sub); color: var(--ink-3); }
+
+  /* ── Checklist ── */
+  .checklist { list-style: none; margin: 16px 0; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--line);
+    font-size: 14px; color: var(--ink-2); line-height: 1.5;
+  }
+  .checklist li:first-child { border-top: 1px solid var(--line); }
+  .checklist li::before {
+    content: "☐"; color: var(--accent); font-size: 15px; flex-shrink: 0; margin-top: 1px;
+  }
+
+  /* ── Comparison boxes ── */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+  .compare-box { border-radius: 8px; padding: 16px; font-size: 14px; line-height: 1.6; }
+  .compare-box.bad { background: #fff1f0; border: 1px solid #fca5a5; }
+  .compare-box.good { background: #f0fdf8; border: 1px solid #6ee7b7; }
+  .compare-box .label {
+    font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .compare-box.bad .label { color: #dc2626; }
+  .compare-box.good .label { color: #059669; }
+  .compare-box pre { font-family: var(--font-mono); font-size: 12.5px; white-space: pre-wrap; color: var(--ink-2); }
+
+  /* ── KBD ── */
+  .kbd { font-family: var(--font-mono); font-size: 11px; padding: 2px 6px; border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 4px; background: var(--bg-elev); color: var(--ink-2); }
+
+  /* ── dl ── */
+  dl { margin: 16px 0; }
+  dt { font-size: 15px; font-weight: 600; color: var(--ink); margin-top: 20px; margin-bottom: 4px; }
+  dd { font-size: 14px; color: var(--ink-2); line-height: 1.65; margin-left: 0; padding-left: 16px; border-left: 2px solid var(--line); }
+  dt small { font-size: 12px; color: var(--ink-3); font-weight: 400; margin-left: 6px; font-family: var(--font-mono); }
+
+  /* ── SVG Diagram ── */
+  .diagram-wrap {
+    margin: 24px 0; background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: 8px; padding: 20px; overflow-x: auto;
+  }
+
+  /* ── Footer ── */
+  .page-footer-note {
+    margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
+    font-size: 12px; color: var(--ink-4); font-family: var(--font-mono);
+    line-height: 1.7;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    body { padding-top: 0; }
+    .layout { grid-template-columns: 1fr; }
+    .toc-wrap { position: relative; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+  }
+  @media (max-width: 600px) {
+    .compare-grid { grid-template-columns: 1fr; }
+    .content { padding: 32px 18px 80px; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- ── TOC ── -->
+<aside class="toc-wrap">
+  <div class="brand">
+    <span class="brand-mark">C</span>
+    <div>
+      <div class="brand-name">Claude 가이드</div>
+      <div class="brand-sub">claude · opus 4.7</div>
+    </div>
+  </div>
+
+  <nav class="toc">
+    <h4>시작하기</h4>
+    <ul>
+      <li><a href="#overview">개요</a></li>
+      <li><a href="#why-slow">왜 느려졌는가?</a></li>
+    </ul>
+    <h4>핵심 설정</h4>
+    <ul>
+      <li><a href="#effort">Effort 레벨 해부</a></li>
+      <li><a href="#effort-change" class="toc-l3">변경 방법 5가지</a></li>
+      <li><a href="#max-tokens">Max Tokens 설정</a></li>
+    </ul>
+    <h4>프롬팅 전략</h4>
+    <ul>
+      <li><a href="#first-turn">첫 턴 프롬팅</a></li>
+      <li><a href="#thinking-depth">사고 깊이 제어</a></li>
+    </ul>
+    <h4>고급 기능</h4>
+    <ul>
+      <li><a href="#auto-mode">Auto Mode</a></li>
+      <li><a href="#extended-thinking">Extended Thinking 마이그레이션</a></li>
+      <li><a href="#subagent">서브에이전트 정책</a></li>
+    </ul>
+    <h4>참고</h4>
+    <ul>
+      <li><a href="#checklist">즉시 적용 체크리스트</a></li>
+      <li><a href="#effort-table">작업별 Effort 권장표</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+  </nav>
+</aside>
+
+<!-- ── Main ── -->
+<main class="content">
+
+  <header class="doc-header">
+    <div class="doc-eyebrow">How-to · Claude Opus 4.7</div>
+    <h1 class="doc-title">Claude Opus 4.7 최적화 가이드</h1>
+    <p class="doc-deck">Effort 레벨, 첫 턴 프롬팅, Extended Thinking 마이그레이션까지 — Opus 4.7로 전환 시 반드시 알아야 할 변경사항을 한 페이지로 정리합니다.</p>
+    <div class="doc-meta">
+      <span><strong>출시</strong> · 2026-04-16</span>
+      <span><strong>가격</strong> · 입력 $5 / 출력 $25 per MTok</span>
+      <span><strong>컨텍스트</strong> · 1M 토큰</span>
+      <span><strong>업데이트</strong> · 2026-04-29</span>
+    </div>
+  </header>
+
+  <!-- ── 1. 개요 ── -->
+  <section id="overview">
+    <h2 class="section">개요</h2>
+    <p>Claude Opus 4.7은 2026년 4월 16일 출시되었습니다. API 가격은 Opus 4.6과 동일하지만 내부 동작이 상당히 달라졌습니다. 핵심 변경사항은 세 가지입니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>항목</th><th>Opus 4.6</th><th>Opus 4.7</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>기본 Effort (Claude Code)</td>
+            <td><span class="badge muted">high</span></td>
+            <td><span class="badge">xhigh</span> 자동 적용</td>
+          </tr>
+          <tr>
+            <td>기본 Effort (API)</td>
+            <td><span class="badge muted">high</span></td>
+            <td><span class="badge muted">high</span> (명시 설정 필요)</td>
+          </tr>
+          <tr>
+            <td>토크나이저</td>
+            <td>기준</td>
+            <td>동일 텍스트 1.0~1.35× 토큰</td>
+          </tr>
+          <tr>
+            <td>Sampling 파라미터</td>
+            <td>temperature / top_p / top_k 지원</td>
+            <td><span class="badge warn">제거됨</span> — 비기본값 설정 시 HTTP 400</td>
+          </tr>
+          <tr>
+            <td>Extended Thinking budget</td>
+            <td>budget_tokens 지원</td>
+            <td><span class="badge warn">제거됨</span> — adaptive 모드만 허용</td>
+          </tr>
+          <tr>
+            <td>컨텍스트 윈도우</td>
+            <td>200k</td>
+            <td>1M</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 2. 왜 느려졌는가 ── -->
+  <section id="why-slow">
+    <h2 class="section">왜 느려졌는가?</h2>
+    <p>Opus 4.7로 업그레이드한 뒤 응답이 느려졌다는 보고가 많습니다. 체감 속도 저하는 세 가지 요인이 결합된 결과입니다.</p>
+
+    <div class="step">
+      <span class="step-num">1</span>
+      <div class="step-body">
+        <h4>자동 Effort 상향</h4>
+        <p>Claude Code v2.1.117 이상에서 Opus 4.7 한정으로 기본 effort가 <span class="badge">xhigh</span>로 자동 설정됩니다. 기존에 설정된 값이 있어도 무시합니다.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">2</span>
+      <div class="step-body">
+        <h4>토크나이저 변화</h4>
+        <p>새 토크나이저는 동일 텍스트에 대해 1.0~1.35배 더 많은 토큰을 생성합니다. 입력이 길어질수록 처리 오버헤드도 함께 증가합니다.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">3</span>
+      <div class="step-body">
+        <h4>추론 강화</h4>
+        <p>사용자 턴 이후 더 길어진 사고 과정을 거칩니다. Anthropic 공식 설명에 따르면 이는 "토큰 사용 제약"이 아닌 "의도된 설계"입니다.</p>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-tag">해결책</span>
+      단순 작업이라면 Effort를 <code class="cc-inline">low</code> 또는 <code class="cc-inline">medium</code>으로 낮추면 됩니다. <strong>동일 effort 레벨에서는 4.7이 4.6보다 여전히 우수합니다.</strong>
+    </div>
+  </section>
+
+  <!-- ── 3. Effort 레벨 ── -->
+  <section id="effort">
+    <h2 class="section">Effort 레벨 완전 해부</h2>
+    <p>Opus 4.7에는 5단계 Effort 레벨이 있습니다. 작업 성격에 맞는 레벨을 선택하는 것이 최적화의 핵심입니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>레벨</th><th>특징</th><th>권장 용도</th><th>예시</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge muted">low</span></td>
+            <td>최고 효율, 능력 감소 수용</td>
+            <td>단순 조회·요약·변환</td>
+            <td>텍스트 변환, 비용 민감 배치</td>
+          </tr>
+          <tr>
+            <td><span class="badge muted">medium</span></td>
+            <td>균형 접근</td>
+            <td>단일 파일 수정</td>
+            <td>코드 포매팅, 간단한 리팩토링</td>
+          </tr>
+          <tr>
+            <td><span class="badge muted">high</span></td>
+            <td>높은 능력 (API 기본값)</td>
+            <td>일반 코딩</td>
+            <td>다중 파일 변경, 디버깅</td>
+          </tr>
+          <tr>
+            <td><span class="badge">xhigh</span></td>
+            <td>확장 능력 (Claude Code 기본값)</td>
+            <td>에이전트 작업 권장</td>
+            <td>API 설계, 대형 리팩토링</td>
+          </tr>
+          <tr>
+            <td><span class="badge warn">max</span></td>
+            <td>절대 최대 능력 (세션 전용)</td>
+            <td>진정한 프런티어 문제만</td>
+            <td>eval 테스트, 새 알고리즘</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-tag">max 주의</span>
+      <code class="cc-inline">max</code>는 과도한 사고로 결과를 오히려 악화시킬 수 있습니다. 단순 작업에서는 수확 체감이 크며 비용이 폭주합니다. <strong>현재 세션 전용</strong>이라 다음 세션에 자동 초기화됩니다.
+    </div>
+
+    <h3 class="subsection" id="effort-change">Effort 변경 방법 5가지</h3>
+
+    <div class="cc-code">
+      <span class="code-lang">bash — 대화형 슬라이더</span>
+      <pre>/effort</pre>
+    </div>
+
+    <div class="cc-code">
+      <span class="code-lang">bash — 모델 선택 메뉴</span>
+      <pre>/model   # 좌우 화살표로 effort 조정</pre>
+    </div>
+
+    <div class="cc-code">
+      <span class="code-lang">bash — CLI 플래그 (단일 세션)</span>
+      <pre>claude --effort medium</pre>
+    </div>
+
+    <div class="cc-code">
+      <span class="code-lang">bash — 환경변수 (세션 간 지속)</span>
+      <pre>export CLAUDE_CODE_EFFORT_LEVEL=high</pre>
+    </div>
+
+    <div class="cc-code">
+      <span class="code-lang">json — settings.json (~/.claude/settings.json)</span>
+      <pre>{
+  "effortLevel": "high"
+}</pre>
+    </div>
+
+    <div class="callout">
+      <span class="callout-tag">세션 지속성</span>
+      <code class="cc-inline">low</code> / <code class="cc-inline">medium</code> / <code class="cc-inline">high</code> / <code class="cc-inline">xhigh</code>는 세션 간 지속됩니다. <code class="cc-inline">max</code>는 현재 세션 전용입니다.
+    </div>
+  </section>
+
+  <!-- ── 4. Max Tokens ── -->
+  <section id="max-tokens">
+    <h2 class="section">Max Tokens 설정</h2>
+    <p><code class="cc-inline">xhigh</code> 또는 <code class="cc-inline">max</code>로 실행할 때는 출력 토큰 상한을 명시해야 잘림 현상을 방지할 수 있습니다.</p>
+
+    <div class="cc-code">
+      <span class="code-lang">json — settings.json</span>
+      <pre>{
+  "env": {
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "65536"
+  },
+  "effortLevel": "xhigh"
+}</pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>워크로드</th><th>권장 max_tokens</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td>일반 작업</td><td>64k (기본값)</td><td>공식 권장 시작점</td></tr>
+          <tr><td>에이전트 워크플로</td><td>128k</td><td>장시간 작업, 다중 도구 호출</td></tr>
+          <tr><td>단순 조회</td><td>8k~16k</td><td>low/medium effort 조합</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 5. 첫 턴 프롬팅 ── -->
+  <section id="first-turn">
+    <h2 class="section">첫 턴 프롬팅 전략</h2>
+    <p>"모든 사용자 턴은 추론 오버헤드를 추가한다. 질문을 묶고, 모델이 계속 진행할 수 있도록 필요한 컨텍스트를 한 번에 제공하라."</p>
+
+    <div class="compare-grid">
+      <div class="compare-box bad">
+        <div class="label">❌ 나쁜 패턴 — 멀티턴 분산</div>
+        <pre>1턴: "auth 모듈 봐줘"
+2턴: "여기 버그 있어?"
+3턴: "고쳐줘. 테스트도 추가해"</pre>
+      </div>
+      <div class="compare-box good">
+        <div class="label">✅ 좋은 패턴 — 풀스펙 첫 턴</div>
+        <pre>src/auth/login.ts의 세션 만료
+처리 로직에 버그가 있다.
+수정 후 tests/auth/ 아래에
+단위 테스트를 추가해줘.
+기존 테스트는 깨지면 안 된다.</pre>
+      </div>
+    </div>
+
+    <h3 class="subsection">풀스펙 첫 턴 템플릿</h3>
+    <p>아래 5가지 요소를 첫 턴에 모두 포함하면 불필요한 왕복 추론을 줄일 수 있습니다.</p>
+
+    <div class="cc-code">
+      <span class="code-lang">prompt template</span>
+      <pre>[의도]  결제 모듈의 retry 로직을 idempotent하게 리팩토링한다.
+[제약]  Spring Boot 3.2, JDK 21, 기존 PaymentService 인터페이스 유지.
+[인수 기준]
+        (1) 동일 트랜잭션 ID로 두 번 호출되어도 한 번만 처리.
+        (2) 기존 단위 테스트 모두 통과.
+[관련 파일]
+        src/main/java/com/example/payment/PaymentService.java
+        src/test/java/com/example/payment/PaymentServiceTest.java
+[질문]  분산락은 Redisson vs DB unique 제약,
+        어느 것이 나을지 권장안과 trade-off를 알려달라.</pre>
+    </div>
+  </section>
+
+  <!-- ── 6. 사고 깊이 제어 ── -->
+  <section id="thinking-depth">
+    <h2 class="section">사고 깊이 제어</h2>
+    <p>Effort 레벨과 별개로, 프롬프트 키워드를 통해 해당 턴의 사고 깊이를 조절할 수 있습니다.</p>
+
+    <h3 class="subsection">더 깊이 사고하게 하기</h3>
+    <div class="cc-code">
+      <span class="code-lang">system / user prompt</span>
+      <pre>"Think carefully and step-by-step before responding;
+this problem is harder than it looks."</pre>
+    </div>
+
+    <h3 class="subsection">더 빠르게 응답하게 하기</h3>
+    <div class="cc-code">
+      <span class="code-lang">system / user prompt</span>
+      <pre>"Prioritize responding quickly rather than thinking deeply.
+When in doubt, respond directly."</pre>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-tag">주의</span>
+      빠른 응답 키워드는 어려운 단계에서 정확도 손실이 발생할 수 있습니다. 복잡한 추론 작업에는 사용하지 마세요.
+    </div>
+
+    <h3 class="subsection">ultrathink 키워드</h3>
+    <p>프롬프트에 <code class="cc-inline">ultrathink</code>를 포함하면 해당 턴만 깊은 추론을 수행합니다. 세션 Effort 설정은 변경되지 않습니다.</p>
+
+    <div class="cc-code">
+      <span class="code-lang">user prompt</span>
+      <pre>이 알고리즘의 시간 복잡도를 O(n log n)으로 개선할 수 있는지
+ultrathink로 분석해줘.</pre>
+    </div>
+  </section>
+
+  <!-- ── 7. Auto Mode ── -->
+  <section id="auto-mode">
+    <h2 class="section">Auto Mode</h2>
+    <p>Auto Mode는 Claude가 도구 실행 전 사람의 승인 없이 자율로 진행하는 모드입니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>항목</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td>현황</td><td>Claude Code Max 사용자 및 Team 플랜 research preview</td></tr>
+          <tr><td>활성화 방법</td><td><span class="kbd">Shift</span> + <span class="kbd">Tab</span></td></tr>
+          <tr><td>안전 검토</td><td>각 도구 실행 전 분류기가 파괴 행동 검토 (비즈니스 로직 위험은 미탐지)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-box good">
+        <div class="label">✅ 적합한 경우</div>
+        <pre>격리된 환경 (sandbox)
+명세가 충분히 구체적인 작업
+프로덕션과 분리된 개발 환경</pre>
+      </div>
+      <div class="compare-box bad">
+        <div class="label">❌ 부적합한 경우</div>
+        <pre>운영 DB 접근 가능 환경
+환경 자격 증명이 노출된 상태
+비즈니스 로직 위험이 있는 워크플로</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 8. Extended Thinking 마이그레이션 ── -->
+  <section id="extended-thinking">
+    <h2 class="section">Extended Thinking 마이그레이션</h2>
+    <p>Opus 4.7에서 <code class="cc-inline">budget_tokens</code>는 <strong>Breaking Change</strong>입니다. 기존 코드에 이 파라미터가 남아 있으면 HTTP 400 에러가 발생합니다.</p>
+
+    <div class="compare-grid">
+      <div class="compare-box bad">
+        <div class="label">❌ Opus 4.7에서 400 에러</div>
+        <pre>thinking: {
+  type: "enabled",
+  budget_tokens: 10000  // 제거됨
+}</pre>
+      </div>
+      <div class="compare-box good">
+        <div class="label">✅ Opus 4.7 정상 동작</div>
+        <pre>thinking: {
+  type: "adaptive"
+}</pre>
+      </div>
+    </div>
+
+    <h3 class="subsection">Adaptive Mode 특징</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>항목</th><th>동작</th></tr></thead>
+        <tbody>
+          <tr><td>기본값</td><td><span class="badge warn">OFF</span> — 명시 설정 필요</td></tr>
+          <tr><td>API (high effort)</td><td>거의 항상 사고 활성화</td></tr>
+          <tr><td>낮은 effort</td><td>단순 문제 시 사고 건너뜀</td></tr>
+          <tr><td>도구 호출 사이</td><td>인터리브드 사고 자동 활성화</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="subsection">사고 빈도 조절</h3>
+    <p>Extended Thinking이 지연을 추가하는 경우, 시스템 프롬프트로 빈도를 제한할 수 있습니다.</p>
+    <div class="cc-code">
+      <span class="code-lang">system prompt</span>
+      <pre>Extended thinking은 지연을 추가하므로
+답변 품질을 의미 있게 개선할 때만 사용하라.
+불확실할 때는 직접 응답하라.</pre>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-tag">마이그레이션 체크</span>
+      코드베이스 전체에서 <code class="cc-inline">budget_tokens</code>를 검색하고 제거하세요. <code class="cc-inline">temperature</code>, <code class="cc-inline">top_p</code>, <code class="cc-inline">top_k</code>도 기본값이 아닌 경우 400 에러가 발생합니다.
+    </div>
+  </section>
+
+  <!-- ── 9. 서브에이전트 ── -->
+  <section id="subagent">
+    <h2 class="section">서브에이전트 정책</h2>
+    <p>Opus 4.7은 기본적으로 더 신중하게 서브에이전트를 생성합니다. 다중 파일 팬아웃이 필요한 경우 명시적으로 지정해야 합니다.</p>
+
+    <div class="compare-grid">
+      <div class="compare-box bad">
+        <div class="label">❌ 서브에이전트 사용 불필요</div>
+        <pre>단일 응답으로 직접 완료 가능한 작업
+예: 이미 보이는 함수 리팩토링</pre>
+      </div>
+      <div class="compare-box good">
+        <div class="label">✅ 서브에이전트 명시 지정</div>
+        <pre>"여러 파일에 걸쳐 팬아웃하거나
+여러 파일을 읽을 때는 같은 턴에
+복수 서브에이전트를 생성하라."</pre>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="callout-tag">팁</span>
+      시스템 프롬프트에 서브에이전트 생성 조건을 명시하면, Opus 4.7이 자동으로 병렬 처리 여부를 판단합니다.
+    </div>
+  </section>
+
+  <!-- ── 10. 체크리스트 ── -->
+  <section id="checklist">
+    <h2 class="section">즉시 적용 체크리스트</h2>
+    <ul class="checklist">
+      <li>Claude Code v2.1.111+ 확인 (<code class="cc-inline">claude update</code>)</li>
+      <li><code class="cc-inline">/effort</code> 커맨드로 워크로드에 맞는 레벨 재선택</li>
+      <li>간단 작업: <code class="cc-inline">low</code> / <code class="cc-inline">medium</code>으로 낮춰 속도 확보</li>
+      <li><code class="cc-inline">xhigh</code> / <code class="cc-inline">max</code> 세션: <code class="cc-inline">max_tokens</code> 64k부터 설정</li>
+      <li>코드베이스에서 <code class="cc-inline">temperature</code> / <code class="cc-inline">top_p</code> / <code class="cc-inline">top_k</code> 파라미터 제거</li>
+      <li>Extended Thinking: <code class="cc-inline">budget_tokens</code> 제거, <code class="cc-inline">type: "adaptive"</code> 명시</li>
+      <li>첫 턴에 의도·제약·인수 기준·관련 파일·질문 모두 포함</li>
+      <li>멀티파일 팬아웃 시 서브에이전트 복수 생성 명시</li>
+    </ul>
+  </section>
+
+  <!-- ── 11. 작업별 권장표 ── -->
+  <section id="effort-table">
+    <h2 class="section">작업별 Effort 권장표</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>작업 유형</th><th>권장 Effort</th><th>이유</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>단순 조회·요약·변환</td>
+            <td><span class="badge muted">low</span></td>
+            <td>토큰 절약, 과도한 추론 불필요</td>
+          </tr>
+          <tr>
+            <td>명확한 단일 파일 수정</td>
+            <td><span class="badge muted">medium</span></td>
+            <td>비용·품질 균형</td>
+          </tr>
+          <tr>
+            <td>다중 파일 변경·디버깅</td>
+            <td><span class="badge muted">high</span></td>
+            <td>안정적 품질, API 기본값</td>
+          </tr>
+          <tr>
+            <td>에이전트·반복 도구 호출</td>
+            <td><span class="badge">xhigh</span></td>
+            <td>Claude Code 기본값, 에이전트 워크플로 최적</td>
+          </tr>
+          <tr>
+            <td>새 알고리즘·대형 리팩토링</td>
+            <td><span class="badge warn">max</span></td>
+            <td>한 세션 한정, 단순 작업에는 과도</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 12. FAQ ── -->
+  <section id="faq">
+    <h2 class="section">FAQ</h2>
+
+    <dl>
+      <dt>low effort에서 4.6보다 못한가?<small>성능 비교</small></dt>
+      <dd>아니다. 동일 effort 레벨에서 4.7이 더 우수합니다. 느린 것처럼 느껴지는 이유는 Claude Code가 자동으로 effort를 <code class="cc-inline">xhigh</code>로 올렸기 때문입니다.</dd>
+
+      <dt>max가 항상 최고 결과를 주나?<small>수확 체감</small></dt>
+      <dd>아니다. 과도한 사고로 오히려 결과가 악화될 수 있습니다. 단순 작업에서는 수확 체감이 크며 비용이 폭주합니다. <code class="cc-inline">xhigh</code>로 충분한 경우가 많습니다.</dd>
+
+      <dt>API와 CLI의 기본 effort 차이는?<small>환경별 기본값</small></dt>
+      <dd>CLI(Claude Code)는 Opus 4.7 자동 <code class="cc-inline">xhigh</code>, API는 기본 <code class="cc-inline">high</code>입니다. API에서 <code class="cc-inline">xhigh</code>를 사용하려면 명시 설정이 필요합니다.</dd>
+
+      <dt>서브에이전트를 자동 다중화하려면?<small>서브에이전트</small></dt>
+      <dd>시스템 프롬프트나 사용자 프롬프트에 "여러 파일에 팬아웃할 때 같은 턴에 복수 서브에이전트를 생성하라"고 명시하면 됩니다.</dd>
+
+      <dt>Extended Thinking이 갑자기 400 에러?<small>마이그레이션</small></dt>
+      <dd><code class="cc-inline">budget_tokens</code>를 제거하고 <code class="cc-inline">type: "adaptive"</code>로 전환하세요. <code class="cc-inline">temperature</code> / <code class="cc-inline">top_p</code> / <code class="cc-inline">top_k</code>를 비기본값으로 설정한 경우도 동일 에러가 발생합니다.</dd>
+
+      <dt>max_tokens 권장 설정값은?<small>설정</small></dt>
+      <dd>공식 권장은 64k에서 시작하여 워크로드에 맞게 튜닝합니다. 에이전트 워크플로는 128k까지 고려하세요.</dd>
+
+      <dt>Auto Mode는 언제 GA(정식 출시)?<small>Auto Mode</small></dt>
+      <dd>현재 Claude Code Max 및 Team 플랜 research preview 단계입니다. GA 일정은 아직 공식 발표되지 않았습니다.</dd>
+    </dl>
+
+    <div class="page-footer-note">
+      참고: 2026년 4월 16일 Anthropic 공식 베스트 프랙티스 가이드, 모델 카드, Claude Code 공식 문서 기준.<br>
+      출처: <a href="https://goddaehee.tistory.com/587">goddaehee 기술 블로그</a> / 2026-04-29 정리
+    </div>
+  </section>
+
+</main>
+</div>
+
+<script>
+  (function() {
+    const links = Array.from(document.querySelectorAll(".toc a"));
+    const ids = links.map(a => a.getAttribute("href").replace("#", ""));
+    const sections = ids.map(id => document.getElementById(id)).filter(Boolean);
+    function onScroll() {
+      let active = sections[0];
+      const y = window.scrollY + 80;
+      for (const s of sections) { if (s.offsetTop <= y) active = s; }
+      links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + active.id));
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="ZYWT2QJ" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
