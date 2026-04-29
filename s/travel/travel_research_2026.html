@@ -164,8 +164,44 @@
       .info-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
+  <style>
+    /* ── Lightbox ── */
+    .lb-trigger { cursor: zoom-in; display: block; }
+    .lb-trigger img { transition: opacity .2s; }
+    .lb-trigger:hover img { opacity: .88; }
+
+    #lb-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,.85);
+      backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    #lb-overlay.open { display: flex; }
+    #lb-overlay img {
+      max-width: 100%; max-height: 90vh;
+      border-radius: 8px;
+      box-shadow: 0 8px 48px rgba(0,0,0,.6);
+      cursor: zoom-out;
+    }
+    #lb-close {
+      position: fixed; top: 20px; right: 24px;
+      background: rgba(255,255,255,.15); border: none;
+      color: #fff; font-size: 28px; line-height: 1;
+      width: 44px; height: 44px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    #lb-close:hover { background: rgba(255,255,255,.3); }
+  </style>
 </head>
 <body>
+  <!-- Lightbox overlay -->
+  <div id="lb-overlay" role="dialog" aria-modal="true">
+    <button id="lb-close" aria-label="닫기">✕</button>
+    <img id="lb-img" src="" alt="">
+  </div>
 
 <!-- MASTHEAD -->
 <header class="masthead">
@@ -187,9 +223,11 @@
 
 <div style="max-width:960px;margin:0 auto 40px;padding:0 24px">
   <figure style="margin:0;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12)">
-    <img src="/s/travel/map.png" alt="11개 여행지 위치 지도" style="width:100%;display:block">
+    <a class="lb-trigger" data-lb-src="/s/travel/map.png" data-lb-alt="12개 여행지 위치 지도" href="#" onclick="return false">
+      <img src="/s/travel/map.png" alt="12개 여행지 위치 지도" style="width:100%;display:block">
+    </a>
     <figcaption style="background:#f4f4f0;padding:10px 16px;font-size:13px;color:#6b7280;font-family:Inter,sans-serif">
-      📍 조사 대상 11개 여행지 위치 — 보홀(칼라페·안다)·사이판·시키호르·시아르가오·팔라완·꾸이년·꼬리뻬·방센·길리·마나도·테티아로아
+      📍 조사 대상 12개 여행지 위치 — 보홀(칼라페·안다)·사이판·시키호르·시아르가오·팔라완·꾸이년·꼬리뻬·방센·길리·마나도·테티아로아 &nbsp;·&nbsp; 🔍 클릭하면 크게 볼 수 있습니다
     </figcaption>
   </figure>
 </div>
@@ -1386,5 +1424,37 @@
 
 <script src="/assets/js/page-header.js"></script>
 <script data-page-hash="KF34N9P" src="/assets/js/page-footer.js"></script>
+<script>
+  (function () {
+    const overlay = document.getElementById('lb-overlay');
+    const lbImg   = document.getElementById('lb-img');
+    const lbClose = document.getElementById('lb-close');
+
+    function open(src, alt) {
+      lbImg.src = src;
+      lbImg.alt = alt || '';
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function close() {
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+      lbImg.src = '';
+    }
+
+    document.querySelectorAll('.lb-trigger').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        open(el.dataset.lbSrc || el.querySelector('img').src,
+             el.dataset.lbAlt || el.querySelector('img').alt);
+      });
+    });
+
+    lbClose.addEventListener('click', close);
+    lbImg.addEventListener('click', close);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  })();
+</script>
 </body>
 </html>
