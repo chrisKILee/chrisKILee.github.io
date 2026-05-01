@@ -116,6 +116,12 @@
     if (extraPad > 0) {
       document.body.style.setProperty('padding-top', (48 + extraPad) + 'px', 'important');
     }
+
+    // .toc-wrap (sticky 사이드 패널) — top/height 보정
+    document.querySelectorAll('.toc-wrap').forEach(el => {
+      el.style.setProperty('top', '48px', 'important');
+      el.style.setProperty('height', 'calc(100vh - 48px)', 'important');
+    });
   }
 
   if (document.readyState === 'loading') {
