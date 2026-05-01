@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-WORKER CONTEST 2026 시상식</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+  :root {
+    --bg-0: #050505;
+    --bg-1: #0d0b10;
+    --gold: #c9a84c;
+    --gold-soft: #e4c878;
+    --text-0: #f5f2ea;
+    --text-1: rgba(245, 242, 234, 0.72);
+    --text-2: rgba(245, 242, 234, 0.48);
+    --rule: rgba(201, 168, 76, 0.18);
+    --dev: #e4c878;
+    --nondev: #c8a2c8;
+    --grand: #ffd36b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg-0); color: var(--text-0); overflow: hidden; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+  .display { font-family: 'Cormorant Garamond', 'Nanum Myeongjo', serif; font-weight: 500; letter-spacing: -0.02em; }
+  .mono { font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace; }
+
+  .deck {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at top, #1a1420 0%, var(--bg-0) 60%);
+  }
+  .slide {
+    position: absolute; inset: 0;
+    padding: 5vh 8vw;
+    display: flex; flex-direction: column; justify-content: center;
+    opacity: 0; pointer-events: none; overflow: hidden;
+    transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateY(14px);
+  }
+  .slide.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .slide.prev { transform: translateY(-14px); }
+
+  .slide-tag {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 28px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .slide-tag::before {
+    content: ''; display: block; width: 28px; height: 1px; background: var(--gold);
+  }
+
+  h1.cover-title {
+    font-size: clamp(2.5rem, 6vw, 5.4rem);
+    line-height: 1.02;
+    font-weight: 300;
+  }
+  h1.cover-title .gold { color: var(--gold-soft); font-weight: 500; }
+  h1.cover-title em { font-style: normal; color: var(--text-0); font-weight: 500; }
+
+  h2.section-title {
+    font-size: clamp(1.4rem, 4vh, 3.2rem);
+    line-height: 1.15;
+    font-weight: 400;
+    max-width: 20ch;
+  }
+  .lead-text {
+    font-size: clamp(0.98rem, 1.25vw, 1.18rem);
+    line-height: 1.75;
+    color: var(--text-1);
+    max-width: 62ch;
+    margin-top: clamp(10px,1.5vh,20px);
+    font-weight: 400;
+  }
+  .lead-text strong { color: var(--text-0); font-weight: 600; }
+  .lead-text em.accent { font-style: normal; color: var(--gold-soft); font-weight: 500; }
+
+  /* Cover slide */
+  .cover-meta {
+    display: flex; gap: 40px; margin-top: 40px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-2);
+  }
+  .cover-meta strong { color: var(--gold); font-weight: 500; }
+
+  /* Journey steps */
+  .journey-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin-top: clamp(16px,2.5vh,32px);
+  }
+  .journey-card {
+    border: 1px solid var(--rule);
+    background: rgba(255, 255, 255, 0.015);
+    border-radius: 14px; padding: 26px;
+  }
+  .journey-card.active {
+    border-color: rgba(201, 168, 76, 0.5);
+    background: rgba(201, 168, 76, 0.05);
+  }
+  .journey-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gold); letter-spacing: 0.2em; margin-bottom: 10px; }
+  .journey-name { font-size: 1.15rem; font-weight: 600; color: var(--text-0); margin-bottom: 6px; }
+  .journey-sub { font-size: 0.88rem; color: var(--text-2); line-height: 1.55; }
+
+  /* Big stat 96% */
+  .stat-block {
+    display: flex; align-items: baseline; gap: 36px;
+    margin-top: clamp(14px,2vh,28px); flex-wrap: wrap;
+  }
+  .stat-hero {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(4rem, 14vh, 12rem);
+    line-height: 0.9;
+    color: var(--gold-soft);
+    font-weight: 400;
+  }
+  .stat-hero sup { font-size: 0.4em; color: var(--gold); vertical-align: 0.5em; }
+  .stat-detail { color: var(--text-1); }
+  .stat-detail .big { font-size: 2rem; color: var(--text-0); font-weight: 500; margin-bottom: 4px; font-family: 'Cormorant Garamond', serif; }
+  .stat-detail .lbl { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-2); }
+
+  /* Criteria */
+  .criteria-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin-top: clamp(12px,2vh,28px);
+  }
+  .criterion {
+    border-top: 1px solid var(--rule); padding-top: 16px;
+  }
+  .criterion .idx { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--gold); letter-spacing: 0.2em; margin-bottom: 8px; }
+  .criterion .name { font-size: 1.02rem; font-weight: 600; color: var(--text-0); margin-bottom: 4px; }
+  .criterion .desc { font-size: 0.82rem; color: var(--text-2); line-height: 1.5; }
+
+  /* Overview */
+  .overview-stats {
+    display: flex; gap: clamp(24px,4vw,56px); margin-top: clamp(12px,2vh,28px); flex-wrap: wrap;
+  }
+  .overview-stat .val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.4rem, 5vh, 4.2rem); color: var(--gold-soft);
+    line-height: 1; font-weight: 400;
+  }
+  .overview-stat .lbl {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-2);
+    margin-top: 10px;
+  }
+
+  /* Awardee slide */
+  .awardee {
+    display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px;
+    align-items: center; height: auto; padding: 0;
+  }
+  .awardee-image {
+    width: 100%; height: min(50vh, 420px);
+    border-radius: 18px; overflow: hidden;
+    background: #0a0a0a;
+    border: 1px solid var(--rule);
+    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(201, 168, 76, 0.08);
+    position: relative;
+  }
+  .awardee-image img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .awardee-image::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.6) 100%);
+    pointer-events: none;
+  }
+  .awardee-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 8px 16px; border: 1px solid var(--gold);
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--gold-soft); margin-bottom: clamp(8px,1.2vh,14px);
+  }
+  .awardee-badge.grand {
+    background: rgba(255, 211, 107, 0.1);
+    border-color: var(--grand);
+    color: var(--grand);
+  }
+  .awardee-badge::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+  }
+  .awardee-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.8rem, 5vh, 3.8rem);
+    line-height: 1;
+    font-weight: 500;
+    color: var(--text-0);
+    margin-bottom: 14px;
+  }
+  .awardee-project {
+    font-size: clamp(0.9rem, 1.8vh, 1.2rem);
+    font-weight: 600; color: var(--gold-soft);
+    margin-bottom: clamp(8px,1vh,14px);
+    line-height: 1.3;
+  }
+  .awardee-desc {
+    font-size: clamp(0.82rem, 1.6vh, 0.98rem);
+    line-height: 1.55; color: var(--text-1);
+    margin-bottom: clamp(8px,1vh,14px);
+  }
+  .awardee-kpi {
+    display: flex; gap: clamp(16px,2vw,24px); padding-top: clamp(8px,1vh,14px);
+    border-top: 1px solid var(--rule);
+  }
+  .awardee-kpi .k-val { font-size: 1.6rem; color: var(--gold-soft); font-weight: 600; font-family: 'Cormorant Garamond', serif; line-height: 1; }
+  .awardee-kpi .k-lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-2); margin-top: 6px; }
+
+  /* Closing */
+  .thanks {
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%;
+  }
+  .thanks .big {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3.5rem, 8vw, 7rem);
+    color: var(--gold-soft);
+    font-weight: 400;
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+  .thanks .small {
+    font-size: 1.05rem; color: var(--text-1); line-height: 1.7;
+    max-width: 46ch;
+  }
+
+  /* Bottom controls */
+  .controls {
+    position: fixed; bottom: 28px; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: center;
+    gap: 22px; z-index: 100;
+    pointer-events: none;
+  }
+  .dots { display: flex; gap: 7px; pointer-events: auto; }
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(245, 242, 234, 0.18);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .dot:hover { background: rgba(245, 242, 234, 0.4); }
+  .dot.active { background: var(--gold); width: 22px; border-radius: 3px; }
+
+  .arrow-btns { display: flex; gap: 10px; pointer-events: auto; }
+  .arrow-btn {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1px solid var(--rule); background: rgba(0,0,0,0.4);
+    color: var(--text-1); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .arrow-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .progress-bar {
+    position: fixed; top: 0; left: 0; height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-soft));
+    transition: width 0.4s ease;
+    z-index: 200;
+  }
+
+  .corner {
+    position: fixed; font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-2); z-index: 100;
+    pointer-events: none;
+  }
+  .corner-tl { top: 24px; left: 28px; }
+  .corner-tr { top: 24px; right: 28px; color: var(--gold); }
+
+  /* Speaker script overlay */
+  .script-overlay {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    max-width: 720px; width: calc(100% - 80px);
+    background: rgba(10, 8, 12, 0.94);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 22px 26px;
+    color: var(--text-1);
+    font-size: 0.93rem; line-height: 1.7;
+    backdrop-filter: blur(16px);
+    z-index: 150;
+    display: none;
+    max-height: 40vh; overflow-y: auto;
+  }
+  .script-overlay.show { display: block; }
+  .script-overlay .label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 10px;
+  }
+
+  /* Confetti canvas */
+  #confetti {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 90;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .slide { padding: 5vh 6vw; }
+    .awardee { grid-template-columns: 1fr; gap: 24px; }
+    .journey-grid { grid-template-columns: 1fr; }
+    .criteria-grid { grid-template-columns: repeat(2, 1fr); }
+    .awardee-kpi { gap: 18px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide { transition: opacity 0.2s; transform: none !important; }
+  }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+<div class="corner corner-tl">AI-WORKER CONTEST · 2026</div>
+<div class="corner corner-tr" id="page-counter">01 / 14</div>
+<canvas id="confetti"></canvas>
+
+<div class="deck" id="deck">
+
+  <!-- Slide 1: Cover -->
+  <div class="slide active" data-script="안녕하세요. 오늘 2026년 AI-WORKER CONTEST 시상식을 시작하겠습니다.">
+    <div class="slide-tag">2026 시상식</div>
+    <h1 class="cover-title display">
+      <span class="gold">AI-WORKER</span><br/>
+      <em>CONTEST</em><br/>
+      시상식
+    </h1>
+    <div class="cover-meta">
+      <div><strong>VNTG</strong> · 2026</div>
+      <div>AWARD CEREMONY</div>
+      <div>25 SUBMITTED · 6 AWARDED</div>
+    </div>
+  </div>
+
+  <!-- Slide 2: Opening -->
+  <div class="slide" data-script="자리를 빛내주신 여러분, 감사합니다. 우리가 이 여정을 시작할 때만 해도 이렇게 풍성한 작품들이 나올 수 있을까 확신이 없었습니다. 오늘 시상할 작품들을 심사하면서, 이 장이 만들어낸 힘을 다시 한번 확인했습니다.">
+    <div class="slide-tag">01 · 서두 인사</div>
+    <h2 class="section-title display">
+      장이 마련되니,<br/>
+      <em style="color: var(--gold-soft); font-style: normal;">이런 작품들이 나왔습니다.</em>
+    </h2>
+    <p class="lead-text">
+      이 여정을 시작할 때만 해도 이렇게 풍성한 작품들이 나올 수 있을까 확신이 없었습니다.
+      심사하면서 <strong>이 장이 만들어낸 힘</strong>을 다시 한번 확인했습니다.
+    </p>
+  </div>
+
+  <!-- Slide 3: Journey -->
+  <div class="slide" data-script="AI-WORKER는 VNTG의 AI 역량 강화 여정 중 한 꼭지였습니다. 첫 번째, 우리가 지금 어디에 서 있는지 셀프 진단을 했고, 두 번째, AI 리터러시 세미나로 기초를 다졌습니다. 그리고 세 번째로, 우리 모두 AI-WORKER가 되어 보자는 이번 활동이었습니다. 212명 중 194명, 무려 96%가 완주한 꽤나 성공적인 여정이었습니다.">
+    <div class="slide-tag">02 · 우리가 걸어온 길</div>
+    <h2 class="section-title display">
+      세 번째 여정,<br/>
+      <em style="color: var(--gold-soft); font-style: normal;">"우리 모두 AI-WORKER가 되어 보자"</em>
+    </h2>
+    <div class="journey-grid">
+      <div class="journey-card">
+        <div class="journey-num">STEP 01</div>
+        <div class="journey-name">셀프 진단</div>
+        <div class="journey-sub">나는 지금 어디에 있는가.<br/>스스로에게 던지는 질문.</div>
+      </div>
+      <div class="journey-card">
+        <div class="journey-num">STEP 02</div>
+        <div class="journey-name">AI 리터러시 세미나</div>
+        <div class="journey-sub">기초를 다지다.<br/>툴을 아는 것과 가치를 만드는 것은 다르다.</div>
+      </div>
+      <div class="journey-card active">
+        <div class="journey-num">STEP 03</div>
+        <div class="journey-name">AI-WORKER CHALLENGE</div>
+        <div class="journey-sub">내 손으로 수작업 하나를 없애라.<br/>직접 만들어 보다.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: Results -->
+  <div class="slide" data-script="바쁜 일상과 업무 중에도, 동호회 활동과 개인 활동을 통해 212명 중 194명, 무려 96%가 완주한 꽤나 성공적인 여정이었습니다. 이 숫자는 단순한 참여율이 아니라, 나도 할 수 있다는 자신감이 조직 전체에 퍼졌다는 증거입니다.">
+    <div class="slide-tag">03 · 우리가 해낸 것</div>
+    <h2 class="section-title display">
+      그리고 <em style="color: var(--gold-soft); font-style: normal;">우리는 해냈습니다.</em>
+    </h2>
+    <div class="stat-block">
+      <div class="stat-hero">96<sup>%</sup></div>
+      <div class="stat-detail">
+        <div class="big">194 / 212</div>
+        <div class="lbl">Completed · Total Participants</div>
+        <p class="lead-text" style="margin-top: 20px; max-width: 40ch;">
+          강제가 아닌 선택으로. 바쁜 현업 속에서.<br/>
+          <strong style="color: var(--gold-soft);">"나도 할 수 있다"</strong>는 자신감이 퍼졌습니다.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Meaning -->
+  <div class="slide" data-script="심사 과정에서 만들어진 결과물들을 하나하나 보면서, 꽤나 완성도 있고 앞으로 발전시킬 수 있는 결과들이 나왔다는 것을 확인했습니다. 이 여정이 없었다면 이런 결과들이 나올 수 있었을까. 그리고 이제는 AI에 대한 막연함보다는, AI를 활용해서 무언가를 할 수 있다는 생각의 전환이 있었던 것 같습니다.">
+    <div class="slide-tag">04 · 심사 소감</div>
+    <h2 class="section-title display">
+      AI를 배운 게 아니라,<br/>
+      <em style="color: var(--gold-soft); font-style: normal;">AI로 일하는 법을 터득했습니다.</em>
+    </h2>
+    <p class="lead-text">
+      심사 과정에서 만들어진 결과물들을 보면서, 꽤나 완성도 있고 앞으로 <strong>발전시킬 수 있는 결과들</strong>이 나왔다는 것을 확인했습니다.<br/><br/>
+      이 여정이 없었다면 이런 결과들이 나올 수 있었을까. AI에 대한 막연함 대신, <em class="accent">AI를 활용해 무언가를 할 수 있다는 생각의 전환</em>이 있었던 것 같습니다.
+    </p>
+  </div>
+
+  <!-- Slide 6: Criteria -->
+  <div class="slide" data-script="이번 CONTEST의 목표는, 전 직원이 AI에 대한 친밀성을 갖고 자기 업무의 효율성을 위해 AI를 자신 있게 활용할 수 있는 수준이었습니다. 그래서 우수 과제 선정 기준도 기술적 수준보다 업무 효율성 측면을 우선으로 보았습니다. 네 가지 항목 — 업무 효율성, 아이디어 적절성, 확산 가능성, 조직 목표 연결 — 로 선정되었습니다.">
+    <div class="slide-tag">05 · 심사 기준</div>
+    <h2 class="section-title display">
+      기술적 수준보다,<br/>
+      <em style="color: var(--gold-soft); font-style: normal;">업무 효율성을 우선으로.</em>
+    </h2>
+    <p class="lead-text" style="margin-bottom: 0;">
+      "전 직원이 AI에 대한 친밀성을 갖고, 자기 업무의 효율성을 위해 AI를 자신 있게 활용할 수 있는 수준"이 이번 목표였습니다.
+    </p>
+    <div class="criteria-grid">
+      <div class="criterion">
+        <div class="idx">/01</div>
+        <div class="name">업무 효율성</div>
+        <div class="desc">내 일을 얼마나 줄였는가</div>
+      </div>
+      <div class="criterion">
+        <div class="idx">/02</div>
+        <div class="name">아이디어 적절성</div>
+        <div class="desc">문제를 정확히 짚었는가</div>
+      </div>
+      <div class="criterion">
+        <div class="idx">/03</div>
+        <div class="name">확산 가능성</div>
+        <div class="desc">타 팀도 쓸 수 있는가</div>
+      </div>
+      <div class="criterion">
+        <div class="idx">/04</div>
+        <div class="name">조직 목표 연결</div>
+        <div class="desc">VNTG가 나아갈 방향인가</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7: Overview of awards -->
+  <div class="slide" data-script="센터장, 실장님들께서 추천해주신 과제들 중 25분께서 제출해주셨고, 그중 6과제를 오늘 시상하려고 합니다. 개발자 부문 네 분, 비개발 부문 두 분을 선정했습니다.">
+    <div class="slide-tag">06 · 오늘의 시상</div>
+    <h2 class="section-title display">
+      25분의 제출,<br/>
+      <em style="color: var(--gold-soft); font-style: normal;">6분의 수상.</em>
+    </h2>
+    <p class="lead-text">
+      센터장·실장님들의 추천을 거쳐 <strong>25분</strong>이 과제를 제출해주셨고, 그중 <strong style="color: var(--gold-soft);">6과제</strong>를 오늘 시상합니다.
+    </p>
+    <div class="overview-stats">
+      <div class="overview-stat"><div class="val">25</div><div class="lbl">Submissions</div></div>
+      <div class="overview-stat"><div class="val">4</div><div class="lbl">Dev Awards</div></div>
+      <div class="overview-stat"><div class="val">2</div><div class="lbl">Non-Dev Awards</div></div>
+      <div class="overview-stat"><div class="val">2</div><div class="lbl">Grand Prize</div></div>
+    </div>
+  </div>
+
+  <!-- Slide 8: 안종성 — 개발 우수 -->
+  <div class="slide celebrate" data-script="먼저 개발 부문 우수상, 안종성 님입니다. AI 기반 로그 분석 시스템. 서버 장애가 나면 파편화된 로그를 수동으로 뒤져 원인 파악에만 60분 이상 걸렸는데, AI가 로그를 자동 분석해 5분 이내로 단축했습니다. 담당자가 자리를 비워도 AI가 숙련된 수준으로 대응한다는 점이 인상적이었습니다. 축하드립니다.">
+    <div class="awardee">
+      <div class="awardee-image">
+        <img src="/gemini_html/assets/AI 기반 로그 분석 시스템_01.png" alt="AI 기반 로그 분석 시스템" loading="lazy"/>
+      </div>
+      <div>
+        <div class="awardee-badge">개발 부문 · 우수상</div>
+        <div class="awardee-name display">안종성</div>
+        <div class="awardee-project">AI 기반 로그 분석 시스템</div>
+        <div class="awardee-desc">
+          서버 장애 시 파편화된 로그를 수동으로 뒤져 원인 파악에만 60분 이상 걸리던 것을, AI 자동 분석으로 5분 이내로 단축. 담당자가 자리를 비워도 AI가 숙련된 수준으로 대응합니다.
+        </div>
+        <div class="awardee-kpi">
+          <div>
+            <div class="k-val">60분 → 5분</div>
+            <div class="k-lbl">장애 대응 시간</div>
+          </div>
+          <div>
+            <div class="k-val">8h → 1분</div>
+            <div class="k-lbl">월 보고서 작성</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9: 정주현 — 개발 우수 -->
+  <div class="slide celebrate" data-script="개발 부문 우수상, 정주현 님입니다. 백업 통합 대시보드. 백업 현황 확인에 매일 3시간씩 걸리던 작업을 — Veeam 이상 여부, 백업일지, 서비스 사용량까지 — 대시보드 하나로 5분 안에 끝내는 시스템입니다. Google Chat 알림 연동으로 이상 발생 시 바로 알림이 옵니다. 축하드립니다.">
+    <div class="awardee">
+      <div class="awardee-image">
+        <img src="/gemini_html/images/backup_monitoring_dashboard/image-20260311-015133.png" alt="백업 통합 대시보드" loading="lazy"/>
+      </div>
+      <div>
+        <div class="awardee-badge">개발 부문 · 우수상</div>
+        <div class="awardee-name display">정주현</div>
+        <div class="awardee-project">백업 통합 모니터링 대시보드</div>
+        <div class="awardee-desc">
+          매일 3시간 걸리던 백업 현황 확인 — Veeam 이상 여부, 백업일지 작성, 서비스 사용량 파악 — 을 대시보드 하나로 5분에. Google Chat 알림까지 연동해 실시간 이상 감지.
+        </div>
+        <div class="awardee-kpi">
+          <div>
+            <div class="k-val">매일 3h → 5분</div>
+            <div class="k-lbl">현황 확인 시간</div>
+          </div>
+          <div>
+            <div class="k-val">실시간</div>
+            <div class="k-lbl">Google Chat 알림</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 10: 김주희 — 개발 우수 -->
+  <div class="slide celebrate" data-script="개발 부문 우수상, 김주희 님입니다. Smart Finder. 기존 그룹웨어에서 정보 하나 찾으려면 5~8번 클릭해야 했는데, 자연어 한 줄 입력으로 30개 이상 도메인을 한 번에 탐색합니다. 오늘의 결재, 일정, 메일, 근태를 한 화면에서 확인할 수 있는 AI 오버레이입니다. 축하드립니다.">
+    <div class="awardee">
+      <div class="awardee-image">
+        <img src="/gemini_html/assets/1-1._메인.png" alt="Smart Finder" loading="lazy"/>
+      </div>
+      <div>
+        <div class="awardee-badge">개발 부문 · 우수상</div>
+        <div class="awardee-name display">김주희</div>
+        <div class="awardee-project">Smart Finder — 그룹웨어 AI 오버레이</div>
+        <div class="awardee-desc">
+          5~8번 클릭해야 정보 하나 찾던 레거시 그룹웨어를, 자연어 한 줄로 30개+ 도메인을 동시 탐색. 결재·일정·메일·근태를 한 화면에서 확인하는 AI 오버레이.
+        </div>
+        <div class="awardee-kpi">
+          <div>
+            <div class="k-val">30+ 도메인</div>
+            <div class="k-lbl">동시 탐색 범위</div>
+          </div>
+          <div>
+            <div class="k-val">자연어</div>
+            <div class="k-lbl">단일 입력 인터페이스</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 11: 정혜나 — 비개발 우수 -->
+  <div class="slide celebrate" data-script="비개발 부문 우수상, 정혜나 님입니다. IT 서비스 품질지표 대시보드. 매월 전체 계열사 IT 서비스 품질지표를 수기로 취합하는 데 8시간이 걸렸는데, 웹 대시보드 자동화로 3분으로 줄였습니다. 무려 97.8% 절감, 계열사가 늘어도 추가 공수가 없습니다. 비개발자로서 이런 완성도는 정말 놀랍습니다. 축하드립니다.">
+    <div class="awardee">
+      <div class="awardee-image">
+        <img src="/gemini_html/assets/screen1_정혜나.png" alt="IT 서비스 품질지표 대시보드" loading="lazy"/>
+      </div>
+      <div>
+        <div class="awardee-badge">비개발 부문 · 우수상</div>
+        <div class="awardee-name display">정혜나</div>
+        <div class="awardee-project">IT 서비스 품질지표 대시보드</div>
+        <div class="awardee-desc">
+          매월 전체 계열사 IT 품질지표를 스프레드시트에서 수기로 취합·차트·슬라이드 하던 8시간을, 웹 대시보드 자동화로 3분에. 계열사가 늘어도 추가 공수 없음.
+        </div>
+        <div class="awardee-kpi">
+          <div>
+            <div class="k-val">8h → 3분</div>
+            <div class="k-lbl">월간 작성 시간</div>
+          </div>
+          <div>
+            <div class="k-val">97.8%</div>
+            <div class="k-lbl">시간 절감률</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 12: 조은서 — 비개발 최우수 -->
+  <div class="slide celebrate grand" data-script="비개발 부문 최우수상, 조은서 님입니다. VNTG 전산장비 견적 자동화 시스템. 이메일과 엑셀 수작업으로 이루어지던 전산장비 견적 요청을, 고객사 담당자가 직접 조회·요청하고 공급 업체는 단가·재고를 직접 등록 관리하는 웹 시스템으로 전면 대체했습니다. 월 3시간이 30분으로. 비개발자가 KPI까지 직접 달성한 과제입니다. 축하드립니다.">
+    <div class="awardee">
+      <div class="awardee-image">
+        <img src="/gemini_html/assets/00_main.jpg" alt="VNTG 전산장비 견적 자동화 시스템" loading="lazy"/>
+      </div>
+      <div>
+        <div class="awardee-badge grand">비개발 부문 · 최우수상</div>
+        <div class="awardee-name display">조은서</div>
+        <div class="awardee-project">VNTG 전산장비 견적 자동화 시스템</div>
+        <div class="awardee-desc">
+          이메일·엑셀 수작업으로 이뤄지던 견적 요청을 웹 시스템으로 전면 대체. 고객사는 직접 조회·요청, 공급사는 단가·재고를 직접 관리. <strong style="color: var(--grand);">비개발자가 KPI까지 직접 달성</strong>한 과제.
+        </div>
+        <div class="awardee-kpi">
+          <div>
+            <div class="k-val">월 3h → 30분</div>
+            <div class="k-lbl">담당 업무 시간</div>
+          </div>
+          <div>
+            <div class="k-val">83%</div>
+            <div class="k-lbl">견적 업무 절감</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 13: 박영민 — 개발 최우수 -->
+  <div class="slide celebrate grand" data-script="개발 부문 최우수상, 박영민 님입니다. Cursor AI 페어 프로그래밍. AI 코딩 도구의 환각 문제를 해결하기 위해 MES 도메인 MCP 서버를 직접 개발하셨습니다. MES 시스템의 DB 정보를 AI에게 직접 연결해주는 이 서버 덕분에 월 15건 처리하던 걸 24건으로 늘리면서도 야근 없이 소화했습니다. 1인 연 1천152시간 절감. 축하드립니다.">
+    <div class="awardee">
+      <div class="awardee-image">
+        <img src="/gemini_html/assets/3.1_MES_아키텍처_소개_p1.png" alt="Cursor AI 페어 프로그래밍 — MES MCP" loading="lazy"/>
+      </div>
+      <div>
+        <div class="awardee-badge grand">개발 부문 · 최우수상</div>
+        <div class="awardee-name display">박영민</div>
+        <div class="awardee-project">Cursor AI 페어 프로그래밍<br/><span style="font-size: 0.75em; opacity: 0.8;">+ MES 도메인 MCP 서버</span></div>
+        <div class="awardee-desc">
+          AI 코딩의 '환각' 문제를 MES 도메인 MCP 서버 직접 개발로 해결. DB 정보를 AI에 직접 연결하여 정확한 코드를 즉시. <strong style="color: var(--grand);">야근 없이 처리량 60% 증가.</strong>
+        </div>
+        <div class="awardee-kpi">
+          <div>
+            <div class="k-val">1,152 h</div>
+            <div class="k-lbl">연간 1인 절감</div>
+          </div>
+          <div>
+            <div class="k-val">15 → 24 건</div>
+            <div class="k-lbl">월 처리량 (야근 ZERO)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 14: New Beginning + Closing -->
+  <div class="slide" data-script="이제 AI 역량 강화는 끝이 아니라 새로운 시작점 같습니다. 각자가 AI를 활용한 업무능력이 증대될 수 있도록 개발 도구 지원, AI API 지원, 서버 지원 등에 대해 하나하나 검토하고 공유드리겠습니다. 다시 한번 수상자 여섯 분께 축하드리고, 완주해주신 모든 AI-WORKER 여러분께 감사드립니다.">
+    <div class="thanks">
+      <div class="slide-tag" style="margin-bottom: 40px;">끝이 아니라, 새로운 시작</div>
+      <div class="big">감사합니다.</div>
+      <div class="small">
+        AI 역량 강화는 <strong style="color: var(--gold-soft);">끝이 아니라 새로운 시작점</strong>입니다.<br/>
+        개발 도구·AI API·서버 지원을 하나하나 검토해 공유드리겠습니다.<br/><br/>
+        완주해주신 모든 AI-WORKER 여러분,<br/>수상자 여섯 분께 다시 한번 축하드립니다.
+      </div>
+      <div style="margin-top: 40px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.3em; color: var(--text-2); text-transform: uppercase;">
+        — VNTG AI-WORKER CONTEST 2026 —
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Speaker script -->
+<div class="script-overlay" id="scriptOverlay">
+  <div class="label">Speaker Script</div>
+  <div id="scriptText"></div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <div class="arrow-btns">
+    <button class="arrow-btn" id="prevBtn" aria-label="이전">‹</button>
+    <button class="arrow-btn" id="scriptBtn" aria-label="스크립트">S</button>
+    <button class="arrow-btn" id="nextBtn" aria-label="다음">›</button>
+  </div>
+  <div class="dots" id="dots"></div>
+</div>
+
+  <script>
+    var _S = { slides: null, current: 0, onNavigate: null, triggerConfetti: null };
+
+    function _goTo(idx) {
+      if (!_S.slides) return;
+      if (idx < 0 || idx >= _S.slides.length || idx === _S.current) return;
+      _S.slides[_S.current].classList.remove('active');
+      _S.slides[_S.current].classList.add('prev');
+      _S.slides[idx].classList.remove('prev');
+      _S.slides[idx].classList.add('active');
+      document.querySelectorAll('.dot').forEach(function(d, i) {
+        d.classList.toggle('active', i === idx);
+      });
+      _S.current = idx;
+      var pb = document.getElementById('progress');
+      if (pb) pb.style.width = ((idx + 1) / _S.slides.length * 100) + '%';
+      var pc = document.getElementById('page-counter');
+      if (pc) pc.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(_S.slides.length).padStart(2, '0');
+      if (_S.onNavigate) _S.onNavigate(idx);
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (!_S.slides) return;
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault(); _goTo(_S.current + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault(); _goTo(_S.current - 1);
+      } else if (e.key === 'Home') {
+        _goTo(0);
+      } else if (e.key === 'End') {
+        _goTo(_S.slides.length - 1);
+      }
+    });
+  </script>
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="H6C6M2E" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
