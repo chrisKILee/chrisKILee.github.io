@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>code-review-graph: Claude Code 토큰 절감</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* ── Topbar (masthead) ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 48px; /* page-header.js nav 높이 */
+      z-index: 50;
+      background: var(--surface);
+    }
+    .topbar-brand { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+    .topbar-meta  { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    /* ── Hero ── */
+    .hero { background: var(--surface); border-bottom: 1px solid var(--border); padding: 72px 28px 60px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-bg); border: 1px solid var(--accent-bdr); color: var(--accent);
+      border-radius: 99px; padding: 5px 14px; font-size: 12px; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900; line-height: 1.08; letter-spacing: -0.025em;
+      color: var(--ink); max-width: 740px; margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
+    .hero-desc { font-size: 17px; color: var(--ink-3); max-width: 600px; line-height: 1.75; margin-bottom: 36px; }
+    .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--bg-2); border: 1px solid var(--border); border-radius: 6px;
+      padding: 6px 12px; font-size: 13px; font-weight: 500; color: var(--ink-2);
+    }
+
+    /* ── Section ── */
+    .section { padding: 56px 28px; border-bottom: 1px solid var(--border); }
+    .section-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); max-width: 80px; }
+    .section-title {
+      font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 10px;
+    }
+    .section-desc { font-size: 15px; color: var(--ink-3); max-width: 620px; margin-bottom: 36px; line-height: 1.7; }
+
+    /* ── Cards ── */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card__header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+    .card__icon   { font-size: 22px; margin-bottom: 8px; }
+    .card__title  { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__body   { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__footer { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+    .card__tag    { font-size: 11px; font-weight: 600; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--bg-2); border: 1px solid var(--border); padding: 11px 16px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:hover td { background: var(--bg); }
+
+    /* ── Callouts ── */
+    .callout { border-left: 3px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; font-size: 14px; line-height: 1.65; }
+    .callout.info   { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip    { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn   { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title  { font-weight: 700; margin-bottom: 4px; }
+
+    /* ── Code block ── */
+    .code-wrap { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 0; }
+    .code-bar  { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--bg-2); }
+    .code-dot  { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body { padding: 18px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; color: var(--ink-2); }
+
+    /* ── Steps ── */
+    .steps { display: flex; flex-direction: column; }
+    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--surface); margin-top: 2px; }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body  { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* ── Tags ── */
+    .tag { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+    .tag.green  { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray   { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+
+    /* ── Image pair ── */
+    .image-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+    .image-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-4); margin-bottom: 8px; }
+    .lightbox-trigger { transition: opacity 0.15s ease; cursor: zoom-in; }
+    .lightbox-trigger:hover { opacity: 0.85; }
+
+    /* ── Stats grid ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-top: 32px; }
+    .stat-card  { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }
+    .stat-num   { font-family: var(--font-display); font-size: 2.2rem; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 6px; }
+    .stat-label { font-size: 13px; color: var(--ink-3); }
+
+    /* ── Language grid ── */
+    .lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 24px; }
+    .lang-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 13px; font-weight: 500; color: var(--ink-2); font-family: var(--font-mono); text-align: center; }
+
+    /* ── Footer ── */
+    footer { padding: 28px; border-top: 1px solid var(--border); background: var(--surface); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--ink-4); }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      .image-pair { grid-template-columns: 1fr; }
+      footer { padding: 20px 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card, .lightbox-trigger { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <span class="topbar-brand">code-review-graph</span>
+  <span class="topbar-meta">2026-05-04</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">💡 Claude Tip · AI 코딩 도구</div>
+    <h1>code-review-graph<br><em>Claude Code 토큰 절감</em></h1>
+    <p class="hero-desc">Tree-sitter AST로 변경 영향 범위만 추출해 Claude Code 컨텍스트를 최대 49배 줄이는 오픈소스 도구. MCP 서버 한 줄 설치로 Claude Code에 바로 연결됩니다.</p>
+    <div class="hero-chips">
+      <span class="chip">⭐ 15.1k GitHub Stars</span>
+      <span class="chip">🔓 MIT 오픈소스</span>
+      <span class="chip">🌐 23개+ 언어 지원</span>
+      <span class="chip">📉 평균 8.2x 토큰 절감</span>
+      <span class="chip">🔧 28개 MCP 도구</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 01: 토큰 문제 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 토큰 문제</div>
+    <h2 class="section-title">왜 토큰 낭비가 생기나?</h2>
+    <p class="section-desc">AI 코딩 도구는 기본적으로 전체 코드베이스를 읽으려 합니다. code-review-graph는 변경 영향 범위(Blast Radius)만 잘라내 컨텍스트를 최소화합니다.</p>
+
+    <div class="image-pair">
+      <div>
+        <div class="image-label">원본</div>
+        <img src="/claude-tip/assets/code_review_graph/token_problem.jpg"
+             alt="The Token Problem: Without Graph vs With Graph"
+             class="lightbox-trigger"
+             style="max-width:100%; border-radius:8px; border:1px solid var(--border);">
+      </div>
+      <div>
+        <div class="image-label">한글화</div>
+        <svg viewBox="0 0 900 580" xmlns="http://www.w3.org/2000/svg" class="lightbox-trigger" style="width:100%; border-radius:8px; border:1px solid var(--border);">
+          <defs>
+            <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+            </marker>
+            <marker id="arrowDark" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#374151"/>
+            </marker>
+          </defs>
+          <rect width="900" height="580" fill="#fafaf8" rx="8"/>
+          <!-- Title -->
+          <text x="450" y="44" text-anchor="middle" font-size="22" font-weight="700" font-family="'Courier New', monospace" fill="#1c1c1a">토큰 문제</text>
+          <!-- Left: Without Graph -->
+          <text x="220" y="80" text-anchor="middle" font-size="17" font-weight="700" fill="#dc2626" font-family="sans-serif">그래프 없이</text>
+          <rect x="140" y="92" width="160" height="38" rx="4" fill="white" stroke="#374151" stroke-width="1.5"/>
+          <text x="220" y="116" text-anchor="middle" font-size="13" font-family="'Courier New', monospace" fill="#1c1c1a">Claude Code</text>
+          <line x1="220" y1="130" x2="220" y2="162" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+          <text x="230" y="150" font-size="11" fill="#dc2626" font-style="italic" font-family="sans-serif">전체 읽기</text>
+          <!-- Codebase box -->
+          <rect x="75" y="168" width="290" height="195" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/>
+          <!-- Row 1 -->
+          <rect x="92" y="184" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="146" y="184" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="200" y="184" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="254" y="184" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="308" y="184" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <!-- Row 2 -->
+          <rect x="92" y="222" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="146" y="222" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="200" y="222" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="254" y="222" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="308" y="222" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <!-- Row 3 -->
+          <rect x="92" y="260" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="146" y="260" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="200" y="260" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="254" y="260" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="308" y="260" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <!-- Row 4 -->
+          <rect x="92" y="298" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="146" y="298" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="200" y="298" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="254" y="298" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <rect x="308" y="298" width="46" height="30" rx="3" fill="#d1d5db"/>
+          <text x="220" y="376" text-anchor="middle" font-size="12" fill="#6b7280" font-family="sans-serif">전체 코드베이스</text>
+          <!-- Red pill -->
+          <rect x="108" y="387" width="224" height="36" rx="18" fill="#fca5a5"/>
+          <text x="220" y="410" text-anchor="middle" font-size="15" font-weight="700" fill="#7f1d1d" font-family="sans-serif">13,205 토큰</text>
+          <text x="220" y="442" text-anchor="middle" font-size="12" fill="#6b7280" font-family="sans-serif">품질: 7.2 / 10</text>
+          <!-- Center divider -->
+          <line x1="450" y1="58" x2="450" y2="468" stroke="#d1d5db" stroke-width="1.5" stroke-dasharray="6,4"/>
+          <!-- Right: With Graph -->
+          <text x="680" y="80" text-anchor="middle" font-size="17" font-weight="700" fill="#16a34a" font-family="sans-serif">그래프 사용</text>
+          <rect x="600" y="92" width="160" height="38" rx="4" fill="white" stroke="#374151" stroke-width="1.5"/>
+          <text x="680" y="116" text-anchor="middle" font-size="13" font-family="'Courier New', monospace" fill="#1c1c1a">Claude Code</text>
+          <line x1="680" y1="130" x2="680" y2="158" stroke="#374151" stroke-width="1.5" marker-end="url(#arrowDark)"/>
+          <text x="692" y="148" font-size="11" fill="#374151" font-family="sans-serif">그래프 조회</text>
+          <!-- Graph diamond -->
+          <polygon points="680,162 720,190 680,218 640,190" fill="#a78bfa" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="680" y="194" text-anchor="middle" font-size="12" font-weight="600" fill="white" font-family="sans-serif">Graph</text>
+          <line x1="680" y1="218" x2="680" y2="246" stroke="#374151" stroke-width="1.5" marker-end="url(#arrowDark)"/>
+          <text x="692" y="236" font-size="11" fill="#374151" font-family="sans-serif">영향 범위</text>
+          <!-- Minimal Review Set -->
+          <rect x="548" y="252" width="264" height="100" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="6,3"/>
+          <rect x="564" y="270" width="40" height="62" rx="3" fill="#86efac"/>
+          <rect x="612" y="270" width="40" height="62" rx="3" fill="#86efac"/>
+          <rect x="660" y="270" width="40" height="62" rx="3" fill="#86efac"/>
+          <rect x="708" y="270" width="40" height="62" rx="3" fill="#86efac"/>
+          <rect x="756" y="270" width="40" height="62" rx="3" fill="#86efac"/>
+          <text x="680" y="367" text-anchor="middle" font-size="12" fill="#6b7280" font-family="sans-serif">최소 리뷰 셋</text>
+          <!-- Green pill -->
+          <rect x="566" y="377" width="228" height="36" rx="18" fill="#bbf7d0"/>
+          <text x="680" y="400" text-anchor="middle" font-size="15" font-weight="700" fill="#14532d" font-family="sans-serif">1,928 토큰</text>
+          <text x="680" y="442" text-anchor="middle" font-size="12" fill="#6b7280" font-family="sans-serif">품질: 8.8 / 10</text>
+          <!-- Bottom blue pill -->
+          <rect x="168" y="460" width="564" height="40" rx="20" fill="#bfdbfe"/>
+          <text x="450" y="485" text-anchor="middle" font-size="14" font-weight="600" fill="#1e3a8a" font-family="sans-serif">6.8배 적은 토큰 · 더 높은 리뷰 품질</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num">8.2x</div>
+        <div class="stat-label">평균 토큰 절감<br>(6개 저장소 기준)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">49x</div>
+        <div class="stat-label">최대 절감<br>(Next.js 27,732 파일)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">2초</div>
+        <div class="stat-label">증분 업데이트<br>(2,900 파일 프로젝트)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Recall<br>(영향 파일 누락 없음)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 02: 작동 원리 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 작동 원리</div>
+    <h2 class="section-title">어떻게 동작하나?</h2>
+    <p class="section-desc">코드 변경 시 Tree-sitter가 AST를 파싱하고, 그래프 DB가 의존 관계를 추적해 실제 영향받는 파일만 Claude Code에 전달합니다.</p>
+
+    <!-- Pipeline SVG -->
+    <svg viewBox="0 0 900 140" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:900px; display:block; margin:0 auto 32px;">
+      <defs>
+        <marker id="arrowFlow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#C4522A"/>
+        </marker>
+      </defs>
+      <!-- Step 1 -->
+      <rect x="8" y="40" width="152" height="60" rx="8" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+      <text x="84" y="66" text-anchor="middle" font-size="11" font-weight="700" fill="#C4522A" font-family="sans-serif">① 코드 변경</text>
+      <text x="84" y="84" text-anchor="middle" font-size="11" fill="#6B6B66" font-family="sans-serif">git diff 감지</text>
+      <line x1="160" y1="70" x2="186" y2="70" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arrowFlow)"/>
+      <!-- Step 2 -->
+      <rect x="188" y="40" width="152" height="60" rx="8" fill="#F4F4F1" stroke="#E8E8E4" stroke-width="1.5"/>
+      <text x="264" y="66" text-anchor="middle" font-size="11" font-weight="700" fill="#1C1C1A" font-family="sans-serif">② AST 파싱</text>
+      <text x="264" y="84" text-anchor="middle" font-size="11" fill="#6B6B66" font-family="sans-serif">Tree-sitter</text>
+      <line x1="340" y1="70" x2="366" y2="70" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arrowFlow)"/>
+      <!-- Step 3 -->
+      <rect x="368" y="40" width="152" height="60" rx="8" fill="#F4F4F1" stroke="#E8E8E4" stroke-width="1.5"/>
+      <text x="444" y="66" text-anchor="middle" font-size="11" font-weight="700" fill="#1C1C1A" font-family="sans-serif">③ 그래프 갱신</text>
+      <text x="444" y="84" text-anchor="middle" font-size="11" fill="#6B6B66" font-family="sans-serif">SQLite + BFS</text>
+      <line x1="520" y1="70" x2="546" y2="70" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arrowFlow)"/>
+      <!-- Step 4 -->
+      <rect x="548" y="40" width="152" height="60" rx="8" fill="#F4F4F1" stroke="#E8E8E4" stroke-width="1.5"/>
+      <text x="624" y="66" text-anchor="middle" font-size="11" font-weight="700" fill="#1C1C1A" font-family="sans-serif">④ Blast Radius</text>
+      <text x="624" y="84" text-anchor="middle" font-size="11" fill="#6B6B66" font-family="sans-serif">2-hop BFS 탐색</text>
+      <line x1="700" y1="70" x2="726" y2="70" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arrowFlow)"/>
+      <!-- Step 5 -->
+      <rect x="728" y="40" width="162" height="60" rx="8" fill="#F0FDF4" stroke="#86efac" stroke-width="1.5"/>
+      <text x="809" y="66" text-anchor="middle" font-size="11" font-weight="700" fill="#1A7F5A" font-family="sans-serif">⑤ 최소 컨텍스트</text>
+      <text x="809" y="84" text-anchor="middle" font-size="11" fill="#6B6B66" font-family="sans-serif">Claude Code 전달</text>
+    </svg>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🌳</div>
+          <div class="card__title">Tree-sitter AST 파싱</div>
+        </div>
+        <div class="card__body">
+          <p>함수·클래스·의존성을 구문 트리로 분석합니다. 언어별 타입 매핑으로 노드를 식별하고 매개변수·반환 타입·기본 클래스를 추출합니다. 문법 버전 간 호환성이 쿼리 방식보다 견고합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">PARSER</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">💾</div>
+          <div class="card__title">SQLite 그래프 저장</div>
+        </div>
+        <div class="card__body">
+          <p>분석 결과를 <code style="font-family:var(--font-mono);font-size:12px;">.code-review-graph/</code> 디렉토리의 SQLite DB에 저장합니다. NetworkX 대비 더 빠른 BFS로 영향 범위를 추적하며 파일 해시로 중복 처리를 방지합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">STORAGE</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔄</div>
+          <div class="card__title">증분 업데이트</div>
+        </div>
+        <div class="card__body">
+          <p>파일 저장 시 <code style="font-family:var(--font-mono);font-size:12px;">git diff</code>로 변경 파일만 재분석합니다. 전체 재파싱 없이 2,900개 파일 프로젝트에서 2초 이내에 그래프를 최신 상태로 유지합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">INCREMENTAL</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 03: 핵심 기능 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 핵심 기능</div>
+    <h2 class="section-title">Blast Radius 분석이 핵심</h2>
+    <p class="section-desc">함수·클래스·파일 단위로 변경 영향 범위를 시각화합니다. 리뷰나 리팩터링 시 참조 컨텍스트를 정밀하게 제한할 수 있습니다.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">💥</div>
+          <div class="card__title">Blast Radius 분석</div>
+        </div>
+        <div class="card__body">
+          <p>변경 노드로부터 2-hop 깊이까지 BFS로 영향 범위를 탐색합니다. 호출자·의존성·테스트 파일을 모두 추적해 Recall 100% (영향 파일 누락 없음)를 보장합니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">Recall 100%</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🔌</div>
+          <div class="card__title">28개 MCP 도구</div>
+        </div>
+        <div class="card__body">
+          <p>의미 검색, 영향 분석, 아키텍처 맵, 리팩터링 가이드, 개발자 온보딩 등 28개 도구를 제공합니다. <code style="font-family:var(--font-mono);font-size:12px;">code-review-graph install</code> 한 줄로 Claude Code에 자동 등록됩니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">MCP SERVER</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🌐</div>
+          <div class="card__title">23개+ 언어 지원</div>
+        </div>
+        <div class="card__body">
+          <p>Python, TypeScript, Go, Rust, Java, C#, Swift, Kotlin 등 23개 이상의 언어를 Tree-sitter로 파싱합니다. v2.3.0에서 Elixir, Objective-C, Bash/Shell이 추가됐습니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">TREE-SITTER</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">👁️</div>
+          <div class="card__title">인터랙티브 시각화</div>
+        </div>
+        <div class="card__body">
+          <p>D3.js 기반 그래프 시각화 및 커뮤니티 감지를 제공합니다. GraphML, Neo4j, Obsidian 볼트 등 다양한 형식으로 내보낼 수 있습니다. (v2.3.2+)</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">v2.3.2+</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 04: 설치 & 설정 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 설치 &amp; 설정</div>
+    <h2 class="section-title">Claude Code에 연결하기</h2>
+    <p class="section-desc">Python 3.10+ 환경에서 pip 설치 후 3단계로 Claude Code에 연결할 수 있습니다. Claude Code, Cursor, Windsurf 등 주요 AI 도구를 자동 감지합니다.</p>
+
+    <div class="callout accent">
+      <div class="callout-title">사전 요구사항</div>
+      Python 3.10~3.13, git이 설치된 환경에서 진행합니다. Windows 사용자는 WSL 환경을 권장합니다.
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">pip 설치</div>
+          <div class="step-body">PyPI에서 code-review-graph를 설치합니다. 벡터 임베딩·커뮤니티 감지 등 추가 기능이 필요하면 <code style="font-family:var(--font-mono);font-size:12px;">[all]</code> 옵션을 사용합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body">pip install code-review-graph
+
+# 모든 기능 포함 설치 (임베딩, 커뮤니티 감지 등)
+pip install code-review-graph[all]</pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">자동 구성 (MCP 서버 등록)</div>
+          <div class="step-body"><code style="font-family:var(--font-mono);font-size:12px;">install</code> 명령이 Claude Code를 자동 감지하고 MCP 서버를 등록합니다. <code style="font-family:var(--font-mono);font-size:12px;">--dry-run</code>으로 변경 내용을 미리 확인할 수 있습니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body">code-review-graph install
+
+# 변경 내용 미리 확인
+code-review-graph install --dry-run</pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">그래프 빌드</div>
+          <div class="step-body">저장소 루트에서 실행합니다. 전체 코드베이스를 지식 그래프로 파싱해 <code style="font-family:var(--font-mono);font-size:12px;">.code-review-graph/</code>에 SQLite DB를 생성합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body">code-review-graph build</pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title">Claude Code에서 사용</div>
+          <div class="step-body">빌드가 완료되면 Claude Code에서 MCP 슬래시 커맨드로 바로 사용할 수 있습니다. 코드 변경 시 자동 업데이트를 원하면 <code style="font-family:var(--font-mono);font-size:12px;">watch</code> 명령을 활성화합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body"># 파일 저장 시 자동 업데이트 활성화
+code-review-graph watch
+
+# 수동 업데이트
+code-review-graph update</pre>
+          </div>
+          <div class="callout tip" style="margin-top:12px;">
+            <div class="callout-title">Claude Code 슬래시 커맨드</div>
+            <code style="font-family:var(--font-mono);font-size:12px;">/code-review-graph:review-changes</code> — 최근 변경사항 리뷰 (Blast Radius 포함)<br><br>
+            <code style="font-family:var(--font-mono);font-size:12px;">/code-review-graph:architecture-map</code> — 아키텍처 맵 생성
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 05: 성능 수치 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 성능 수치</div>
+    <h2 class="section-title">측정된 토큰 절감 효과</h2>
+    <p class="section-desc">6개 실제 오픈소스 저장소를 대상으로 측정한 공식 벤치마크입니다. 저장소 구조에 따라 4.9x~27.3x 범위로 변동합니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>지표</th>
+            <th>기존 방식</th>
+            <th>그래프 방식</th>
+            <th>절감율</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>평균 토큰 (6개 저장소)</strong></td>
+            <td>전체 코드베이스</td>
+            <td>영향 파일만</td>
+            <td><span class="tag green">평균 8.2x</span></td>
+          </tr>
+          <tr>
+            <td><strong>Next.js (27,732 파일)</strong></td>
+            <td>27,732 파일 컨텍스트</td>
+            <td>~15개 파일</td>
+            <td><span class="tag green">최대 49x</span></td>
+          </tr>
+          <tr>
+            <td><strong>리뷰 품질 점수</strong></td>
+            <td>7.2 / 10</td>
+            <td>8.8 / 10</td>
+            <td><span class="tag green">+22%</span></td>
+          </tr>
+          <tr>
+            <td><strong>Recall (영향 파일 누락)</strong></td>
+            <td>—</td>
+            <td>100%</td>
+            <td><span class="tag green">누락 없음</span></td>
+          </tr>
+          <tr>
+            <td><strong>F1 Score</strong></td>
+            <td>—</td>
+            <td>0.54</td>
+            <td><span class="tag gray">보수적 추정</span></td>
+          </tr>
+          <tr>
+            <td><strong>증분 업데이트 속도</strong></td>
+            <td>전체 재파싱</td>
+            <td>&lt; 2초 (2,900 파일)</td>
+            <td><span class="tag green">대폭 향상</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info" style="margin-top:24px;">
+      <div class="callout-title">F1 Score 0.54에 대해</div>
+      Recall 100%이지만 Precision은 낮습니다. 영향받지 않는 파일도 일부 포함됩니다(보수적 추정). 토큰 절감보다 리뷰 완전성을 우선하는 설계 철학입니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 06: 지원 언어 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">06 지원 언어</div>
+    <h2 class="section-title">23개+ 언어 지원</h2>
+    <p class="section-desc">Tree-sitter 기반으로 주요 언어를 모두 파싱합니다. v2.3.0에서 Elixir, Objective-C, Bash/Shell이 추가됐으며 Jupyter 노트북(.ipynb)도 지원합니다.</p>
+
+    <div class="lang-grid">
+      <div class="lang-chip">Python</div>
+      <div class="lang-chip">TypeScript</div>
+      <div class="lang-chip">JavaScript</div>
+      <div class="lang-chip">Go</div>
+      <div class="lang-chip">Rust</div>
+      <div class="lang-chip">Java</div>
+      <div class="lang-chip">Scala</div>
+      <div class="lang-chip">C#</div>
+      <div class="lang-chip">C / C++</div>
+      <div class="lang-chip">Ruby</div>
+      <div class="lang-chip">Kotlin</div>
+      <div class="lang-chip">Swift</div>
+      <div class="lang-chip">PHP</div>
+      <div class="lang-chip">Solidity</div>
+      <div class="lang-chip">Dart</div>
+      <div class="lang-chip">R</div>
+      <div class="lang-chip">Perl</div>
+      <div class="lang-chip">Lua</div>
+      <div class="lang-chip">Zig</div>
+      <div class="lang-chip">PowerShell</div>
+      <div class="lang-chip">Julia</div>
+      <div class="lang-chip">Elixir</div>
+      <div class="lang-chip">Objective-C</div>
+      <div class="lang-chip">Bash/Shell</div>
+      <div class="lang-chip">.ipynb</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 07: 주의사항 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">07 주의사항</div>
+    <h2 class="section-title">알려진 제한사항</h2>
+    <p class="section-desc">v2.3.2 기준 71개의 미해결 이슈가 있습니다. 활발히 개발 중인 프로젝트이니 아래 사항을 사전에 확인하세요.</p>
+
+    <div class="callout warn">
+      <div class="callout-title">Windows 호환성 문제</div>
+      Windows stdio MCP에서 <code style="font-family:var(--font-mono);font-size:12px;">get_minimal_context_tool</code> / <code style="font-family:var(--font-mono);font-size:12px;">detect_changes_tool</code>의 git subprocess가 hang되는 문제가 있습니다. WSL 환경 사용을 권장합니다.
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">동적 호출 미지원</div>
+      리플렉션·동적 디스패치·AOP/Proxy 패턴은 호출 추적에서 분석되지 않습니다. 정적 분석 도구임을 감안해 사용하세요.
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">MCP 프로세스 누적 (Claude Code)</div>
+      Claude Code 서브에이전트 사용 시 MCP serve 프로세스가 고아 프로세스로 누적될 수 있습니다. 장시간 사용 후 프로세스를 확인하세요.
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-title">권장 사용 패턴</div>
+      <code style="font-family:var(--font-mono);font-size:12px;">.code-review-graphignore</code>로 생성된 코드·의존성 폴더를 제외하면 성능이 향상됩니다. 정기적으로 <code style="font-family:var(--font-mono);font-size:12px;">code-review-graph update</code>를 실행해 그래프를 최신 상태로 유지하세요.
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>code-review-graph: Claude Code 토큰 절감</span>
+  <a href="https://github.com/tirth8205/code-review-graph" target="_blank" rel="noopener noreferrer">GitHub (MIT) →</a>
+  <span>2026-05-04</span>
+</footer>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="this.style.display='none'" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; cursor:zoom-out; align-items:center; justify-content:center; padding:24px;">
+  <div id="lightbox-content" style="max-width:90vw; max-height:90vh; overflow:auto;"></div>
+</div>
+<script>
+(function() {
+  var lb = document.getElementById('lightbox');
+  var lbContent = document.getElementById('lightbox-content');
+  document.querySelectorAll('.lightbox-trigger').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      lbContent.innerHTML = '';
+      var clone = el.cloneNode(true);
+      clone.removeAttribute('class');
+      clone.style.cursor = 'default';
+      if (clone.tagName === 'IMG') {
+        clone.style.maxWidth = '90vw';
+        clone.style.maxHeight = '90vh';
+        clone.style.display = 'block';
+        clone.style.borderRadius = '8px';
+      } else if (clone.tagName.toLowerCase() === 'svg') {
+        clone.style.width = 'min(90vw, 1200px)';
+        clone.style.height = 'auto';
+        clone.style.display = 'block';
+      }
+      lbContent.appendChild(clone);
+      lb.style.display = 'flex';
+    });
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') lb.style.display = 'none';
+  });
+})();
+</script>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="TT8KCJE" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
