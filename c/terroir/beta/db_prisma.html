@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DB 운영 가이드 — Prisma 개념 — Terroir Beta</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+  :root {
+    --bg:         #FAFAF8;
+    --bg-2:       #F4F4F1;
+    --surface:    #FFFFFF;
+    --border:     #E8E8E4;
+    --border-2:   #D4D4CF;
+    --ink:        #1C1C1A;
+    --ink-2:      #3D3D3A;
+    --ink-3:      #6B6B66;
+    --ink-4:      #A8A8A3;
+    --accent:     #C4522A;
+    --accent-bg:  #FEF3ED;
+    --accent-bdr: #F9C3AD;
+    --success:    #1A7F5A;
+    --success-bg: #F0FDF4;
+    --warn:       #92400E;
+    --warn-bg:    #FFFBEB;
+    --blue:       #2563EB;
+    --blue-bg:    #EFF6FF;
+    --code-bg:    #1E1E2E;
+    --code-fg:    #CDD6F4;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body:    'Inter', system-ui, sans-serif;
+    --font-mono:    'JetBrains Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.7;
+    padding-top: 48px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .masthead {
+    position: sticky; top: 48px; z-index: 50;
+    background: var(--surface);
+    border-bottom: 2px solid var(--ink);
+    padding: 0 28px; height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .masthead-brand {
+    font-family: var(--font-display); font-size: 15px; font-weight: 700;
+    color: var(--ink); letter-spacing: -0.01em;
+  }
+  .masthead-meta { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+  .masthead-nav { display: flex; gap: 0; }
+  .masthead-nav a {
+    font-size: 13px; color: var(--ink-3); text-decoration: none;
+    padding: 6px 12px; border-radius: 6px; font-weight: 500;
+    transition: color 0.15s, background 0.15s;
+  }
+  .masthead-nav a:hover { color: var(--ink); background: var(--bg-2); }
+
+  .layout { display: flex; min-height: calc(100vh - 100px); }
+
+  /* ── 사이드바 TOC ── */
+  .sidebar {
+    width: 240px; flex-shrink: 0;
+    position: sticky; top: 100px;
+    height: calc(100vh - 100px);
+    overflow-y: auto;
+    padding: 28px 20px;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .sidebar-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-4); margin-bottom: 12px;
+  }
+  .sidebar-nav a {
+    display: block; font-size: 13px; color: var(--ink-3);
+    text-decoration: none; padding: 5px 8px; border-radius: 5px;
+    line-height: 1.4; margin-bottom: 2px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .sidebar-nav a:hover { color: var(--ink); background: var(--bg-2); }
+  .sidebar-nav a.active { color: var(--accent); background: var(--accent-bg); font-weight: 600; }
+  .sidebar-section { margin-top: 16px; }
+  .sidebar-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-4); padding: 4px 8px;
+    margin-bottom: 4px;
+  }
+
+  /* ── 본문 영역 ── */
+  .content {
+    flex: 1; min-width: 0;
+    padding: 40px 48px 80px;
+    max-width: 900px;
+  }
+
+  /* ── 페이지 헤더 ── */
+  .page-header {
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent-bg); border: 1px solid var(--accent-bdr);
+    color: var(--accent); border-radius: 99px;
+    padding: 4px 12px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 16px;
+  }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 900; line-height: 1.1;
+    letter-spacing: -0.025em; color: var(--ink);
+  }
+  .page-meta { margin-top: 10px; font-size: 13px; color: var(--ink-4); }
+
+  /* ── 콘텐츠 스타일 ── */
+  .wiki-content h1, .wiki-content h2, .wiki-content h3,
+  .wiki-content h4, .wiki-content h5, .wiki-content h6 {
+    font-family: var(--font-display); color: var(--ink); margin-top: 36px; margin-bottom: 10px;
+    line-height: 1.2; letter-spacing: -0.015em; scroll-margin-top: 110px;
+  }
+  .wiki-content h1 { font-size: 1.7rem; font-weight: 900; border-bottom: 2px solid var(--ink); padding-bottom: 8px; }
+  .wiki-content h2 { font-size: 1.35rem; font-weight: 700; }
+  .wiki-content h3 { font-size: 1.1rem; font-weight: 700; }
+  .wiki-content h4 { font-size: 1rem; font-weight: 700; }
+  .wiki-content p  { margin-bottom: 14px; font-size: 15px; line-height: 1.75; color: var(--ink-2); }
+  .wiki-content ul, .wiki-content ol { padding-left: 22px; margin-bottom: 14px; }
+  .wiki-content li { font-size: 15px; line-height: 1.7; color: var(--ink-2); margin-bottom: 4px; }
+  .wiki-content li > ul, .wiki-content li > ol { margin-top: 4px; margin-bottom: 4px; }
+  .wiki-content hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  .wiki-content a { color: var(--blue); text-decoration: none; }
+  .wiki-content a:hover { text-decoration: underline; }
+  .wiki-content strong { color: var(--ink); font-weight: 700; }
+  .wiki-content blockquote {
+    border-left: 3px solid var(--accent); background: var(--accent-bg);
+    padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0;
+    font-style: italic; color: var(--ink-2); font-size: 15px;
+  }
+  .wiki-content table {
+    width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;
+    overflow-x: auto; display: block;
+  }
+  .wiki-content th {
+    background: var(--bg-2); border: 1px solid var(--border);
+    padding: 9px 13px; text-align: left; font-size: 12px;
+    font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .wiki-content td {
+    border: 1px solid var(--border); padding: 9px 13px;
+    color: var(--ink-2); vertical-align: top;
+  }
+  .wiki-content tr:hover td { background: var(--bg); }
+  .wiki-content figure { margin: 20px 0; }
+  .wiki-content figcaption {
+    font-size: 12px; color: var(--ink-4); text-align: center; margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* ── 코드 블록 ── */
+  .wiki-content pre.code-block, .wiki-content pre {
+    background: var(--code-bg); color: var(--code-fg);
+    border-radius: 8px; padding: 18px 20px;
+    overflow-x: auto; margin: 20px 0;
+    font-family: var(--font-mono); font-size: 13.5px; line-height: 1.6;
+    white-space: pre;
+  }
+  .wiki-content code:not(pre code) {
+    background: var(--bg-2); color: var(--accent);
+    border-radius: 4px; padding: 1px 6px;
+    font-family: var(--font-mono); font-size: 0.875em;
+  }
+
+  /* ── 콜아웃 ── */
+  .wiki-content .callout {
+    border-left: 3px solid; padding: 14px 18px;
+    border-radius: 0 8px 8px 0; margin: 20px 0;
+    font-size: 14px; line-height: 1.65;
+  }
+  .wiki-content .callout.info  { border-color: var(--blue); background: var(--blue-bg); color: #1e40af; }
+  .wiki-content .callout.tip   { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+  .wiki-content .callout.warn  { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+  .wiki-content .callout-title { font-weight: 700; margin-bottom: 6px; font-size: 12px; letter-spacing: 0.04em; }
+
+  /* ── 패널 ── */
+  .wiki-content .panel {
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 20px 0;
+  }
+  .wiki-content .panel-title {
+    background: var(--bg-2); padding: 10px 16px;
+    font-weight: 700; font-size: 13px; border-bottom: 1px solid var(--border);
+  }
+  .wiki-content .panel-body { padding: 14px 16px; }
+
+  /* ── expand ── */
+  .wiki-content details.expand-block {
+    border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; margin: 16px 0;
+  }
+  .wiki-content details.expand-block summary {
+    padding: 10px 16px; background: var(--bg-2);
+    cursor: pointer; font-weight: 600; font-size: 14px;
+    list-style: none; display: flex; align-items: center; gap: 8px;
+  }
+  .wiki-content details.expand-block summary::before { content: "▶"; font-size: 10px; }
+  .wiki-content details.expand-block[open] summary::before { content: "▼"; }
+  .wiki-content details.expand-block > *:not(summary) { padding: 14px 16px; }
+
+  /* ── 네비 버튼 ── */
+  .page-nav {
+    display: flex; gap: 12px; margin-top: 48px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+  .page-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; font-weight: 500;
+    color: var(--ink-2); text-decoration: none; transition: all 0.15s;
+    background: var(--surface);
+  }
+  .page-nav a:hover { border-color: var(--border-2); background: var(--bg-2); color: var(--ink); }
+  .page-nav a.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .page-nav a.primary:hover { background: var(--ink-2); }
+  .page-nav .spacer { flex: 1; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .content { padding: 24px 20px 60px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="masthead">
+  <span class="masthead-brand">⛰️ Terroir Beta — Getting Started</span>
+  <nav class="masthead-nav">
+    <a href="/c/terroir/beta/index.html">← 처음으로</a>
+    <a href="/c/terroir/">Terroir 홈</a>
+  </nav>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-title">목차</div>
+    <nav class="sidebar-nav"><a href="/c/terroir/beta/index.html">🏠 Getting Started 소개</a><div class="sidebar-section"><div class="sidebar-section-title">Getting Started</div><a href="/c/terroir/beta/gs_index.html" >- Public</a><a href="/c/terroir/beta/gs_1_1_common.html" >1-1단계: 사전준비 (공통)</a><a href="/c/terroir/beta/gs_1_2_windows.html" >1-2단계: 사전준비 (윈도우)</a><a href="/c/terroir/beta/gs_1_2_mac.html" >1-2단계: 사전준비 (Mac)</a><a href="/c/terroir/beta/gs_2_1_new.html" >2-1단계: 새 프로젝트 시작</a><a href="/c/terroir/beta/gs_2_1_existing.html" >2-1단계: 기존 프로젝트에서 시작</a><a href="/c/terroir/beta/gs_3_sdd.html" >3단계: SDD로 개발하기</a><a href="/c/terroir/beta/gs_4_1_deploy.html" >4-1단계: 배포 관리 (최초 배포)</a><a href="/c/terroir/beta/gs_4_2_env.html" >4-2단계: 배포 관리 (기존 배포에서 환경 설정 변경)</a><a href="/c/terroir/beta/gs_4_3_merge.html" >4-3단계: 배포 관리 (새 코드 머지)</a><a href="/c/terroir/beta/gs_4_4_rollback.html" >4-4단계: 배포 관리 (롤백)</a></div><div class="sidebar-section"><div class="sidebar-section-title">Database</div><a href="/c/terroir/beta/db_access.html" >DB 접근 방법 (DBeaver)</a><a href="/c/terroir/beta/db_prisma.html" class="active">DB 운영 가이드 — Prisma 개념</a><a href="/c/terroir/beta/db_scenarios.html" >DB 운영 가이드 — 시나리오별 가이드</a><a href="/c/terroir/beta/db_flow.html" >DB 운영 가이드 — 로컬 개발 → 운영 배포 플로우</a></div><div class="sidebar-section"><div class="sidebar-section-title">Trouble Shooting</div><a href="/c/terroir/beta/trouble_shooting.html" >Trouble Shooting</a></div></nav>
+  </aside>
+  <main class="content">
+    <div class="page-header">
+      <div class="page-eyebrow">🗄️ Database</div>
+      <h1 class="page-title">DB 운영 가이드 — Prisma 개념</h1>
+      <div class="page-meta">Terroir 가이드 문서 (Beta) · R&D실</div>
+    </div>
+    <div class="wiki-content">
+<hr/><h2 id="id-[가이드]DB운영가이드—Prisma개념-1.Prisma기초">1. Prisma 기초</h2><h3 id="id-[가이드]DB운영가이드—Prisma개념-1.1Prisma란?">1.1 Prisma란?</h3><p>TypeScript/Node.js용 ORM. <strong>SQL 대신 TypeScript로 DB를 다룰 수 있게 해줍니다.</strong></p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="dd7cc09413e3" data-macro-id="a8a4872f-b414-4f13-ba85-50c08214e71e" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>Schema 정의  →  Migration 관리  →  TypeScript Client로 쿼리</code></pre></div><h3 id="id-[가이드]DB운영가이드—Prisma개념-1.2핵심개념">1.2 핵심 개념</h3><p><strong>Schema</strong> — DB 구조를 정의하는 파일 (<code>*.prisma</code>)</p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="d5939124baec" data-macro-id="3da2a671-06a3-4c05-843a-8ca9fb79c6f2" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}</code></pre></div><p><strong>Migration</strong> — schema 변경사항을 SQL 파일로 관리</p><p>이 프로젝트는 <code>prisma migrate</code> 체계 대신 <strong>직접 SQL 방식</strong>을 사용합니다. prisma/manual-migrations/디렉토리에 보관한다.</p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="f802bfa7cee6" data-macro-id="6cf56ac6-1bea-4e17-a5d6-655f6ef84c79" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>prisma/manual-migrations/
+  20260413120000_init/
+    migration.sql       ← 이 SQL을 직접 DB에 실행
+  20260414090000_add_phone/
+    migration.sql</code></pre></div><blockquote><p><code>_prisma_migrations</code> 테이블은 생성되지 않습니다. 적용 이력은 Git으로 관리합니다.</p></blockquote><p><strong>Client</strong> — schema 기반으로 자동 생성되는 타입 안전한 쿼리 클라이언트</p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="00c9f6258739" data-macro-id="cb020550-36c9-485d-8fa0-b1193215d98a" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>const user = await prisma.user.findMany(); // 자동 완성 + 타입 추론</code></pre></div><h3 id="id-[가이드]DB운영가이드—Prisma개념-1.3주요명령어">1.3 주요 명령어</h3><div class="table-wrap"><table data-table-width="760" data-layout="default" data-local-id="b7a6b1cf12e1" class="confluenceTable"><colgroup><col style="width: 360.0px;"/><col style="width: 399.0px;"/></colgroup><tbody><tr data-local-id="30733b140e56"><th data-local-id="a26a29180cee" class="confluenceTh"><p>명령어 (예시)</p></th><th data-local-id="a065ed53f56d" class="confluenceTh"><p>용도</p></th></tr><tr data-local-id="b43eb99e8267"><td data-local-id="fd7f608acbd3" class="confluenceTd"><p><code>pnpm -F db-postgres db:migrate-diff</code></p></td><td data-local-id="285a5ad57393" class="confluenceTd"><p>schema와 DB 간 차이를 SQL로 출력. <strong>SQL 초안 생성에 사용</strong> </p></td></tr><tr data-local-id="bb7c47dd01b8"><td data-local-id="80c5790baf23" class="confluenceTd"><p><code>pnpm -F db-postgres db:generate</code></p></td><td data-local-id="b30d7f0a1685" class="confluenceTd"><p>schema 기반으로 TypeScript Client 재생성                   </p></td></tr></tbody></table></div><blockquote><p><code>migrate dev</code> / <code>migrate deploy</code>는 사용하지 않습니다. 이 프로젝트는 SQL을 직접 실행하는 방식을 채택했습니다.</p></blockquote><hr/><h2 id="id-[가이드]DB운영가이드—Prisma개념-2.이프로젝트의Prisma구조">2. 이 프로젝트의 Prisma 구조</h2><h3 id="id-[가이드]DB운영가이드—Prisma개념-2.1파일위치">2.1 파일 위치</h3><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="f01b359141e5" data-macro-id="4be8fc63-a534-4d2d-b5ef-5279081464df" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>projects/&lt;project-name&gt;/
+└── db-postgres/                  ← Prisma 전용 라이브러리
+    └── src/api-server-db/prisma/
+        ├── schema.prisma         ← DB 연결 + Client 설정 (SSoT)
+        ├── app.prisma            ← 모델 정의 (여기에 테이블 작성)
+        ├── libs.prisma           ← 공통 모델
+        └── manual-migrations/   ← 실행한 SQL 파일 (Git 관리)
+            └── &lt;timestamp&gt;_&lt;name&gt;/
+                └── migration.sql</code></pre></div><blockquote><p><strong>schema.prisma와 app.prisma가 분리되어 있습니다.</strong><br/>테이블(모델) 추가/수정은 <code>app.prisma</code>에 합니다.<br/>Prisma는 같은 폴더의 <code>*.prisma</code> 파일을 자동으로 합쳐서 처리합니다.</p></blockquote><blockquote><p><code>schema.prisma</code>는 SSoT(Single Source of Truth)입니다.<br/><code>prisma migrate diff</code>는 이 파일을 기준으로 현재 DB 상태와 차이를 계산합니다.<br/>DB 변경 후에는 반드시 <code>app.prisma</code>를 실제 DB와 동기화된 상태로 유지합니다.</p></blockquote><p /><h2 id="id-[가이드]DB운영가이드—Prisma개념-3.참고">3. 참고</h2><p> Prisma 공식문서: <a class="external-link" data-card-appearance="inline" href="https://www.prisma.io/" rel="nofollow">https://www.prisma.io/</a> </p>
+    </div>
+    <div class="page-nav"><a href="/c/terroir/beta/db_access.html">← DB 접근 방법 (DBeaver)…</a><span class="spacer"></span><a href="/c/terroir/beta/db_scenarios.html" class="primary">DB 운영 가이드 — 시나리오별 가이드… →</a></div>
+  </main>
+</div>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="DSLGQJC" src="/assets/js/page-footer.js"></script>
+  <script>
+  // 현재 페이지 사이드바 하이라이트
+  document.querySelectorAll('.sidebar-nav a').forEach(a => {
+    if (a.href === location.href) a.classList.add('active');
+  });
+  // H2, H3 아이디 기반 TOC 자동 생성
+  const headings = document.querySelectorAll('.wiki-content h2, .wiki-content h3');
+  headings.forEach((h, i) => {
+    if (!h.id) h.id = 'section-' + i;
+  });
+  </script>
+</body>
+</html>

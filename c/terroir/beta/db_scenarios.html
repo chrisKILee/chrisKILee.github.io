@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DB 운영 가이드 — 시나리오별 가이드 — Terroir Beta</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+  :root {
+    --bg:         #FAFAF8;
+    --bg-2:       #F4F4F1;
+    --surface:    #FFFFFF;
+    --border:     #E8E8E4;
+    --border-2:   #D4D4CF;
+    --ink:        #1C1C1A;
+    --ink-2:      #3D3D3A;
+    --ink-3:      #6B6B66;
+    --ink-4:      #A8A8A3;
+    --accent:     #C4522A;
+    --accent-bg:  #FEF3ED;
+    --accent-bdr: #F9C3AD;
+    --success:    #1A7F5A;
+    --success-bg: #F0FDF4;
+    --warn:       #92400E;
+    --warn-bg:    #FFFBEB;
+    --blue:       #2563EB;
+    --blue-bg:    #EFF6FF;
+    --code-bg:    #1E1E2E;
+    --code-fg:    #CDD6F4;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body:    'Inter', system-ui, sans-serif;
+    --font-mono:    'JetBrains Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.7;
+    padding-top: 48px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .masthead {
+    position: sticky; top: 48px; z-index: 50;
+    background: var(--surface);
+    border-bottom: 2px solid var(--ink);
+    padding: 0 28px; height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .masthead-brand {
+    font-family: var(--font-display); font-size: 15px; font-weight: 700;
+    color: var(--ink); letter-spacing: -0.01em;
+  }
+  .masthead-meta { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+  .masthead-nav { display: flex; gap: 0; }
+  .masthead-nav a {
+    font-size: 13px; color: var(--ink-3); text-decoration: none;
+    padding: 6px 12px; border-radius: 6px; font-weight: 500;
+    transition: color 0.15s, background 0.15s;
+  }
+  .masthead-nav a:hover { color: var(--ink); background: var(--bg-2); }
+
+  .layout { display: flex; min-height: calc(100vh - 100px); }
+
+  /* ── 사이드바 TOC ── */
+  .sidebar {
+    width: 240px; flex-shrink: 0;
+    position: sticky; top: 100px;
+    height: calc(100vh - 100px);
+    overflow-y: auto;
+    padding: 28px 20px;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .sidebar-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-4); margin-bottom: 12px;
+  }
+  .sidebar-nav a {
+    display: block; font-size: 13px; color: var(--ink-3);
+    text-decoration: none; padding: 5px 8px; border-radius: 5px;
+    line-height: 1.4; margin-bottom: 2px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .sidebar-nav a:hover { color: var(--ink); background: var(--bg-2); }
+  .sidebar-nav a.active { color: var(--accent); background: var(--accent-bg); font-weight: 600; }
+  .sidebar-section { margin-top: 16px; }
+  .sidebar-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-4); padding: 4px 8px;
+    margin-bottom: 4px;
+  }
+
+  /* ── 본문 영역 ── */
+  .content {
+    flex: 1; min-width: 0;
+    padding: 40px 48px 80px;
+    max-width: 900px;
+  }
+
+  /* ── 페이지 헤더 ── */
+  .page-header {
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent-bg); border: 1px solid var(--accent-bdr);
+    color: var(--accent); border-radius: 99px;
+    padding: 4px 12px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 16px;
+  }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 900; line-height: 1.1;
+    letter-spacing: -0.025em; color: var(--ink);
+  }
+  .page-meta { margin-top: 10px; font-size: 13px; color: var(--ink-4); }
+
+  /* ── 콘텐츠 스타일 ── */
+  .wiki-content h1, .wiki-content h2, .wiki-content h3,
+  .wiki-content h4, .wiki-content h5, .wiki-content h6 {
+    font-family: var(--font-display); color: var(--ink); margin-top: 36px; margin-bottom: 10px;
+    line-height: 1.2; letter-spacing: -0.015em; scroll-margin-top: 110px;
+  }
+  .wiki-content h1 { font-size: 1.7rem; font-weight: 900; border-bottom: 2px solid var(--ink); padding-bottom: 8px; }
+  .wiki-content h2 { font-size: 1.35rem; font-weight: 700; }
+  .wiki-content h3 { font-size: 1.1rem; font-weight: 700; }
+  .wiki-content h4 { font-size: 1rem; font-weight: 700; }
+  .wiki-content p  { margin-bottom: 14px; font-size: 15px; line-height: 1.75; color: var(--ink-2); }
+  .wiki-content ul, .wiki-content ol { padding-left: 22px; margin-bottom: 14px; }
+  .wiki-content li { font-size: 15px; line-height: 1.7; color: var(--ink-2); margin-bottom: 4px; }
+  .wiki-content li > ul, .wiki-content li > ol { margin-top: 4px; margin-bottom: 4px; }
+  .wiki-content hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  .wiki-content a { color: var(--blue); text-decoration: none; }
+  .wiki-content a:hover { text-decoration: underline; }
+  .wiki-content strong { color: var(--ink); font-weight: 700; }
+  .wiki-content blockquote {
+    border-left: 3px solid var(--accent); background: var(--accent-bg);
+    padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0;
+    font-style: italic; color: var(--ink-2); font-size: 15px;
+  }
+  .wiki-content table {
+    width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;
+    overflow-x: auto; display: block;
+  }
+  .wiki-content th {
+    background: var(--bg-2); border: 1px solid var(--border);
+    padding: 9px 13px; text-align: left; font-size: 12px;
+    font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .wiki-content td {
+    border: 1px solid var(--border); padding: 9px 13px;
+    color: var(--ink-2); vertical-align: top;
+  }
+  .wiki-content tr:hover td { background: var(--bg); }
+  .wiki-content figure { margin: 20px 0; }
+  .wiki-content figcaption {
+    font-size: 12px; color: var(--ink-4); text-align: center; margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* ── 코드 블록 ── */
+  .wiki-content pre.code-block, .wiki-content pre {
+    background: var(--code-bg); color: var(--code-fg);
+    border-radius: 8px; padding: 18px 20px;
+    overflow-x: auto; margin: 20px 0;
+    font-family: var(--font-mono); font-size: 13.5px; line-height: 1.6;
+    white-space: pre;
+  }
+  .wiki-content code:not(pre code) {
+    background: var(--bg-2); color: var(--accent);
+    border-radius: 4px; padding: 1px 6px;
+    font-family: var(--font-mono); font-size: 0.875em;
+  }
+
+  /* ── 콜아웃 ── */
+  .wiki-content .callout {
+    border-left: 3px solid; padding: 14px 18px;
+    border-radius: 0 8px 8px 0; margin: 20px 0;
+    font-size: 14px; line-height: 1.65;
+  }
+  .wiki-content .callout.info  { border-color: var(--blue); background: var(--blue-bg); color: #1e40af; }
+  .wiki-content .callout.tip   { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+  .wiki-content .callout.warn  { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+  .wiki-content .callout-title { font-weight: 700; margin-bottom: 6px; font-size: 12px; letter-spacing: 0.04em; }
+
+  /* ── 패널 ── */
+  .wiki-content .panel {
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 20px 0;
+  }
+  .wiki-content .panel-title {
+    background: var(--bg-2); padding: 10px 16px;
+    font-weight: 700; font-size: 13px; border-bottom: 1px solid var(--border);
+  }
+  .wiki-content .panel-body { padding: 14px 16px; }
+
+  /* ── expand ── */
+  .wiki-content details.expand-block {
+    border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; margin: 16px 0;
+  }
+  .wiki-content details.expand-block summary {
+    padding: 10px 16px; background: var(--bg-2);
+    cursor: pointer; font-weight: 600; font-size: 14px;
+    list-style: none; display: flex; align-items: center; gap: 8px;
+  }
+  .wiki-content details.expand-block summary::before { content: "▶"; font-size: 10px; }
+  .wiki-content details.expand-block[open] summary::before { content: "▼"; }
+  .wiki-content details.expand-block > *:not(summary) { padding: 14px 16px; }
+
+  /* ── 네비 버튼 ── */
+  .page-nav {
+    display: flex; gap: 12px; margin-top: 48px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+  .page-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; font-weight: 500;
+    color: var(--ink-2); text-decoration: none; transition: all 0.15s;
+    background: var(--surface);
+  }
+  .page-nav a:hover { border-color: var(--border-2); background: var(--bg-2); color: var(--ink); }
+  .page-nav a.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .page-nav a.primary:hover { background: var(--ink-2); }
+  .page-nav .spacer { flex: 1; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .content { padding: 24px 20px 60px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="masthead">
+  <span class="masthead-brand">⛰️ Terroir Beta — Getting Started</span>
+  <nav class="masthead-nav">
+    <a href="/c/terroir/beta/index.html">← 처음으로</a>
+    <a href="/c/terroir/">Terroir 홈</a>
+  </nav>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-title">목차</div>
+    <nav class="sidebar-nav"><a href="/c/terroir/beta/index.html">🏠 Getting Started 소개</a><div class="sidebar-section"><div class="sidebar-section-title">Getting Started</div><a href="/c/terroir/beta/gs_index.html" >- Public</a><a href="/c/terroir/beta/gs_1_1_common.html" >1-1단계: 사전준비 (공통)</a><a href="/c/terroir/beta/gs_1_2_windows.html" >1-2단계: 사전준비 (윈도우)</a><a href="/c/terroir/beta/gs_1_2_mac.html" >1-2단계: 사전준비 (Mac)</a><a href="/c/terroir/beta/gs_2_1_new.html" >2-1단계: 새 프로젝트 시작</a><a href="/c/terroir/beta/gs_2_1_existing.html" >2-1단계: 기존 프로젝트에서 시작</a><a href="/c/terroir/beta/gs_3_sdd.html" >3단계: SDD로 개발하기</a><a href="/c/terroir/beta/gs_4_1_deploy.html" >4-1단계: 배포 관리 (최초 배포)</a><a href="/c/terroir/beta/gs_4_2_env.html" >4-2단계: 배포 관리 (기존 배포에서 환경 설정 변경)</a><a href="/c/terroir/beta/gs_4_3_merge.html" >4-3단계: 배포 관리 (새 코드 머지)</a><a href="/c/terroir/beta/gs_4_4_rollback.html" >4-4단계: 배포 관리 (롤백)</a></div><div class="sidebar-section"><div class="sidebar-section-title">Database</div><a href="/c/terroir/beta/db_access.html" >DB 접근 방법 (DBeaver)</a><a href="/c/terroir/beta/db_prisma.html" >DB 운영 가이드 — Prisma 개념</a><a href="/c/terroir/beta/db_scenarios.html" class="active">DB 운영 가이드 — 시나리오별 가이드</a><a href="/c/terroir/beta/db_flow.html" >DB 운영 가이드 — 로컬 개발 → 운영 배포 플로우</a></div><div class="sidebar-section"><div class="sidebar-section-title">Trouble Shooting</div><a href="/c/terroir/beta/trouble_shooting.html" >Trouble Shooting</a></div></nav>
+  </aside>
+  <main class="content">
+    <div class="page-header">
+      <div class="page-eyebrow">🗄️ Database</div>
+      <h1 class="page-title">DB 운영 가이드 — 시나리오별 가이드</h1>
+      <div class="page-meta">Terroir 가이드 문서 (Beta) · R&D실</div>
+    </div>
+    <div class="wiki-content">
+<blockquote><p>PostgreSQL + Prisma 기반 DB 운영 가이드. 시나리오별 상세 절차.<br/><strong>이 문서는 &quot;DB에 직접 접속해서 SQL을 실행&quot;하는 방식을 다룹니다.</strong></p></blockquote><blockquote><p>⚠️ <strong>Prisma Migrate와 혼용 금지</strong><br/>이 방식은 <code>_prisma_migrations</code> 이력 테이블을 관리하지 않습니다.<br/>동일 DB에서 <code>prisma migrate dev/deploy</code>를 섞어 쓰면 이력 불일치(drift)로 충돌이 발생합니다.</p></blockquote><blockquote><p><strong>공통 규칙</strong>: <code>migration.sql</code>은 <code>BEGIN; ... COMMIT;</code>으로 감쌉니다. 실패 시 자동 롤백으로 부분 적용을 막기 위함입니다.<br/>단, <code>CREATE/DROP INDEX CONCURRENTLY</code>, <code>ALTER TYPE ... ADD VALUE</code>, <code>VACUUM</code>, <code>CLUSTER</code>는 트랜잭션 바깥에서 실행해야 하므로 BEGIN/COMMIT을 빼고 별도 파일로 관리합니다.</p></blockquote><hr/><h2 id="id-[가이드]DB운영가이드—시나리오별가이드-1.초기설정">1. 초기설정</h2><h3 id="id-[가이드]DB운영가이드—시나리오별가이드-1.1새프로젝트">1.1 새 프로젝트</h3><p>IDP로 프로젝트를 생성하면 Prisma 기본 구조가 이미 세팅된 상태로 나옵니다.</p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="7b35a4001d3c" data-macro-id="feb2da60-56f3-447f-8369-5f3eda6d9238" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>apps/
+└── db-postgres/                  ← Prisma 전용 라이브러리
+    └── src/api-server-db/prisma/
+        ├── schema.prisma         ← DB 연결 + Client 설정 (SSoT)
+        ├── app.prisma            ← 모델 정의 (여기에 테이블 작성)
+        ├── libs.prisma           ← 공통 모델
+        └── manual-migrations/   ← 실행한 SQL 파일 (Git 관리)
+            └── &lt;timestamp&gt;_&lt;name&gt;/
+                └── migration.sql</code></pre></div><p>개발자가 할 일은 <strong>모델 정의 → 첫 migration.sql 생성 → 로컬 DB에 실행</strong>입니다.</p><p><strong>Step 1 — app.prisma에 첫 모델 작성</strong></p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="ff134185a02c" data-macro-id="29d1030b-3f86-4104-b805-632f0d72a7b2" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>// app.prisma
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}</code></pre></div><blockquote><p>위 코드는 예시입니다. 실제 모델명과 필드는 프로젝트에 따라 다릅니다.</p></blockquote><p><strong>Step 2 — 로컬 인프라 실행</strong></p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="85413d8b5ad5" data-macro-id="90a924c0-beac-412c-b884-133a815fde44" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>make infra-up   # PostgreSQL 등 인프라 컨테이너 시작</code></pre></div><p><strong>Step 3 — init migration.sql 초안 생성</strong></p><p>빈 DB 기준으로 app.prisma 전체를 SQL로 뽑습니다.</p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="0a542797b77a" data-macro-id="c2bc5df6-4300-4953-a098-d203025dcec2" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>cd apps/db-postgres
+pnpm db:migrate-diff &gt; /tmp/init.sql
+cat /tmp/init.sql</code></pre></div><p><strong>Step 4 — migration.sql 저장 (BEGIN/COMMIT 래핑)</strong></p><p><code>/tmp/init.sql</code> 내용을 검토한 뒤, <code>manual-migrations/</code> 아래에 타임스탬프 폴더를 직접 만들고 <code>migration.sql</code>로 저장합니다.</p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="954a8aa04c72" data-macro-id="b4804b2f-3306-4f8c-8d8e-10d4b47a4e91" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>src/api-server-db/prisma/manual-migrations/
+└── {타임스탬프}_init/   예) 20260414120000_init
+    └── migration.sql</code></pre></div><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="9f5dcc9f6c67" data-macro-id="1362a34c-3e51-428a-af38-a7e3d5fb1298" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>-- migration.sql
+BEGIN;
+
+-- /tmp/init.sql 내용 검토 후 붙여넣기
+CREATE TABLE &quot;User&quot; (
+  &quot;id&quot;        SERIAL PRIMARY KEY,
+  &quot;email&quot;     TEXT NOT NULL UNIQUE,
+  &quot;createdAt&quot; TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMIT;</code></pre></div><blockquote><p>위 SQL은 예시입니다. 실제 내용은 <code>/tmp/init.sql</code>에서 생성된 SQL을 검토 후 붙여넣습니다.</p></blockquote><p><strong>Step 5 — 로컬 DB에 SQL 실행</strong></p><p>DB 도구(DBeaver, psql 등)로 로컬 DB에 접속해서 <code>migration.sql</code>을 실행합니다.</p><p><strong>Step 6 — prisma generate</strong></p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="266e8d254e69" data-macro-id="477580e4-3db8-4b71-95b3-b23054cb8e22" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>pnpm -F db-postgres db:generate</code></pre></div><hr/><h3 id="id-[가이드]DB운영가이드—시나리오별가이드-1.2이미설정된프로젝트셋업">1.2 이미 설정된 프로젝트 셋업</h3><p><strong>Step 1 — 저장소 클론 + 브랜치 체크아웃 + 의존성 설치</strong></p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="babc6bcef34a" data-macro-id="c82a6a40-2487-46ce-a3bc-7644f462c5b4" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>git clone &lt;repo-url&gt;
+cd &lt;repo&gt;
+
+# 셋업할 환경의 브랜치로 체크아웃
+git checkout develop   # dev 환경
+# git checkout main    # prod 환경
+
+pnpm install</code></pre></div><blockquote><p>브랜치가 맞지 않으면 <code>app.prisma</code>가 의도한 환경의 스키마와 다를 수 있습니다.</p></blockquote><p><strong>Step 2 — 로컬 인프라 실행</strong></p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="6220ade58ee2" data-macro-id="a1d2c063-55f6-472f-8574-00c356e54ef4" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>cd projects/&lt;project-name&gt;
+make infra-up   # PostgreSQL, Redis, Kafka 시작</code></pre></div><p><strong>Step 3 — 로컬 DB 스키마 생성</strong></p><p>현재 스키마의 SSoT이므로, 현재 상태를 한 번에 적용합니다.</p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="e200863f2aff" data-macro-id="7ab79d3a-493d-4b0a-86e1-fc5967ff8475" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>cd apps/db-postgres
+
+# .env 의 DB_URL 을 사용해 schema → DB 동기화
+pnpm prisma db push --schema=./src/api-server-db/prisma</code></pre></div><blockquote><p><code>manual-migrations/</code>의 파일들은 변경 이력/감사 용도입니다. 새 환경 셋업에서는 사용하지 않습니다.</p></blockquote><p><strong>Step 4 — Client 생성 + 전체 앱 실행</strong></p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="3f0a135ac370" data-macro-id="5f2abaa1-ef2b-4e8d-873c-2ea73599414a" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>pnpm -F db-postgres db:generate
+make all-up</code></pre></div><p><strong>Step 5 — 정상 동작 확인</strong></p><p>DB 도구(DBeaver 등)로 로컬 DB에 접속해서 테이블이 정상 생성됐는지 확인합니다.</p><hr/><h2 id="id-[가이드]DB운영가이드—시나리오별가이드-2.변경">2. 변경</h2><p><code>app.prisma</code>를 SSoT로 유지하고, <code>prisma migrate diff</code>로 SQL 초안을 뽑아 검토 후 적용합니다.</p><p><strong>공통 플로우</strong></p><div class="table-wrap"><table data-table-width="760" data-layout="default" data-local-id="9659cb7a47b5" class="confluenceTable"><colgroup><col style="width: 174.0px;"/><col style="width: 585.0px;"/></colgroup><tbody><tr data-local-id="f49416bd63c3"><th data-local-id="7addc769f2f4" class="confluenceTh"><p>Step</p></th><th data-local-id="6808ddd7fe32" class="confluenceTh"><p>작업</p></th></tr><tr data-local-id="20aff3375b02"><td data-local-id="7ac478359f1d" class="confluenceTd"><p> 1   </p></td><td data-local-id="68bfc616efc0" class="confluenceTd"><p><code>app.prisma</code> 수정                                                                  </p></td></tr><tr data-local-id="6ad004cf62ce"><td data-local-id="eaf840f48e25" class="confluenceTd"><p> 2   </p></td><td data-local-id="76e5615c8bd1" class="confluenceTd"><p><code>prisma migrate diff</code>로 SQL 초안 생성                                              </p></td></tr><tr data-local-id="e513260b474a"><td data-local-id="10779831417b" class="confluenceTd"><p> 3   </p></td><td data-local-id="c7315e2155ed" class="confluenceTd"><p>초안 검토 + BEGIN/COMMIT 래핑 → <code>manual-migrations/&lt;ts&gt;_&lt;name&gt;/migration.sql</code> 저장 </p></td></tr><tr data-local-id="e16869420484"><td data-local-id="1393ac838541" class="confluenceTd"><p> 4   </p></td><td data-local-id="892547445ec2" class="confluenceTd"><p>DB 도구로 로컬 DB에 실행                                                           </p></td></tr><tr data-local-id="d366e24643d7"><td data-local-id="4d70c3996e83" class="confluenceTd"><p> 5   </p></td><td data-local-id="04ba7b2d9868" class="confluenceTd"><p><code>prisma generate</code>                                                                  </p></td></tr><tr data-local-id="c3422bf8a519"><td data-local-id="c92b5151a32b" class="confluenceTd"><p> 6   </p></td><td data-local-id="9518e148f250" class="confluenceTd"><p>PR → 운영 DB에 SQL 실행                                                            </p></td></tr></tbody></table></div><p><strong>변경 유형</strong></p><div class="table-wrap"><table data-table-width="976" data-layout="center" data-local-id="b463ce4df6a2" class="confluenceTable"><colgroup><col style="width: 327.0px;"/><col style="width: 212.0px;"/><col style="width: 437.0px;"/></colgroup><tbody><tr data-local-id="cc8789d21b13"><th data-local-id="85ee5235d8d2" class="confluenceTh"><p>변경 유형</p></th><th data-local-id="c031318903b0" class="confluenceTh"><p>BEGIN/COMMIT</p></th><th data-local-id="a853cd430875" class="confluenceTh"><p>비고</p></th></tr><tr data-local-id="5a66be62ccf5"><td data-local-id="23411704076a" class="confluenceTd"><p>테이블 추가                    </p></td><td data-local-id="a08f3790ef9c" class="confluenceTd"><p>     O       </p></td><td data-local-id="e68f5a988a47" class="confluenceTd"></td></tr><tr data-local-id="74f3dfbfe96e"><td data-local-id="b10832f46d73" class="confluenceTd"><p>컬럼 추가 (nullable)           </p></td><td data-local-id="d21e1f784429" class="confluenceTd"><p>     O       </p></td><td data-local-id="db8b4fc4bf76" class="confluenceTd"></td></tr><tr data-local-id="2b9ff1b15829"><td data-local-id="5cb2428de744" class="confluenceTd"><p>컬럼 추가 (NOT NULL + default) </p></td><td data-local-id="14ddc56e31f6" class="confluenceTd"><p>     O       </p></td><td data-local-id="047639bcf8c0" class="confluenceTd"></td></tr><tr data-local-id="decb1d07d0fc"><td data-local-id="85b2e49d215f" class="confluenceTd"><p>컬럼 기본값 변경               </p></td><td data-local-id="5ffe58be7926" class="confluenceTd"><p>     O       </p></td><td data-local-id="31e0ed5cb0b7" class="confluenceTd"><p>기존 행에 영향 없음                                                               </p></td></tr><tr data-local-id="0d87e106c42c"><td data-local-id="d468938e989f" class="confluenceTd"><p>FK 추가                        </p></td><td data-local-id="787d1c99bb46" class="confluenceTd"><p>     O       </p></td><td data-local-id="30facea1fac7" class="confluenceTd"><p>큰 테이블은 <code>NOT VALID</code> 후 별도 <code>VALIDATE</code> 권장                                   </p></td></tr><tr data-local-id="d03062412329"><td data-local-id="d323f1ac3a7c" class="confluenceTd"><p>인덱스 추가/삭제               </p></td><td data-local-id="62cb3b701e26" class="confluenceTd"><p>     X       </p></td><td data-local-id="ba819b4778c4" class="confluenceTd"><p><code>CONCURRENTLY</code> 권장 — 트랜잭션 불가                                               </p></td></tr><tr data-local-id="c57338e34173"><td data-local-id="0ef3e12209fb" class="confluenceTd"><p>ENUM 값 추가                   </p></td><td data-local-id="85c6bb0de988" class="confluenceTd"><p>     X       </p></td><td data-local-id="9c099eec8024" class="confluenceTd"><p><code>ALTER TYPE ADD VALUE</code> — 트랜잭션 불가                                            </p></td></tr><tr data-local-id="a3eea8c4fe94"><td data-local-id="3b87526a2540" class="confluenceTd"><p>nullable → NOT NULL 전환       </p></td><td data-local-id="080e677d9b22" class="confluenceTd"><p>     O       </p></td><td data-local-id="01f8abd78920" class="confluenceTd"><p>⚠️ NULL 데이터 있으면 실패 — 백필 먼저                                            </p></td></tr><tr data-local-id="1c89b020a8ae"><td data-local-id="6981d466795c" class="confluenceTd"><p>유니크 제약 추가               </p></td><td data-local-id="dc51b30f3d34" class="confluenceTd"><p>     X       </p></td><td data-local-id="0f31c33d6fec" class="confluenceTd"><p>⚠️ 중복 데이터 있으면 실패 — 사전 확인, <code>CONCURRENTLY</code> 권장                       </p></td></tr><tr data-local-id="f3fe02bbaa0a"><td data-local-id="ff5a468fb400" class="confluenceTd"><p>컬럼 타입 변경                 </p></td><td data-local-id="0374a6fbe38f" class="confluenceTd"><p>     O       </p></td><td data-local-id="197fdfbd7f0a" class="confluenceTd"><p>⚠️ 호환 불가 타입은 에러 — <code>USING</code> 절 필요할 수 있음                              </p></td></tr><tr data-local-id="eb8fa783336c"><td data-local-id="d8ef4d172dc5" class="confluenceTd"><p>컬럼 삭제                      </p></td><td data-local-id="1275a7ad0f19" class="confluenceTd"><p>     O       </p></td><td data-local-id="8de4767a7691" class="confluenceTd"><p>⚠️ 복구 불가 — 사전 백업 필수                                                     </p></td></tr><tr data-local-id="3a89653254d8"><td data-local-id="edb99c94cade" class="confluenceTd"><p>테이블 삭제                    </p></td><td data-local-id="41380a5e3da7" class="confluenceTd"><p>     O       </p></td><td data-local-id="c5aee1960717" class="confluenceTd"><p>⚠️ 복구 불가 — 사전 백업 필수                                                     </p></td></tr><tr data-local-id="461199e9ff4d"><td data-local-id="23e62fb1f86a" class="confluenceTd"><p>컬럼 rename                    </p></td><td data-local-id="0925e31b17e0" class="confluenceTd"><p>     —       </p></td><td data-local-id="c3e73ab80f8f" class="confluenceTd"><p>⚠️ Prisma가 DROP+ADD 처리 — 데이터 유실, 새 컬럼 추가 → 복사 → 삭제 방식으로 대체 </p></td></tr><tr data-local-id="c8be29f93367"><td data-local-id="21df7722ee88" class="confluenceTd"><p>ENUM 값 삭제/rename            </p></td><td data-local-id="2c5e43665079" class="confluenceTd"><p>     —       </p></td><td data-local-id="501e191eb369" class="confluenceTd"><p>⚠️ PostgreSQL 직접 미지원 — ENUM 재정의 또는 String 타입으로 대체                 </p></td></tr></tbody></table></div><blockquote><p><code>O</code> BEGIN/COMMIT 래핑 필수 · <code>X</code> 트랜잭션 불가(BEGIN/COMMIT 제외) · <code>—</code> 해당 없음</p></blockquote><p><strong>예시 — 컬럼 추가</strong></p><p><strong>Step 1 — app.prisma 수정</strong></p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="352c4366a253" data-macro-id="2d37b7c8-b6fb-470d-be66-10174b8b7a79" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>model User {
+  // ...
+  phone String?
+}</code></pre></div><p><strong>Step 2 — SQL 초안 생성</strong></p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="02ec9ed60639" data-macro-id="3e23558d-1db0-44e4-98fc-205aa1aeed1c" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>cd apps/db-postgres
+pnpm db:migrate-diff &gt; /tmp/init.sql
+cat /tmp/init.sql</code></pre></div><blockquote><p><code>--from-schema-datasource</code>: 현재 DB 상태를 읽어 비교 기준으로 삼습니다.<br/><code>--to-schema-datamodel</code>: 수정한 <code>app.prisma</code>를 목표 상태로 삼습니다.</p></blockquote><p><strong>Step 3 — migration.sql 저장</strong></p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="e534edb7e953" data-macro-id="d4b35255-fbc8-4ab0-b4e3-36dd63e7bd79" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>-- manual-migrations/20260414xxxxxx_add_user_phone/migration.sql
+BEGIN;
+
+ALTER TABLE &quot;User&quot; ADD COLUMN &quot;phone&quot; TEXT;
+
+COMMIT;</code></pre></div><p><strong>Step 4 — 로컬 DB에 실행</strong></p><p>DB 도구(DBeaver, psql 등)로 로컬 DB에 접속해서 <code>migration.sql</code>을 실행한다.</p><p><strong>Step 5 — prisma generate</strong></p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="c29390fcb49d" data-macro-id="230c61ce-f6c8-4b43-8d8a-b06035b756a8" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>pnpm -F db-postgres db:generate</code></pre></div><p><strong>Step 6 — PR → 운영 DB에 SQL 실행</strong></p><p>PR 머지 후 운영 DB에 동일한 <code>migration.sql</code>을 실행합니다.</p><blockquote><p>⚠️ <strong>표시 변경은 DB 적용 전 반드시 down SQL을 사전 작성해 둡니다.</strong> (→ <a href="#72-%EB%A1%A4%EB%B0%B1">3.2 롤백</a>)</p></blockquote><hr/><h2 id="id-[가이드]DB운영가이드—시나리오별가이드-3.문제대응">3. 문제 대응</h2><h3 id="id-[가이드]DB운영가이드—시나리오별가이드-3.1마이그레이션실패복구">3.1 마이그레이션 실패 복구</h3><p><code>migration.sql</code>이 <code>BEGIN; ... COMMIT;</code>으로 감싸져 있으면 <strong>실패 시 자동 롤백</strong>되므로 복구가 단순합니다.</p><p><strong>복구 절차</strong></p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="74e7371dec95" data-macro-id="60d06830-02b6-4f1c-9783-15f6dff32dbd" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>1. migration.sql 실행
+       │ (실패 → 자동 롤백)
+       ▼
+2. 에러 메시지에서 실패 원인 파악
+       │
+       ▼
+3. DB 상태 확인 (자동 롤백 되었는지 = 변경이 반영 안 됐는지)
+       │
+       ▼
+4. migration.sql 원인 수정
+  • 아직 운영에 한 번도 적용 안 된 파일이면 → 파일 직접 수정 가능
+  • 이미 다른 환경(예: dev)에 적용된 파일이면 → 새 migration으로 보정
+       │
+       ▼
+5. 수정된 SQL 재실행</code></pre></div><p><strong>Step 1 — migration.sql 실행</strong></p><p>DB 도구(DBeaver, psql 등)로 대상 DB에 접속해서 <code>migration.sql</code>을 실행합니다.</p><p><strong>Step 2 — 원인 파악</strong></p><p>DB 도구의 쿼리 콘솔 로그 또는 psql 출력에서 에러 메시지를 확인합니다.</p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="56b783654943" data-macro-id="251dec27-dec5-4eac-b24b-02c600d0215b" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>ERROR:  column &quot;phone&quot; contains null values</code></pre></div><p><strong>Step 3 — DB 상태 확인</strong></p><p>트랜잭션 래핑 덕분에 실패하면 <strong>DB에는 아무 변경도 없습니다</strong>.</p><p><strong>Step 4 — migration.sql 수정</strong></p><ul><li><p><strong>아직 운영/공유 환경에 적용 안 된 파일이면</strong> 파일을 직접 수정합니다.</p></li><li><p><strong>이미 다른 환경에 적용된 파일이면</strong> 절대 수정하지 말고, <strong>보정용 새 migration</strong>을 만듭니다.</p></li></ul><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="eb56134bd709" data-macro-id="04979475-75ec-47f2-9214-f56ab3dbebc5" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>-- 예) 백필을 먼저 하는 보정 migration 추가
+-- 20260414yyyyyy_backfill_then_not_null/migration.sql
+BEGIN;
+
+UPDATE &quot;User&quot; SET &quot;phone&quot; = '' WHERE &quot;phone&quot; IS NULL;
+ALTER TABLE &quot;User&quot; ALTER COLUMN &quot;phone&quot; SET NOT NULL;
+
+COMMIT;</code></pre></div><p><strong>Step 5 — 재실행</strong></p><p>DB 도구(DBeaver, psql 등)로 수정된 migration.sql을 다시 실행합니다.</p><blockquote><p>⚠️ <strong>BEGIN/COMMIT을 뺀 예외 SQL(</strong><code>CONCURRENTLY</code>, <code>ENUM ADD VALUE</code>, <code>VACUUM</code>, <code>CLUSTER</code>)은 자동 롤백이 안 됩니다.<br/>실패 시 어느 지점까지 적용됐는지 DB에서 직접 확인하고, 필요하면 수동 DROP/정리 후 재실행합니다.</p></blockquote><hr/><h3 id="id-[가이드]DB운영가이드—시나리오별가이드-3.2롤백">3.2 롤백</h3><p>이미 성공한 마이그레이션을 자동으로 되돌리는 기능(undo)은 없습니다. <strong>역방향 SQL(</strong><code>down.sql</code>)을 실행하는 것이 롤백입니다.</p><blockquote><p>3.1절의 &quot;자동 롤백&quot;은 실행 중 에러 발생 시 트랜잭션이 취소되는 것입니다. 여기서 말하는 &quot;롤백&quot;은 <strong>이미 성공 적용된 마이그레이션을 되돌리는 것</strong>으로, 별개의 개념입니다.</p></blockquote><hr/><p><strong>사전 준비 — down.sql을 migration.sql과 같은 폴더에 미리 작성</strong></p><p>변경을 만들 때 <code>migration.sql</code>(up)과 함께 <code>down.sql</code>을 같은 폴더에 미리 준비해 둡니다.<br/>긴급 상황에서 폴더 하나만 찾으면 up/down 둘 다 바로 실행 가능합니다.</p><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="5f25310781a0" data-macro-id="a3efbfe7-6837-46bc-aca2-52549eda5c5e" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>manual-migrations/
+└── 20260414120000_add_user_phone/
+    ├── migration.sql   ← up: 실행된 변경
+    └── down.sql        ← 사전 준비된 역방향 SQL</code></pre></div><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="fe3df24afb89" data-macro-id="7ecfd62c-e927-4dbc-9b72-34c7bd88659d" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>-- down.sql 예시 (phone 컬럼 추가를 되돌림)
+BEGIN;
+
+ALTER TABLE &quot;User&quot; DROP COLUMN &quot;phone&quot;;
+
+COMMIT;</code></pre></div><hr/><p />
+    </div>
+    <div class="page-nav"><a href="/c/terroir/beta/db_prisma.html">← DB 운영 가이드 — Prisma 개념…</a><span class="spacer"></span><a href="/c/terroir/beta/db_flow.html" class="primary">DB 운영 가이드 — 로컬 개발 → 운영 배포 플로… →</a></div>
+  </main>
+</div>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="K3VYJFK" src="/assets/js/page-footer.js"></script>
+  <script>
+  // 현재 페이지 사이드바 하이라이트
+  document.querySelectorAll('.sidebar-nav a').forEach(a => {
+    if (a.href === location.href) a.classList.add('active');
+  });
+  // H2, H3 아이디 기반 TOC 자동 생성
+  const headings = document.querySelectorAll('.wiki-content h2, .wiki-content h3');
+  headings.forEach((h, i) => {
+    if (!h.id) h.id = 'section-' + i;
+  });
+  </script>
+</body>
+</html>

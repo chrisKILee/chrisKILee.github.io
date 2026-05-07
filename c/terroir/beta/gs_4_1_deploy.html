@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Getting Started 4-1단계: 배포 관리 (최초 배포) — Terroir Beta</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+  :root {
+    --bg:         #FAFAF8;
+    --bg-2:       #F4F4F1;
+    --surface:    #FFFFFF;
+    --border:     #E8E8E4;
+    --border-2:   #D4D4CF;
+    --ink:        #1C1C1A;
+    --ink-2:      #3D3D3A;
+    --ink-3:      #6B6B66;
+    --ink-4:      #A8A8A3;
+    --accent:     #C4522A;
+    --accent-bg:  #FEF3ED;
+    --accent-bdr: #F9C3AD;
+    --success:    #1A7F5A;
+    --success-bg: #F0FDF4;
+    --warn:       #92400E;
+    --warn-bg:    #FFFBEB;
+    --blue:       #2563EB;
+    --blue-bg:    #EFF6FF;
+    --code-bg:    #1E1E2E;
+    --code-fg:    #CDD6F4;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body:    'Inter', system-ui, sans-serif;
+    --font-mono:    'JetBrains Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.7;
+    padding-top: 48px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .masthead {
+    position: sticky; top: 48px; z-index: 50;
+    background: var(--surface);
+    border-bottom: 2px solid var(--ink);
+    padding: 0 28px; height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .masthead-brand {
+    font-family: var(--font-display); font-size: 15px; font-weight: 700;
+    color: var(--ink); letter-spacing: -0.01em;
+  }
+  .masthead-meta { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+  .masthead-nav { display: flex; gap: 0; }
+  .masthead-nav a {
+    font-size: 13px; color: var(--ink-3); text-decoration: none;
+    padding: 6px 12px; border-radius: 6px; font-weight: 500;
+    transition: color 0.15s, background 0.15s;
+  }
+  .masthead-nav a:hover { color: var(--ink); background: var(--bg-2); }
+
+  .layout { display: flex; min-height: calc(100vh - 100px); }
+
+  /* ── 사이드바 TOC ── */
+  .sidebar {
+    width: 240px; flex-shrink: 0;
+    position: sticky; top: 100px;
+    height: calc(100vh - 100px);
+    overflow-y: auto;
+    padding: 28px 20px;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .sidebar-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-4); margin-bottom: 12px;
+  }
+  .sidebar-nav a {
+    display: block; font-size: 13px; color: var(--ink-3);
+    text-decoration: none; padding: 5px 8px; border-radius: 5px;
+    line-height: 1.4; margin-bottom: 2px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .sidebar-nav a:hover { color: var(--ink); background: var(--bg-2); }
+  .sidebar-nav a.active { color: var(--accent); background: var(--accent-bg); font-weight: 600; }
+  .sidebar-section { margin-top: 16px; }
+  .sidebar-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-4); padding: 4px 8px;
+    margin-bottom: 4px;
+  }
+
+  /* ── 본문 영역 ── */
+  .content {
+    flex: 1; min-width: 0;
+    padding: 40px 48px 80px;
+    max-width: 900px;
+  }
+
+  /* ── 페이지 헤더 ── */
+  .page-header {
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent-bg); border: 1px solid var(--accent-bdr);
+    color: var(--accent); border-radius: 99px;
+    padding: 4px 12px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 16px;
+  }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 900; line-height: 1.1;
+    letter-spacing: -0.025em; color: var(--ink);
+  }
+  .page-meta { margin-top: 10px; font-size: 13px; color: var(--ink-4); }
+
+  /* ── 콘텐츠 스타일 ── */
+  .wiki-content h1, .wiki-content h2, .wiki-content h3,
+  .wiki-content h4, .wiki-content h5, .wiki-content h6 {
+    font-family: var(--font-display); color: var(--ink); margin-top: 36px; margin-bottom: 10px;
+    line-height: 1.2; letter-spacing: -0.015em; scroll-margin-top: 110px;
+  }
+  .wiki-content h1 { font-size: 1.7rem; font-weight: 900; border-bottom: 2px solid var(--ink); padding-bottom: 8px; }
+  .wiki-content h2 { font-size: 1.35rem; font-weight: 700; }
+  .wiki-content h3 { font-size: 1.1rem; font-weight: 700; }
+  .wiki-content h4 { font-size: 1rem; font-weight: 700; }
+  .wiki-content p  { margin-bottom: 14px; font-size: 15px; line-height: 1.75; color: var(--ink-2); }
+  .wiki-content ul, .wiki-content ol { padding-left: 22px; margin-bottom: 14px; }
+  .wiki-content li { font-size: 15px; line-height: 1.7; color: var(--ink-2); margin-bottom: 4px; }
+  .wiki-content li > ul, .wiki-content li > ol { margin-top: 4px; margin-bottom: 4px; }
+  .wiki-content hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  .wiki-content a { color: var(--blue); text-decoration: none; }
+  .wiki-content a:hover { text-decoration: underline; }
+  .wiki-content strong { color: var(--ink); font-weight: 700; }
+  .wiki-content blockquote {
+    border-left: 3px solid var(--accent); background: var(--accent-bg);
+    padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0;
+    font-style: italic; color: var(--ink-2); font-size: 15px;
+  }
+  .wiki-content table {
+    width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;
+    overflow-x: auto; display: block;
+  }
+  .wiki-content th {
+    background: var(--bg-2); border: 1px solid var(--border);
+    padding: 9px 13px; text-align: left; font-size: 12px;
+    font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .wiki-content td {
+    border: 1px solid var(--border); padding: 9px 13px;
+    color: var(--ink-2); vertical-align: top;
+  }
+  .wiki-content tr:hover td { background: var(--bg); }
+  .wiki-content figure { margin: 20px 0; }
+  .wiki-content figcaption {
+    font-size: 12px; color: var(--ink-4); text-align: center; margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* ── 코드 블록 ── */
+  .wiki-content pre.code-block, .wiki-content pre {
+    background: var(--code-bg); color: var(--code-fg);
+    border-radius: 8px; padding: 18px 20px;
+    overflow-x: auto; margin: 20px 0;
+    font-family: var(--font-mono); font-size: 13.5px; line-height: 1.6;
+    white-space: pre;
+  }
+  .wiki-content code:not(pre code) {
+    background: var(--bg-2); color: var(--accent);
+    border-radius: 4px; padding: 1px 6px;
+    font-family: var(--font-mono); font-size: 0.875em;
+  }
+
+  /* ── 콜아웃 ── */
+  .wiki-content .callout {
+    border-left: 3px solid; padding: 14px 18px;
+    border-radius: 0 8px 8px 0; margin: 20px 0;
+    font-size: 14px; line-height: 1.65;
+  }
+  .wiki-content .callout.info  { border-color: var(--blue); background: var(--blue-bg); color: #1e40af; }
+  .wiki-content .callout.tip   { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+  .wiki-content .callout.warn  { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+  .wiki-content .callout-title { font-weight: 700; margin-bottom: 6px; font-size: 12px; letter-spacing: 0.04em; }
+
+  /* ── 패널 ── */
+  .wiki-content .panel {
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 20px 0;
+  }
+  .wiki-content .panel-title {
+    background: var(--bg-2); padding: 10px 16px;
+    font-weight: 700; font-size: 13px; border-bottom: 1px solid var(--border);
+  }
+  .wiki-content .panel-body { padding: 14px 16px; }
+
+  /* ── expand ── */
+  .wiki-content details.expand-block {
+    border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; margin: 16px 0;
+  }
+  .wiki-content details.expand-block summary {
+    padding: 10px 16px; background: var(--bg-2);
+    cursor: pointer; font-weight: 600; font-size: 14px;
+    list-style: none; display: flex; align-items: center; gap: 8px;
+  }
+  .wiki-content details.expand-block summary::before { content: "▶"; font-size: 10px; }
+  .wiki-content details.expand-block[open] summary::before { content: "▼"; }
+  .wiki-content details.expand-block > *:not(summary) { padding: 14px 16px; }
+
+  /* ── 네비 버튼 ── */
+  .page-nav {
+    display: flex; gap: 12px; margin-top: 48px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+  .page-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; font-weight: 500;
+    color: var(--ink-2); text-decoration: none; transition: all 0.15s;
+    background: var(--surface);
+  }
+  .page-nav a:hover { border-color: var(--border-2); background: var(--bg-2); color: var(--ink); }
+  .page-nav a.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .page-nav a.primary:hover { background: var(--ink-2); }
+  .page-nav .spacer { flex: 1; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .content { padding: 24px 20px 60px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="masthead">
+  <span class="masthead-brand">⛰️ Terroir Beta — Getting Started</span>
+  <nav class="masthead-nav">
+    <a href="/c/terroir/beta/index.html">← 처음으로</a>
+    <a href="/c/terroir/">Terroir 홈</a>
+  </nav>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-title">목차</div>
+    <nav class="sidebar-nav"><a href="/c/terroir/beta/index.html">🏠 Getting Started 소개</a><div class="sidebar-section"><div class="sidebar-section-title">Getting Started</div><a href="/c/terroir/beta/gs_index.html" >- Public</a><a href="/c/terroir/beta/gs_1_1_common.html" >1-1단계: 사전준비 (공통)</a><a href="/c/terroir/beta/gs_1_2_windows.html" >1-2단계: 사전준비 (윈도우)</a><a href="/c/terroir/beta/gs_1_2_mac.html" >1-2단계: 사전준비 (Mac)</a><a href="/c/terroir/beta/gs_2_1_new.html" >2-1단계: 새 프로젝트 시작</a><a href="/c/terroir/beta/gs_2_1_existing.html" >2-1단계: 기존 프로젝트에서 시작</a><a href="/c/terroir/beta/gs_3_sdd.html" >3단계: SDD로 개발하기</a><a href="/c/terroir/beta/gs_4_1_deploy.html" class="active">4-1단계: 배포 관리 (최초 배포)</a><a href="/c/terroir/beta/gs_4_2_env.html" >4-2단계: 배포 관리 (기존 배포에서 환경 설정 변경)</a><a href="/c/terroir/beta/gs_4_3_merge.html" >4-3단계: 배포 관리 (새 코드 머지)</a><a href="/c/terroir/beta/gs_4_4_rollback.html" >4-4단계: 배포 관리 (롤백)</a></div><div class="sidebar-section"><div class="sidebar-section-title">Database</div><a href="/c/terroir/beta/db_access.html" >DB 접근 방법 (DBeaver)</a><a href="/c/terroir/beta/db_prisma.html" >DB 운영 가이드 — Prisma 개념</a><a href="/c/terroir/beta/db_scenarios.html" >DB 운영 가이드 — 시나리오별 가이드</a><a href="/c/terroir/beta/db_flow.html" >DB 운영 가이드 — 로컬 개발 → 운영 배포 플로우</a></div><div class="sidebar-section"><div class="sidebar-section-title">Trouble Shooting</div><a href="/c/terroir/beta/trouble_shooting.html" >Trouble Shooting</a></div></nav>
+  </aside>
+  <main class="content">
+    <div class="page-header">
+      <div class="page-eyebrow">🚀 Getting Started</div>
+      <h1 class="page-title">Getting Started 4-1단계: 배포 관리 (최초 배포)</h1>
+      <div class="page-meta">Terroir 가이드 문서 (Beta) · R&D실</div>
+    </div>
+    <div class="wiki-content">
+<hr/><h2 id="id-[가이드]GettingStarted4-1단계:배포관리(최초배포)-1.사전조건"><img src="https://vntg.atlassian.net/wiki/plugins/servlet/confluence/placeholder/error?i18nKey=editor.placeholder.error&locale=ko_KR&version=2" title="Cannot invoke &quot;String.indexOf(int)&quot; because &quot;href&quot; is null" class="transform-error" data-encoded-xml="%3Cac%3Aemoticon+ac%3Aname%3D%22clipboard%22+ac%3Aemoji-shortname%3D%22%3Aclipboard%3A%22+ac%3Aemoji-id%3D%221f4cb%22+ac%3Alocal-id%3D%22ae93a332-8000-4fa0-911c-5e7ef1736e71%22+ac%3Aemoji-fallback%3D%22%F0%9F%93%8B%22+%2F%3E" /> 1. 사전 조건</h2><p>배포 관리 화면에서 프로젝트를 보려면 아래 두 가지가 충족되어야 합니다.</p><ul><li><p><strong>VntgCorp 조직 GitHub 레포지토리여야 합니다.</strong></p><ul><li><p>Terroir 배포 파이프라인은 <code>VntgCorp</code> org 소속 레포만 인식합니다.</p></li></ul></li><li><p><strong>각 환경에 맞는 브랜치에 머지되어 있어야 합니다.</strong></p><ul><li><p>머지 시점에 CI가 실행되어 <strong>BE 이미지가 빌드</strong>되고 배포 시스템에 자동으로 등록되며, 그 이후부터 배포 관리 화면 목록에 노출됩니다.</p></li><li><p>(FE 이미지는 환경 설정 입력 이후에 별도로 빌드됩니다 — <a href="#" rel="nofollow">전체 흐름 Step 3</a> 참고)</p></li></ul></li></ul><div class="callout info"><div class="callout-title">ℹ️ 안내</div><p>💡 <strong>확인 방법</strong><br />머지 후에도 화면에 프로젝트가 보이지 않는다면, GitHub Actions 에서 CI 워크플로우가 성공적으로 끝났는지 먼저 확인하세요.</p></div><hr/><h2 id="id-[가이드]GettingStarted4-1단계:배포관리(최초배포)-2.전체흐름">➡ 2. 전체 흐름</h2><p><strong>최초 환경 설정 시 권장 순서는 DB → BE → FE</strong> 입니다.</p><div class="callout info"><div class="callout-title">ℹ️ 안내</div><p>💡 <strong>순서는 강제가 아닙니다.</strong><br />DB 가 첫 번째인 이유는 <strong>BE 환경변수에 DB 접속 정보를 참조</strong>하기 때문입니다.<br />BE 와 FE 사이에는 환경 설정 의존성이 없으므로 순서를 바꿔도 동작에는 문제가 없습니다.</p></div><div class="callout info"><div class="callout-title">ℹ️ 안내</div><p>💡 <strong>팁: FE 빌드 시간을 활용하세요.</strong><br />FE 는 적용 시점에 이미지 빌드가 트리거되어 <strong>수 분이 소요</strong>됩니다.<br />FE 를 먼저 적용해두면 빌드가 진행되는 동안 BE 설정 작업을 동시에 할 수 있습니다.</p></div><div class="callout info"><div class="callout-title">ℹ️ 안내</div><p>💡 <strong>두 번째 변경부터는 DB 단계를 건너뛰세요.</strong><br />DB 환경 설정은 <strong>최초 1회만 의미</strong>가 있습니다 (초기 생성 이후에는 화면에서 값을 변경해도 반영되지 않음).<br />이후 변경 작업에서는 <strong>BE / FE</strong> 만 다시 설정하면 됩니다.</p></div><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="c6b0cf75-483b-4b36-99ed-cf10a9b9770f" data-macro-id="e129bd7e-2482-4ef8-8777-5483df79f43e" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>[사전: 머지 시점에 BE 이미지 빌드 완료]
+      │
+      ▼
+Step 1: DB 환경 설정
+      │   입력: 리소스(CPU/Memory) / 계정 ID / PW / DB 이름
+      ▼
+Step 2: BE 환경 설정
+      │   입력: 리소스(CPU/Memory) / Port / 환경변수
+      ▼
+Step 3: FE 환경 설정
+      │   입력: 리소스(CPU/Memory) / Port / 환경변수
+      │   ⚠️ 적용 시점에 FE 이미지 빌드가 즉시 트리거됨
+      ▼
+Step 4: 배포
+          • DB → 초기 계정 + 데이터베이스 자동 생성
+          • BE → (머지 시점에 빌드된 이미지) 배포 + 런타임 환경변수 동적 주입
+          • FE → (Step 3 에서 빌드된 이미지) 배포 + 런타임 환경변수 동적 주입</code></pre></div><div class="callout info"><div class="callout-title">ℹ️ 안내</div><p>💡 <strong>공통 입력값</strong><br />· <strong>모든 단계 공통</strong>: 리소스 설정 (CPU / Memory)<br />· <strong>BE / FE 공통</strong>: Port</p></div><div class="callout info"><div class="callout-title">ℹ️ 안내</div><p>💡 <strong>Step 1~3 은 값을 &quot;저장&quot;만 합니다.</strong><br />데이터베이스 생성, 환경변수 주입 등 <strong>실제 동작은 Step 4 배포 시점에 한 번에</strong> 일어납니다.<br />단, <strong>FE 만 예외</strong> — Step 3 적용 시점에 이미지 빌드가 즉시 트리거되며, 배포는 그 빌드 결과로 진행됩니다.</p></div><p>각 단계의 입력값이 어떻게 적용되는지는 다음과 같습니다.</p><ul><li><p><strong>DB</strong> — 입력한 <strong>계정 ID / 비밀번호 / DB 이름</strong>은 배포 시점에 초기 계정과 데이터베이스 생성에 사용됩니다.</p><ul><li><p>⚠️ <strong>초기 생성 이후에는 화면에서 값을 변경해도 반영되지 않습니다.</strong></p></li><li><p>계정/DB 이름 등을 바꿔야 한다면 <a href="/c/terroir/beta/db_access.html">[가이드] DB 접근방법 (DBeaver)</a> 를 따라 DB에 직접 접속해서 변경해야 합니다.</p></li></ul></li><li><p><strong>BE</strong> — 이미지는 <strong>사전 조건의 머지 시점에 이미 빌드되어</strong> 있습니다. 환경 설정은 배포 시점에 <strong>런타임 환경변수로 동적 주입</strong>되므로, 이미지 재빌드 없이 값만 바꿔서 재배포하면 새 값이 반영됩니다. (내부적으로는 ConfigMap / Secret 으로 저장됩니다.)</p></li><li><p><strong>FE</strong> — BE 와 달리 환경변수가 <strong>빌드 결과물(</strong><code>.env</code>)에 박혀야 하므로, 환경 설정을 적용하는 시점에 <strong>이미지 빌드가 즉시 트리거</strong>됩니다. 이후 배포 시점에 빌드된 이미지가 올라가면서 동시에 런타임 환경변수로도 같은 값이 주입됩니다.</p><ul><li><p><strong>빌드타임 정적 주입</strong>: 입력값을 <code>.env</code> 파일로 만들어 번들에 포함시킵니다.</p></li><li><p><strong>런타임 동적 주입</strong>: 배포된 컨테이너에 환경변수로도 다시 주입됩니다.</p></li><li><p>즉, FE는 환경변수를 변경하면 <strong>재빌드 + 재배포</strong> 가 모두 필요합니다 (재빌드는 적용 시점에 자동 트리거).</p></li></ul></li></ul><hr/><h2 id="id-[가이드]GettingStarted4-1단계:배포관리(최초배포)-3.최초배포—첫환경설정부터배포완료까지"><img src="https://vntg.atlassian.net/wiki/plugins/servlet/confluence/placeholder/error?i18nKey=editor.placeholder.error&locale=ko_KR&version=2" title="Cannot invoke &quot;String.indexOf(int)&quot; because &quot;href&quot; is null" class="transform-error" data-encoded-xml="%3Cac%3Aemoticon+ac%3Aname%3D%22page%22+ac%3Aemoji-shortname%3D%22%3Apage_with_curl%3A%22+ac%3Aemoji-id%3D%221f4c3%22+ac%3Alocal-id%3D%221f543305-31fe-45e1-9dde-7bd767c98ea4%22+ac%3Aemoji-fallback%3D%22%F0%9F%93%83%22+%2F%3E" /> 3. 최초 배포 — 첫 환경 설정부터 배포 완료까지</h2><p>머지 직후 처음으로 환경을 설정하고 배포하는 시나리오입니다. 권장 순서(<strong>DB → BE → FE → 배포</strong>)를 따릅니다.</p><h4 id="id-[가이드]GettingStarted4-1단계:배포관리(최초배포)-Step1—프로젝트상세진입"><strong>Step 1 — 프로젝트 상세 진입</strong></h4><p>배포 관리 화면(<code>/deploy-management</code>)에서 상단 <strong>배포 환경 토글</strong>이 원하는 환경(예: Develop)으로 선택되어 있는지 확인한 뒤, 대상 프로젝트 카드의 <strong>상세보기</strong> 버튼을 클릭합니다.</p><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_203.26.38-20260506-062721.png" alt="스크린샷 2026-05-06 오후 3.26.38-20260506-062721.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><h4 id="id-[가이드]GettingStarted4-1단계:배포관리(최초배포)-Step2—DB환경설정"><strong>Step 2 — DB 환경 설정</strong></h4><p>DB 앱 카드의 <strong>환경 설정</strong> 버튼을 클릭하면 모달이 열립니다. (앱 카드 좌측의 타입 라벨로 DB 앱을 식별할 수 있습니다.)</p><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_203.27.57-20260506-062834.png" alt="스크린샷 2026-05-06 오후 3.27.57-20260506-062834.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><p>다음 값을 입력하고 <strong>적용</strong>을 누릅니다.</p><ul><li><p><strong>리소스 설정</strong>: CPU / Memory (preset 또는 직접 입력)</p></li><li><p><strong>환경변수</strong>: 계정 ID / 비밀번호 / DB 이름</p></li></ul><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_203.29.34-20260506-062951.png" alt="스크린샷 2026-05-06 오후 3.29.34-20260506-062951.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><div class="callout info"><div class="callout-title">ℹ️ 안내</div><p>💡 <strong>임시저장</strong><br />작성 중인 변경사항을 잠깐 저장만 해두고 싶다면 모달의 <strong>임시저장</strong> 버튼을 사용할 수 있습니다. 다음에 모달을 다시 열면 <em>&quot;임시저장 있음 · 미적용&quot;</em> 배지로 표시되며, 복원 배너가 노출됩니다.</p></div><p>앱 카드의 상태가 <strong>준비됨</strong>으로 변경된 것을 확인합니다.</p><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_203.30.09-20260506-063021.png" alt="스크린샷 2026-05-06 오후 3.30.09-20260506-063021.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><div class="callout tip"><div class="callout-title">📝 참고</div><p>⚠️ <strong>주의</strong><br />DB 환경 설정 값은 <strong>최초 1회만 의미</strong>가 있습니다. 한 번 배포된 이후 값을 바꿔도 반영되지 않으므로, 신중하게 입력하세요.</p></div><h4 id="id-[가이드]GettingStarted4-1단계:배포관리(최초배포)-Step3—BE환경설정"><strong>Step 3 — BE 환경 설정</strong></h4><p>BE 앱 카드의 <strong>환경 설정</strong> 버튼을 클릭하고, 다음 값을 입력 후 <strong>적용</strong>을 누릅니다.</p><ul><li><p><strong>리소스 설정</strong>: CPU / Memory</p></li><li><p><strong>Port</strong>: BE 가 동작하는 Port 번호</p></li><li><p><strong>환경변수</strong>: DB 접속 정보 등 (Step 2 에서 입력한 값을 참조)</p></li></ul><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_203.31.17-20260506-063138.png" alt="스크린샷 2026-05-06 오후 3.31.17-20260506-063138.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><p>예시 BE는 3000번 포트로 동작하므로 3000을 입력합니다.</p><div class="callout tip"><div class="callout-title">📝 참고</div><p>⚠️ <strong>containerPort 와 환경변수 APPLICATION_PORT 는 반드시 일치해야 합니다.</strong><br />값이 다르면 K8s Service가 트래픽을 전달하는 포트와 앱이 실제 listen 하는 포트가 어긋나 503 / connection refused 가 발생합니다.</p></div><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_203.33.02-20260506-063315.png" alt="스크린샷 2026-05-06 오후 3.33.02-20260506-063315.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><p>하단의 <strong>항목 추가</strong> 또는 <strong>.env 붙여넣기</strong> 기능으로 필요한 환경변수를 모두 입력합니다.</p><div class="callout tip"><div class="callout-title">📝 참고</div><p>⚠️ <strong>.env.example 에 포함된 모든 키는 필수 값으로 등록됩니다.</strong></p><p>로컬에서만 쓰고 배포 환경에서는 필요 없는 변수가 있다면, .env.example 파일에서 미리 지우거나 의미 없는 임의 값(공백 아닌)을 넣어주세요.</p></div><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_203.56.13-20260506-065638.png" alt="스크린샷 2026-05-06 오후 3.56.13-20260506-065638.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><h4 id="id-[가이드]GettingStarted4-1단계:배포관리(최초배포)-DB를사용하는BE의경우"><strong>DB 를 사용하는 BE 의 경우</strong></h4><p><code>DATABASE_*</code> 환경변수에는 <strong>Step 2 (DB 환경 설정)</strong> 에서 입력했던 값을 그대로 사용합니다.</p><p><code>DATABASE_URL</code> 은 입력하지 않으면 자동으로 주입됩니다. 직접 명시해야 하는 경우(예시처럼 ORM에서 단일 URL 형태가 필요한 경우)에는 아래 양식대로 조합합니다.</p><p /><ol start="1"><li><p>앱 목록에서 DB 앱의 <strong>내부 접속 주소</strong>를 확인합니다.</p></li></ol><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_203.59.30-20260506-065945.png" alt="스크린샷 2026-05-06 오후 3.59.30-20260506-065945.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><ol start="2"><li><p>해당 주소와 Step 2 에서 입력했던 계정 정보를 조합하여 <code>DATABASE_URL</code> 을 만듭니다.</p></li></ol><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="866dfb2c-9804-46eb-9718-0455b9d5fb87" data-macro-id="57a42d67-02ff-44cd-94fd-aa286e732d36" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>양식: postgresql://{{DATABASE_USER}}:{{DATABASE_PASSWORD}}@{{내부 접속 주소}}:5432/{{DATABASE_DB}}
+예시: postgresql://guide_user:guide_pw@app-db.terroir-guide.svc.cluster.local:5432/guide_db</code></pre></div><p /><div class="code panel pdl conf-macro output-block" data-hasbody="true" data-local-id="cc3106d5-130a-4390-833b-61f5edbf8d92" data-macro-id="d9f490c8-0a53-4d61-90cb-789af2c0e73a" data-macro-name="code" style="border-width: 1px;"><pre class="code-block"><code>## .env 파일 예시
+
+# Application
+APPLICATION_NAME=be-api-server
+APPLICATION_PORT=3000
+
+# Database
+DATABASE_URL=postgresql://guide_user:guide_pw@app-db.terroir-guide.svc.cluster.local:5432/guide_db
+DATABASE_DB=guide_db
+DATABASE_USER=guide_user
+DATABASE_PASSWORD=guide_pw
+DATABASE_PORT=5432
+
+# Authentication
+JWT_ACCESS_TOKEN_SECRET=random-local-access-secret-key
+
+# Infrastructure
+## FRONTEND_URL도 앱 목록에서 확인하시면 됩니다.
+FRONTEND_URL=https://terroir-guide-fe-user-client.dev.terroir.vntgcorp.com
+
+# Observability
+LOG_LEVEL=info
+</code></pre></div><p /><p>완성된 .env 내용을 <strong>.env 붙여넣기</strong> 기능으로 입력하면 자동으로 키-값으로 분리되어 등록됩니다.</p><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_204.09.14-20260506-070928.png" alt="스크린샷 2026-05-06 오후 4.09.14-20260506-070928.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><p /><h4 id="id-[가이드]GettingStarted4-1단계:배포관리(최초배포)-Step4—FE환경설정(이미지빌드트리거)"><strong>Step 4 — FE 환경 설정 (이미지 빌드 트리거)</strong></h4><p>FE 앱 카드의 <strong>환경 설정</strong> 버튼을 클릭하고, 다음 값을 입력 후 <strong>적용</strong>을 누릅니다.</p><p>환경 설정 입력 방식은 BE 와 동일합니다.</p><ul><li><p><strong>리소스 설정</strong>: CPU / Memory</p></li><li><p><strong>Port</strong>: 권장 <code>80</code></p></li><li><p><strong>환경변수</strong>: <code>BE_URL</code> 등 (BE 의 서비스 URL은 프로젝트 상세의 앱 목록에서 확인할 수 있습니다)</p></li></ul><p><strong>적용</strong> 시 <em>&quot;이미지 빌드를 시작하시겠습니까?&quot;</em> 다이얼로그가 뜨며, <strong>빌드 시작</strong>을 누르면 GitHub Actions 워크플로우가 즉시 트리거됩니다.</p><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_204.26.18-20260506-072634.png" alt="스크린샷 2026-05-06 오후 4.26.18-20260506-072634.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><p><strong>적용</strong>을 누르면 <em>&quot;이미지 빌드를 시작하시겠습니까?&quot;</em> 다이얼로그가 뜹니다.</p><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_204.26.51-20260506-072732.png" alt="스크린샷 2026-05-06 오후 4.26.51-20260506-072732.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><p><strong>빌드 시작</strong>을 클릭하면 GitHub Actions 워크플로우가 즉시 트리거되고, 모달 상단에서 진행 상황을 확인할 수 있습니다.</p><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_204.27.01-20260506-072706.png" alt="스크린샷 2026-05-06 오후 4.27.01-20260506-072706.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><div class="callout tip"><div class="callout-title">📝 참고</div><p>⚠️ <strong>주의</strong><br />FE 빌드는 <strong>수 분이 소요</strong>되며, 모달을 닫아도 백그라운드에서 계속 진행됩니다.<br />진행 상황은 GitHub Actions 페이지 또는 모달 상단의 빌드 상태 표시로 확인할 수 있습니다.</p></div><h4 id="id-[가이드]GettingStarted4-1단계:배포관리(최초배포)-Step5—배포"><strong>Step 5 — 배포</strong></h4><p>FE 빌드가 완료되면 프로젝트 상세 화면 상단 우측의 <strong>배포</strong> 버튼을 클릭합니다. 확인 다이얼로그에서 진행하면 배포가 시작됩니다.</p><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_204.30.17-20260506-073029.png" alt="스크린샷 2026-05-06 오후 4.30.17-20260506-073029.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><p>확인 다이얼로그에는 이번 배포에 포함될 <strong>앱 목록과 버전</strong>이 표시됩니다.</p><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_204.30.37-20260506-073042.png" alt="스크린샷 2026-05-06 오후 4.30.37-20260506-073042.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><p>다이얼로그 하단의 <strong>배포</strong> 버튼을 클릭하면 배포가 시작됩니다.</p><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_204.30.42-20260506-073047.png" alt="스크린샷 2026-05-06 오후 4.30.42-20260506-073047.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><h4 id="id-[가이드]GettingStarted4-1단계:배포관리(최초배포)-Step6—배포결과확인"><strong>Step 6 — 배포 결과 확인</strong></h4><ul><li><p>상단 <strong>배포 상태</strong>가 <code>Synced</code> + <code>Healthy</code> 인지 확인합니다.</p></li><li><p>각 앱 카드의 <strong>현재 배포 버전</strong>이 최신 빌드 버전과 일치하는지 확인합니다.</p></li><li><p>각 앱 카드의 <strong>서비스 URL</strong> 로 접속해서 동작을 확인합니다.</p></li><li><p>(옵션) 상단의 <strong>Grafana</strong> 버튼으로 로그/메트릭을 확인합니다.</p></li></ul><img src="/c/terroir/beta/assets/img/2497904906__E1_84_89_E1_85_B3_E1_84_8F_E1_85_B3_E1_84_85_E1_85_B5_E1_86_AB_E1_84_89_E1_85_A3_E1_86_BA_202026-05-06_20_E1_84_8B_E1_85_A9_E1_84_92_E1_85_AE_204.34.15-20260506-073428.png" alt="스크린샷 2026-05-06 오후 4.34.15-20260506-073428.png" loading="lazy" style="max-width:100%;border-radius:6px;margin:12px 0;"><p />
+    </div>
+    <div class="page-nav"><a href="/c/terroir/beta/gs_3_sdd.html">← Getting Started 3단계: SDD로 개발…</a><span class="spacer"></span><a href="/c/terroir/beta/gs_4_2_env.html" class="primary">Getting Started 4-2단계: 배포 관리… →</a></div>
+  </main>
+</div>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="U3BLVLF" src="/assets/js/page-footer.js"></script>
+  <script>
+  // 현재 페이지 사이드바 하이라이트
+  document.querySelectorAll('.sidebar-nav a').forEach(a => {
+    if (a.href === location.href) a.classList.add('active');
+  });
+  // H2, H3 아이디 기반 TOC 자동 생성
+  const headings = document.querySelectorAll('.wiki-content h2, .wiki-content h3');
+  headings.forEach((h, i) => {
+    if (!h.id) h.id = 'section-' + i;
+  });
+  </script>
+</body>
+</html>
