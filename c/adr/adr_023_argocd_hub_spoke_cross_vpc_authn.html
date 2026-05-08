@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADR-023 dev-infra ArgoCD → dev-service cross-VPC 인증·연결 방식 선택</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:     #0E0E0B;
+      --ink-2:   #3A3A36;
+      --ink-3:   #6B6B64;
+      --ink-4:   #A8A8A0;
+      --paper:   #F7F7F4;
+      --paper-2: #EFEFEB;
+      --rule:    #D8D8D0;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--paper); color: var(--ink);
+      font-family: var(--font-body); font-size: 16px;
+      line-height: 1.75; -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    .masthead {
+      border-bottom: 3px solid var(--ink);
+      padding: 20px 40px;
+      display: flex; align-items: baseline;
+      justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      position: sticky; top: 48px; z-index: 50; background: var(--paper);
+    }
+    .masthead-name { font-family: var(--font-display); font-size: 14px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+    .masthead-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .lead { border-bottom: 1px solid var(--rule); padding: 72px 40px 56px; max-width: 1100px; margin: 0 auto; }
+    .lead-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+    .lead-eyebrow::before { content: '//'; color: var(--ink-4); }
+    .lead h1 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 4rem); font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 24px; max-width: 860px; }
+    .lead h1 em { font-style: italic; font-weight: 400; }
+    .lead-deck { font-size: 17px; color: var(--ink-2); max-width: 640px; line-height: 1.65; border-left: 3px solid var(--ink); padding-left: 20px; margin-bottom: 32px; }
+    .lead-byline { font-size: 13px; color: var(--ink-4); font-family: var(--font-mono); display: flex; gap: 20px; flex-wrap: wrap; }
+    .lead-byline span::before { content: '— '; }
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: var(--paper-2); border: 1px solid var(--rule); padding: 4px 12px; border-radius: 2px; color: var(--ink-3); margin-bottom: 24px; }
+    .status-badge.accepted { border-color: #BBF7D0; color: #166534; background: #DCFCE7; }
+
+    .page-body { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+
+    .facts { display: flex; gap: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+    .fact { flex: 1; padding: 22px 24px; border-right: 1px solid var(--rule); }
+    .fact:last-child { border-right: none; }
+    .fact-num { font-family: var(--font-display); font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 900; color: var(--ink); line-height: 1; margin-bottom: 4px; }
+    .fact-label { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    .doc-section { padding: 52px 0; border-bottom: 1px solid var(--rule); scroll-margin-top: 24px; }
+    .doc-section:last-child { border-bottom: none; }
+    .section-num { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+    .section-heading { font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 8px; }
+    .section-sub { font-size: 14px; color: var(--ink-3); font-family: var(--font-mono); margin-bottom: 20px; letter-spacing: 0.02em; }
+    .section-lead { font-size: 15px; color: var(--ink-2); max-width: 720px; margin-bottom: 28px; line-height: 1.75; }
+
+    .decision-block { margin-bottom: 44px; }
+    .decision-label { font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+    .decision-title { font-family: var(--font-display); font-size: clamp(1.1rem, 2.2vw, 1.5rem); font-weight: 700; line-height: 1.2; margin-bottom: 14px; color: var(--ink); }
+    .decision-body { font-size: 15px; color: var(--ink-2); max-width: 760px; line-height: 1.75; margin-bottom: 20px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+    .col-item { padding: 22px 26px; border: 1px solid var(--rule); }
+    .col-item + .col-item { border-left: none; }
+    .col-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 8px; font-family: var(--font-mono); }
+    .col-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--ink); }
+    .col-body { font-size: 13px; color: var(--ink-3); line-height: 1.65; }
+
+    .pullquote { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--rule); padding: 28px 0; margin: 28px 0; }
+    .pullquote p { font-family: var(--font-display); font-size: clamp(1.05rem, 2vw, 1.35rem); font-style: italic; font-weight: 400; line-height: 1.45; color: var(--ink); max-width: 760px; }
+    .pullquote cite { display: block; margin-top: 10px; font-size: 12px; font-family: var(--font-mono); color: var(--ink-4); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .rule-list { list-style: none; padding: 0; margin: 16px 0; }
+    .rule-list li { display: flex; gap: 14px; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid var(--paper-2); font-size: 14px; color: var(--ink-2); line-height: 1.65; }
+    .rule-list li:last-child { border-bottom: none; }
+    .rule-list li .bul { font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); padding-top: 3px; flex-shrink: 0; letter-spacing: 0.05em; min-width: 32px; }
+
+    .table-wrap { overflow-x: auto; margin: 20px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { border-bottom: 2px solid var(--ink); padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-family: var(--font-mono); white-space: nowrap; }
+    td { border-bottom: 1px solid var(--rule); padding: 11px 14px; color: var(--ink-2); vertical-align: top; line-height: 1.5; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--paper-2); }
+    td strong { color: var(--ink); }
+    td code, th code { font-family: var(--font-mono); font-size: 11px; background: var(--paper-2); padding: 1px 5px; border-radius: 2px; }
+    .tag-accept { display:inline-block; background:#DCFCE7; color:#166534; font-family:var(--font-mono); font-size:11px; padding:2px 7px; border-radius:2px; white-space:nowrap; }
+    .tag-reject { display:inline-block; background:var(--paper-2); color:var(--ink-4); font-family:var(--font-mono); font-size:11px; padding:2px 7px; border-radius:2px; }
+
+    pre.code { background: var(--ink); color: #E8E8E0; border-radius: 3px; padding: 18px 22px; font-family: var(--font-mono); font-size: 12px; line-height: 1.7; overflow-x: auto; white-space: pre; margin: 16px 0; }
+    code.inline { background: var(--paper-2); border: 1px solid var(--rule); border-radius: 2px; padding: 1px 6px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+
+    .diagram-wrap { margin: 24px 0; overflow-x: auto; }
+
+    .changelog { margin: 16px 0; }
+    .cl-item { display: flex; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--paper-2); font-size: 13px; }
+    .cl-item:last-child { border-bottom: none; }
+    .cl-date { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); white-space: nowrap; padding-top: 2px; min-width: 90px; }
+    .cl-body { color: var(--ink-2); line-height: 1.6; }
+    .cl-body strong { color: var(--ink); }
+
+    footer { border-top: 3px solid var(--ink); padding: 24px 40px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12px; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+    footer a { color: var(--ink-3); }
+
+    @media (max-width: 640px) {
+      .masthead, .lead, footer { padding-left: 16px; padding-right: 16px; }
+      .page-body { padding: 0 16px; }
+      .facts { flex-direction: column; }
+      .fact { border-right: none; border-bottom: 1px solid var(--rule); }
+      .fact:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <span class="masthead-name">ADR-023 · cross-VPC ArgoCD 인증·연결</span>
+  <span class="masthead-meta">2026-04-27 &nbsp;·&nbsp; Global &nbsp;·&nbsp; Accepted</span>
+</header>
+
+<!-- LEAD -->
+<div class="lead">
+  <div class="lead-eyebrow">Architecture Decision Record / RND-INFRA Global</div>
+  <div class="status-badge accepted">● Accepted — 2026-04-27 채택</div>
+  <h1>dev-infra ArgoCD → dev-service<br><em>cross-VPC 인증·연결 방식 선택</em></h1>
+  <p class="lead-deck">
+    GKE Standard 1.32+ 에서 PSC 재현이 기술적으로 불가능해짐에 따라, GKE DNS endpoint + Workload Identity 를 Hub→Spoke 연결 방식으로 채택.
+    정적 bearer token 자체를 제거하고 GCP IAM 단명 토큰을 매 호출 자동 발급하는 구조로 전환한다.
+  </p>
+  <div class="lead-byline">
+    <span>담당: 조형준 (hyeongjun07)</span>
+    <span>선행 ADR: ADR-019</span>
+    <span>PR: <a href="https://github.com/VntgCorp/RND-INFRA/pull/155" target="_blank" rel="noopener" style="text-decoration:underline;">#155</a></span>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- FACT STRIP -->
+  <div class="facts" style="margin:36px 0;">
+    <div class="fact"><div class="fact-num">5</div><div class="fact-label">검토한 대안 수</div></div>
+    <div class="fact"><div class="fact-num">0</div><div class="fact-label">정적 토큰 (bearer token 부재)</div></div>
+    <div class="fact"><div class="fact-num">2</div><div class="fact-label">결정 변경 이력</div></div>
+    <div class="fact"><div class="fact-num">0</div><div class="fact-label">신규 네트워크 인프라 작업</div></div>
+  </div>
+
+  <!-- ── 배경 ── -->
+  <section class="doc-section" id="context">
+    <div class="section-num">배경</div>
+    <h2 class="section-heading">Hub-Spoke 구조와 GKE Standard 전환의 새 제약</h2>
+    <p class="section-lead">
+      ADR-019 에서 dev-infra ArgoCD 가 dev-service 클러스터를 원격 관리(Hub-Spoke)하는 구조가 확정됐다.
+      기존 Autopilot 환경은 PSC consumer endpoint + bearer token 패턴으로 동작했으나,
+      GKE Standard 1.32+ 로 전환하면서 <strong>PSC ServiceAttachment URI 가 외부에 노출되지 않아 동일 패턴 재현이 기술적으로 불가능</strong>해졌다.
+    </p>
+
+    <div class="two-col" style="margin-bottom:28px;">
+      <div class="col-item">
+        <div class="col-label">Hub — vntg-nfw-infra-common</div>
+        <div class="col-title">dev-infra-standard-gke-cluster</div>
+        <div class="col-body">
+          · ArgoCD application-controller · applicationset · server<br>
+          · network: <code class="inline">dev-network</code>
+        </div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">Spoke — vntg-nfw-services-dev</div>
+        <div class="col-title">dev-services-standard-gke-cluster</div>
+        <div class="col-body">
+          · ArgoCD 미설치 (Hub 에서 원격 관리)<br>
+          · Shared VPC host: <code class="inline">vntg-nfw-network-dev</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-sub">신규 환경에서 발생한 제약 — 검증 완료</div>
+    <ul class="rule-list">
+      <li><span class="bul">C-01</span>GKE Standard 1.32+ 는 <code class="inline">privateEndpointSubnetwork</code> 자동 PSC 로 control plane endpoint 이 호스트 VPC 안 PSC consumer subnet 에 자동 배치됨</li>
+      <li><span class="bul">C-02</span><strong>VPC peering 으로는 PSC consumer endpoint 도달 불가</strong> — GCP Connectivity Test 결과 <code class="inline">PSC_ENDPOINT_ACCESSED_FROM_PEERED_NETWORK</code> (2026-04-27 확정)</li>
+      <li><span class="bul">C-03</span>cluster API / Cloud Logging / <code class="inline">service-attachments list</code> 어디에도 ServiceAttachment URI 노출 없음 (raw API 검증 완료) → 외부 VPC 에서 신규 PSC consumer endpoint 생성 불가능</li>
+      <li><span class="bul">C-04</span>정적 SA bearer token 회전 부담: 클러스터 재생성 / SA·token 재생성 시마다 SealedSecret 재봉인 + commit 사이클 발생</li>
+    </ul>
+
+    <!-- SVG 아키텍처 다이어그램 -->
+    <div class="diagram-wrap" style="margin-top:32px;">
+      <svg viewBox="0 0 860 260" style="width:100%;max-width:860px;display:block;" aria-label="ADR-023 채택 후 최종 아키텍처">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#A8A8A0"/>
+          </marker>
+          <marker id="arr-b" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#1e40af"/>
+          </marker>
+        </defs>
+
+        <!-- Hub box -->
+        <rect x="10" y="30" width="310" height="200" rx="6" fill="#EFEFEB" stroke="#0E0E0B" stroke-width="1.5"/>
+        <text x="165" y="54" text-anchor="middle" font-family="'Playfair Display',serif" font-size="13" font-weight="700" fill="#0E0E0B">Hub — vntg-nfw-infra-common</text>
+
+        <rect x="28" y="66" width="130" height="48" rx="4" fill="#fff" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="93" y="86" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#0E0E0B">ArgoCD</text>
+        <text x="93" y="101" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#6B6B64">application-controller</text>
+
+        <rect x="28" y="126" width="130" height="40" rx="4" fill="#fff" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="93" y="141" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#0E0E0B">K8s SA</text>
+        <text x="93" y="156" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#6B6B64">argocd/*</text>
+
+        <rect x="170" y="126" width="130" height="40" rx="4" fill="#DCFCE7" stroke="#BBF7D0" stroke-width="1"/>
+        <text x="235" y="141" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#166534">GCP SA</text>
+        <text x="235" y="156" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#166534">argocd-spoke-reader</text>
+
+        <!-- WI binding -->
+        <line x1="158" y1="146" x2="170" y2="146" stroke="#A8A8A0" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arr)"/>
+        <text x="164" y="139" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="8" fill="#A8A8A0">WI</text>
+
+        <!-- Hub → cross-project IAM label -->
+        <text x="165" y="198" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#6B6B64">cross-project</text>
+        <text x="165" y="212" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#166534">roles/container.admin</text>
+
+        <!-- Arrow 1: ArgoCD → (IAM token) → DNS endpoint -->
+        <line x1="320" y1="90" x2="420" y2="120" stroke="#1e40af" stroke-width="1.8" marker-end="url(#arr-b)"/>
+        <text x="370" y="95" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#1e40af">① argocd-k8s-auth gcp</text>
+        <text x="370" y="107" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#1e40af">단명 IAM token 자동 발급</text>
+
+        <!-- Spoke box -->
+        <rect x="420" y="30" width="300" height="200" rx="6" fill="#EFEFEB" stroke="#0E0E0B" stroke-width="1.5"/>
+        <text x="570" y="54" text-anchor="middle" font-family="'Playfair Display',serif" font-size="13" font-weight="700" fill="#0E0E0B">Spoke — vntg-nfw-services-dev</text>
+
+        <rect x="440" y="66" width="260" height="48" rx="4" fill="#DBEAFE" stroke="#93C5FD" stroke-width="1"/>
+        <text x="570" y="86" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#1e40af">DNS endpoint</text>
+        <text x="570" y="101" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#1e40af">allowExternalTraffic: true</text>
+
+        <rect x="440" y="128" width="260" height="48" rx="4" fill="#fff" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="570" y="148" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#0E0E0B">K8s API server</text>
+        <text x="570" y="163" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#6B6B64">dev-services-standard</text>
+
+        <!-- Arrow 2: DNS endpoint → K8s API -->
+        <line x1="570" y1="114" x2="570" y2="128" stroke="#A8A8A0" stroke-width="1.2" marker-end="url(#arr)"/>
+
+        <!-- Arrow 3: (HTTPS) Hub → DNS -->
+        <line x1="420" y1="145" x2="440" y2="90" stroke="#1e40af" stroke-width="1.8" marker-end="url(#arr-b)"/>
+        <text x="430" y="132" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#1e40af">② HTTPS</text>
+        <text x="430" y="144" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#6B6B64">IAM AuthN</text>
+        <text x="430" y="156" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#6B6B64">+ K8s RBAC</text>
+
+        <!-- cluster Secret 박스 -->
+        <rect x="730" y="80" width="120" height="70" rx="4" fill="#DCFCE7" stroke="#BBF7D0" stroke-width="1"/>
+        <text x="790" y="101" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#166534">cluster Secret</text>
+        <text x="790" y="116" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#166534">execProviderConfig</text>
+        <text x="790" y="130" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#A8A8A0">bearer token: 0</text>
+        <line x1="720" y1="92" x2="730" y2="100" stroke="#A8A8A0" stroke-width="1" stroke-dasharray="3,2"/>
+
+        <!-- 범례 -->
+        <text x="10" y="248" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">─── 인증 흐름 (IAM단명토큰 자동회전) &nbsp;·&nbsp; PSC/VPC-peering/Cloud-DNS 신규 작업 없음</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ── 결정 1: 인증·연결 방식 ── -->
+  <section class="doc-section" id="d1">
+    <div class="section-num">결정 1</div>
+    <h2 class="section-heading">인증·연결 — GKE DNS endpoint + Workload Identity 채택</h2>
+    <p class="section-lead">
+      5개 Option 검토 후 Option 2 (GKE DNS endpoint + Workload Identity) 를 환경(Dev/Prod) 무관 통일 채택.
+      Option 1 은 기술적으로 불가능 확정됐고, 나머지 Option 은 운영 부담 해소 측면에서 열위.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Option</th>
+            <th>방식</th>
+            <th>채택</th>
+            <th>주요 사유</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Option 1</strong></td>
+            <td>PSC forwarding rule + bearer token (Autopilot 패턴 재현)</td>
+            <td><span class="tag-reject">불가</span></td>
+            <td>Standard 1.32+ 에서 ServiceAttachment URI 미노출 → 기술적 불가능 확정</td>
+          </tr>
+          <tr>
+            <td><strong>Option 2</strong></td>
+            <td>GKE DNS endpoint + Workload Identity</td>
+            <td><span class="tag-accept">채택</span></td>
+            <td>bearer token 자체 제거, 네트워크 작업 0, 클러스터 재생성 강건</td>
+          </tr>
+          <tr>
+            <td>Option 3</td>
+            <td>GKE Connect Gateway + Fleet Membership</td>
+            <td><span class="tag-reject">보류</span></td>
+            <td>단일 spoke 에 over-engineering, Fleet 비용 추가</td>
+          </tr>
+          <tr>
+            <td>Option 4</td>
+            <td>Public endpoint + dev-infra NAT IP whitelist</td>
+            <td><span class="tag-reject">기각</span></td>
+            <td>트래픽 인터넷 경유 + 정적 NAT IP + bearer token 회전 잔존</td>
+          </tr>
+          <tr>
+            <td>Option 5</td>
+            <td>dev-infra-standard 를 Shared VPC 로 이주</td>
+            <td><span class="tag-reject">기각</span></td>
+            <td>network 는 immutable → 클러스터 재생성 필요, ROI 낮음</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="decision-block">
+      <div class="decision-label">채택 근거 — Option 2</div>
+      <ul class="rule-list">
+        <li><span class="bul">R-01</span><strong>Option 1 기술 불가 확정</strong> — Connectivity Test <code class="inline">PSC_ENDPOINT_ACCESSED_FROM_PEERED_NETWORK</code> / raw API 에 <code class="inline">pscServiceAttachmentUri</code> 없음 / Console hidden / 공식 문서 인용 확정</li>
+        <li><span class="bul">R-02</span><strong>bearer token 자체가 사라짐</strong> — <code class="inline">execProviderConfig: argocd-k8s-auth gcp</code> 로 GCP 가 매 호출 단명 OAuth 토큰 자동 발급, 회전 부담 0</li>
+        <li><span class="bul">R-03</span><strong>클러스터 재생성에 강함</strong> — DNS endpoint hostname 한 줄 patch + commit 만 (SealedSecret 재봉인 사이클 없음)</li>
+        <li><span class="bul">R-04</span><strong>네트워크 인프라 작업 0</strong> — PSC / VPC peering / Cloud DNS / Firewall 신규 작업 불필요</li>
+        <li><span class="bul">R-05</span><strong>보안</strong> — GCP IAM 인증 필수(anonymous 차단) + audit log 통합, IAM binding 즉시 회수 가능</li>
+      </ul>
+    </div>
+
+    <div class="decision-block">
+      <div class="decision-label">IAM 역할 — <code class="inline">roles/container.admin</code> 선택 근거</div>
+      <div class="decision-body">
+        GKE 는 IAM ∧ K8s RBAC AND 게이트 구조라 K8s RBAC 만으로는 부족하다.
+        ApplicationSet 이 sync 하는 Helm chart (<code class="inline">external-dns</code>, <code class="inline">sealed-secrets</code> 등) 가 ClusterRole·ClusterRoleBinding 을 생성하는데,
+        IAM 측에서 <code class="inline">container.clusterRoles.create</code> 권한이 필요해 <code class="inline">container.developer</code> 이하 역할로는 불가.
+        Google 공식 Connect Gateway with ArgoCD 가이드와 동일한 구성.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 결정 2: cluster Secret 평문 전환 ── -->
+  <section class="doc-section" id="d2">
+    <div class="section-num">결정 2</div>
+    <h2 class="section-heading">cluster Secret — SealedSecret → 평문 Secret 전환</h2>
+    <p class="section-lead">
+      Option 2 채택으로 cluster Secret 안에 정적 비밀이 0 이 됐다. SealedSecret 의 존재 이유(봉인)가 사라졌으므로
+      평문 git 관리로 전환하여 봉인 작업을 영구 제거한다.
+    </p>
+
+    <div class="pullquote">
+      <p>"<code class="inline">config</code> 에 <code class="inline">execProviderConfig</code> (binary 호출 명세) 만 들어있어 정적 비밀 0 — 모든 필드가 평문 공개 가능."</p>
+      <cite>ADR-023 결정 — 2026-05-08 적용</cite>
+    </div>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">AS-IS</div>
+        <div class="col-title">sealedsecret-cluster-dev-service.yaml</div>
+        <div class="col-body">
+          · SealedSecret 으로 봉인, controller 로 복호화<br>
+          · 클러스터 재생성 시 SealedSecret 재봉인 사이클<br>
+          · controller-name 혼동 / 봉인 실수 위험<br>
+          · token 재추출 → 봉인 → commit 반복
+        </div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">TO-BE</div>
+        <div class="col-title">secret-cluster-dev-service.yaml</div>
+        <div class="col-body">
+          · 정적 비밀 0 → 봉인 불필요 → 평문 git 관리<br>
+          · 클러스터 재생성 시 <code class="inline">server</code> 한 줄 patch + commit 만<br>
+          · 봉인 작업·controller 헷갈림 영구 제거<br>
+          · <code class="inline">execProviderConfig</code> 로 IAM 단명 토큰 자동 발급
+        </div>
+      </div>
+    </div>
+
+    <pre class="code"># secret-cluster-dev-service.yaml (평문, 정적 비밀 없음)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cluster-dev-service
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: cluster
+stringData:
+  name: dev-services-standard
+  server: https://&lt;dns-endpoint-hostname&gt;    # 클러스터 재생성 시 이 한 줄만 patch
+  config: |
+    {
+      "execProviderConfig": {
+        "command": "argocd-k8s-auth",
+        "args": ["gcp"],
+        "apiVersion": "client.authentication.k8s.io/v1beta1"
+      },
+      "tlsClientConfig": { "insecure": false, "caData": "..." }
+    }</pre>
+  </section>
+
+  <!-- ── 결과 및 영향 ── -->
+  <section class="doc-section" id="consequences">
+    <div class="section-num">결과 및 영향</div>
+    <h2 class="section-heading">긍정·부정 영향</h2>
+
+    <div class="section-sub" style="margin-bottom:12px;">✅ 긍정 영향</div>
+    <ul class="rule-list">
+      <li><span class="bul">✅</span><strong>운영자 토큰 회전 부담 영구 해소</strong> — bearer token 자체 부재, GCP 가 단명 IAM 토큰 자동 회전</li>
+      <li><span class="bul">✅</span><strong>봉인 작업 영구 제거</strong> — cluster Secret 정적 비밀 0, SealedSecret 불필요. 클러스터 재생성 시 <code class="inline">server</code> 한 줄 patch + commit 만</li>
+      <li><span class="bul">✅</span><strong>네트워크 인프라 작업 0</strong> — PSC / Cloud DNS / VPC peering / Firewall 신규 설정 불필요</li>
+      <li><span class="bul">✅</span><strong>신규 spoke 클러스터 확장에 강함</strong> — <code class="inline">allowExternalTraffic: true</code> + IAM <code class="inline">_member</code> 1줄로 동일 패턴 즉시 복제</li>
+      <li><span class="bul">✅</span><strong>보안 회수성 향상</strong> — IAM binding 즉시 회수 + GCP audit log 통합</li>
+    </ul>
+
+    <div class="section-sub" style="margin-top:24px; margin-bottom:12px;">❌ 부정 영향 / 주의사항</div>
+    <ul class="rule-list">
+      <li><span class="bul">❌</span><strong>DNS endpoint 인터넷 표면</strong> — GCP IAM 인증 필수라 anonymous 차단되나, compliance / audit 검토 필요 시 별도 정리</li>
+      <li><span class="bul">❌</span><strong>Workload Identity 의존</strong> — ArgoCD upgrade 시 SA annotation 보존 검증 필요</li>
+      <li><span class="bul">❌</span><strong>argocd-k8s-auth binary</strong> — ArgoCD image 버전별 내장 여부 확인 필요</li>
+    </ul>
+  </section>
+
+  <!-- ── 변경 로그 ── -->
+  <section class="doc-section" id="changelog">
+    <div class="section-num">변경 로그</div>
+    <h2 class="section-heading">결정 변경 이력</h2>
+    <div class="changelog">
+      <div class="cl-item">
+        <div class="cl-date">2026-04-27</div>
+        <div class="cl-body">초안 작성 (Proposed) — <code class="inline">feature/argocd-dev-infra-bootstrap</code></div>
+      </div>
+      <div class="cl-item">
+        <div class="cl-date">2026-04-27</div>
+        <div class="cl-body"><strong>1차 결정</strong> — Option 1 (PSC 재현) 채택 → Accepted</div>
+      </div>
+      <div class="cl-item">
+        <div class="cl-date">2026-04-27</div>
+        <div class="cl-body"><strong>결정 변경</strong> — Option 1 기술 검증 결과 Standard 1.32+ 에서 ServiceAttachment URI 미노출로 PSC consumer endpoint 신규 생성 불가능 확정 (Connectivity Test / raw API / Cloud Logging / service-attachments list 교차 검증) → <strong>Option 2 (DNS endpoint + Workload Identity) 채택</strong></div>
+      </div>
+      <div class="cl-item">
+        <div class="cl-date">2026-05-08</div>
+        <div class="cl-body"><strong>cluster Secret 평문 전환</strong> — ADR-023 채택으로 Secret 안 정적 비밀 0 확정 (execProviderConfig 만, 매 호출 GCP 단명 OAuth 토큰 자동 발급) → SealedSecret → 평문 Secret 전환. 매니페스트: <code class="inline">sealedsecret-cluster-dev-service.yaml</code> → <code class="inline">secret-cluster-dev-service.yaml</code></div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page-body -->
+
+<!-- FOOTER -->
+<footer>
+  <span>ADR-023 · cross-VPC ArgoCD 인증·연결 &nbsp;·&nbsp; Global</span>
+  <span>
+    <a href="https://github.com/VntgCorp/RND-INFRA/pull/155" target="_blank" rel="noopener">PR #155</a>
+    &nbsp;·&nbsp; Accepted · 2026-04-27 · 담당: 조형준
+  </span>
+</footer>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="WTHTCW9" src="/assets/js/page-footer.js"></script>
+</body>
+</html>

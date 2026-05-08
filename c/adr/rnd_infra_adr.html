@@ -217,8 +217,8 @@
   <p class="lead-desc">온프레미스(IDC) 및 GCP 하이브리드 인프라 구축에 관한 중요 기술적 의사결정을 체계적으로 기록하고 추적하는 문서 모음. IDC K8s 구축부터 GCP 설계까지 인프라 전반의 ADR을 포함합니다.</p>
   <div class="lead-stats">
     <div class="stat"><span class="stat-num">8</span><span class="stat-label">IDC ADR</span></div>
-    <div class="stat"><span class="stat-num">16</span><span class="stat-label">Global ADR</span></div>
-    <div class="stat"><span class="stat-num">16</span><span class="stat-label">Accepted</span></div>
+    <div class="stat"><span class="stat-num">17</span><span class="stat-label">Global ADR</span></div>
+    <div class="stat"><span class="stat-num">17</span><span class="stat-label">Accepted</span></div>
     <div class="stat"><span class="stat-num">8</span><span class="stat-label">Proposed</span></div>
   </div>
 </section>
@@ -1713,6 +1713,61 @@
                 GitHub에서 원문 보기
               </a>
               <a class="gh-link" href="/gemini_html/adr_017_grafana_resource_management.html" style="margin-left:12px;">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3H7.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1z"/></svg>
+                상세 페이지 보기
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Global ADR-023 -->
+      <div class="adr-item">
+        <button class="adr-trigger" aria-expanded="false" aria-controls="panel-g023" onclick="toggleAdr(this)">
+          <div class="adr-num">ADR-023</div>
+          <div class="adr-trigger-body">
+            <div class="adr-title">dev-infra ArgoCD → dev-service cross-VPC 인증·연결 방식 선택</div>
+            <div class="adr-meta">
+              <span class="badge badge-accepted"><span class="badge-dot"></span>Accepted</span>
+              <span class="badge-meta">PR #155 · 2026-04-27 · 조형준</span>
+            </div>
+          </div>
+          <div class="adr-trigger-right">
+            <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+          </div>
+        </button>
+        <div class="adr-panel" id="panel-g023" aria-hidden="true">
+          <div class="adr-panel-inner">
+            <div class="panel-grid">
+              <div class="panel-block">
+                <div class="panel-block-label">Context — 맥락</div>
+                <div class="panel-block-body">
+                  <ul>
+                    <li>ADR-019: dev-infra ArgoCD 가 dev-service 클러스터를 원격 관리(Hub-Spoke) — dev-service 측 ArgoCD 미설치</li>
+                    <li>기존 Autopilot 환경의 PSC consumer endpoint + bearer token 패턴이 GKE Standard 1.32+ 에서 재현 불가 (ServiceAttachment URI 미노출, Connectivity Test 확정)</li>
+                    <li>정적 SA bearer token 회전 부담: 클러스터 재생성 시 SealedSecret 재봉인 + commit 사이클 발생</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="panel-block">
+                <div class="panel-block-label">Decision — 결정 내용</div>
+                <div class="panel-block-body">
+                  <p><strong>Option 2 — GKE DNS endpoint (<code>allowExternalTraffic: true</code>) + Workload Identity 채택</strong></p>
+                  <ul style="margin-top:8px;">
+                    <li>Hub K8s SA → GCP SA (<code>argocd-spoke-reader</code>) → cross-project <code>roles/container.admin</code></li>
+                    <li>cluster Secret: <code>execProviderConfig: argocd-k8s-auth gcp</code> — 매 호출 GCP 단명 IAM 토큰 자동 발급, bearer token 부재</li>
+                    <li>SealedSecret → 평문 Secret 전환 (정적 비밀 0, 봉인 작업 영구 제거)</li>
+                    <li>네트워크 인프라 신규 작업 0 — PSC / VPC peering / Cloud DNS 변경 불필요</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="panel-footer">
+              <a class="gh-link" href="https://github.com/VntgCorp/RND-INFRA/pull/155" target="_blank" rel="noopener">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
+                GitHub PR #155 보기
+              </a>
+              <a class="gh-link" href="/c/adr/adr_023_argocd_hub_spoke_cross_vpc_authn.html" style="margin-left:12px;">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3H7.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1z"/></svg>
                 상세 페이지 보기
               </a>
