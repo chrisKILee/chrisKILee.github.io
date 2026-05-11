@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Karpathy AI 개발 방법론</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* Topbar — sticky below page-header.js (48px) */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 48px;
+      z-index: 90;
+    }
+    .topbar-brand {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .topbar-meta {
+      font-size: 12px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+    }
+
+    /* Hero */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 28px 60px;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-bdr);
+      color: var(--accent);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      max-width: 740px;
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--accent);
+    }
+    .hero-desc {
+      font-size: 17px;
+      color: var(--ink-3);
+      max-width: 620px;
+      line-height: 1.75;
+      margin-bottom: 36px;
+    }
+    .hero-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-2);
+    }
+
+    /* Section */
+    .section {
+      padding: 60px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      max-width: 80px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .section-desc {
+      font-size: 15px;
+      color: var(--ink-3);
+      max-width: 640px;
+      margin-bottom: 36px;
+      line-height: 1.7;
+    }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .cards-4 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card__header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card__icon { font-size: 22px; margin-bottom: 8px; }
+    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__body { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .card__tag {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--ink-4);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .card__quote {
+      font-size: 13px;
+      font-style: italic;
+      color: var(--accent);
+      padding: 10px 20px 16px;
+      border-top: 1px solid var(--border);
+      line-height: 1.6;
+    }
+
+    /* Principle cards with accent top border */
+    .card.principle { border-top: 3px solid var(--accent); }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; line-height: 1.6; }
+    tr:hover td { background: var(--bg); }
+
+    /* Callouts */
+    .callout {
+      border-left: 3px solid;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+    /* Code block */
+    .code-wrap {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+    .code-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-2);
+    }
+    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body {
+      padding: 18px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink-2);
+    }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--surface);
+      margin-top: 2px;
+    }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* Tag / Badge */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+    .tag.red { background: #fef2f2; color: #b91c1c; }
+
+    /* SVG Flow Diagram */
+    .diagram-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 32px 24px;
+      margin: 24px 0;
+      overflow-x: auto;
+    }
+
+    /* Stat cards */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 36px; }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px 20px;
+      text-align: center;
+    }
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--ink-3);
+      margin-top: 6px;
+    }
+
+    /* Profile block */
+    .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .profile-item {
+      display: flex;
+      gap: 14px;
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .profile-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-2);
+      border-radius: 8px;
+    }
+    .profile-name { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+    .profile-desc { font-size: 13px; color: var(--ink-3); line-height: 1.5; }
+
+    /* Footer */
+    footer {
+      padding: 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--ink-4);
+    }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+      .topbar { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <span class="topbar-brand">Karpathy AI 개발 방법론</span>
+  <span class="topbar-meta">2026-05-11</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">⭐ GitHub 10만+ Star</div>
+    <h1>Karpathy AI 개발 방법론<br><em>65줄로 Claude 성능 높이기</em></h1>
+    <p class="hero-desc">
+      전 Tesla AI 디렉터이자 OpenAI 공동 창립 멤버인 Andrej Karpathy의 AI 코딩 철학을
+      한 개발자가 65줄의 CLAUDE.md 파일로 정리해 공유했습니다.
+      4가지 원칙만으로 AI의 불필요한 과잉 코딩, 무언의 가정, 부작용 문제를 해결합니다.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🧠 Think Before Coding</span>
+      <span class="chip">✂️ Simplicity First</span>
+      <span class="chip">🔬 Surgical Changes</span>
+      <span class="chip">🎯 Goal-Driven Execution</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 01: 수치 + 배경 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 배경</div>
+    <h2 class="section-title">Andrej Karpathy는 누구인가</h2>
+    <p class="section-desc">
+      AI 분야 최고 권위자 중 한 명으로, 현재 코딩 작업의 대부분을 AI 에이전트에 위임하며
+      실전에서 발견한 반복 문제들을 공개했습니다.
+    </p>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-num">10만+</div>
+        <div class="stat-label">GitHub Star (forrestchang/andrej-karpathy-skills)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">65줄</div>
+        <div class="stat-label">CLAUDE.md 파일 크기</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">4가지</div>
+        <div class="stat-label">핵심 AI 행동 원칙</div>
+      </div>
+    </div>
+
+    <div class="profile-grid">
+      <div class="profile-item">
+        <div class="profile-icon">🎓</div>
+        <div>
+          <div class="profile-name">학력</div>
+          <div class="profile-desc">스탠포드 대학교 박사 (컴퓨터 비전·이미지 캡셔닝, 지도교수: Fei-Fei Li)</div>
+        </div>
+      </div>
+      <div class="profile-item">
+        <div class="profile-icon">🚀</div>
+        <div>
+          <div class="profile-name">OpenAI 창립 멤버 (2015)</div>
+          <div class="profile-desc">AI 연구과학자로 참여. 2023년 재합류.</div>
+        </div>
+      </div>
+      <div class="profile-item">
+        <div class="profile-icon">🚗</div>
+        <div>
+          <div class="profile-name">Tesla AI Director (2017–2022)</div>
+          <div class="profile-desc">Autopilot 컴퓨터 비전 팀 총괄. Elon Musk 직속 보고.</div>
+        </div>
+      </div>
+      <div class="profile-item">
+        <div class="profile-icon">🏫</div>
+        <div>
+          <div class="profile-name">Eureka Labs 창업 (2024)</div>
+          <div class="profile-desc">AI 교육 플랫폼 창업. Stanford CS231n 강사로도 활동.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout info" style="margin-top:28px;">
+      <div class="callout-title">이 레포가 만들어진 이유</div>
+      Karpathy는 코딩 작업의 상당 부분을 AI 에이전트에 위임하면서,
+      <strong>3가지 반복되는 문제</strong>를 발견했습니다: 무언의 가정, 과잉 엔지니어링, 의도치 않은 부작용.
+      이를 해결하기 위한 행동 지침을 문서화한 것이 이 CLAUDE.md의 출발점입니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 02: 4가지 핵심 원칙 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 핵심 원칙</div>
+    <h2 class="section-title">4가지 행동 원칙 (원문 기반)</h2>
+    <p class="section-desc">
+      CLAUDE.md에 명시된 4가지 원칙입니다. 각 원칙에는 원문 핵심 문장이 함께 수록되어 있습니다.
+    </p>
+
+    <div class="cards cards-4">
+      <div class="card principle">
+        <div class="card__header">
+          <div class="card__icon">🧠</div>
+          <div class="card__title">Think Before Coding<br><span style="font-weight:400;color:var(--ink-3);font-size:13px;">코딩 전 먼저 생각하기</span></div>
+        </div>
+        <div class="card__body">
+          <p>가정을 명시적으로 진술하라. 불확실하면 묻거나 여러 선택지를 제시하라. 침묵 속에 가정하지 말고 혼동과 트레이드오프를 수면 위로 드러내라.</p>
+        </div>
+        <div class="card__quote">"State your assumptions explicitly. If uncertain, ask."</div>
+        <div class="card__footer">
+          <span class="card__tag">모호성 해소</span>
+        </div>
+      </div>
+
+      <div class="card principle">
+        <div class="card__header">
+          <div class="card__icon">✂️</div>
+          <div class="card__title">Simplicity First<br><span style="font-weight:400;color:var(--ink-3);font-size:13px;">단순함 우선</span></div>
+        </div>
+        <div class="card__body">
+          <p>문제를 해결하는 최소한의 코드만 작성하라. 요청하지 않은 기능 추가, 섣부른 추상화, 불필요한 에러 핸들링을 금지한다. 200줄을 50줄로 줄일 수 있다면 그렇게 하라.</p>
+        </div>
+        <div class="card__quote">"Minimum code that solves the problem. Nothing speculative."</div>
+        <div class="card__footer">
+          <span class="card__tag">과잉 엔지니어링 방지</span>
+        </div>
+      </div>
+
+      <div class="card principle">
+        <div class="card__header">
+          <div class="card__icon">🔬</div>
+          <div class="card__title">Surgical Changes<br><span style="font-weight:400;color:var(--ink-3);font-size:13px;">정밀한 변경</span></div>
+        </div>
+        <div class="card__body">
+          <p>반드시 필요한 부분만 수정하라. 무관한 코드를 개선하지 말고, 자신이 만든 변경이 불필요하게 만든 코드만 정리하라. 기존 스타일과 일치시켜라.</p>
+        </div>
+        <div class="card__quote">"Touch only what you must. Clean up only your own mess."</div>
+        <div class="card__footer">
+          <span class="card__tag">부작용 방지</span>
+        </div>
+      </div>
+
+      <div class="card principle">
+        <div class="card__header">
+          <div class="card__icon">🎯</div>
+          <div class="card__title">Goal-Driven Execution<br><span style="font-weight:400;color:var(--ink-3);font-size:13px;">목표 기반 실행</span></div>
+        </div>
+        <div class="card__body">
+          <p>요청을 검증 가능한 성공 기준으로 변환하라. 명확한 목표와 검증 단계를 먼저 정의한 후 구현한다. AI는 명확한 목표까지 반복하는 데 뛰어나다.</p>
+        </div>
+        <div class="card__quote">"Define success criteria. Loop until verified."</div>
+        <div class="card__footer">
+          <span class="card__tag">자율 반복 실행</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 03: 왜 작동하는가 (원리) -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 작동 원리</div>
+    <h2 class="section-title">왜 65줄짜리 파일이 성능을 높이는가</h2>
+    <p class="section-desc">
+      CLAUDE.md는 단순한 텍스트 파일이지만, Claude Code가 세션을 시작할 때 자동으로 읽어
+      <strong>모든 API 호출의 시스템 프롬프트에 주입</strong>됩니다.
+      규칙이 명확할수록 AI는 가정을 줄이고 의도에 맞게 동작합니다.
+    </p>
+
+    <!-- SVG Flow Diagram -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 900 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:860px;display:block;margin:0 auto;font-family:'Inter',system-ui,sans-serif;">
+        <!-- Node 1: CLAUDE.md -->
+        <rect x="10" y="48" width="140" height="64" rx="8" fill="#FAFAF8" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="80" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="#1C1C1A">📄 CLAUDE.md</text>
+        <text x="80" y="90" text-anchor="middle" font-size="11" fill="#6B6B66">프로젝트 루트</text>
+        <text x="80" y="104" text-anchor="middle" font-size="11" fill="#6B6B66">65줄 규칙 파일</text>
+        <!-- Arrow 1 -->
+        <line x1="150" y1="80" x2="188" y2="80" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arrowOrange)"/>
+        <text x="169" y="72" text-anchor="middle" font-size="10" fill="#C4522A">자동 감지</text>
+
+        <!-- Node 2: Claude Code 세션 -->
+        <rect x="190" y="48" width="150" height="64" rx="8" fill="#FAFAF8" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="265" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="#1C1C1A">⚡ Claude Code</text>
+        <text x="265" y="90" text-anchor="middle" font-size="11" fill="#6B6B66">세션 시작 시</text>
+        <text x="265" y="104" text-anchor="middle" font-size="11" fill="#6B6B66">파일 내용 로드</text>
+        <!-- Arrow 2 -->
+        <line x1="340" y1="80" x2="378" y2="80" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arrowOrange)"/>
+        <text x="359" y="72" text-anchor="middle" font-size="10" fill="#C4522A">주입</text>
+
+        <!-- Node 3: System Prompt -->
+        <rect x="380" y="48" width="160" height="64" rx="8" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="460" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="#C4522A">📥 System Prompt</text>
+        <text x="460" y="90" text-anchor="middle" font-size="11" fill="#7c2d12">API 호출 시마다</text>
+        <text x="460" y="104" text-anchor="middle" font-size="11" fill="#7c2d12">규칙 함께 전송</text>
+        <!-- Arrow 3 -->
+        <line x1="540" y1="80" x2="578" y2="80" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arrowOrange)"/>
+        <text x="559" y="72" text-anchor="middle" font-size="10" fill="#C4522A">적용</text>
+
+        <!-- Node 4: AI 응답 -->
+        <rect x="580" y="48" width="150" height="64" rx="8" fill="#F0FDF4" stroke="#bbf7d0" stroke-width="1.5"/>
+        <text x="655" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="#1A7F5A">✅ 규칙 준수</text>
+        <text x="655" y="90" text-anchor="middle" font-size="11" fill="#064e3b">4원칙 기반</text>
+        <text x="655" y="104" text-anchor="middle" font-size="11" fill="#064e3b">코드 생성</text>
+        <!-- Arrow 4 -->
+        <line x1="730" y1="80" x2="768" y2="80" stroke="#1A7F5A" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+
+        <!-- Node 5: 결과 -->
+        <rect x="770" y="48" width="120" height="64" rx="8" fill="#FAFAF8" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="830" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="#1C1C1A">🚀 결과물</text>
+        <text x="830" y="90" text-anchor="middle" font-size="11" fill="#6B6B66">불필요한 변경</text>
+        <text x="830" y="104" text-anchor="middle" font-size="11" fill="#6B6B66">없는 정밀 코드</text>
+
+        <!-- Markers -->
+        <defs>
+          <marker id="arrowOrange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#C4522A"/>
+          </marker>
+          <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#1A7F5A"/>
+          </marker>
+        </defs>
+      </svg>
+      <p style="text-align:center;font-size:12px;color:var(--ink-4);margin-top:16px;">
+        CLAUDE.md → 시스템 프롬프트 주입 → 전 세션 규칙 적용 흐름
+      </p>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-title">핵심 인사이트: "Harness Engineering"</div>
+      AI 모델 자체를 개선하는 것이 아니라, <strong>AI를 어떻게 조종하는가</strong>에 초점을 맞추는 패러다임 전환입니다.
+      명확한 제약이 오히려 성능을 끌어올립니다 — 모호한 자유보다 잘 정의된 한계가 더 좋은 결과를 만듭니다.
+    </div>
+
+    <div class="callout accent" style="margin-top:12px;">
+      <div class="callout-title">왜 짧아야 하는가?</div>
+      CLAUDE.md가 길수록 규칙 준수율이 낮아집니다.
+      <strong>200줄 이하</strong>를 권장하며, 짧고 명확한 문장이 긴 설명보다 더 잘 지켜집니다.
+      AI는 명확한 제약 조건을 선호합니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 04: 3가지 문제 vs 해결책 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 문제와 해결책</div>
+    <h2 class="section-title">AI 코딩의 3가지 반복 문제</h2>
+    <p class="section-desc">
+      Karpathy가 AI 에이전트를 실제로 사용하면서 반복적으로 마주친 문제들과, CLAUDE.md의 해결 방식입니다.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>반복 문제</th>
+            <th>증상</th>
+            <th>CLAUDE.md 해결 원칙</th>
+            <th>적용 방법</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>무언의 가정</strong><br><span class="tag gray">Silent Assumptions</span></td>
+            <td>AI가 당신의 의도를 추측하고 그대로 진행. 질문 없이 코드 완성.</td>
+            <td><span class="tag orange">Think Before Coding</span></td>
+            <td>불확실할 때 묻거나 복수 선택지 제시 — 침묵 가정 금지</td>
+          </tr>
+          <tr>
+            <td><strong>과잉 엔지니어링</strong><br><span class="tag gray">Over-Engineering</span></td>
+            <td>간단한 요청에도 복잡한 추상화, 인터페이스, 에러 핸들링을 추가.</td>
+            <td><span class="tag orange">Simplicity First</span></td>
+            <td>요청한 것만 최소한으로 — 추측성 기능 추가 금지</td>
+          </tr>
+          <tr>
+            <td><strong>의도치 않은 부작용</strong><br><span class="tag gray">Unwanted Side Effects</span></td>
+            <td>관련 없는 코드도 수정·삭제·리팩토링. 원하지 않은 변경이 동반됨.</td>
+            <td><span class="tag orange">Surgical Changes</span></td>
+            <td>요청과 직접 관련된 코드만 수정 — 무관한 정리 금지</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info" style="margin-top:24px;">
+      <div class="callout-title">성공 지표 (원문 기준)</div>
+      CLAUDE.md 적용 후 기대할 수 있는 변화:
+      불필요한 diff 변경 감소 · 과잉 복잡화로 인한 재작업 감소 · 실수 후가 아닌 <strong>코드 작성 전에</strong> 명확화 질문이 선행됨.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 05: 원본 CLAUDE.md 내용 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 원본 내용</div>
+    <h2 class="section-title">CLAUDE.md 핵심 규칙 (원문)</h2>
+    <p class="section-desc">
+      GitHub에 공개된 실제 파일의 핵심 내용입니다. 4개 섹션으로 구성되며, 각 섹션은 문제 상황과 해결 목표를 명시합니다.
+    </p>
+
+    <div class="code-wrap">
+      <div class="code-bar">
+        <div class="code-dot" style="background:#ef4444;"></div>
+        <div class="code-dot" style="background:#f59e0b;"></div>
+        <div class="code-dot" style="background:#22c55e;"></div>
+        <span class="code-lang">CLAUDE.md (markdown)</span>
+      </div>
+      <pre class="code-body">## Think Before Coding
+
+When starting a task:
+- State your assumptions explicitly
+- If uncertain about intent, ask clarifying questions or present
+  multiple options before implementing
+- Surface confusion and tradeoffs rather than making silent decisions
+
+Goal: Resolve ambiguity before writing code, not after making mistakes.
+
+---
+
+## Simplicity First
+
+Write the minimum code that solves the problem:
+- No unrequested features
+- No speculative abstractions
+- No unnecessary error handling for cases that can't happen
+- If you can solve it in 50 lines instead of 200, do it
+
+Goal: Prevent over-engineering.
+
+---
+
+## Surgical Changes
+
+When editing existing code:
+- Only modify what's directly required by the request
+- Don't "improve" unrelated code you notice
+- Don't remove existing dead code unless your changes made it obsolete
+- Match the current code style, even if imperfect
+
+Goal: Prevent unintended side effects.
+
+---
+
+## Goal-Driven Execution
+
+Before implementing:
+- Transform the request into verifiable success criteria
+- Define what "done" looks like concretely
+- Provide a test loop so the model can iterate autonomously
+
+Goal: LLMs excel at iterating toward specific targets.
+Clear goals = more effective independent execution.
+
+---
+
+Note: Apply judgment to trivial tasks.
+Speed vs caution — the tradeoff is real.
+These rules trade speed for fewer rewrites.</pre>
+    </div>
+
+    <div class="callout tip" style="margin-top:4px;">
+      <div class="callout-title">원본 소스</div>
+      <a href="https://github.com/forrestchang/andrej-karpathy-skills" target="_blank" rel="noopener" style="color:var(--success);text-decoration:underline;">
+        github.com/forrestchang/andrej-karpathy-skills
+      </a> — forrestchang이 Karpathy의 AI 활용 철학을 정리한 레포지토리입니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 06: 적용 방법 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">06 적용 방법</div>
+    <h2 class="section-title">우리 프로젝트에 적용하기</h2>
+    <p class="section-desc">
+      Claude Code 또는 Cursor IDE를 사용 중이라면 간단히 적용할 수 있습니다.
+    </p>
+
+    <div class="callout accent">
+      <div class="callout-title">이미 적용 중입니다</div>
+      이 사이트(page.chrisnolja.dev)의 Claude 세션은 CLAUDE.md 기반 규칙으로 운영 중입니다.
+      위 4원칙은 현재 CLAUDE.md에도 녹아 있습니다.
+    </div>
+
+    <div class="steps" style="margin-top:28px;">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">GitHub에서 파일 확인</div>
+          <div class="step-body">
+            원본 레포를 방문해 CLAUDE.md 파일 내용을 확인합니다.
+            <a href="https://github.com/forrestchang/andrej-karpathy-skills" target="_blank" rel="noopener" style="color:var(--accent);">forrestchang/andrej-karpathy-skills</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">방법 A — 프로젝트 단위 적용 (권장)</div>
+          <div class="step-body">프로젝트 루트에 CLAUDE.md 파일을 생성합니다. git에 커밋하면 팀원 전체가 동일한 규칙을 공유합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body"># 프로젝트 루트에 CLAUDE.md 생성
+curl -o CLAUDE.md https://raw.githubusercontent.com/forrestchang/andrej-karpathy-skills/main/CLAUDE.md
+
+# git에 추가
+git add CLAUDE.md
+git commit -m "chore: add Karpathy AI skills CLAUDE.md"</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">방법 B — Claude Code 플러그인 마켓플레이스</div>
+          <div class="step-body">
+            Claude Code 마켓플레이스에서 "Andrej Karpathy Skills"를 검색해 설치하면 모든 프로젝트에 자동 적용됩니다.
+          </div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body"># Claude Code CLI에서 플러그인 설치 (예시)
+claude mcp add andrej-karpathy-skills</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title">방법 C — Cursor IDE 적용</div>
+          <div class="step-body">Cursor 사용자는 .cursor/ 디렉토리 하위에 규칙 파일을 배치합니다. 레포에 Cursor용 변형 파일이 별도 제공됩니다.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div>
+          <div class="step-title">프로젝트에 맞게 커스터마이징</div>
+          <div class="step-body">
+            기본 4원칙 위에 프로젝트 특화 규칙을 추가합니다.
+            예: 팀 컨벤션, 기술 스택 제약, 특정 패턴 금지 등.
+            단, <strong>200줄 이하</strong>를 유지해야 준수율이 높게 유지됩니다.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 비교 요약 -->
+    <div style="margin-top:40px;">
+      <h3 style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;margin-bottom:16px;">CLAUDE.md 적용 전후 비교</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th>적용 전</th>
+              <th>적용 후</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>코드 변경 범위</strong></td>
+              <td><span class="tag red">요청 외 코드도 수정</span></td>
+              <td><span class="tag green">요청 범위만 정밀 수정</span></td>
+            </tr>
+            <tr>
+              <td><strong>모호한 요청 처리</strong></td>
+              <td><span class="tag red">추측하고 진행</span></td>
+              <td><span class="tag green">질문 먼저, 구현 나중</span></td>
+            </tr>
+            <tr>
+              <td><strong>코드 복잡도</strong></td>
+              <td><span class="tag red">과잉 추상화 경향</span></td>
+              <td><span class="tag green">최소 코드로 해결</span></td>
+            </tr>
+            <tr>
+              <td><strong>재작업 빈도</strong></td>
+              <td><span class="tag red">높음 (의도와 다른 결과)</span></td>
+              <td><span class="tag green">낮음 (명확화 후 실행)</span></td>
+            </tr>
+            <tr>
+              <td><strong>팀 공유</strong></td>
+              <td><span class="tag gray">개인 프롬프트 파편화</span></td>
+              <td><span class="tag green">git으로 버전 관리·공유</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>Karpathy AI 개발 방법론 — page.chrisnolja.dev</span>
+  <span>
+    <a href="https://github.com/forrestchang/andrej-karpathy-skills" target="_blank" rel="noopener">GitHub 원본</a>
+    &nbsp;·&nbsp; 2026-05-11
+  </span>
+</footer>
+
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="Y2JWRZ6" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
