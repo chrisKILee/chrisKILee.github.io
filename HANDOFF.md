@@ -110,7 +110,7 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업" 이어서 작업해줘.
 
 - 정적 GitHub Pages — 실행 서버 없음
 - 배포 URL: `https://page.chrisnolja.dev`
-- 로컬 커밋 완료, **push 미완료** (1f2f41e 포함 push 필요)
+- 모든 커밋 push 완료 (master 최신: 67d3eaa)
 - 테스트: `cd /home/chris/git/chrisKILee.github.io && npm test`
 
 ---
