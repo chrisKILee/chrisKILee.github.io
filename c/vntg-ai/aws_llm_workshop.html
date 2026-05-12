@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AWS LLM 에이전트 워크숍 후기</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:     #0E0E0B;
+      --ink-2:   #3A3A36;
+      --ink-3:   #6B6B64;
+      --ink-4:   #A8A8A0;
+      --paper:   #F7F7F4;
+      --paper-2: #EFEFEB;
+      --white:   #FFFFFF;
+      --rule:    #D8D8D0;
+      --accent:  #0E0E0B;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+      padding-top: 48px;
+    }
+
+    /* ── Masthead ── */
+    .masthead {
+      position: sticky;
+      top: 48px;
+      z-index: 50;
+      background: var(--paper);
+      border-bottom: 3px solid var(--ink);
+      padding: 20px 40px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .masthead-name {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .masthead-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-4);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── Lead / Hero ── */
+    .lead {
+      border-bottom: 1px solid var(--rule);
+      padding: 80px 40px 64px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .lead-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .lead-eyebrow::before { content: '//'; color: var(--ink-4); }
+    .lead h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 6vw, 4.8rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      margin-bottom: 28px;
+      max-width: 860px;
+    }
+    .lead h1 em { font-style: italic; font-weight: 400; }
+    .lead-deck {
+      font-size: 18px;
+      color: var(--ink-2);
+      max-width: 640px;
+      line-height: 1.7;
+      border-left: 3px solid var(--ink);
+      padding-left: 20px;
+      margin-bottom: 40px;
+    }
+    .lead-byline {
+      font-size: 13px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .lead-byline span::before { content: '— '; }
+
+    /* ── Page body ── */
+    .page-body { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+
+    /* ── Section ── */
+    .doc-section { padding: 56px 0; border-bottom: 1px solid var(--rule); }
+    .doc-section:last-child { border-bottom: none; }
+
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-4);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
+    .section-lead {
+      font-size: 15px;
+      color: var(--ink-3);
+      max-width: 640px;
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+
+    /* ── Fact strip ── */
+    .facts { display: flex; gap: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+    .fact { flex: 1; padding: 24px 28px; border-right: 1px solid var(--rule); }
+    .fact:last-child { border-right: none; }
+    .fact-num {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .fact-label { font-size: 13px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    /* ── Two-col grid ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+    .col-item { padding: 28px; border: 1px solid var(--rule); }
+    .col-item + .col-item { border-left: none; }
+    @media (max-width: 680px) { .col-item + .col-item { border-left: 1px solid var(--rule); border-top: none; } }
+    .col-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 10px; font-family: var(--font-mono); }
+    .col-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
+    .col-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* ── Three-col grid ── */
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+    @media (max-width: 768px) { .three-col { grid-template-columns: 1fr; } }
+    .three-col .col-item + .col-item { border-left: none; }
+
+    /* ── Pull quote ── */
+    .pullquote { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--rule); padding: 32px 0; margin: 40px 0; }
+    .pullquote p {
+      font-family: var(--font-display);
+      font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.45;
+      color: var(--ink);
+    }
+    .pullquote cite { display: block; margin-top: 12px; font-size: 13px; font-family: var(--font-mono); color: var(--ink-4); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { border-bottom: 2px solid var(--ink); padding: 10px 16px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-family: var(--font-mono); }
+    td { border-bottom: 1px solid var(--rule); padding: 14px 16px; font-size: 14px; color: var(--ink-2); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--paper-2); }
+
+    /* ── Method steps ── */
+    .method-list { display: flex; flex-direction: column; gap: 0; }
+    .method-item { display: flex; gap: 0; border-bottom: 1px solid var(--rule); }
+    .method-item:last-child { border-bottom: none; }
+    .method-num {
+      width: 64px;
+      flex-shrink: 0;
+      padding: 24px 0;
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--paper-2);
+      line-height: 1;
+      border-right: 1px solid var(--rule);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 28px;
+    }
+    .method-content { padding: 24px 28px; flex: 1; }
+    .method-title { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+    .method-desc { font-size: 14px; color: var(--ink-3); line-height: 1.7; }
+
+    /* ── Person card ── */
+    .person-block { padding: 28px 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 160px 1fr; gap: 32px; align-items: start; }
+    .person-block:last-child { border-bottom: none; }
+    .person-name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .person-role { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.08em; text-transform: uppercase; }
+    .person-quote { font-size: 15px; color: var(--ink-2); line-height: 1.75; }
+    .person-highlight { margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--ink); background: var(--paper-2); border-left: 3px solid var(--ink); padding: 10px 14px; }
+    @media (max-width: 640px) { .person-block { grid-template-columns: 1fr; gap: 12px; } }
+
+    /* ── Footer ── */
+    footer { border-top: 3px solid var(--ink); padding: 28px 40px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12px; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+
+    @media (max-width: 640px) {
+      .masthead, .lead, footer { padding-left: 16px; padding-right: 16px; }
+      .page-body { padding: 0 16px; }
+      .facts { flex-direction: column; }
+      .fact { border-right: none; border-bottom: 1px solid var(--rule); }
+      .fact:last-child { border-bottom: none; }
+      .method-num { width: 40px; font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <span class="masthead-name">AWS LLM 에이전트 워크숍 후기</span>
+  <span class="masthead-meta">2026-05-07 &nbsp;·&nbsp; VNTG R&D실</span>
+</header>
+
+<!-- LEAD -->
+<div class="lead">
+  <div class="lead-eyebrow">VNTG AI Study · 교육 후기</div>
+  <h1>AWS LLM 에이전트<br><em>워크숍 후기</em></h1>
+  <p class="lead-deck">
+    Datadog이 AI 에이전트를 어떻게 모니터링하고 고도화하는지,
+    그 방법론(LLM Observability)을 직접 배운 교육 내용과 팀의 인사이트를 정리합니다.
+  </p>
+  <div class="lead-byline">
+    <span>2026. 05. 07 · 서울 AWS 본사</span>
+    <span>참가: 송원용, 이수종, 박영민</span>
+    <span>정리: 박영민 (R&D실)</span>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- FACT STRIP -->
+  <div class="facts" style="margin: 40px 0;">
+    <div class="fact">
+      <div class="fact-num">4h</div>
+      <div class="fact-label">교육 시간</div>
+    </div>
+    <div class="fact">
+      <div class="fact-num">3명</div>
+      <div class="fact-label">VNTG 참가 인원</div>
+    </div>
+    <div class="fact">
+      <div class="fact-num">5가지</div>
+      <div class="fact-label">핵심 개선 방법론</div>
+    </div>
+    <div class="fact">
+      <div class="fact-num">LLM<br><span style="font-size:1.4rem;">Obs.</span></div>
+      <div class="fact-label">핵심 키워드</div>
+    </div>
+  </div>
+
+  <!-- SECTION 01: 워크숍 개요 -->
+  <section class="doc-section">
+    <div class="section-num">01</div>
+    <h2 class="section-heading">워크숍 개요</h2>
+    <p class="section-lead">
+      AWS 주관으로 진행된 LLM 에이전트 개발 워크숍. Datadog의 실제 AI 운영 노하우를 중심으로
+      MCP, RAG, AI Observability를 다루었습니다.
+    </p>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">기본 정보</div>
+        <div class="col-title">교육 일정 및 장소</div>
+        <div class="col-body">
+          <strong>일시</strong>: 2026. 05. 07 (수) 13:00 ~ 17:00<br>
+          <strong>장소</strong>: 서울 AWS 본사<br>
+          <strong>인원</strong>: 송원용, 이수종, 박영민 (VNTG R&D실)<br>
+          <strong>형식</strong>: 강의 + 실습 (핸즈온)
+        </div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">교육 목표</div>
+        <div class="col-title">주제 및 학습 목표</div>
+        <div class="col-body">
+          Chat Bot, MCP 등 AI Agent 개발 시 <strong>Datadog</strong>에서 실제 사용하는
+          유용한 기술의 인사이트 습득.<br><br>
+          단순 구현을 넘어 <strong>AI를 지속적으로 고도화하는 운영 방법론</strong>에 초점.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 02: Datadog AI 운영 구조 -->
+  <section class="doc-section">
+    <div class="section-num">02</div>
+    <h2 class="section-heading">Datadog의 AI 운영 구조</h2>
+    <p class="section-lead">
+      워크숍 주관사인 Datadog은 기업의 AI 모델과 에이전트를 모니터링·최적화하는 관제 플랫폼을 제공합니다.
+      이들의 핵심 서비스 구조는 아래와 같습니다.
+    </p>
+
+    <!-- SVG 아키텍처 다이어그램 -->
+    <svg viewBox="0 0 860 200" xmlns="http://www.w3.org/2000/svg"
+         style="width:100%; max-width:860px; display:block; margin:0 auto 40px; font-family:'JetBrains Mono',monospace;">
+
+      <!-- 배경 -->
+      <rect width="860" height="200" fill="#F7F7F4" rx="4"/>
+
+      <!-- 박스 1: 두뇌 선택 -->
+      <rect x="20" y="50" width="180" height="100" fill="#0E0E0B" rx="4"/>
+      <text x="110" y="93" fill="#F7F7F4" font-size="11" text-anchor="middle" letter-spacing="1">두뇌 선택</text>
+      <text x="110" y="112" fill="#A8A8A0" font-size="10" text-anchor="middle">AWS Bedrock</text>
+      <text x="110" y="128" fill="#A8A8A0" font-size="10" text-anchor="middle">Claude / GPT 등</text>
+
+      <!-- 화살표 1 -->
+      <line x1="200" y1="100" x2="238" y2="100" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- 박스 2: 지식+도구 -->
+      <rect x="240" y="30" width="200" height="60" fill="none" stroke="#D8D8D0" stroke-width="1.5" rx="4"/>
+      <text x="340" y="57" fill="#3A3A36" font-size="11" text-anchor="middle" letter-spacing="1">지식 연동 (RAG)</text>
+      <text x="340" y="74" fill="#6B6B64" font-size="10" text-anchor="middle">사내 암묵지 · 데이터셋</text>
+
+      <rect x="240" y="110" width="200" height="60" fill="none" stroke="#D8D8D0" stroke-width="1.5" rx="4"/>
+      <text x="340" y="137" fill="#3A3A36" font-size="11" text-anchor="middle" letter-spacing="1">도구 연동 (MCP)</text>
+      <text x="340" y="154" fill="#6B6B64" font-size="10" text-anchor="middle">사내 API · DB 직접 실행</text>
+
+      <!-- 화살표 2 -->
+      <line x1="440" y1="60" x2="478" y2="90" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="440" y1="140" x2="478" y2="110" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- 박스 3: AI Agent -->
+      <rect x="480" y="60" width="140" height="80" fill="#EFEFEB" stroke="#D8D8D0" stroke-width="1.5" rx="4"/>
+      <text x="550" y="95" fill="#0E0E0B" font-size="12" text-anchor="middle" font-weight="bold">AI Agent</text>
+      <text x="550" y="113" fill="#6B6B64" font-size="10" text-anchor="middle">자율 실행 + 응답</text>
+
+      <!-- 화살표 3 -->
+      <line x1="620" y1="100" x2="658" y2="100" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- 박스 4: Observability -->
+      <rect x="660" y="50" width="180" height="100" fill="none" stroke="#0E0E0B" stroke-width="2" rx="4"/>
+      <text x="750" y="90" fill="#0E0E0B" font-size="11" text-anchor="middle" letter-spacing="1" font-weight="bold">관제 센터</text>
+      <text x="750" y="107" fill="#3A3A36" font-size="10" text-anchor="middle">Observability</text>
+      <text x="750" y="123" fill="#6B6B64" font-size="10" text-anchor="middle">로그 · 평가 · 개선</text>
+
+      <!-- 피드백 루프 화살표 -->
+      <path d="M750 50 Q750 15 550 15 Q350 15 110 50" fill="none" stroke="#0E0E0B" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr2)"/>
+      <text x="430" y="11" fill="#6B6B64" font-size="9" text-anchor="middle">피드백 루프 (지속적 개선)</text>
+
+      <defs>
+        <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#D8D8D0"/>
+        </marker>
+        <marker id="arr2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#0E0E0B"/>
+        </marker>
+      </defs>
+    </svg>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">핵심 철학</div>
+        <div class="col-title">Human-in-the-loop 필수</div>
+        <div class="col-body">
+          워크숍에서 나온 핵심 답변: 아무리 훌륭한 AI 시스템도
+          <strong>사용자·관리자가 직접 답변을 평가하고 점수를 매기는
+          교정 단계</strong>는 무조건 필수라는 것.
+          할루시네이션을 0%로 만드는 마법 같은 시스템은 존재하지 않는다.
+        </div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">VNTG 적용 포인트</div>
+        <div class="col-title">우리만의 시스템으로 내재화</div>
+        <div class="col-body">
+          Datadog 플랫폼을 그대로 도입하지 않아도,
+          <strong>모니터링 → 평가(Evaluation) → 지속적 개선</strong>이라는
+          방법론(뼈대)만 우리 환경에 접목하면 외부 툴 없이도
+          수준 높은 AI 서비스 구축이 가능하다.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 03: 5가지 핵심 방법론 -->
+  <section class="doc-section">
+    <div class="section-num">03</div>
+    <h2 class="section-heading">5가지 핵심 개선 방법론</h2>
+    <p class="section-lead">
+      AI 에이전트를 '점점 더 완벽한 에이스 직원'으로 성장시키기 위한 구체적 실행 방법론.
+      수집된 로그와 업무 일지를 바탕으로 프롬프트를 개선하는 피드백 루프가 핵심입니다.
+    </p>
+
+    <div class="method-list">
+      <div class="method-item">
+        <div class="method-num">①</div>
+        <div class="method-content">
+          <div class="method-title">토큰 및 비용 최적화 관리</div>
+          <div class="method-desc">
+            특정 한도를 초과하는 프롬프트를 오류 로그로 잡아냅니다.
+            '토큰 제한 에러(Token Limit Error)'를 분석해 프롬프트를 간결하게 수정하여
+            <strong>운영 비용을 최적화</strong>합니다.
+          </div>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-num">②</div>
+        <div class="method-content">
+          <div class="method-title">할루시네이션(환각) 탐지 및 대응</div>
+          <div class="method-desc">
+            존재하지 않는 사내 규정이나 데이터를 사실처럼 지어내는 현상을 지속 추적합니다.
+            특정 키워드에 대해 억지로 정보를 유도하는 테스트를 진행해
+            <strong>잘못된 응답 패턴을 수집하고 프롬프트 튜닝에 반영</strong>합니다.
+          </div>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-num">③</div>
+        <div class="method-content">
+          <div class="method-title">보안 및 프롬프트 인젝션 방어</div>
+          <div class="method-desc">
+            악의적 사용자가 시스템 프롬프트를 무시하도록 유도하거나
+            민감한 정보를 탈취하려는 시도를 방어합니다.
+            <strong>방어 로직을 사전에 검증하고 세팅</strong>하는 것이 필수입니다.
+          </div>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-num">④</div>
+        <div class="method-content">
+          <div class="method-title">AI 응답 품질의 정량적 평가 (Evaluation)</div>
+          <div class="method-desc">
+            단순히 답변이 나왔는지가 아니라, <strong>0~100점 기준으로 품질을 자동 심사</strong>하는
+            체계를 구축합니다. 점수뿐 아니라 감점 사유(Reasoning)를 기록해 개선 근거를 확보합니다.
+            세부 평가 기준은 아래 섹션 04를 참조하세요.
+          </div>
+        </div>
+      </div>
+      <div class="method-item">
+        <div class="method-num">⑤</div>
+        <div class="method-content">
+          <div class="method-title">답변 실패 대응 및 최적 모델 실험</div>
+          <div class="method-desc">
+            오류 발생 시 예외 처리 방법과 대체 모델을 사전에 세팅해 안정성을 높입니다.
+            정의된 테스트 데이터셋으로 <strong>다양한 AI 모델에 동시에 질문해 가장 비용 효율적인
+            모델을 주기적으로 검증</strong>합니다.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 04: Evaluation 기준 상세 -->
+  <section class="doc-section">
+    <div class="section-num">04</div>
+    <h2 class="section-heading">AI 응답 품질 평가 기준</h2>
+    <p class="section-lead">
+      정량적 Evaluation 시스템의 핵심 — 점수 자체보다 <strong>감점 사유(Reasoning)</strong>를
+      기록하는 것이 개선 방향을 잡는 핵심입니다.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>평가 항목</th>
+            <th>배점</th>
+            <th>평가 기준</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>정책 / 사실 정확성</strong></td>
+            <td>30점</td>
+            <td>사내 정책과 모순이 없는가? 출처 기반 사실 응답인가?</td>
+          </tr>
+          <tr>
+            <td><strong>해결 완결성</strong></td>
+            <td>20점</td>
+            <td>다음 행동을 명확히 제시했는가? 미완결 답변이 아닌가?</td>
+          </tr>
+          <tr>
+            <td><strong>도구 선택 적절성</strong></td>
+            <td>20점</td>
+            <td>문서를 검색할지 API를 호출할지 판단이 적절한가?</td>
+          </tr>
+          <tr>
+            <td><strong>커뮤니케이션 품질</strong></td>
+            <td>15점</td>
+            <td>표현이 명확하고 가독성이 좋은가?</td>
+          </tr>
+          <tr>
+            <td><strong>안전성 / 준수성</strong></td>
+            <td>15점</td>
+            <td>내부 정보를 노출하지 않았는가? 인젝션 방어가 작동했는가?</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">합계</td>
+            <td style="font-weight:700;">100점</td>
+            <td style="color:var(--ink-3);">감점 사유(Reasoning) 함께 기록 필수</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 피드백 루프 흐름 SVG -->
+    <svg viewBox="0 0 700 80" xmlns="http://www.w3.org/2000/svg"
+         style="width:100%; max-width:700px; display:block; margin:32px auto 0; font-family:'JetBrains Mono',monospace;">
+      <rect width="700" height="80" fill="none"/>
+
+      <rect x="10" y="20" width="130" height="40" fill="#EFEFEB" stroke="#D8D8D0" stroke-width="1" rx="3"/>
+      <text x="75" y="44" fill="#3A3A36" font-size="10" text-anchor="middle">LLM 입출력 로그</text>
+
+      <line x1="140" y1="40" x2="168" y2="40" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#a3)"/>
+
+      <rect x="170" y="20" width="130" height="40" fill="#EFEFEB" stroke="#D8D8D0" stroke-width="1" rx="3"/>
+      <text x="235" y="44" fill="#3A3A36" font-size="10" text-anchor="middle">자동 평가 (0~100점)</text>
+
+      <line x1="300" y1="40" x2="328" y2="40" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#a3)"/>
+
+      <rect x="330" y="20" width="130" height="40" fill="#EFEFEB" stroke="#D8D8D0" stroke-width="1" rx="3"/>
+      <text x="395" y="44" fill="#3A3A36" font-size="10" text-anchor="middle">감점 사유 기록</text>
+
+      <line x1="460" y1="40" x2="488" y2="40" stroke="#D8D8D0" stroke-width="1.5" marker-end="url(#a3)"/>
+
+      <rect x="490" y="20" width="200" height="40" fill="#0E0E0B" stroke="none" rx="3"/>
+      <text x="590" y="44" fill="#F7F7F4" font-size="10" text-anchor="middle">프롬프트 개선 반영</text>
+
+      <defs>
+        <marker id="a3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#D8D8D0"/>
+        </marker>
+      </defs>
+    </svg>
+  </section>
+
+  <!-- SECTION 05: 참가자 느낀점 -->
+  <section class="doc-section">
+    <div class="section-num">05</div>
+    <h2 class="section-heading">참가자 느낀점</h2>
+    <p class="section-lead">
+      각자가 현업 관점에서 가져온 인사이트 — 실무 적용 계획까지 포함합니다.
+    </p>
+
+    <div class="person-block">
+      <div>
+        <div class="person-name">송원용</div>
+        <div class="person-role">R&D실</div>
+      </div>
+      <div>
+        <div class="person-quote">
+          세미나에서 REST API를 MCP 툴로 변환하는 과정을 실습했습니다.
+          현재 운영 중인 시스템에 당장 활용할 사내 API는 없지만,
+          대신 연동 가능한 데이터베이스가 확보되어 있다는 점에 주목했습니다.
+        </div>
+        <div class="person-highlight">
+          → MCP와 DB를 연결하면 API가 없는 환경에서도 유의미한 AI 서비스 구현 가능.
+          우리가 가진 데이터를 어떻게 AI 툴로 전환할지 구체적으로 생각해 볼 계기가 되었습니다.
+        </div>
+      </div>
+    </div>
+
+    <div class="person-block">
+      <div>
+        <div class="person-name">이수종</div>
+        <div class="person-role">R&D실</div>
+      </div>
+      <div>
+        <div class="person-quote">
+          MCP 환경을 직접 구축해보며 AI가 사내 API와 연동되어 작업을 스스로 수행하는 과정,
+          답변의 수치화, 할루시네이션 및 프롬프트 인젝션 방어 설계 등 전문적인 과정을
+          직접 확인할 수 있었습니다.
+        </div>
+        <div class="person-highlight">
+          → 오라클에서 PostgreSQL로 마이그레이션 시 발생하는 에러를 자동 탐지하고
+          가이드를 제시하는 프로그램 구현 계획. 기존 데이터를 AI 툴로 전환·관리하는 방법을
+          구체적으로 고민해 볼 수 있었습니다.
+        </div>
+      </div>
+    </div>
+
+    <div class="person-block">
+      <div>
+        <div class="person-name">박영민</div>
+        <div class="person-role">R&D실</div>
+      </div>
+      <div>
+        <div class="person-quote">
+          "AI 답변에 대한 모니터링·관측·평가 시스템이 AI 품질 향상의 핵심이자,
+          우리의 중요한 데이터 자산이 될 수 있음을 알게 되었습니다."
+        </div>
+        <div class="person-highlight">
+          → MES 2팀의 암묵지 추출 프로그램 개발 시 <strong>답변 평가 시스템(Evaluation)이
+          구축될 경우</strong> AI 답변 퀄리티 향상 및 데이터 자산화가 가능하다는 확신을 얻었습니다.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 06: 팀 제언 -->
+  <section class="doc-section">
+    <div class="section-num">06</div>
+    <h2 class="section-heading">팀 제언 — LLM Observability</h2>
+
+    <div class="pullquote">
+      <p>"단순 기능 구현에 그치는 것이 아니라, LLM의 모든 입출력 로그를 기록하고(Observability),
+      자동화된 점수표(Evaluation)로 평가하며, 발견된 한계점을 지속적으로 프롬프트 개선에
+      반영하는 피드백 루프가 핵심 경쟁력이 될 것입니다."</p>
+      <cite>박영민 (R&D실) — AWS 워크숍 교육 요약 중</cite>
+    </div>
+
+    <div class="three-col" style="margin-top: 8px;">
+      <div class="col-item">
+        <div class="col-label">1단계</div>
+        <div class="col-title">Observability 구축</div>
+        <div class="col-body">LLM 입출력 로그 전수 기록. 토큰 사용량, 응답 시간, 오류 추적.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">2단계</div>
+        <div class="col-title">Evaluation 시스템</div>
+        <div class="col-body">0~100점 자동 채점 + 감점 사유 기록. Human-in-the-loop 병행.</div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">3단계</div>
+        <div class="col-title">지속적 개선 루프</div>
+        <div class="col-body">할루시네이션·보안 취약점 발견 → 프롬프트 튜닝 → 재평가 반복.</div>
+      </div>
+    </div>
+
+    <p style="margin-top:32px; font-size:15px; color:var(--ink-2); max-width:720px; line-height:1.8;">
+      최근 중요성이 커지고 있는 <strong>"하네스 엔지니어링"</strong> 또는
+      <strong>"AI를 어떻게 더 똑똑하고 안전하게 활용할 수 있을까?"</strong>에 관심 있는 분들은
+      Datadog의 방법론을 참고하시기 바랍니다.
+      외부 플랫폼 도입 없이도 우리 환경에 맞는 최고 수준의 AI 서비스를 만들어낼 수 있습니다.
+    </p>
+  </section>
+
+</div><!-- /page-body -->
+
+<!-- FOOTER -->
+<footer>
+  <span>AWS LLM 에이전트 워크숍 후기 · VNTG R&D실</span>
+  <span>2026-05-07</span>
+</footer>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="4PDRBMJ" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
