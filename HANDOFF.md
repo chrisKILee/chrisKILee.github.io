@@ -1,7 +1,7 @@
 # 작업 인계 문서
-> 생성: 2026-05-19
+> 생성: 2026-05-21
 > 브랜치: master
-> 마지막 커밋: 108c922 — fix: favicon 전수 수정 — 153개 파일에 favicon.svg 태그 추가
+> 마지막 커밋: e2b1f9b — fix: favicon.ico 교체 + 전체 HTML favicon 태그 일괄 삽입
 
 ## 새 세션 시작 방법
 ```
@@ -12,12 +12,18 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업" 이어서 작업해줘.
 
 ## 완료된 작업
 
-### 이번 세션 (2026-05-19)
+### 이번 세션 (2026-05-21)
+- [x] **favicon 근본 해결** — `/favicon.ico`를 SVG 기반 멀티사이즈(16/32/48px) ICO로 재생성
+  - 문제: 브라우저가 `<link>` 태그 없으면 `/favicon.ico` 폴백 요청 → 구버전 표시
+  - cairosvg + 바이너리 직접 작성(struct)으로 3사이즈 ICO 생성
+- [x] **사이트 전체 HTML favicon 태그 일괄 삽입** — curriculum 33개 포함 총 71개 파일
+  - `<link rel="icon" type="image/svg+xml" href="/favicon.svg">` 삽입
+  - Jekyll `layout: default` 사용 파일 3개는 `_layouts/default.html`로 자동 처리
+
+### 이전 세션 (2026-05-19)
 - [x] **favicon 전수 수정** — 153개 HTML 파일에 `favicon.svg` 태그 일괄 삽입
-  - 문제: `cto_synergy.html` 등 favicon 태그 없는 파일이 구버전 `favicon.ico` 폴백 사용
-  - 방법: Python 스크립트로 `</head>` 앞에 일괄 삽입
   - `_layouts/default.html` 구버전 `assets/images/logo.png` → `favicon.svg` 교체
-  - 제외: `_site/`, `_includes/`, `_layouts/`, `OBIGO_SPEC/` 등 (Jekyll 파셜/구버전)
+  - 제외: `_site/`, `_includes/`, `_layouts/`, `OBIGO_SPEC/` 등
 
 ### 이전 세션 (2026-05-12 ~ 05-13)
 - [x] **Claude Skills Guide 전면 리빌드** — 치트시트 정리, 아코디언 구조로 재빌드
@@ -53,6 +59,7 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업" 이어서 작업해줘.
 | `index.html` | ✅ 최신 | 메인 포털 |
 | `site.json` | ✅ 최신 | 폴더 32개+, 파일 292개+ |
 | `favicon.svg` | ✅ 최신 | P자 오렌지 로고, 사이트 전체 표준 favicon |
+| `favicon.ico` | ✅ 최신 | SVG 기반 16/32/48px ICO로 재생성 (2026-05-21) |
 | `_layouts/default.html` | ✅ 최신 | favicon.svg로 교체 완료 |
 | `claude/claude_skills_guide.html` | ✅ 최신 | 카드 전면 리빌드, 아코디언 동작 |
 | `claude-tip/agent_view_guide.html` | ✅ 최신 | `BRWVE22`, T2_Howto_Guide |
@@ -60,6 +67,7 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업" 이어서 작업해줘.
 | `c/terroir/terroir_beta_release.html` | ✅ 최신 | 5개 링크 연결 완료, Beta Release Letter "준비 중" |
 | `c/terroir/beta/index.html` | ✅ 최신 | `MB7MB67`, story-driven 목차 |
 | `c/adr/rnd_infra_adr.html` | ✅ 최신 | Global ADR 17개 |
+| `curriculum/` | ✅ 최신 | Grafana Alloy 커리큘럼 33개 파일, favicon 태그 완료 |
 | `s/travel/map.png` | ⚠️ 구버전 | 모알보알·오키나와·미야코지마 핀 없음 |
 | `gemini_html/aiworker_policy_v1.4.html` | ⚠️ 수정 필요 | 1205번 줄 `수정` 배지 스팬 잔존 |
 
@@ -67,11 +75,33 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업" 이어서 작업해줘.
 
 ## 핵심 기술 결정사항
 
-### favicon 표준 (신규)
+### favicon 표준 (완성)
 - 사이트 전체 표준: `/favicon.svg` (P자, #F97316 오렌지 + #FED7AA 연오렌지)
-- 구버전 파일: `/favicon.ico`, `/img/favicon.ico`, `/assets/images/favicon.ico` — 사용 중단
-- 신규 페이지 생성 시 `<link rel="icon" type="image/svg+xml" href="/favicon.svg">` 필수 포함
-- Jekyll 레이아웃: `_layouts/default.html`에서 이미 적용, Liquid 템플릿 파일은 별도 태그 불필요
+- `/favicon.ico` → SVG 기반 멀티사이즈 ICO로 재생성 (2026-05-21)
+  - 이유: 브라우저는 `<link>` 태그 없으면 `/favicon.ico` 자동 폴백 → 구버전 문제 근본 해결
+  - 방법: cairosvg + struct 바이너리 직접 작성 (PIL의 멀티사이즈 ICO 저장 버그 우회)
+- 구버전 파일: `/favicon.ico`(구), `/img/favicon.ico`, `/assets/images/favicon.ico` — 사용 중단
+- 신규 페이지 생성 시 `<link rel="icon" type="image/svg+xml" href="/favicon.svg">` 필수
+- Jekyll 레이아웃: `_layouts/default.html`에서 이미 적용
+
+### favicon.ico 재생성 스크립트
+```python
+import cairosvg, struct, io
+from PIL import Image
+
+def make_ico(svg_path, ico_path, sizes=[16, 32, 48]):
+    pngs = [cairosvg.svg2png(url=svg_path, output_width=s, output_height=s) for s in sizes]
+    header = struct.pack('<HHH', 0, 1, len(pngs))
+    offset = 6 + len(pngs) * 16
+    dirs = b''; images = b''
+    for size, png_data in zip(sizes, pngs):
+        dirs += struct.pack('<BBBBHHII',
+            size if size<256 else 0, size if size<256 else 0,
+            0, 0, 1, 32, len(png_data), offset)
+        images += png_data; offset += len(png_data)
+    with open(ico_path, 'wb') as f:
+        f.write(header + dirs + images)
+```
 
 ### Claude Skills Guide 카드 구조
 - 새 카드: `skill-meta`(smeta-label/val) + `wf-toggle` button(aria-expanded) + `wf-panel`(hidden) + `wf-steps` ol
@@ -82,10 +112,6 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업" 이어서 작업해줘.
 - HTML 파일 경로: `SK1LL2G/` 구버전 → `claude/claude_skills_guide.html`
 - `origin-badge` 미포함 (현재 디자인에서 제거됨)
 - 제외 목록: Power Pack 30개 + 외부 팩 18개 + 가이드라인 7개
-
-### Agent View 페이지 조사 방법
-- 공식 블로그 WebFetch로 심층 조사
-- 최소 버전 v2.1.139, Research Preview 상태 (2026-05-11 발표)
 
 ### terroir_beta_release.html toc-card 링크 처리
 - toc-card를 `<a>` 태그로 감쌀 때 `text-decoration: none; color: inherit` 필수
@@ -105,6 +131,7 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업" 이어서 작업해줘.
 - Cloudflare Access Free 플랜 불가 — 현재 GitHub Pages 직접 노출 상태
 - `terroir_beta_release.html` Beta Release Letter 카드 — 파일 생성 후 `disabled` → `<a>` 태그로 교체 필요
 - T2_Howto_Guide 템플릿 사용 시 `/templates/assets/common.css`·`common.js` 경로 확인 필수
+- 새 파일 수동 생성 시 `<link rel="icon" type="image/svg+xml" href="/favicon.svg">` 태그 필수
 
 ---
 
@@ -112,7 +139,7 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업" 이어서 작업해줘.
 
 - 정적 GitHub Pages — 실행 서버 없음
 - 배포 URL: `https://page.chrisnolja.dev`
-- 모든 커밋 push 완료 (master 최신: 108c922)
+- 커밋 완료, push 미완료 (e2b1f9b)
 - 테스트: `cd /home/chris/git/chrisKILee.github.io && npm test`
 
 ---
