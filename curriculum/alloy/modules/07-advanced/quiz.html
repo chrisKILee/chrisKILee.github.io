@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 07 — 퀴즈 | Grafana Alloy</title>
+<link rel="stylesheet" href="../../styles.css">
+
+</head>
+<body>
+<nav class="nav">
+  <a href="../../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">홈</a></li>
+    <li><a href="concept.html">개념</a></li>
+    <li><a href="practice.html">실습</a></li>
+    <li><a href="mistakes.html">실수</a></li>
+    <li><a href="quiz.html" class="active">퀴즈</a></li>
+  </ul>
+</nav>
+<div class="page-header">
+  <div class="breadcrumb"><a href="../../index.html">Alloy</a> › Module 07 › 퀴즈</div>
+  <h1>Module 07 — 퀴즈</h1><p>고급 기능 학습 내용 확인</p>
+</div>
+<div class="main">
+
+  <div class="quiz-item" id="q1">
+    <h4>Q1. Alloy 클러스터링에서 여러 인스턴스가 스크래핑 타깃을 중복 없이 분배하려면?</h4>
+    <div class="quiz-options">
+      <button class="quiz-option" onclick="selectAnswer('q1', this, false)">A. 각 인스턴스에 다른 타깃 목록 설정</button>
+      <button class="quiz-option" onclick="selectAnswer('q1', this, true)">B. prometheus.scrape에 clustering { enabled = true } 추가</button>
+      <button class="quiz-option" onclick="selectAnswer('q1', this, false)">C. 외부 로드밸런서로 타깃 분배</button>
+      <button class="quiz-option" onclick="selectAnswer('q1', this, false)">D. 수동으로 인스턴스마다 다른 설정 파일 사용</button>
+    </div>
+    <div class="quiz-explanation" id="q1-exp">
+      <code>clustering { enabled = true }</code>를 prometheus.scrape 블록에 추가하면
+      클러스터 멤버 간에 타깃이 자동으로 분배됩니다. 중복 없이 샤딩됩니다.
+    </div>
+  </div>
+
+  <div class="quiz-item" id="q2">
+    <h4>Q2. 프로덕션에서 Alloy를 트레이스 파이프라인으로 배포할 때 권장 controller type은?</h4>
+    <div class="quiz-options">
+      <button class="quiz-option" onclick="selectAnswer('q2', this, false)">A. daemonset — 모든 노드에 배포</button>
+      <button class="quiz-option" onclick="selectAnswer('q2', this, true)">B. statefulset — 클러스터링과 영구 스토리지</button>
+      <button class="quiz-option" onclick="selectAnswer('q2', this, false)">C. deployment — 무상태 배포</button>
+      <button class="quiz-option" onclick="selectAnswer('q2', this, false)">D. cronjob — 주기적 실행</button>
+    </div>
+    <div class="quiz-explanation" id="q2-exp">
+      트레이스용 Alloy는 StatefulSet으로 배포합니다. Tail-based 샘플링에는 WAL(영구 스토리지)이 필요하고,
+      클러스터링으로 피어 발견에 stable network identity(Pod 이름)가 필요하기 때문입니다.
+    </div>
+  </div>
+
+  <div class="quiz-item" id="q3">
+    <h4>Q3. remote.kubernetes.configmap 컴포넌트의 역할은?</h4>
+    <div class="quiz-options">
+      <button class="quiz-option" onclick="selectAnswer('q3', this, false)">A. Kubernetes ConfigMap에 설정을 저장</button>
+      <button class="quiz-option" onclick="selectAnswer('q3', this, true)">B. Kubernetes ConfigMap에서 설정 내용을 동적으로 로드</button>
+      <button class="quiz-option" onclick="selectAnswer('q3', this, false)">C. ConfigMap을 다른 네임스페이스로 복사</button>
+      <button class="quiz-option" onclick="selectAnswer('q3', this, false)">D. ConfigMap 변경을 감시하고 알림 발송</button>
+    </div>
+    <div class="quiz-explanation" id="q3-exp">
+      <code>remote.kubernetes.configmap</code>은 Kubernetes ConfigMap에서 설정 내용을 읽어와
+      Alloy 파이프라인에서 동적으로 사용할 수 있게 합니다. poll_frequency로 주기적으로 갱신됩니다.
+    </div>
+  </div>
+
+  <div id="quiz-score" class="quiz-score"></div>
+<script>
+let correctCount = 0; let answeredCount = 0;
+function selectAnswer(qId, btn, isCorrect) {
+  var q = document.getElementById(qId);
+  if (q.classList.contains('answered')) return;
+  q.classList.add('answered'); answeredCount++;
+  var total = document.querySelectorAll('.quiz-item').length;
+  if (isCorrect) { btn.classList.add('correct'); correctCount++; }
+  else { btn.classList.add('wrong'); q.querySelectorAll('.quiz-option').forEach(function(o) { if (o.getAttribute('onclick').includes('true')) o.classList.add('correct'); }); }
+  q.querySelectorAll('.quiz-option').forEach(function(o) { o.disabled = true; });
+  document.getElementById(qId + '-exp').classList.add('show');
+  var s = document.getElementById('quiz-score');
+  s.innerHTML = answeredCount + '/' + total + ' 완료 | 정답: ' + correctCount + '개'; s.style.display = 'block';
+}
+</script>
+  <div style="display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--gray-200);">
+    <a href="../../resources/architecture.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">아키텍처 다이어그램 →</a>
+    <a href="mistakes.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--gray-100); color:var(--gray-700); padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">← 일반적인 실수로</a>
+  </div>
+</div>
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">VNTG R&D · Grafana Alloy Module 07</footer>
+<script>
+document.querySelectorAll('pre:not(.mermaid)').forEach(function(pre) {
+  var btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = '복사';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code') ? pre.querySelector('code').textContent : pre.textContent;
+    navigator.clipboard.writeText(code).then(function() { btn.textContent = '복사됨!'; setTimeout(function() { btn.textContent = '복사'; }, 2000); });
+  });
+  pre.style.position = 'relative'; pre.appendChild(btn);
+});
+</script>
+</body>
+</html>

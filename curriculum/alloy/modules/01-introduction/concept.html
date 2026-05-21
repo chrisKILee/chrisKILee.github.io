@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 01 — 개념 | Grafana Alloy</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: false },
+    themeVariables: { fontFamily: 'inherit' }
+  });
+</script>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">홈</a></li>
+    <li><a href="concept.html" class="active">개념</a></li>
+    <li><a href="practice.html">실습</a></li>
+    <li><a href="mistakes.html">실수</a></li>
+    <li><a href="quiz.html">퀴즈</a></li>
+  </ul>
+</nav>
+
+<div class="page-header">
+  <div class="breadcrumb"><a href="../../index.html">Alloy</a> › Module 01 › 개념</div>
+  <h1>Grafana Alloy 소개</h1>
+  <p>Alloy가 무엇인지, 왜 만들어졌는지, 핵심 개념을 이해합니다.</p>
+</div>
+
+<div class="main">
+
+  <div class="section">
+    <h2>Grafana Alloy란?</h2>
+    <p>
+      <strong>Grafana Alloy</strong>는 2024년 Grafana Labs가 Grafana Agent의 후속으로 발표한
+      오픈소스 관측성 데이터 파이프라인 도구입니다.
+      OpenTelemetry Collector를 핵심 엔진으로 사용하면서, Grafana 생태계에 특화된 기능을 더한 것이 특징입니다.
+    </p>
+
+    <div class="arch">
+      <div class="arch-title">Alloy의 역할 — 관측성 데이터 수집기</div>
+      <pre class="mermaid">
+flowchart LR
+  subgraph sources["데이터 소스"]
+    direction TB
+    apps["애플리케이션\n(OTLP 계측)"]:::src
+    k8s["Kubernetes\nPod / Node"]:::src
+    infra["인프라\n(시스템 메트릭)"]:::src
+    logs["로그 파일\n/var/log/..."]:::src
+  end
+
+  alloy["Grafana Alloy\n수집 · 처리 · 전달"]:::alloy
+
+  subgraph backends["Grafana Stack 백엔드"]
+    direction TB
+    mimir["Mimir\n(Metrics)"]:::be
+    loki["Loki\n(Logs)"]:::be
+    tempo["Tempo\n(Traces)"]:::be
+    pyroscope["Pyroscope\n(Profiles)"]:::be
+  end
+
+  sources --> alloy --> backends
+
+  classDef src fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+  classDef alloy fill:#fff4ef,stroke:#f55b20,stroke-width:3px,color:#c44510,font-weight:600
+  classDef be fill:#e8f0fe,stroke:#1a73e8,stroke-width:2px,color:#0b3a8c
+      </pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>왜 Alloy인가?</h2>
+
+    <h3 class="sub">Grafana Agent에서 Alloy로의 전환</h3>
+    <p>
+      Grafana Agent는 2019년 등장해 유용하게 쓰였지만, 설정이 복잡하고 확장성에 한계가 있었습니다.
+      Alloy는 이를 해결하기 위해 다음 목표로 설계되었습니다:
+    </p>
+    <ul>
+      <li><strong>컴포넌트 기반</strong> — 기능을 레고처럼 조합</li>
+      <li><strong>선언적 설정</strong> — HCL-like 언어로 데이터 흐름 명시</li>
+      <li><strong>내장 UI</strong> — 컴포넌트 그래프 시각화, 실시간 디버깅</li>
+      <li><strong>클러스터링</strong> — 수평 확장 내장 지원</li>
+      <li><strong>OTel 호환</strong> — OpenTelemetry Collector 컴포넌트 직접 사용</li>
+    </ul>
+
+    <div class="info-box info">
+      <strong>중요</strong>
+      Grafana Agent는 2024년 deprecated(지원 종료 예정) 선언되었습니다.
+      신규 프로젝트는 반드시 Alloy를 사용하세요.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Alloy 설정 언어 (Alloy Syntax)</h2>
+    <p>
+      Alloy는 자체 설정 언어를 사용합니다. HCL(HashiCorp Configuration Language)에서 영감을 받았으며,
+      <code>.alloy</code> 확장자를 사용합니다.
+    </p>
+
+    <h3 class="sub">기본 구조</h3>
+    <pre><code>// 컴포넌트 선언: [네임스페이스].[타입] "[레이블]" {
+//   argument = 값
+// }
+
+prometheus.scrape "node_exporter" {
+  targets = [{ "__address__" = "localhost:9100" }]
+  forward_to = [prometheus.remote_write.mimir.receiver]
+}
+
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"
+  }
+}</code></pre>
+
+    <h3 class="sub">핵심 문법 요소</h3>
+    <table>
+      <tr><th>요소</th><th>설명</th><th>예시</th></tr>
+      <tr><td>블록</td><td>컴포넌트 또는 중첩 설정</td><td><code>prometheus.scrape "name" { }</code></td></tr>
+      <tr><td>속성</td><td>키 = 값 쌍</td><td><code>url = "http://..."</code></td></tr>
+      <tr><td>참조</td><td>다른 컴포넌트의 exports 참조</td><td><code>forward_to = [component.exports]</code></td></tr>
+      <tr><td>표현식</td><td>동적 값 계산</td><td><code>env("HOSTNAME")</code></td></tr>
+      <tr><td>주석</td><td>한 줄 주석</td><td><code>// 주석</code></td></tr>
+    </table>
+
+    <h3 class="sub">변수와 환경 변수</h3>
+    <pre><code>// 환경 변수 읽기
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = env("MIMIR_URL")
+
+    basic_auth {
+      username = env("MIMIR_USER")
+      password = env("MIMIR_PASSWORD")
+    }
+  }
+}
+
+// 로컬 변수 (선언)
+local.file "secret" {
+  filename = "/etc/alloy/secret.txt"
+  is_secret = true
+}</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>컴포넌트 모델 기초</h2>
+    <p>
+      Alloy의 모든 기능은 <strong>컴포넌트</strong>로 구현됩니다.
+      컴포넌트는 입력(arguments)을 받아 처리하고, 출력(exports)을 다른 컴포넌트로 전달합니다.
+    </p>
+
+    <div class="arch">
+      <div class="arch-title">컴포넌트 구조</div>
+      <pre class="mermaid">
+flowchart LR
+  subgraph comp["컴포넌트: prometheus.scrape"]
+    direction TB
+    args["Arguments\n(입력)\ntargets, interval\nforward_to"]:::arg
+    logic["내부 로직\nHTTP scrape\n파싱"]:::logic
+    exp["Exports\n(출력)\nreceiver"]:::exp
+  end
+
+  target["스크래핑 대상\n:9100"]:::ext
+  next["다음 컴포넌트\nremote_write"]:::ext
+
+  target -->|"metrics"| logic
+  args --> logic
+  logic --> exp
+  exp -->|"forward_to"| next
+
+  classDef arg fill:#fff4ef,stroke:#f55b20,stroke-width:1px,color:#c44510
+  classDef logic fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px
+  classDef exp fill:#f0fdf4,stroke:#22c55e,stroke-width:1px,color:#15803d
+  classDef ext fill:#e8f0fe,stroke:#1a73e8,stroke-width:1px,color:#0b3a8c
+      </pre>
+    </div>
+
+    <h3 class="sub">주요 컴포넌트 네임스페이스</h3>
+    <table>
+      <tr><th>네임스페이스</th><th>역할</th><th>예시</th></tr>
+      <tr><td><code>prometheus.*</code></td><td>Prometheus 호환 메트릭</td><td>prometheus.scrape, prometheus.remote_write</td></tr>
+      <tr><td><code>loki.*</code></td><td>Loki 로그 파이프라인</td><td>loki.source.file, loki.write</td></tr>
+      <tr><td><code>otelcol.*</code></td><td>OpenTelemetry 컴포넌트</td><td>otelcol.receiver.otlp, otelcol.exporter.otlp</td></tr>
+      <tr><td><code>discovery.*</code></td><td>서비스 디스커버리</td><td>discovery.kubernetes, discovery.relabel</td></tr>
+      <tr><td><code>local.*</code></td><td>로컬 파일/설정</td><td>local.file</td></tr>
+      <tr><td><code>remote.*</code></td><td>원격 설정 로드</td><td>remote.http, remote.kubernetes.configmap</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Alloy UI</h2>
+    <p>
+      Alloy는 기본적으로 <code>localhost:12345</code>에서 웹 UI를 제공합니다.
+      UI에서 다음을 확인할 수 있습니다:
+    </p>
+    <ul>
+      <li><strong>그래프 뷰</strong> — 컴포넌트 연결 관계를 시각화</li>
+      <li><strong>컴포넌트 상태</strong> — 각 컴포넌트의 현재 상태와 exports 값</li>
+      <li><strong>디버깅</strong> — 실시간 데이터 흐름 확인</li>
+    </ul>
+
+    <div class="info-box tip">
+      <strong>팁</strong>
+      UI에서 특정 컴포넌트를 클릭하면 현재 인자(arguments)와 내보내는 값(exports)을 실시간으로 볼 수 있습니다.
+      파이프라인 디버깅에 매우 유용합니다.
+    </div>
+  </div>
+
+  <div style="display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--gray-200);">
+    <a href="practice.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">
+      다음: 실습 →
+    </a>
+    <a href="../../index.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--gray-100); color:var(--gray-700); padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">
+      ← 커리큘럼 홈
+    </a>
+  </div>
+
+</div>
+
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">
+  VNTG R&D · Grafana Alloy Module 01
+</footer>
+
+<script>
+document.querySelectorAll('pre:not(.mermaid)').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = '복사';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code') ? pre.querySelector('code').textContent : pre.textContent;
+    navigator.clipboard.writeText(code).then(function() {
+      btn.textContent = '복사됨!';
+      setTimeout(function() { btn.textContent = '복사'; }, 2000);
+    });
+  });
+  pre.style.position = 'relative';
+  pre.appendChild(btn);
+});
+</script>
+</body>
+</html>

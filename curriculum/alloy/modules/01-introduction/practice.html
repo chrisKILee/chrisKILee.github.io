@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 01 — 실습 | Grafana Alloy</title>
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">홈</a></li>
+    <li><a href="concept.html">개념</a></li>
+    <li><a href="practice.html" class="active">실습</a></li>
+    <li><a href="mistakes.html">실수</a></li>
+    <li><a href="quiz.html">퀴즈</a></li>
+  </ul>
+</nav>
+
+<div class="page-header">
+  <div class="breadcrumb"><a href="../../index.html">Alloy</a> › Module 01 › 실습</div>
+  <h1>실습: Alloy 첫 파이프라인 실행</h1>
+  <p>Docker로 Alloy를 실행하고 첫 번째 파이프라인을 만들어 UI를 탐색합니다.</p>
+</div>
+
+<div class="main">
+
+  <div class="info-box info">
+    <strong>실습 환경</strong>
+    Docker가 설치된 환경이 필요합니다. kind 클러스터는 Module 02에서 사용합니다.
+    이 실습은 Docker만으로 진행합니다.
+  </div>
+
+  <div class="section">
+    <h2>실습 1: Docker로 Alloy 실행</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>작업 디렉토리 만들기</strong>
+          <pre><code>mkdir -p ~/alloy-lab/config
+cd ~/alloy-lab</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>최소 설정 파일 작성</strong>
+          <p><code>config/alloy.alloy</code> 파일을 만듭니다:</p>
+          <pre><code>// alloy.alloy — 첫 번째 파이프라인
+// 자기 자신의 메트릭을 스크래핑해서 stdout에 출력합니다
+
+prometheus.exporter.self "alloy_metrics" {}
+
+prometheus.scrape "self" {
+  targets    = prometheus.exporter.self.alloy_metrics.targets
+  forward_to = [prometheus.remote_write.stdout.receiver]
+}
+
+// stdout 출력용 (테스트 목적)
+prometheus.remote_write "stdout" {
+  endpoint {
+    url = "http://localhost:19999/api/v1/push"
+  }
+}</code></pre>
+          <div class="info-box tip">
+            <strong>팁</strong>
+            <code>prometheus.exporter.self</code>는 Alloy 자신의 메트릭을 expose하는 내장 컴포넌트입니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Docker로 실행</strong>
+          <pre><code>docker run -d \
+  --name alloy \
+  -p 12345:12345 \
+  -v $(pwd)/config:/etc/alloy \
+  grafana/alloy:latest \
+  run /etc/alloy/alloy.alloy</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>컨테이너 로그 확인</strong>
+          <pre><code>docker logs alloy</code></pre>
+          <p>다음과 같은 로그가 보이면 정상입니다:</p>
+          <pre><code>ts=... level=info msg="Alloy started"
+ts=... level=info msg="HTTP server started" addr=0.0.0.0:12345</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>실습 2: Alloy UI 탐색</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>브라우저에서 UI 열기</strong>
+          <p>브라우저에서 <code>http://localhost:12345</code>를 엽니다.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>Graph 탭 확인</strong>
+          <p>상단 메뉴에서 <strong>Graph</strong>를 클릭합니다.
+          컴포넌트 연결 관계가 시각적으로 표시됩니다:</p>
+          <ul>
+            <li><code>prometheus.exporter.self.alloy_metrics</code></li>
+            <li><code>prometheus.scrape.self</code></li>
+            <li><code>prometheus.remote_write.stdout</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>컴포넌트 상태 확인</strong>
+          <p><strong>Components</strong> 탭 클릭 → 각 컴포넌트 이름 클릭:</p>
+          <ul>
+            <li><strong>Health</strong>: healthy / unhealthy</li>
+            <li><strong>Arguments</strong>: 현재 설정값</li>
+            <li><strong>Exports</strong>: 컴포넌트가 내보내는 값</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>메트릭 엔드포인트 확인</strong>
+          <pre><code>curl http://localhost:12345/metrics | head -20</code></pre>
+          <p>Alloy 자신의 Prometheus 메트릭이 출력됩니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>실습 3: 설정 파일 수정 및 핫 리로드</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>설정에 로그 출력 추가</strong>
+          <p><code>config/alloy.alloy</code>에 다음을 추가합니다:</p>
+          <pre><code>// 로컬 파일에서 로그 읽기 (테스트용 더미)
+loki.source.file "demo" {
+  targets    = [{ __path__ = "/var/log/*.log", job = "demo" }]
+  forward_to = [loki.write.stdout.receiver]
+}
+
+loki.write "stdout" {
+  endpoint {
+    url = "http://localhost:3100/loki/api/v1/push"
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>핫 리로드 트리거</strong>
+          <pre><code># Alloy는 SIGHUP으로 설정을 리로드합니다
+docker kill --signal=SIGHUP alloy
+
+# 또는 HTTP API 사용
+curl -X POST http://localhost:12345/-/reload</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <strong>UI에서 새 컴포넌트 확인</strong>
+          <p>브라우저 새로고침 후 Graph 탭에서 loki 컴포넌트가 추가된 것을 확인합니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>실습 4: 설정 문법 검증</h2>
+    <pre><code># Docker 없이 문법 검증 (alloy 바이너리가 있는 경우)
+alloy fmt config/alloy.alloy    # 포맷팅
+alloy validate config/alloy.alloy  # 문법 검증
+
+# Docker로 문법 검증
+docker run --rm \
+  -v $(pwd)/config:/etc/alloy \
+  grafana/alloy:latest \
+  validate /etc/alloy/alloy.alloy</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>정리</h2>
+    <pre><code>docker stop alloy
+docker rm alloy</code></pre>
+  </div>
+
+  <div style="display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--gray-200);">
+    <a href="mistakes.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">
+      다음: 일반적인 실수 →
+    </a>
+    <a href="concept.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--gray-100); color:var(--gray-700); padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">
+      ← 개념으로
+    </a>
+  </div>
+
+</div>
+
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">
+  VNTG R&D · Grafana Alloy Module 01
+</footer>
+
+<script>
+document.querySelectorAll('pre:not(.mermaid)').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = '복사';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code') ? pre.querySelector('code').textContent : pre.textContent;
+    navigator.clipboard.writeText(code).then(function() {
+      btn.textContent = '복사됨!';
+      setTimeout(function() { btn.textContent = '복사'; }, 2000);
+    });
+  });
+  pre.style.position = 'relative';
+  pre.appendChild(btn);
+});
+</script>
+</body>
+</html>

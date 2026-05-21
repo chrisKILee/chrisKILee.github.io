@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 06 — 일반적인 실수 | Grafana Alloy</title>
+<link rel="stylesheet" href="../../styles.css">
+
+</head>
+<body>
+<nav class="nav">
+  <a href="../../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">홈</a></li>
+    <li><a href="concept.html">개념</a></li>
+    <li><a href="practice.html">실습</a></li>
+    <li><a href="mistakes.html" class="active">실수</a></li>
+    <li><a href="quiz.html">퀴즈</a></li>
+  </ul>
+</nav>
+<div class="page-header">
+  <div class="breadcrumb"><a href="../../index.html">Alloy</a> › Module 06 › 일반적인 실수</div>
+  <h1>Module 06 — 일반적인 실수</h1><p>트레이스 수집 시 흔한 실수</p>
+</div>
+<div class="main">
+
+  <div class="section">
+    <h2>실수 1: Head-based 샘플링으로 에러 트레이스 누락</h2>
+    <p>Head-based 샘플링은 트레이스 시작 시점에 결정하므로 나중에 에러가 발생해도 이미 버린 트레이스는 복구 불가합니다.</p>
+    <pre><code>// ❌ 에러 트레이스도 90% 버림
+otelcol.processor.probabilistic_sampler "bad" {
+  sampling_percentage = 10  // 에러도 10%만 저장
+}
+
+// ✅ Tail-based 샘플링으로 에러는 항상 저장
+otelcol.processor.tail_sampling "good" {
+  policy {
+    name = "errors-always"
+    type = "status_code"
+    status_code { status_codes = ["ERROR"] }
+  }
+  policy {
+    name = "random-10"
+    type = "probabilistic"
+    probabilistic { sampling_percentage = 10 }
+  }
+}</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>실수 2: Alloy를 stateless로 배포 시 Tail-based 샘플링 오작동</h2>
+    <p>Tail-based 샘플링은 하나의 트레이스에 속한 모든 span이 같은 Alloy 인스턴스에 모여야 합니다.
+    여러 인스턴스로 부하 분산하면 span이 분산되어 결정을 못 내립니다.</p>
+    <div class="info-box warn">
+      <strong>해결책</strong>
+      Alloy 클러스터링(Module 07)을 사용하거나, tail-based 샘플링은 단일 인스턴스 또는
+      sticky 라우팅(trace_id 기반 일관 해싱)으로 구성해야 합니다.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>실수 3: decision_wait가 너무 짧음</h2>
+    <pre><code>// ❌ 복잡한 마이크로서비스에서 30초 안에 모든 span이 오지 않을 수 있음
+otelcol.processor.tail_sampling "fast" {
+  decision_wait = "5s"  // 너무 짧으면 불완전한 트레이스로 결정
+}
+
+// ✅ 서비스 구조에 맞게 설정 (일반적으로 30s~2m)
+otelcol.processor.tail_sampling "appropriate" {
+  decision_wait = "30s"
+}</code></pre>
+  </div>
+
+  <div style="display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--gray-200);">
+    <a href="quiz.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">다음: 퀴즈 →</a>
+    <a href="practice.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--gray-100); color:var(--gray-700); padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">← 실습으로</a>
+  </div>
+</div>
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">VNTG R&D · Grafana Alloy Module 06</footer>
+<script>
+document.querySelectorAll('pre:not(.mermaid)').forEach(function(pre) {
+  var btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = '복사';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code') ? pre.querySelector('code').textContent : pre.textContent;
+    navigator.clipboard.writeText(code).then(function() { btn.textContent = '복사됨!'; setTimeout(function() { btn.textContent = '복사'; }, 2000); });
+  });
+  pre.style.position = 'relative'; pre.appendChild(btn);
+});
+</script>
+</body>
+</html>

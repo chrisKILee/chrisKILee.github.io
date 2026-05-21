@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 05 — 개념 | Grafana Alloy</title>
+<link rel="stylesheet" href="../../styles.css">
+
+</head>
+<body>
+<nav class="nav">
+  <a href="../../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">홈</a></li>
+    <li><a href="concept.html" class="active">개념</a></li>
+    <li><a href="practice.html">실습</a></li>
+    <li><a href="mistakes.html">실수</a></li>
+    <li><a href="quiz.html">퀴즈</a></li>
+  </ul>
+</nav>
+<div class="page-header">
+  <div class="breadcrumb"><a href="../../index.html">Alloy</a> › Module 05 › 개념</div>
+  <h1>Module 05 — 개념</h1><p>로그 수집</p>
+</div>
+<div class="main">
+
+  <div class="section">
+    <h2>로그 파이프라인 개요</h2>
+    <p>Alloy는 <code>loki.*</code> 컴포넌트 패밀리로 로그를 수집, 처리, 전달합니다.</p>
+    <pre><code>// 전체 로그 파이프라인 예시
+loki.source.file "app_logs" {
+  targets    = [{ __path__ = "/var/log/app/*.log", job = "app" }]
+  forward_to = [loki.process.parse_json.receiver]
+}
+
+loki.process "parse_json" {
+  forward_to = [loki.write.loki.receiver]
+
+  stage.json {
+    expressions = { level = "level", msg = "message" }
+  }
+
+  stage.labels {
+    values = { level = "" }
+  }
+}
+
+loki.write "loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>loki.source.* — 로그 소스</h2>
+    <table>
+      <tr><th>컴포넌트</th><th>설명</th></tr>
+      <tr><td><code>loki.source.file</code></td><td>로컬 파일 테일링</td></tr>
+      <tr><td><code>loki.source.kubernetes</code></td><td>Kubernetes Pod 로그 (kubelet API)</td></tr>
+      <tr><td><code>loki.source.kubernetes_events</code></td><td>Kubernetes 이벤트 수집</td></tr>
+      <tr><td><code>loki.source.journal</code></td><td>systemd journal 로그</td></tr>
+      <tr><td><code>loki.source.api</code></td><td>HTTP API로 로그 수신 (push 방식)</td></tr>
+      <tr><td><code>loki.source.docker</code></td><td>Docker 컨테이너 로그</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>loki.source.kubernetes — Kubernetes 로그</h2>
+    <pre><code>// Kubernetes Pod 로그 수집
+loki.source.kubernetes "pods" {
+  targets    = discovery.relabel.pods.output
+  forward_to = [loki.process.add_labels.receiver]
+}
+
+// 모든 Pod 디스커버리
+discovery.kubernetes "pods" {
+  role = "pod"
+}
+
+discovery.relabel "pods" {
+  targets = discovery.kubernetes.pods.targets
+
+  // Pod 이름을 레이블로
+  rule {
+    source_labels = ["__meta_kubernetes_pod_name"]
+    target_label  = "pod"
+  }
+
+  // 네임스페이스 레이블
+  rule {
+    source_labels = ["__meta_kubernetes_namespace"]
+    target_label  = "namespace"
+  }
+
+  // 컨테이너 이름
+  rule {
+    source_labels = ["__meta_kubernetes_pod_container_name"]
+    target_label  = "container"
+  }
+}</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>loki.process — 로그 처리 파이프라인</h2>
+    <p>다양한 처리 스테이지를 체인으로 연결합니다:</p>
+    <pre><code>loki.process "pipeline" {
+  forward_to = [loki.write.loki.receiver]
+
+  // JSON 파싱
+  stage.json {
+    expressions = {
+      level     = "severity",
+      message   = "msg",
+      trace_id  = "traceID",
+    }
+  }
+
+  // 추출된 값을 레이블로
+  stage.labels {
+    values = {
+      level = "",    // JSON에서 추출한 level 사용
+    }
+  }
+
+  // 특정 레벨 이하 로그 드롭 (debug 제외)
+  stage.drop {
+    expression  = ".*"
+    if          = "level == \"debug\""
+    drop_counter_reason = "debug_log"
+  }
+
+  // 타임스탬프 파싱
+  stage.timestamp {
+    source = "time"
+    format = "RFC3339"
+  }
+
+  // 구조화된 메타데이터 추가
+  stage.structured_metadata {
+    values = { trace_id = "" }
+  }
+}</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>loki.write — Loki 전송</h2>
+    <pre><code>loki.write "loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+
+    // 인증 (Grafana Cloud)
+    basic_auth {
+      username = env("LOKI_USER")
+      password = env("LOKI_API_KEY")
+    }
+
+    // 배치 설정
+    batch_wait   = "1s"
+    batch_size   = 1048576  // 1MB
+  }
+
+  // 외부 레이블
+  external_labels = {
+    cluster = "prod-k8s",
+  }
+}</code></pre>
+  </div>
+
+  <div style="display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--gray-200);">
+    <a href="practice.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">다음: 실습 →</a>
+    <a href="../04-metrics/quiz.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--gray-100); color:var(--gray-700); padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">← Module 04</a>
+  </div>
+</div>
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">VNTG R&D · Grafana Alloy Module 05</footer>
+<script>
+document.querySelectorAll('pre:not(.mermaid)').forEach(function(pre) {
+  var btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = '복사';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code') ? pre.querySelector('code').textContent : pre.textContent;
+    navigator.clipboard.writeText(code).then(function() { btn.textContent = '복사됨!'; setTimeout(function() { btn.textContent = '복사'; }, 2000); });
+  });
+  pre.style.position = 'relative'; pre.appendChild(btn);
+});
+</script>
+</body>
+</html>

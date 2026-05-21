@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 05 — 퀴즈 | Grafana Alloy</title>
+<link rel="stylesheet" href="../../styles.css">
+
+</head>
+<body>
+<nav class="nav">
+  <a href="../../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">홈</a></li>
+    <li><a href="concept.html">개념</a></li>
+    <li><a href="practice.html">실습</a></li>
+    <li><a href="mistakes.html">실수</a></li>
+    <li><a href="quiz.html" class="active">퀴즈</a></li>
+  </ul>
+</nav>
+<div class="page-header">
+  <div class="breadcrumb"><a href="../../index.html">Alloy</a> › Module 05 › 퀴즈</div>
+  <h1>Module 05 — 퀴즈</h1><p>로그 수집 학습 내용 확인</p>
+</div>
+<div class="main">
+
+  <div class="quiz-item" id="q1">
+    <h4>Q1. Kubernetes Pod 로그를 수집하는 Alloy 컴포넌트는?</h4>
+    <div class="quiz-options">
+      <button class="quiz-option" onclick="selectAnswer('q1', this, false)">A. loki.source.file</button>
+      <button class="quiz-option" onclick="selectAnswer('q1', this, true)">B. loki.source.kubernetes</button>
+      <button class="quiz-option" onclick="selectAnswer('q1', this, false)">C. loki.collect.kubernetes</button>
+      <button class="quiz-option" onclick="selectAnswer('q1', this, false)">D. kubernetes.logs</button>
+    </div>
+    <div class="quiz-explanation" id="q1-exp">
+      <code>loki.source.kubernetes</code>가 Kubernetes Pod 로그를 수집합니다.
+      <code>loki.source.file</code>은 로컬 파일 테일링, <code>loki.source.kubernetes_events</code>는 Kubernetes 이벤트를 수집합니다.
+    </div>
+  </div>
+
+  <div class="quiz-item" id="q2">
+    <h4>Q2. loki.process에서 JSON 로그에서 severity 필드를 level이라는 이름으로 추출하는 올바른 설정은?</h4>
+    <div class="quiz-options">
+      <button class="quiz-option" onclick="selectAnswer('q2', this, true)">A. stage.json { expressions = { level = "severity" } }</button>
+      <button class="quiz-option" onclick="selectAnswer('q2', this, false)">B. stage.parse { field = "severity", as = "level" }</button>
+      <button class="quiz-option" onclick="selectAnswer('q2', this, false)">C. stage.json { level = "severity" }</button>
+      <button class="quiz-option" onclick="selectAnswer('q2', this, false)">D. stage.extract { json.severity = "level" }</button>
+    </div>
+    <div class="quiz-explanation" id="q2-exp">
+      <code>stage.json { expressions = { [추출할이름] = "[JSON경로]" } }</code> 형식입니다.
+      <code>level = "severity"</code>는 JSON의 severity 필드 값을 "level"이라는 이름으로 추출합니다.
+    </div>
+  </div>
+
+  <div class="quiz-item" id="q3">
+    <h4>Q3. 로그 레이블 설계 시 반드시 피해야 하는 값은?</h4>
+    <div class="quiz-options">
+      <button class="quiz-option" onclick="selectAnswer('q3', this, false)">A. app 이름</button>
+      <button class="quiz-option" onclick="selectAnswer('q3', this, false)">B. 로그 레벨 (info/warn/error)</button>
+      <button class="quiz-option" onclick="selectAnswer('q3', this, true)">C. 요청 ID (UUID 등 고유 값)</button>
+      <button class="quiz-option" onclick="selectAnswer('q3', this, false)">D. 네임스페이스</button>
+    </div>
+    <div class="quiz-explanation" id="q3-exp">
+      요청 ID, Pod IP, 사용자 ID 등 고유 값을 레이블로 사용하면 Loki 인덱스가 폭발합니다.
+      대신 <code>stage.structured_metadata</code>를 사용하면 인덱스 없이 저장할 수 있습니다.
+    </div>
+  </div>
+
+  <div id="quiz-score" class="quiz-score"></div>
+<script>
+let correctCount = 0; let answeredCount = 0;
+function selectAnswer(qId, btn, isCorrect) {
+  var q = document.getElementById(qId);
+  if (q.classList.contains('answered')) return;
+  q.classList.add('answered'); answeredCount++;
+  var total = document.querySelectorAll('.quiz-item').length;
+  if (isCorrect) { btn.classList.add('correct'); correctCount++; }
+  else { btn.classList.add('wrong'); q.querySelectorAll('.quiz-option').forEach(function(o) { if (o.getAttribute('onclick').includes('true')) o.classList.add('correct'); }); }
+  q.querySelectorAll('.quiz-option').forEach(function(o) { o.disabled = true; });
+  document.getElementById(qId + '-exp').classList.add('show');
+  var s = document.getElementById('quiz-score');
+  s.innerHTML = answeredCount + '/' + total + ' 완료 | 정답: ' + correctCount + '개'; s.style.display = 'block';
+}
+</script>
+  <div style="display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--gray-200);">
+    <a href="../06-traces/concept.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">Module 06: 트레이스 →</a>
+    <a href="mistakes.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--gray-100); color:var(--gray-700); padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">← 일반적인 실수로</a>
+  </div>
+</div>
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">VNTG R&D · Grafana Alloy Module 05</footer>
+<script>
+document.querySelectorAll('pre:not(.mermaid)').forEach(function(pre) {
+  var btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = '복사';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code') ? pre.querySelector('code').textContent : pre.textContent;
+    navigator.clipboard.writeText(code).then(function() { btn.textContent = '복사됨!'; setTimeout(function() { btn.textContent = '복사'; }, 2000); });
+  });
+  pre.style.position = 'relative'; pre.appendChild(btn);
+});
+</script>
+</body>
+</html>

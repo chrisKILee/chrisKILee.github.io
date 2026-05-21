@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 02 — 개념 | Grafana Alloy</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true, theme: 'default',
+    flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: false },
+    themeVariables: { fontFamily: 'inherit' }
+  });
+</script>
+</head>
+<body>
+<nav class="nav">
+  <a href="../../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">홈</a></li>
+    <li><a href="concept.html" class="active">개념</a></li>
+    <li><a href="practice.html">실습</a></li>
+    <li><a href="mistakes.html">실수</a></li>
+    <li><a href="quiz.html">퀴즈</a></li>
+  </ul>
+</nav>
+<div class="page-header">
+  <div class="breadcrumb"><a href="../../index.html">Alloy</a> › Module 02 › 개념</div>
+  <h1>설치 및 기본 설정</h1>
+  <p>다양한 환경에서 Alloy를 설치하고 기본 설정 구조를 이해합니다.</p>
+</div>
+<div class="main">
+
+  <div class="section">
+    <h2>설치 방법 개요</h2>
+    <table>
+      <tr><th>방법</th><th>적합한 환경</th><th>난이도</th></tr>
+      <tr><td>apt/rpm 패키지</td><td>Linux 서버, VM</td><td>쉬움</td></tr>
+      <tr><td>Docker</td><td>로컬 개발, 컨테이너 환경</td><td>쉬움</td></tr>
+      <tr><td>Helm Chart</td><td>Kubernetes</td><td>중간</td></tr>
+      <tr><td>바이너리</td><td>커스텀 설치, 에어갭</td><td>중간</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Linux 패키지 설치</h2>
+    <h3 class="sub">Debian/Ubuntu (apt)</h3>
+    <pre><code># Grafana apt 저장소 추가
+sudo mkdir -p /etc/apt/keyrings/
+wget -q -O - https://apt.grafana.com/gpg.key | \
+  gpg --dearmor | sudo tee /etc/apt/keyrings/grafana.gpg > /dev/null
+
+echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | \
+  sudo tee /etc/apt/sources.list.d/grafana.list
+
+sudo apt-get update
+sudo apt-get install -y alloy</code></pre>
+
+    <h3 class="sub">RHEL/CentOS (rpm)</h3>
+    <pre><code>sudo cat > /etc/yum.repos.d/grafana.repo << 'EOF'
+[grafana]
+name=grafana
+baseurl=https://rpm.grafana.com
+repo_gpgcheck=1
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm.grafana.com/gpg.key
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+EOF
+
+sudo dnf install -y alloy</code></pre>
+
+    <h3 class="sub">systemd 서비스 관리</h3>
+    <pre><code># 서비스 시작/중지/상태
+sudo systemctl start alloy
+sudo systemctl stop alloy
+sudo systemctl status alloy
+
+# 부팅 시 자동 시작
+sudo systemctl enable alloy
+
+# 로그 확인
+sudo journalctl -u alloy -f</code></pre>
+
+    <div class="info-box info">
+      <strong>설정 파일 위치 (apt/rpm 설치)</strong>
+      기본 설정 파일: <code>/etc/alloy/config.alloy</code>
+      환경 변수 파일: <code>/etc/default/alloy</code> (Debian) 또는 <code>/etc/sysconfig/alloy</code> (RHEL)
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Kubernetes Helm 설치</h2>
+    <pre><code># Grafana Helm 저장소 추가
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+
+# 기본 설치
+helm install alloy grafana/alloy \
+  --namespace monitoring \
+  --create-namespace \
+  -f values.yaml</code></pre>
+
+    <h3 class="sub">values.yaml 예시</h3>
+    <pre><code># values.yaml
+alloy:
+  configMap:
+    content: |
+      prometheus.scrape "kubernetes_pods" {
+        targets = discovery.kubernetes.pods.targets
+        forward_to = [prometheus.remote_write.mimir.receiver]
+      }
+
+      discovery.kubernetes "pods" {
+        role = "pod"
+      }
+
+      prometheus.remote_write "mimir" {
+        endpoint {
+          url = "http://mimir:9009/api/v1/push"
+        }
+      }
+
+controller:
+  type: daemonset  # 각 노드에서 실행
+
+serviceAccount:
+  create: true</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>설정 파일 구조</h2>
+    <p>Alloy 설정 파일은 컴포넌트 블록의 집합입니다. 단일 파일이나 디렉토리 형태 모두 지원합니다.</p>
+
+    <h3 class="sub">단일 파일</h3>
+    <pre><code>// /etc/alloy/config.alloy
+
+// 1. 서비스 디스커버리
+discovery.kubernetes "pods" {
+  role = "pod"
+}
+
+// 2. 디스커버리 결과 필터링
+discovery.relabel "app_pods" {
+  targets = discovery.kubernetes.pods.targets
+  // ... relabel 규칙
+}
+
+// 3. 메트릭 스크래핑
+prometheus.scrape "pods" {
+  targets    = discovery.relabel.app_pods.output
+  forward_to = [prometheus.remote_write.mimir.receiver]
+}
+
+// 4. 원격 전송
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = env("MIMIR_URL")
+  }
+}</code></pre>
+
+    <h3 class="sub">다중 파일 (디렉토리)</h3>
+    <pre><code># 실행 시 디렉토리 지정
+alloy run /etc/alloy/
+
+# 디렉토리 구조
+/etc/alloy/
+├── metrics.alloy    # 메트릭 파이프라인
+├── logs.alloy       # 로그 파이프라인
+└── traces.alloy     # 트레이스 파이프라인</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>환경 변수와 시크릿</h2>
+    <pre><code>// env() 함수로 환경 변수 참조
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = env("REMOTE_WRITE_URL")
+
+    basic_auth {
+      username = env("REMOTE_WRITE_USER")
+      password = env("REMOTE_WRITE_PASSWORD")
+    }
+  }
+}
+
+// local.file로 파일에서 시크릿 읽기
+local.file "api_key" {
+  filename  = "/etc/alloy/secrets/api-key"
+  is_secret = true  // 로그에 마스킹 처리
+}
+
+prometheus.remote_write "grafana_cloud" {
+  endpoint {
+    url = "https://prometheus-prod.grafana.net/api/prom/push"
+    basic_auth {
+      username = "12345"
+      password = local.file.api_key.content
+    }
+  }
+}</code></pre>
+
+    <div class="info-box warn">
+      <strong>주의</strong>
+      <code>is_secret = true</code>로 표시된 값은 Alloy UI와 로그에서 마스킹됩니다.
+      API 키, 패스워드 등 민감한 값은 반드시 이 옵션을 사용하세요.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>명령줄 옵션</h2>
+    <table>
+      <tr><th>옵션</th><th>설명</th><th>기본값</th></tr>
+      <tr><td><code>--server.http.listen-addr</code></td><td>UI 서버 주소</td><td>127.0.0.1:12345</td></tr>
+      <tr><td><code>--storage.path</code></td><td>WAL 등 로컬 저장 경로</td><td>/var/lib/alloy/data</td></tr>
+      <tr><td><code>--stability.level</code></td><td>실험적 기능 수준</td><td>generally-available</td></tr>
+      <tr><td><code>--cluster.enabled</code></td><td>클러스터링 활성화</td><td>false</td></tr>
+    </table>
+  </div>
+
+  <div style="display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--gray-200);">
+    <a href="practice.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">다음: 실습 →</a>
+    <a href="../01-introduction/quiz.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--gray-100); color:var(--gray-700); padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">← Module 01</a>
+  </div>
+</div>
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">VNTG R&D · Grafana Alloy Module 02</footer>
+<script>
+document.querySelectorAll('pre:not(.mermaid)').forEach(function(pre) {
+  var btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = '복사';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code') ? pre.querySelector('code').textContent : pre.textContent;
+    navigator.clipboard.writeText(code).then(function() { btn.textContent = '복사됨!'; setTimeout(function() { btn.textContent = '복사'; }, 2000); });
+  });
+  pre.style.position = 'relative'; pre.appendChild(btn);
+});
+</script>
+</body>
+</html>

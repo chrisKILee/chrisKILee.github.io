@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 02 — 일반적인 실수 | Grafana Alloy</title>
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+<nav class="nav">
+  <a href="../../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">홈</a></li>
+    <li><a href="concept.html">개념</a></li>
+    <li><a href="practice.html">실습</a></li>
+    <li><a href="mistakes.html" class="active">실수</a></li>
+    <li><a href="quiz.html">퀴즈</a></li>
+  </ul>
+</nav>
+<div class="page-header">
+  <div class="breadcrumb"><a href="../../index.html">Alloy</a> › Module 02 › 일반적인 실수</div>
+  <h1>일반적인 실수</h1>
+  <p>설치 및 설정 시 흔히 하는 실수와 해결 방법</p>
+</div>
+<div class="main">
+
+  <div class="section">
+    <h2>실수 1: UI 외부 접근 불가</h2>
+    <p>기본적으로 Alloy UI는 <code>127.0.0.1:12345</code>에 바인딩됩니다.
+    외부에서 접근하려면 명시적으로 주소를 변경해야 합니다.</p>
+    <pre><code># ❌ 기본 설정 — localhost에서만 접근 가능
+alloy run config.alloy
+
+# ✅ 모든 인터페이스에서 접근 허용
+alloy run config.alloy \
+  --server.http.listen-addr=0.0.0.0:12345</code></pre>
+    <div class="info-box warn">
+      <strong>보안 주의</strong>
+      프로덕션 환경에서는 0.0.0.0으로 열지 마세요. VPN 또는 ingress 인증 게이트웨이 뒤에 배치하거나
+      kubectl port-forward를 사용하세요.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>실수 2: Kubernetes RBAC 권한 부족</h2>
+    <p>Kubernetes에서 Alloy가 Pod/Node 정보를 수집하려면 적절한 RBAC 권한이 필요합니다.</p>
+    <pre><code># 오류 메시지 예시
+level=error msg="error listing pods" err="pods is forbidden: User \"system:serviceaccount:monitoring:alloy\" cannot list resource \"pods\""
+
+# 해결: ClusterRole 생성
+kubectl create clusterrolebinding alloy-cluster-reader \
+  --clusterrole=cluster-reader \
+  --serviceaccount=monitoring:alloy
+
+# 또는 Helm values에서 RBAC 활성화
+# rbac:
+#   create: true</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>실수 3: WAL 경로 권한 문제</h2>
+    <p>Alloy는 내부적으로 WAL(Write-Ahead Log)을 사용합니다.
+    저장 경로에 쓰기 권한이 없으면 시작 실패합니다.</p>
+    <pre><code># 오류
+level=error msg="error creating WAL" path="/var/lib/alloy/data" err="permission denied"
+
+# 해결
+sudo mkdir -p /var/lib/alloy/data
+sudo chown alloy:alloy /var/lib/alloy/data
+
+# Kubernetes의 경우 PVC 또는 emptyDir 사용
+# (Helm chart에서 persistence 설정)</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>실수 4: Helm values의 설정 들여쓰기 오류</h2>
+    <p>values.yaml에서 multiline 설정을 쓸 때 들여쓰기가 중요합니다.</p>
+    <pre><code># ❌ 잘못된 들여쓰기
+alloy:
+  configMap:
+    content: |
+prometheus.scrape "self" {   # 들여쓰기 없음 → YAML 오류
+}
+
+# ✅ 올바른 들여쓰기 (파이프 다음 줄부터 2스페이스 이상)
+alloy:
+  configMap:
+    content: |
+      prometheus.scrape "self" {
+        targets = prometheus.exporter.self.alloy.targets
+        forward_to = [prometheus.remote_write.local.receiver]
+      }</code></pre>
+  </div>
+
+  <div style="display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--gray-200);">
+    <a href="quiz.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">다음: 퀴즈 →</a>
+    <a href="practice.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--gray-100); color:var(--gray-700); padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">← 실습으로</a>
+  </div>
+</div>
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">VNTG R&D · Grafana Alloy Module 02</footer>
+<script>
+document.querySelectorAll('pre:not(.mermaid)').forEach(function(pre) {
+  var btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = '복사';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code') ? pre.querySelector('code').textContent : pre.textContent;
+    navigator.clipboard.writeText(code).then(function() { btn.textContent = '복사됨!'; setTimeout(function() { btn.textContent = '복사'; }, 2000); });
+  });
+  pre.style.position = 'relative'; pre.appendChild(btn);
+});
+</script>
+</body>
+</html>

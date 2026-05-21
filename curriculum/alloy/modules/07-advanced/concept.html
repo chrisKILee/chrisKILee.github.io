@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 07 — 개념 | Grafana Alloy</title>
+<link rel="stylesheet" href="../../styles.css">
+
+</head>
+<body>
+<nav class="nav">
+  <a href="../../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">홈</a></li>
+    <li><a href="concept.html" class="active">개념</a></li>
+    <li><a href="practice.html">실습</a></li>
+    <li><a href="mistakes.html">실수</a></li>
+    <li><a href="quiz.html">퀴즈</a></li>
+  </ul>
+</nav>
+<div class="page-header">
+  <div class="breadcrumb"><a href="../../index.html">Alloy</a> › Module 07 › 개념</div>
+  <h1>Module 07 — 개념</h1><p>고급 기능 & 운영</p>
+</div>
+<div class="main">
+
+  <div class="section">
+    <h2>Alloy 클러스터링</h2>
+    <p>Alloy는 내장 클러스터링을 지원합니다. 여러 인스턴스가 협력하여 스크래핑 타깃을 자동으로 분배합니다.</p>
+    <pre><code>// 클러스터링 활성화 (모든 인스턴스에 동일 설정)
+alloy run config.alloy \
+  --cluster.enabled \
+  --cluster.node-name=$(hostname) \
+  --cluster.advertise-address=$(hostname -I | awk '{print $1}'):12345 \
+  --cluster.join-peers=alloy-0:12345,alloy-1:12345,alloy-2:12345
+
+// 설정에서 cluster 사용 선언
+clustering {
+  enabled = true
+}
+
+// clustering 활성화 시 자동 샤딩
+prometheus.scrape "clustered" {
+  targets    = discovery.kubernetes.pods.targets
+  clustering { enabled = true }  // 타깃을 클러스터 멤버 간 자동 분배
+  forward_to = [prometheus.remote_write.mimir.receiver]
+}</code></pre>
+
+    <div class="info-box info">
+      <strong>Kubernetes에서 클러스터링</strong>
+      StatefulSet으로 배포하고 headless Service로 피어를 발견합니다.
+      각 Pod가 <code>alloy-0.alloy-headless:12345</code> 형식으로 서로를 찾습니다.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Kubernetes 프로덕션 배포 패턴</h2>
+
+    <h3 class="sub">패턴 1: DaemonSet (노드 레벨 수집)</h3>
+    <pre><code>// 메트릭 + 로그: 각 노드에서 실행
+controller:
+  type: daemonset
+
+// tolerations 설정으로 모든 노드 커버
+tolerations:
+  - operator: Exists</code></pre>
+
+    <h3 class="sub">패턴 2: StatefulSet (트레이스, 클러스터링)</h3>
+    <pre><code>// 트레이스 + 클러스터링: StatefulSet으로 HA 구성
+controller:
+  type: statefulset
+  replicas: 3
+
+// Persistent Volume for WAL
+volumeClaimTemplates:
+  - metadata:
+      name: alloy-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>TLS 보안 설정</h2>
+    <pre><code>// 수신기에 TLS 적용
+otelcol.receiver.otlp "secure" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+    tls {
+      cert_file = "/etc/alloy/tls/tls.crt"
+      key_file  = "/etc/alloy/tls/tls.key"
+      ca_file   = "/etc/alloy/tls/ca.crt"
+    }
+  }
+  output {
+    traces = [otelcol.processor.batch.default.input]
+  }
+}
+
+// remote_write TLS
+prometheus.remote_write "secure_mimir" {
+  endpoint {
+    url = "https://mimir:9009/api/v1/push"
+    tls_config {
+      cert_file = "/etc/alloy/tls/client.crt"
+      key_file  = "/etc/alloy/tls/client.key"
+      ca_file   = "/etc/alloy/tls/ca.crt"
+    }
+  }
+}</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>리소스 제한 및 성능 튜닝</h2>
+    <pre><code>// Kubernetes resource limits (Helm values)
+// resources:
+//   requests:
+//     cpu: 100m
+//     memory: 256Mi
+//   limits:
+//     cpu: 1000m
+//     memory: 1Gi
+
+// WAL 크기 제한 (메모리 보호)
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = env("MIMIR_URL")
+    queue_config {
+      max_shards           = 50   // 동시 전송 샤드 수 제한
+      capacity             = 2500  // 각 샤드의 큐 크기
+    }
+  }
+  wal {
+    truncate_frequency = "2h"   // WAL 정리 주기
+    max_keepalive_time = "8h"   // WAL 최대 보관 시간
+    min_keepalive_time = "5m"
+  }
+}</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>원격 설정 (Remote Configuration)</h2>
+    <p>ConfigMap이나 원격 URL에서 설정 일부를 동적으로 로드할 수 있습니다:</p>
+    <pre><code>// Kubernetes ConfigMap에서 설정 로드
+remote.kubernetes.configmap "scrape_targets" {
+  namespace = "monitoring"
+  name      = "alloy-scrape-targets"
+}
+
+// HTTP에서 설정 로드
+remote.http "dynamic_config" {
+  url             = "http://config-server/alloy-config"
+  poll_frequency  = "5m"
+}</code></pre>
+  </div>
+
+  <div style="display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--gray-200);">
+    <a href="practice.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">다음: 실습 →</a>
+    <a href="../06-traces/quiz.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--gray-100); color:var(--gray-700); padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">← Module 06</a>
+  </div>
+</div>
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">VNTG R&D · Grafana Alloy Module 07</footer>
+<script>
+document.querySelectorAll('pre:not(.mermaid)').forEach(function(pre) {
+  var btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = '복사';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code') ? pre.querySelector('code').textContent : pre.textContent;
+    navigator.clipboard.writeText(code).then(function() { btn.textContent = '복사됨!'; setTimeout(function() { btn.textContent = '복사'; }, 2000); });
+  });
+  pre.style.position = 'relative'; pre.appendChild(btn);
+});
+</script>
+</body>
+</html>

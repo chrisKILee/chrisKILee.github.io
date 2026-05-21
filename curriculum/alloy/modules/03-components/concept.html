@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 03 — 개념 | Grafana Alloy</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'default', flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: false }, themeVariables: { fontFamily: 'inherit' } });
+</script>
+</head>
+<body>
+<nav class="nav">
+  <a href="../../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">홈</a></li>
+    <li><a href="concept.html" class="active">개념</a></li>
+    <li><a href="practice.html">실습</a></li>
+    <li><a href="mistakes.html">실수</a></li>
+    <li><a href="quiz.html">퀴즈</a></li>
+  </ul>
+</nav>
+<div class="page-header">
+  <div class="breadcrumb"><a href="../../index.html">Alloy</a> › Module 03 › 개념</div>
+  <h1>컴포넌트 & 파이프라인</h1>
+  <p>Alloy의 핵심인 컴포넌트 모델과 파이프라인 설계 방법을 심층적으로 이해합니다.</p>
+</div>
+<div class="main">
+
+  <div class="section">
+    <h2>컴포넌트 아나토미</h2>
+    <p>Alloy의 모든 기능 단위는 컴포넌트입니다. 각 컴포넌트는 <strong>Arguments(입력)</strong>와 <strong>Exports(출력)</strong>를 가집니다.</p>
+
+    <div class="arch">
+      <div class="arch-title">컴포넌트 데이터 흐름</div>
+      <pre class="mermaid">
+flowchart LR
+  subgraph c1["discovery.kubernetes pods"]
+    a1["arguments\nrole=pod\nnamespaces"]:::arg
+    l1["내부 로직\nK8s API 조회"]:::logic
+    e1["exports\ntargets[]"]:::exp
+  end
+  subgraph c2["prometheus.scrape apps"]
+    a2["arguments\ntargets\nforward_to\ninterval"]:::arg
+    l2["내부 로직\nHTTP scrape"]:::logic
+    e2["exports\nreceiver"]:::exp
+  end
+  subgraph c3["prometheus.remote_write mimir"]
+    a3["arguments\nendpoint.url"]:::arg
+    l3["내부 로직\nHTTP push"]:::logic
+    e3["exports\nreceiver"]:::exp
+  end
+
+  e1 -->|"targets"| a2
+  e3 -->|"receiver"| a2
+  l2 -->|"metrics"| l3
+
+  classDef arg fill:#fff4ef,stroke:#f55b20,stroke-width:1px,color:#c44510,font-size:0.75rem
+  classDef logic fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,font-size:0.75rem
+  classDef exp fill:#f0fdf4,stroke:#22c55e,stroke-width:1px,color:#15803d,font-size:0.75rem
+      </pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>컴포넌트 참조 문법</h2>
+    <p>컴포넌트 간 데이터를 연결할 때 <code>[타입].[레이블].[export이름]</code> 형식으로 참조합니다.</p>
+    <pre><code>// 컴포넌트 A: 타깃 디스커버리
+discovery.kubernetes "pods" {
+  role = "pod"
+}
+
+// 컴포넌트 B: A의 exports.targets를 argument로 사용
+prometheus.scrape "pods" {
+  // discovery.kubernetes.pods.targets 참조
+  targets    = discovery.kubernetes.pods.targets
+  forward_to = [prometheus.remote_write.mimir.receiver]
+}
+
+// 컴포넌트 C
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"
+  }
+}</code></pre>
+
+    <div class="info-box info">
+      <strong>참조 형식</strong>
+      <code>[컴포넌트 타입].[레이블].[export 이름]</code><br>
+      예: <code>discovery.kubernetes.pods.targets</code> — kubernetes 타입, "pods" 레이블의 targets export
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>컴포넌트 카테고리</h2>
+
+    <h3 class="sub">수신기 (Sources / Receivers)</h3>
+    <p>외부에서 데이터를 받아오는 컴포넌트</p>
+    <table>
+      <tr><th>컴포넌트</th><th>역할</th></tr>
+      <tr><td><code>prometheus.scrape</code></td><td>Prometheus 형식 메트릭 스크래핑</td></tr>
+      <tr><td><code>loki.source.file</code></td><td>로컬 파일에서 로그 읽기</td></tr>
+      <tr><td><code>loki.source.kubernetes</code></td><td>Kubernetes Pod 로그 수집</td></tr>
+      <tr><td><code>otelcol.receiver.otlp</code></td><td>OTLP 프로토콜로 데이터 수신</td></tr>
+      <tr><td><code>otelcol.receiver.jaeger</code></td><td>Jaeger 형식 트레이스 수신</td></tr>
+    </table>
+
+    <h3 class="sub">처리기 (Processors)</h3>
+    <p>데이터를 변환/필터링하는 컴포넌트</p>
+    <table>
+      <tr><th>컴포넌트</th><th>역할</th></tr>
+      <tr><td><code>prometheus.relabel</code></td><td>메트릭 레이블 변환/필터</td></tr>
+      <tr><td><code>loki.process</code></td><td>로그 처리, 파싱, 레이블 추가</td></tr>
+      <tr><td><code>otelcol.processor.batch</code></td><td>OTel 데이터 배치 처리</td></tr>
+      <tr><td><code>otelcol.processor.filter</code></td><td>OTel 데이터 필터링</td></tr>
+      <tr><td><code>discovery.relabel</code></td><td>서비스 디스커버리 결과 가공</td></tr>
+    </table>
+
+    <h3 class="sub">내보내기 (Exporters)</h3>
+    <p>처리된 데이터를 외부로 전송하는 컴포넌트</p>
+    <table>
+      <tr><th>컴포넌트</th><th>역할</th></tr>
+      <tr><td><code>prometheus.remote_write</code></td><td>Prometheus remote_write 프로토콜 전송</td></tr>
+      <tr><td><code>loki.write</code></td><td>Loki로 로그 전송</td></tr>
+      <tr><td><code>otelcol.exporter.otlp</code></td><td>OTLP로 데이터 전송 (Tempo 등)</td></tr>
+      <tr><td><code>otelcol.exporter.prometheus</code></td><td>Prometheus exposition format으로 변환</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>서비스 디스커버리 패턴</h2>
+    <p>Kubernetes 환경에서 동적으로 스크래핑 대상을 찾는 일반적인 패턴입니다:</p>
+
+    <pre><code>// 1단계: Kubernetes Pod 디스커버리
+discovery.kubernetes "app_pods" {
+  role = "pod"
+  namespaces {
+    names = ["production", "staging"]
+  }
+}
+
+// 2단계: 불필요한 타깃 필터링 및 레이블 변환
+discovery.relabel "app_pods" {
+  targets = discovery.kubernetes.app_pods.targets
+
+  // prometheus.io/scrape: "true" 어노테이션이 있는 Pod만 수집
+  rule {
+    source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_scrape"]
+    action        = "keep"
+    regex         = "true"
+  }
+
+  // 포트 어노테이션으로 스크래핑 포트 오버라이드
+  rule {
+    source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_port"]
+    action        = "replace"
+    target_label  = "__address__"
+    regex         = "(.*)"
+    replacement   = "$1"
+  }
+
+  // 네임스페이스 레이블 추가
+  rule {
+    source_labels = ["__meta_kubernetes_namespace"]
+    target_label  = "namespace"
+  }
+
+  // Pod 이름을 pod 레이블로
+  rule {
+    source_labels = ["__meta_kubernetes_pod_name"]
+    target_label  = "pod"
+  }
+}
+
+// 3단계: 필터링된 타깃 스크래핑
+prometheus.scrape "app_pods" {
+  targets         = discovery.relabel.app_pods.output
+  scrape_interval = "30s"
+  forward_to      = [prometheus.remote_write.mimir.receiver]
+}</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>otelcol 컴포넌트 파이프라인</h2>
+    <p>OpenTelemetry 컴포넌트는 <code>otelcol.*</code> 접두사를 사용하며, receiver → processor → exporter 구조를 따릅니다.</p>
+
+    <div class="arch">
+      <div class="arch-title">OTel 파이프라인 구조</div>
+      <pre class="mermaid">
+flowchart LR
+  app["애플리케이션\n(OTLP 계측)"]:::src
+
+  subgraph alloy["Grafana Alloy"]
+    recv["otelcol.receiver.otlp\nreceiver"]:::otel
+    batch["otelcol.processor.batch\n배치 처리"]:::otel
+    filter["otelcol.processor.filter\n샘플링/필터"]:::otel
+    exp["otelcol.exporter.otlp\nexporter"]:::otel
+
+    recv -->|"output"| batch --> filter --> exp
+  end
+
+  tempo["Grafana Tempo"]:::be
+
+  app -->|"OTLP gRPC/HTTP"| recv
+  exp -->|"OTLP"| tempo
+
+  classDef src fill:#f0fdf4,stroke:#22c55e,stroke-width:2px,color:#15803d
+  classDef otel fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#5b21b6
+  classDef be fill:#e8f0fe,stroke:#1a73e8,stroke-width:2px,color:#0b3a8c
+      </pre>
+    </div>
+
+    <pre><code>// OTel 파이프라인 예시
+otelcol.receiver.otlp "default" {
+  grpc { endpoint = "0.0.0.0:4317" }
+  http { endpoint = "0.0.0.0:4318" }
+
+  output {
+    traces = [otelcol.processor.batch.default.input]
+  }
+}
+
+otelcol.processor.batch "default" {
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+    tls { insecure = true }
+  }
+}</code></pre>
+  </div>
+
+  <div style="display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--gray-200);">
+    <a href="practice.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">다음: 실습 →</a>
+    <a href="../02-installation/quiz.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--gray-100); color:var(--gray-700); padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">← Module 02</a>
+  </div>
+</div>
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">VNTG R&D · Grafana Alloy Module 03</footer>
+<script>
+document.querySelectorAll('pre:not(.mermaid)').forEach(function(pre) {
+  var btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = '복사';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code') ? pre.querySelector('code').textContent : pre.textContent;
+    navigator.clipboard.writeText(code).then(function() { btn.textContent = '복사됨!'; setTimeout(function() { btn.textContent = '복사'; }, 2000); });
+  });
+  pre.style.position = 'relative'; pre.appendChild(btn);
+});
+</script>
+</body>
+</html>

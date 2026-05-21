@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아키텍처 다이어그램 — Grafana Alloy</title>
+<link rel="stylesheet" href="../styles.css">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: false },
+    themeVariables: { fontFamily: 'inherit' }
+  });
+</script>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">홈</a></li>
+    <li><a href="../overview.html">개요</a></li>
+    <li><a href="architecture.html" class="active">아키텍처</a></li>
+    <li><a href="cheatsheet.html">치트시트</a></li>
+  </ul>
+</nav>
+
+<div class="page-header">
+  <div class="breadcrumb"><a href="../index.html">Alloy</a> › 아키텍처 다이어그램</div>
+  <h1>아키텍처 다이어그램</h1>
+  <p>Grafana Alloy의 내부 구조, 데이터 흐름, Grafana Stack 통합을 시각적으로 설명합니다.</p>
+</div>
+
+<div class="main wide">
+
+  <div class="section">
+    <h2>Grafana Observability Stack 전체 구조</h2>
+    <div class="arch">
+      <div class="arch-title">Grafana Stack — 데이터 흐름 전체 그림</div>
+      <pre class="mermaid">
+flowchart TD
+  subgraph sources["데이터 소스"]
+    direction LR
+    apps["애플리케이션\n(OTLP 계측)"]:::src
+    nodes["Kubernetes\nNodes/Pods"]:::src
+    infra["인프라\n시스템 메트릭"]:::src
+    logfiles["로그 파일\n/var/log/..."]:::src
+  end
+
+  subgraph alloy_cluster["Grafana Alloy 클러스터 (DaemonSet + StatefulSet)"]
+    direction LR
+    a1["Alloy-0\n메트릭 · 로그"]:::alloy
+    a2["Alloy-1\n메트릭 · 로그"]:::alloy
+    a3["Alloy-2\n트레이스"]:::alloy
+  end
+
+  subgraph backends["Grafana Stack 백엔드"]
+    direction LR
+    mimir["Mimir\nMetrics TSDB"]:::be
+    loki["Loki\nLog Store"]:::be
+    tempo["Tempo\nTrace Store"]:::be
+    pyroscope["Pyroscope\nProfile Store"]:::be
+  end
+
+  grafana["Grafana\n대시보드 & 알람"]:::viz
+
+  sources --> alloy_cluster
+  a1 & a2 -->|"remote_write"| mimir
+  a1 & a2 -->|"loki.write"| loki
+  a3 -->|"OTLP"| tempo
+  backends --> grafana
+
+  classDef src fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#334155
+  classDef alloy fill:#fff4ef,stroke:#f55b20,stroke-width:2px,color:#c44510,font-weight:600
+  classDef be fill:#e8f0fe,stroke:#1a73e8,stroke-width:2px,color:#0b3a8c
+  classDef viz fill:#f0fdf4,stroke:#22c55e,stroke-width:2px,color:#15803d
+      </pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Alloy 내부 컴포넌트 구조</h2>
+    <div class="arch">
+      <div class="arch-title">단일 Alloy 인스턴스 내부 파이프라인</div>
+      <pre class="mermaid">
+flowchart LR
+  subgraph alloy["Grafana Alloy 프로세스"]
+    direction TB
+
+    subgraph discovery["디스커버리 레이어"]
+      dk["discovery.kubernetes\npods / nodes / services"]:::disc
+      drel["discovery.relabel\n필터링 · 레이블 변환"]:::disc
+    end
+
+    subgraph collection["수집 레이어"]
+      pscrape["prometheus.scrape\n메트릭 스크래핑"]:::col
+      lsfile["loki.source.file\n파일 테일링"]:::col
+      lsk8s["loki.source.kubernetes\nPod 로그"]:::col
+      orecv["otelcol.receiver.otlp\nOTLP 수신"]:::col
+    end
+
+    subgraph processing["처리 레이어"]
+      prel["prometheus.relabel\n메트릭 변환"]:::proc
+      lproc["loki.process\n로그 파싱"]:::proc
+      obatch["otelcol.processor.batch\n배치"]:::proc
+      otsamp["otelcol.processor.tail_sampling\n샘플링"]:::proc
+    end
+
+    subgraph export["내보내기 레이어"]
+      prw["prometheus.remote_write\nMimir 전송"]:::exp
+      lwrite["loki.write\nLoki 전송"]:::exp
+      oexp["otelcol.exporter.otlp\nTempo 전송"]:::exp
+    end
+
+    dk --> drel
+    drel --> pscrape & lsk8s
+    pscrape --> prel --> prw
+    lsfile & lsk8s --> lproc --> lwrite
+    orecv --> obatch --> otsamp --> oexp
+  end
+
+  classDef disc fill:#fef3c7,stroke:#d97706,stroke-width:1px,color:#92400e
+  classDef col fill:#ede9fe,stroke:#7c3aed,stroke-width:1px,color:#5b21b6
+  classDef proc fill:#dbeafe,stroke:#2563eb,stroke-width:1px,color:#1e40af
+  classDef exp fill:#dcfce7,stroke:#16a34a,stroke-width:1px,color:#166534
+      </pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>클러스터링 아키텍처</h2>
+    <div class="arch">
+      <div class="arch-title">Alloy 클러스터링 — 타깃 샤딩</div>
+      <pre class="mermaid">
+flowchart TD
+  targets["Kubernetes Pods\nTarget Pool\n(100개 Pod)"]:::src
+
+  subgraph cluster["Alloy 클러스터 (3 인스턴스)"]
+    direction LR
+    a0["Alloy-0\nPod 1-33 담당"]:::alloy
+    a1["Alloy-1\nPod 34-66 담당"]:::alloy
+    a2["Alloy-2\nPod 67-100 담당"]:::alloy
+    a0 <-->|"gossip 프로토콜"| a1
+    a1 <-->|"gossip 프로토콜"| a2
+    a0 <-->|"gossip 프로토콜"| a2
+  end
+
+  mimir["Mimir\n(remote_write)"]:::be
+
+  targets --> cluster
+  cluster --> mimir
+
+  classDef src fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#92400e
+  classDef alloy fill:#fff4ef,stroke:#f55b20,stroke-width:2px,color:#c44510,font-weight:600
+  classDef be fill:#e8f0fe,stroke:#1a73e8,stroke-width:2px,color:#0b3a8c
+      </pre>
+    </div>
+    <div class="info-box tip">
+      <strong>클러스터링의 장점</strong>
+      인스턴스 추가/제거 시 타깃 분배를 자동으로 재균형(rebalance)합니다.
+      rolling update 중에도 타깃이 누락되지 않습니다.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>메트릭 파이프라인 상세</h2>
+    <div class="arch">
+      <div class="arch-title">Prometheus 메트릭 수집 파이프라인</div>
+      <pre class="mermaid">
+sequenceDiagram
+  participant target as 스크래핑 타깃
+  participant scrape as prometheus.scrape
+  participant relabel as prometheus.relabel
+  participant wal as WAL (Write-Ahead Log)
+  participant rw as prometheus.remote_write
+  participant mimir as Mimir
+
+  loop 매 scrape_interval
+    scrape ->> target: HTTP GET /metrics
+    target -->> scrape: Prometheus text format
+    scrape ->> relabel: 레이블 변환/필터링 요청
+    relabel -->> scrape: 처리된 메트릭
+    scrape ->> wal: 메트릭 저장
+  end
+
+  loop 주기적 배치 전송
+    wal ->> rw: 배치 읽기
+    rw ->> mimir: HTTP POST /api/v1/push
+    mimir -->> rw: 200 OK
+    rw ->> wal: 전송 완료 표시
+  end
+      </pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>트레이스 Tail-based 샘플링 흐름</h2>
+    <div class="arch">
+      <div class="arch-title">Tail-based 샘플링 결정 과정</div>
+      <pre class="mermaid">
+flowchart TD
+  recv["otelcol.receiver.otlp\nspan 수신"]:::col
+  buf["인메모리 버퍼\n(decision_wait 동안 대기)"]:::proc
+  decision{{"트레이스 완료?\n+ 에러/지연 판단"}}:::decision
+  keep["저장 (Tempo 전송)"]:::keep
+  drop["드롭"]:::drop
+
+  recv --> buf
+  buf -->|"decision_wait 경과"| decision
+  decision -->|"에러 있음\n또는 지연 > 임계값"| keep
+  decision -->|"정상 + 샘플링 탈락"| drop
+
+  tempo["Tempo"]:::be
+  keep --> tempo
+
+  classDef col fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#5b21b6
+  classDef proc fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e40af
+  classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#92400e
+  classDef keep fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534
+  classDef drop fill:#fee2e2,stroke:#ef4444,stroke-width:2px,color:#991b1b
+  classDef be fill:#e8f0fe,stroke:#1a73e8,stroke-width:2px,color:#0b3a8c
+      </pre>
+    </div>
+  </div>
+
+</div>
+
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">
+  VNTG R&D · Grafana Alloy Architecture
+</footer>
+
+</body>
+</html>

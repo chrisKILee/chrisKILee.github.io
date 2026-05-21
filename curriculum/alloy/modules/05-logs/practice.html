@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 05 — 실습 | Grafana Alloy</title>
+<link rel="stylesheet" href="../../styles.css">
+
+</head>
+<body>
+<nav class="nav">
+  <a href="../../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">홈</a></li>
+    <li><a href="concept.html">개념</a></li>
+    <li><a href="practice.html" class="active">실습</a></li>
+    <li><a href="mistakes.html">실수</a></li>
+    <li><a href="quiz.html">퀴즈</a></li>
+  </ul>
+</nav>
+<div class="page-header">
+  <div class="breadcrumb"><a href="../../index.html">Alloy</a> › Module 05 › 실습</div>
+  <h1>Module 05 — 실습</h1><p>로그 수집 실습</p>
+</div>
+<div class="main">
+
+  <div class="info-box info"><strong>사전 요구사항</strong> kind, kubectl, helm이 설치되어 있어야 합니다.</div>
+
+  <div class="section">
+    <h2>실습: kind 클러스터에서 Pod 로그 수집</h2>
+    <pre><code>kind create cluster --name logs-lab
+
+cat > logs-values.yaml << 'EOF'
+alloy:
+  configMap:
+    content: |
+      // Pod 디스커버리
+      discovery.kubernetes "pods" {
+        role = "pod"
+      }
+
+      discovery.relabel "pods" {
+        targets = discovery.kubernetes.pods.targets
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          target_label  = "pod"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          target_label  = "namespace"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          target_label  = "container"
+        }
+      }
+
+      // Kubernetes Pod 로그 수집
+      loki.source.kubernetes "pods" {
+        targets    = discovery.relabel.pods.output
+        forward_to = [loki.process.labels.receiver]
+      }
+
+      // Kubernetes 이벤트도 수집
+      loki.source.kubernetes_events "events" {
+        forward_to = [loki.write.loki.receiver]
+      }
+
+      loki.process "labels" {
+        forward_to = [loki.write.loki.receiver]
+
+        stage.labels {
+          values = { app = "__meta_kubernetes_pod_label_app" }
+        }
+      }
+
+      loki.write "loki" {
+        endpoint {
+          url = "http://loki:3100/loki/api/v1/push"
+        }
+      }
+
+controller:
+  type: daemonset
+rbac:
+  create: true
+serviceAccount:
+  create: true
+EOF
+
+helm install alloy grafana/alloy   --namespace monitoring --create-namespace   -f logs-values.yaml</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>테스트 Pod 실행 및 로그 확인</h2>
+    <pre><code># 로그를 생성하는 테스트 Pod
+kubectl run log-generator   --image=busybox   --restart=Never   -- sh -c 'while true; do echo "{"level":"info","msg":"test log","time":"$(date -Iseconds)"}"; sleep 1; done'
+
+# Alloy UI 확인
+kubectl port-forward -n monitoring svc/alloy 12345:12345 &amp;
+# http://localhost:12345 → Components → loki.source.kubernetes.pods</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>정리</h2>
+    <pre><code>kind delete cluster --name logs-lab</code></pre>
+  </div>
+
+  <div style="display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--gray-200);">
+    <a href="mistakes.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">다음: 일반적인 실수 →</a>
+    <a href="concept.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--gray-100); color:var(--gray-700); padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">← 개념으로</a>
+  </div>
+</div>
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">VNTG R&D · Grafana Alloy Module 05</footer>
+<script>
+document.querySelectorAll('pre:not(.mermaid)').forEach(function(pre) {
+  var btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = '복사';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code') ? pre.querySelector('code').textContent : pre.textContent;
+    navigator.clipboard.writeText(code).then(function() { btn.textContent = '복사됨!'; setTimeout(function() { btn.textContent = '복사'; }, 2000); });
+  });
+  pre.style.position = 'relative'; pre.appendChild(btn);
+});
+</script>
+</body>
+</html>

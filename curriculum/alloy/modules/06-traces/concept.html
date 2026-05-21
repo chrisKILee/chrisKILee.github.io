@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 06 — 개념 | Grafana Alloy</title>
+<link rel="stylesheet" href="../../styles.css">
+
+</head>
+<body>
+<nav class="nav">
+  <a href="../../index.html" class="nav-brand"><div class="logo">A</div>Alloy</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">홈</a></li>
+    <li><a href="concept.html" class="active">개념</a></li>
+    <li><a href="practice.html">실습</a></li>
+    <li><a href="mistakes.html">실수</a></li>
+    <li><a href="quiz.html">퀴즈</a></li>
+  </ul>
+</nav>
+<div class="page-header">
+  <div class="breadcrumb"><a href="../../index.html">Alloy</a> › Module 06 › 개념</div>
+  <h1>Module 06 — 개념</h1><p>트레이스 수집</p>
+</div>
+<div class="main">
+
+  <div class="section">
+    <h2>트레이스 파이프라인 개요</h2>
+    <p>Alloy는 OTel Collector의 <code>otelcol.*</code> 컴포넌트로 분산 트레이스를 수집합니다.</p>
+    <pre><code>// OTLP 수신 → 배치 처리 → Tempo 전송
+otelcol.receiver.otlp "default" {
+  grpc { endpoint = "0.0.0.0:4317" }
+  http { endpoint = "0.0.0.0:4318" }
+
+  output {
+    traces = [otelcol.processor.batch.default.input]
+  }
+}
+
+otelcol.processor.batch "default" {
+  timeout             = "5s"
+  send_batch_size     = 1000
+  send_batch_max_size = 2000
+
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+    tls { insecure = true }
+  }
+}</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>수신기(Receivers)</h2>
+    <table>
+      <tr><th>컴포넌트</th><th>프로토콜</th><th>기본 포트</th></tr>
+      <tr><td><code>otelcol.receiver.otlp</code></td><td>OTLP gRPC/HTTP</td><td>4317/4318</td></tr>
+      <tr><td><code>otelcol.receiver.jaeger</code></td><td>Jaeger gRPC/Thrift</td><td>14250/14268</td></tr>
+      <tr><td><code>otelcol.receiver.zipkin</code></td><td>Zipkin HTTP</td><td>9411</td></tr>
+      <tr><td><code>otelcol.receiver.opencensus</code></td><td>OpenCensus gRPC</td><td>55678</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>샘플링 전략</h2>
+    <p>모든 트레이스를 저장하면 비용이 너무 많이 들기 때문에 샘플링이 필요합니다.</p>
+
+    <h3 class="sub">Head-based 샘플링 (단순)</h3>
+    <pre><code>// 10%만 수집하는 probabilistic 샘플링
+otelcol.processor.probabilistic_sampler "head" {
+  sampling_percentage = 10
+
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}</code></pre>
+
+    <h3 class="sub">Tail-based 샘플링 (권장)</h3>
+    <pre><code>// 트레이스 완료 후 결과를 보고 결정 (에러는 100%, 정상은 10%)
+otelcol.processor.tail_sampling "smart" {
+  decision_wait = "30s"
+  num_traces    = 100000
+
+  policy {
+    name = "errors-always"
+    type = "status_code"
+    status_code {
+      status_codes = ["ERROR"]
+    }
+  }
+
+  policy {
+    name = "slow-requests"
+    type = "latency"
+    latency {
+      threshold_ms = 1000  // 1초 이상 걸린 요청
+    }
+  }
+
+  policy {
+    name = "random-10-percent"
+    type = "probabilistic"
+    probabilistic {
+      sampling_percentage = 10
+    }
+  }
+
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>트레이스와 메트릭 연동 (Span Metrics)</h2>
+    <pre><code>// 트레이스에서 RED 메트릭 자동 생성
+otelcol.connector.spanmetrics "default" {
+  histogram {
+    explicit {
+      buckets = ["2ms", "4ms", "6ms", "8ms", "10ms", "50ms", "100ms", "200ms", "400ms", "800ms", "1s", "1400ms", "2s", "5s", "10s", "15s"]
+    }
+  }
+
+  output {
+    metrics = [otelcol.exporter.prometheus.default.input]
+  }
+}
+
+// Span Metrics를 Prometheus 형식으로 노출
+otelcol.exporter.prometheus "default" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+}</code></pre>
+  </div>
+
+  <div style="display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--gray-200);">
+    <a href="practice.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--primary); color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">다음: 실습 →</a>
+    <a href="../05-logs/quiz.html" style="display:inline-flex; align-items:center; gap:8px; background:var(--gray-100); color:var(--gray-700); padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;">← Module 05</a>
+  </div>
+</div>
+<footer style="text-align:center; padding:32px; color:var(--gray-500); font-size:0.8rem; border-top:1px solid var(--gray-200);">VNTG R&D · Grafana Alloy Module 06</footer>
+<script>
+document.querySelectorAll('pre:not(.mermaid)').forEach(function(pre) {
+  var btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = '복사';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code') ? pre.querySelector('code').textContent : pre.textContent;
+    navigator.clipboard.writeText(code).then(function() { btn.textContent = '복사됨!'; setTimeout(function() { btn.textContent = '복사'; }, 2000); });
+  });
+  pre.style.position = 'relative'; pre.appendChild(btn);
+});
+</script>
+</body>
+</html>
