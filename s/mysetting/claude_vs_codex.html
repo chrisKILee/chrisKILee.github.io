@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Claude Code vs Codex 구조 비교</title>
+<link rel="stylesheet" href="/templates/assets/common.css" />
+<style>
+  :root {
+    --accent: #7c3aed;
+    --accent-soft: #f1ecfe;
+    --a-color: #7c3aed;
+    --b-color: #d97706;
+    --maxw: 1180px;
+  }
+  [data-theme="dark"] {
+    --accent: #b39bff;
+    --accent-soft: color-mix(in oklab, #b39bff 16%, #18181a);
+    --a-color: #b39bff;
+    --b-color: #f0b454;
+  }
+  body { font-family: var(--font-sans); }
+  .container { max-width: var(--maxw); margin: 0 auto; padding: 56px 28px 100px; }
+
+  /* ── HERO ─────────────────────────── */
+  .hero { text-align: center; margin-bottom: 50px; }
+  .hero .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  .hero h1 { font-size: clamp(32px, 5vw, 60px); margin: 0 0 14px; letter-spacing: -.025em; line-height: 1.1; font-weight: 800; }
+  .hero h1 .vs { display: inline-block; padding: 0 .15em; color: var(--ink-3); font-style: italic; font-weight: 400; }
+  .hero .deck { font-size: 18px; color: var(--ink-2); max-width: 680px; margin: 0 auto; line-height: 1.6; }
+  .hero .meta { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); margin-top: 18px; letter-spacing: .04em; }
+
+  /* ── VERDICT ─────────────────────── */
+  .verdict {
+    max-width: 860px; margin: 0 auto 50px;
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 12px;
+    padding: 24px 28px;
+    text-align: center;
+  }
+  .verdict .label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+  .verdict .winner { font-size: 20px; font-weight: 700; margin: 0 0 10px; }
+  .verdict .winner .a { color: var(--a-color); }
+  .verdict .winner .b { color: var(--b-color); }
+  .verdict p { font-size: 15px; color: var(--ink-2); margin: 0; line-height: 1.6; }
+
+  /* ── VS GRID ─────────────────────── */
+  .vs-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 50px;
+  }
+  @media (max-width: 720px) { .vs-grid { grid-template-columns: 1fr; } }
+  .vs-col { padding: 28px 26px; }
+  .vs-col.a { background: color-mix(in oklab, var(--a-color) 6%, var(--bg)); border-right: 1px solid var(--line); }
+  .vs-col.b { background: color-mix(in oklab, var(--b-color) 6%, var(--bg)); }
+  @media (max-width: 720px) { .vs-col.a { border-right: 0; border-bottom: 1px solid var(--line); } }
+
+  .tool-mark { display: inline-flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; font-family: var(--font-mono); margin-bottom: 14px; }
+  .tool-mark .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .vs-col.a .tool-mark .dot { background: var(--a-color); }
+  .vs-col.a .tool-mark { color: var(--a-color); }
+  .vs-col.b .tool-mark .dot { background: var(--b-color); }
+  .vs-col.b .tool-mark { color: var(--b-color); }
+
+  .tool-name { font-size: 28px; font-weight: 700; margin: 0 0 4px; letter-spacing: -.015em; }
+  .tool-tag { font-size: 12px; color: var(--ink-3); margin: 0 0 14px; font-family: var(--font-mono); }
+  .tool-deck { font-size: 14.5px; color: var(--ink-2); line-height: 1.65; margin: 0 0 18px; }
+
+  .kv-list { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
+  .kv-list li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; line-height: 1.5; }
+  .kv-list li .k { color: var(--ink-3); font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; min-width: 80px; flex-shrink: 0; margin-top: 1px; }
+  .kv-list li .v { color: var(--ink-1); text-align: right; font-size: 13px; }
+  .kv-list li .v code { font-family: var(--font-mono); font-size: 12px; background: var(--bg-sub); padding: 1px 5px; border-radius: 4px; }
+
+  /* ── SECTION TITLES ─────────────── */
+  h2.section { font-size: 24px; margin: 60px 0 18px; letter-spacing: -.01em; font-weight: 700; padding-bottom: 10px; border-bottom: 2px solid var(--ink); }
+
+  /* ── STRUCT COMPARISON TABLE ────── */
+  .struct-table { width: 100%; border-collapse: collapse; margin: 0 0 50px; }
+  .struct-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line-strong); font-weight: 600; }
+  .struct-table th.col-a { color: var(--a-color); }
+  .struct-table th.col-b { color: var(--b-color); }
+  .struct-table td { padding: 13px 14px; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: top; line-height: 1.6; }
+  .struct-table td.cat { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); font-weight: 600; width: 160px; }
+  .struct-table td code { font-family: var(--font-mono); font-size: 12px; background: var(--bg-sub); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
+  .struct-table tr:hover td { background: var(--bg-sub); }
+
+  /* ── FEATURE MATRIX ─────────────── */
+  .feature-matrix { width: 100%; border-collapse: collapse; margin-bottom: 50px; }
+  .feature-matrix th, .feature-matrix td { padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: middle; }
+  .feature-matrix thead th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); border-bottom: 1px solid var(--line-strong); }
+  .feature-matrix th.col-a { color: var(--a-color); }
+  .feature-matrix th.col-b { color: var(--b-color); }
+  .cell-y { color: #16a34a; font-weight: 600; }
+  .cell-n { color: var(--ink-4); }
+  .cell-p { color: var(--ink-2); }
+  [data-theme="dark"] .cell-y { color: #4ade80; }
+
+  /* ── SETUP GUIDE ────────────────── */
+  .setup-steps { counter-reset: step; list-style: none; padding: 0; margin: 0 0 50px; }
+  .setup-steps > li { counter-increment: step; display: grid; grid-template-columns: 40px 1fr; gap: 16px; margin-bottom: 32px; align-items: start; }
+  .setup-steps > li::before { content: counter(step); width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .setup-step-body h4 { font-size: 17px; font-weight: 700; margin: 0 0 8px; }
+  .setup-step-body p { font-size: 14.5px; color: var(--ink-2); line-height: 1.65; margin: 0 0 12px; }
+  .setup-step-body code { font-family: var(--font-mono); font-size: 12px; background: var(--bg-sub); padding: 1px 6px; border-radius: 4px; }
+
+  /* ── CODE BLOCK ─────────────────── */
+  .code-block { background: #0f1117; border-radius: 10px; overflow-x: auto; margin: 12px 0 20px; }
+  .code-block-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #2a2d36; }
+  .code-block-header .lang { font-family: var(--font-mono); font-size: 11px; color: #6b7280; letter-spacing: .08em; }
+  .code-block pre { margin: 0; padding: 16px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; color: #e5e7eb; white-space: pre; overflow-x: auto; }
+  .code-block pre .cm { color: #6b7280; }
+  .code-block pre .kw { color: #93c5fd; }
+  .code-block pre .st { color: #86efac; }
+  .code-block pre .hl { color: #fde68a; }
+
+  /* ── CALLOUT ────────────────────── */
+  .callout { border-radius: 10px; padding: 16px 20px; margin: 16px 0 24px; display: flex; gap: 14px; align-items: flex-start; font-size: 14.5px; line-height: 1.65; }
+  .callout.warn { background: #fef9c3; border-left: 4px solid #ca8a04; color: #713f12; }
+  .callout.tip  { background: #dcfce7; border-left: 4px solid #16a34a; color: #14532d; }
+  .callout.info { background: #e0f2fe; border-left: 4px solid #0284c7; color: #0c4a6e; }
+  [data-theme="dark"] .callout.warn { background: #292524; border-color: #ca8a04; color: #fde68a; }
+  [data-theme="dark"] .callout.tip  { background: #14291a; border-color: #16a34a; color: #86efac; }
+  [data-theme="dark"] .callout.info { background: #0c1a29; border-color: #0284c7; color: #7dd3fc; }
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 14px; }
+
+  /* ── SCENARIOS ──────────────────── */
+  .scenarios { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0 50px; }
+  @media (max-width: 800px) { .scenarios { grid-template-columns: 1fr; } }
+  .sc-card { border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; background: var(--bg-elev); }
+  .sc-card .sc-h { font-size: 11px; font-family: var(--font-mono); color: var(--ink-3); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
+  .sc-card h4 { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
+  .sc-card p { margin: 0 0 12px; font-size: 13.5px; color: var(--ink-2); line-height: 1.6; }
+  .sc-card .sc-pick { font-family: var(--font-mono); font-size: 12px; padding: 6px 10px; border-radius: 6px; display: inline-block; font-weight: 600; }
+  .sc-card.pick-a .sc-pick { background: color-mix(in oklab, var(--a-color) 16%, transparent); color: var(--a-color); }
+  .sc-card.pick-b .sc-pick { background: color-mix(in oklab, var(--b-color) 16%, transparent); color: var(--b-color); }
+  .sc-card.pick-tie .sc-pick { background: var(--bg-sub); color: var(--ink-2); }
+
+  /* ── CHECKLIST ──────────────────── */
+  .check-group { margin: 0 0 32px; }
+  .check-group h4 { font-size: 15px; font-weight: 700; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+  .check-group h4 .badge { font-family: var(--font-mono); font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 600; }
+  .check-group h4 .badge.a { background: color-mix(in oklab, var(--a-color) 16%, transparent); color: var(--a-color); }
+  .check-group h4 .badge.b { background: color-mix(in oklab, var(--b-color) 16%, transparent); color: var(--b-color); }
+  .check-group h4 .badge.both { background: var(--bg-sub); color: var(--ink-2); }
+  .check-list { list-style: none; padding: 0; margin: 0; }
+  .check-list li { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--ink-2); line-height: 1.6; }
+  .check-list li:last-child { border-bottom: 0; }
+  .check-list li::before { content: "□"; font-family: var(--font-mono); font-size: 16px; color: var(--accent); flex-shrink: 0; margin-top: -1px; }
+  .check-list li code { font-family: var(--font-mono); font-size: 12px; background: var(--bg-sub); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
+
+  /* ── SVG DIAGRAM ────────────────── */
+  .diagram-wrap { margin: 24px 0 50px; overflow-x: auto; }
+  .diagram-wrap svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+
+  /* ── DECISION TREE ──────────────── */
+  .decision-tree { max-width: 720px; margin: 20px auto 50px; }
+  .dt-node { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  .dt-node .diamond { width: 36px; height: 36px; background: var(--accent); transform: rotate(45deg); flex-shrink: 0; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+  .dt-node .diamond span { transform: rotate(-45deg); font-size: 16px; font-weight: 700; color: #fff; font-family: var(--font-mono); }
+  .dt-node .dt-q { font-size: 15px; font-weight: 600; }
+  .dt-branch { margin-left: 50px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .dt-ans { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; font-size: 13.5px; }
+  .dt-ans.a { border-color: var(--a-color); background: color-mix(in oklab, var(--a-color) 6%, var(--bg)); }
+  .dt-ans.b { border-color: var(--b-color); background: color-mix(in oklab, var(--b-color) 6%, var(--bg)); }
+  .dt-ans.tie { border-color: var(--line-strong); }
+  .dt-ans .lbl { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+  .dt-ans.a .lbl { color: var(--a-color); }
+  .dt-ans.b .lbl { color: var(--b-color); }
+  .dt-ans .pick { font-weight: 700; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="container" data-search-root>
+
+  <!-- ── HERO ──────────────────────────────── -->
+  <header class="hero">
+    <div class="eyebrow">Agent Tooling · Structural Deep-Dive · 2026-05-23</div>
+    <h1>Claude Code <span class="vs">vs.</span> Codex</h1>
+    <p class="deck">
+      CLAUDE.md 중심의 메모리·스킬·에이전트 생태계 vs AGENTS.md 중심의 범용 에이전트 구성.
+      구조 비교부터 같은 저장소에서 두 도구를 교차 사용하는 세팅 방법까지 정리합니다.
+    </p>
+    <div class="meta">2026-05-23 기준 공식 문서 기반 · 교차 사용 세팅 포함</div>
+  </header>
+
+  <!-- ── VERDICT ────────────────────────────── -->
+  <div class="verdict">
+    <div class="label">한 줄 핵심</div>
+    <p class="winner">
+      <span class="a">Claude Code</span> = CLAUDE.md 중심의 Claude 전용 확장 구조 &nbsp;/&nbsp;
+      <span class="b">Codex</span> = AGENTS.md 중심의 범용 에이전트 공통 구조
+    </p>
+    <p>
+      둘을 같은 저장소에서 함께 쓸 수 있습니다. AGENTS.md를 canonical로 두고
+      CLAUDE.md에서 참조하거나, 파일을 분리해서 독립 관리하는 두 가지 전략이 있습니다.
+    </p>
+  </div>
+
+  <!-- ── SVG 구조 다이어그램 ─────────────────── -->
+  <h2 class="section" id="overview">구조 한눈에 보기</h2>
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" style="font-family: monospace; min-width: 700px;">
+      <!-- 배경 레인 -->
+      <rect x="20" y="20" width="415" height="300" rx="12" fill="#f5f0fe" stroke="#c4b5fd" stroke-width="1.5"/>
+      <rect x="465" y="20" width="415" height="300" rx="12" fill="#fefce8" stroke="#fcd34d" stroke-width="1.5"/>
+
+      <!-- 레인 레이블 -->
+      <text x="228" y="50" text-anchor="middle" font-size="14" font-weight="700" fill="#7c3aed">Claude Code</text>
+      <text x="673" y="50" text-anchor="middle" font-size="14" font-weight="700" fill="#d97706">Codex CLI</text>
+
+      <!-- Claude: 지시 계층 -->
+      <rect x="50" y="65" width="170" height="36" rx="6" fill="#7c3aed"/>
+      <text x="135" y="88" text-anchor="middle" font-size="12" fill="#fff">~/.claude/CLAUDE.md</text>
+      <rect x="240" y="65" width="170" height="36" rx="6" fill="#a78bfa"/>
+      <text x="325" y="88" text-anchor="middle" font-size="12" fill="#fff">./CLAUDE.md</text>
+
+      <!-- Codex: 지시 계층 -->
+      <rect x="495" y="65" width="170" height="36" rx="6" fill="#d97706"/>
+      <text x="580" y="88" text-anchor="middle" font-size="12" fill="#fff">~/.codex/AGENTS.md</text>
+      <rect x="685" y="65" width="170" height="36" rx="6" fill="#f59e0b"/>
+      <text x="770" y="88" text-anchor="middle" font-size="12" fill="#fff">./AGENTS.md</text>
+
+      <!-- 화살표 -->
+      <line x1="228" y1="101" x2="228" y2="120" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arr-a)"/>
+      <line x1="673" y1="101" x2="673" y2="120" stroke="#d97706" stroke-width="1.5" marker-end="url(#arr-b)"/>
+
+      <!-- Claude: 레이어 2 -->
+      <rect x="100" y="120" width="260" height="32" rx="6" fill="#ede9fe" stroke="#a78bfa" stroke-width="1.2"/>
+      <text x="230" y="141" text-anchor="middle" font-size="12" fill="#5b21b6">.claude/ (settings, agents, skills)</text>
+
+      <!-- Codex: 레이어 2 -->
+      <rect x="540" y="120" width="265" height="32" rx="6" fill="#fef9c3" stroke="#fcd34d" stroke-width="1.2"/>
+      <text x="672" y="141" text-anchor="middle" font-size="12" fill="#92400e">.agents/ + .codex/ (config, agents, skills)</text>
+
+      <!-- 화살표 2 -->
+      <line x1="228" y1="152" x2="228" y2="170" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arr-a)"/>
+      <line x1="673" y1="152" x2="673" y2="170" stroke="#d97706" stroke-width="1.5" marker-end="url(#arr-b)"/>
+
+      <!-- Claude: 스킬·서브에이전트 -->
+      <rect x="50" y="170" width="165" height="32" rx="6" fill="#ddd6fe" stroke="#a78bfa" stroke-width="1"/>
+      <text x="133" y="191" text-anchor="middle" font-size="11" fill="#4c1d95">~/.claude/skills/</text>
+      <rect x="225" y="170" width="165" height="32" rx="6" fill="#ddd6fe" stroke="#a78bfa" stroke-width="1"/>
+      <text x="308" y="191" text-anchor="middle" font-size="11" fill="#4c1d95">.claude/agents/*.md</text>
+
+      <!-- Codex: 스킬·서브에이전트 -->
+      <rect x="495" y="170" width="165" height="32" rx="6" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+      <text x="577" y="191" text-anchor="middle" font-size="11" fill="#78350f">~/.agents/skills/</text>
+      <rect x="670" y="170" width="180" height="32" rx="6" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+      <text x="760" y="191" text-anchor="middle" font-size="11" fill="#78350f">.codex/agents/*.toml</text>
+
+      <!-- Claude: 설정 -->
+      <rect x="100" y="225" width="260" height="30" rx="6" fill="#f3f0ff" stroke="#c4b5fd" stroke-width="1"/>
+      <text x="230" y="245" text-anchor="middle" font-size="11" fill="#5b21b6">.claude/settings.json · .mcp.json</text>
+
+      <!-- Codex: 설정 -->
+      <rect x="540" y="225" width="265" height="30" rx="6" fill="#fffbeb" stroke="#fcd34d" stroke-width="1"/>
+      <text x="672" y="245" text-anchor="middle" font-size="11" fill="#92400e">~/.codex/config.toml · .codex/config.toml</text>
+
+      <!-- 가운데 REPO 라벨 -->
+      <text x="450" y="295" text-anchor="middle" font-size="11" fill="#6b7280">── Git Repository ──</text>
+      <text x="450" y="310" text-anchor="middle" font-size="10" fill="#9ca3af">CLAUDE.md + AGENTS.md 공존 가능</text>
+
+      <!-- 화살표 정의 -->
+      <defs>
+        <marker id="arr-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#7c3aed"/>
+        </marker>
+        <marker id="arr-b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#d97706"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- ── VS PROFILE GRID ────────────────────── -->
+  <section class="vs-grid" id="profiles">
+    <div class="vs-col a">
+      <div class="tool-mark"><span class="dot"></span> TOOL A</div>
+      <h2 class="tool-name">Claude Code</h2>
+      <p class="tool-tag">Anthropic · CLI + IDE 확장 · 2025~</p>
+      <p class="tool-deck">
+        CLAUDE.md를 프로젝트 메모리로 삼아, 스킬·서브에이전트·MCP 서버를
+        Claude 생태계 안에서 통합 관리한다. "역할 기반 전문가 에이전트" 느낌.
+      </p>
+      <ul class="kv-list">
+        <li><span class="k">기본 지시</span><span class="v"><code>CLAUDE.md</code></span></li>
+        <li><span class="k">전역 설정</span><span class="v"><code>~/.claude/CLAUDE.md</code></span></li>
+        <li><span class="k">스킬 경로</span><span class="v"><code>~/.claude/skills/</code> · <code>.claude/skills/</code></span></li>
+        <li><span class="k">서브에이전트</span><span class="v"><code>.claude/agents/</code> (마크다운)</span></li>
+        <li><span class="k">설정 파일</span><span class="v"><code>.claude/settings.json</code></span></li>
+        <li><span class="k">스킬 호출</span><span class="v"><code>/skill-name</code> 또는 자동 매칭</span></li>
+        <li><span class="k">하위 디렉터리</span><span class="v">파일 접근 시 온디맨드 로드</span></li>
+      </ul>
+    </div>
+    <div class="vs-col b">
+      <div class="tool-mark"><span class="dot"></span> TOOL B</div>
+      <h2 class="tool-name">Codex CLI</h2>
+      <p class="tool-tag">OpenAI · CLI · 2025~</p>
+      <p class="tool-deck">
+        AGENTS.md를 기본 프로젝트 지시로 삼고, 하위 디렉터리까지 지시 체인을
+        구성한다. Open Agent Skills 표준에 맞춘 범용 구조. "병렬 spawn 분해" 중심.
+      </p>
+      <ul class="kv-list">
+        <li><span class="k">기본 지시</span><span class="v"><code>AGENTS.md</code> · <code>AGENTS.override.md</code></span></li>
+        <li><span class="k">전역 설정</span><span class="v"><code>~/.codex/AGENTS.md</code></span></li>
+        <li><span class="k">스킬 경로</span><span class="v"><code>~/.agents/skills/</code> · <code>.agents/skills/</code> · <code>/etc/codex/skills</code></span></li>
+        <li><span class="k">서브에이전트</span><span class="v"><code>.codex/agents/*.toml</code> (TOML)</span></li>
+        <li><span class="k">설정 파일</span><span class="v"><code>~/.codex/config.toml</code></span></li>
+        <li><span class="k">스킬 호출</span><span class="v"><code>$skill-name</code> · <code>/skills</code> · 자동 매칭</span></li>
+        <li><span class="k">하위 디렉터리</span><span class="v">현재 디렉터리까지 체인 구성 (32KiB 제한)</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── 구조 비교 테이블 ───────────────────── -->
+  <h2 class="section" id="struct">구조 비교 — 상세</h2>
+  <table class="struct-table">
+    <thead>
+      <tr>
+        <th style="width:160px">구분</th>
+        <th class="col-a">Claude Code</th>
+        <th class="col-b">Codex CLI</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="cat">기본 지시 파일</td>
+        <td><code>CLAUDE.md</code></td>
+        <td><code>AGENTS.md</code> / <code>AGENTS.override.md</code></td>
+      </tr>
+      <tr>
+        <td class="cat">전역 개인 지시</td>
+        <td><code>~/.claude/CLAUDE.md</code></td>
+        <td><code>~/.codex/AGENTS.md</code></td>
+      </tr>
+      <tr>
+        <td class="cat">프로젝트 지시</td>
+        <td><code>./CLAUDE.md</code>, <code>./.claude/CLAUDE.md</code></td>
+        <td>repo root ~ 현재 디렉터리의 <code>AGENTS.md</code> chain</td>
+      </tr>
+      <tr>
+        <td class="cat">하위 디렉터리 규칙</td>
+        <td>하위 CLAUDE.md를 파일 접근 시 온디맨드 로드</td>
+        <td>현재 작업 디렉터리까지 내려오며 지시 체인 구성. 가까울수록 우선.</td>
+      </tr>
+      <tr>
+        <td class="cat">지시 파일 크기 제한</td>
+        <td>명시적 제한 없음 (너무 길면 skill로 분리 권장)</td>
+        <td><code>project_doc_max_bytes</code> 기본 32KiB</td>
+      </tr>
+      <tr>
+        <td class="cat">스킬 위치 (전역)</td>
+        <td><code>~/.claude/skills/&lt;skill&gt;/SKILL.md</code></td>
+        <td><code>$HOME/.agents/skills/</code> · <code>/etc/codex/skills</code></td>
+      </tr>
+      <tr>
+        <td class="cat">스킬 위치 (프로젝트)</td>
+        <td><code>.claude/skills/&lt;skill&gt;/SKILL.md</code></td>
+        <td><code>.agents/skills/</code> · <code>repo/.agents/skills/</code></td>
+      </tr>
+      <tr>
+        <td class="cat">스킬 구조</td>
+        <td>SKILL.md + scripts/ · templates/ · examples/ 등</td>
+        <td>SKILL.md + scripts/ · references/ · assets/ + 선택적 <code>agents/openai.yaml</code></td>
+      </tr>
+      <tr>
+        <td class="cat">스킬 호출</td>
+        <td><code>/skill-name</code> 또는 설명 자동 매칭</td>
+        <td><code>$skill-name</code> · <code>/skills</code> · 자동 매칭</td>
+      </tr>
+      <tr>
+        <td class="cat">서브에이전트 정의</td>
+        <td><code>.claude/agents/</code> 마크다운, prompt/tools/model/skills 지정</td>
+        <td><code>~/.codex/agents/*.toml</code> · <code>.codex/agents/*.toml</code>, 병렬 spawn 중심</td>
+      </tr>
+      <tr>
+        <td class="cat">서브에이전트 기본 제공</td>
+        <td>도구별 역할 에이전트 (reviewer, architect 등)</td>
+        <td>default · worker · explorer</td>
+      </tr>
+      <tr>
+        <td class="cat">설정 파일 (프로젝트)</td>
+        <td><code>.claude/settings.json</code></td>
+        <td><code>.codex/config.toml</code> (신뢰 프로젝트만)</td>
+      </tr>
+      <tr>
+        <td class="cat">설정 파일 (전역)</td>
+        <td><code>~/.claude/settings.json</code></td>
+        <td><code>~/.codex/config.toml</code></td>
+      </tr>
+      <tr>
+        <td class="cat">MCP 서버</td>
+        <td><code>.mcp.json</code> · <code>~/.claude/</code> MCP 설정</td>
+        <td><code>config.toml</code> 내 <code>[[mcp_servers]]</code></td>
+      </tr>
+      <tr>
+        <td class="cat">AGENTS.md 호환</td>
+        <td>직접 읽지 않음. CLAUDE.md에서 <code>@AGENTS.md</code> import 권장</td>
+        <td>기본 파일 (canonical)</td>
+      </tr>
+      <tr>
+        <td class="cat">철학</td>
+        <td>Claude Code 생태계 전용. 메모리·스킬·에이전트 통합</td>
+        <td>Open Agent Skills 표준. 범용 에이전트 구성</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── 기능 매트릭스 ─────────────────────── -->
+  <h2 class="section" id="features">기능 매트릭스</h2>
+  <table class="feature-matrix">
+    <thead>
+      <tr>
+        <th style="width:240px">기능 / 특성</th>
+        <th class="col-a" style="width:220px">Claude Code</th>
+        <th class="col-b" style="width:220px">Codex CLI</th>
+        <th>비고</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>기본 지시 파일</td><td class="cell-y">CLAUDE.md</td><td class="cell-y">AGENTS.md</td><td class="cell-p">파일명이 달라 충돌 없음</td></tr>
+      <tr><td>하위 디렉터리별 지시</td><td class="cell-y">온디맨드 로드</td><td class="cell-y">지시 체인</td><td class="cell-p">동작 방식이 다름</td></tr>
+      <tr><td>스킬 시스템</td><td class="cell-y">SKILL.md 기반</td><td class="cell-y">SKILL.md 기반</td><td class="cell-p">포맷 호환 가능</td></tr>
+      <tr><td>프로젝트 스킬</td><td class="cell-y">.claude/skills/</td><td class="cell-y">.agents/skills/</td><td class="cell-p">경로 분리 — 충돌 없음</td></tr>
+      <tr><td>서브에이전트 정의</td><td class="cell-y">마크다운 (.md)</td><td class="cell-y">TOML (.toml)</td><td class="cell-p">포맷이 달라 충돌 없음</td></tr>
+      <tr><td>병렬 에이전트 실행</td><td class="cell-p">지원 (역할 기반)</td><td class="cell-y">기본 철학</td><td class="cell-p">Codex가 더 강조</td></tr>
+      <tr><td>MCP 서버 통합</td><td class="cell-y">네이티브</td><td class="cell-p">config.toml 방식</td><td class="cell-p">설정 방식 상이</td></tr>
+      <tr><td>IDE 확장</td><td class="cell-y">VS Code, JetBrains</td><td class="cell-n">CLI 전용</td><td class="cell-p"></td></tr>
+      <tr><td>권한/샌드박스 설정</td><td class="cell-p">settings.json 방식</td><td class="cell-y">config.toml — 더 명시적</td><td class="cell-p"></td></tr>
+      <tr><td>hooks (자동화)</td><td class="cell-y">settings.json hooks</td><td class="cell-p">공식 문서 미확인</td><td class="cell-p"></td></tr>
+      <tr><td>메모리 (자동 저장)</td><td class="cell-y">projects/ memory/</td><td class="cell-p">공식 문서 미확인</td><td class="cell-p"></td></tr>
+      <tr><td>지시 파일 크기 제한</td><td class="cell-p">명시 없음</td><td class="cell-y">32KiB (기본)</td><td class="cell-p">Codex 쪽이 명확</td></tr>
+      <tr><td>AGENTS.md 직접 읽기</td><td class="cell-n">import 필요</td><td class="cell-y">기본</td><td class="cell-p"></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── 교차 사용 세팅 가이드 ────────────── -->
+  <h2 class="section" id="crossuse">교차 사용 세팅 가이드</h2>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div class="callout-body">
+      <strong>먼저 읽어야 할 핵심 원칙</strong>
+      같은 저장소에서 두 도구를 <strong>동시에(같은 파일을 동시에)</strong> 실행하면 충돌합니다.
+      "한 번에 한 도구만" 원칙을 지키면 파일 구조만 잘 정리해도 대부분 문제없이 교차 사용할 수 있습니다.
+    </div>
+  </div>
+
+  <ol class="setup-steps">
+
+    <li>
+      <div class="setup-step-body">
+        <h4>지시 파일 분리 or 공유 전략 선택</h4>
+        <p>두 가지 방법 중 하나를 선택합니다.</p>
+
+        <p><strong>방법 A — 파일 분리 (가장 단순, 권장)</strong></p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="lang">repo-root/</span></div>
+          <pre>├── CLAUDE.md     <span class="cm"># Claude Code 전용 지시</span>
+├── AGENTS.md     <span class="cm"># Codex 전용 지시 (별도 작성)</span>
+└── ...</pre>
+        </div>
+        <p>
+          장점: 각 도구에 맞게 최적화 가능. 단점: 공통 내용 동기화 부담.
+        </p>
+
+        <p><strong>방법 B — AGENTS.md canonical + CLAUDE.md 참조 (DRY)</strong></p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="lang">CLAUDE.md</span></div>
+          <pre><span class="cm"># @AGENTS.md 로 공통 지시 참조 (Claude Code import 문법)</span>
+@AGENTS.md
+
+<span class="cm"># Claude 전용 추가 지시</span>
+<span class="kw">## Claude-Specific Rules</span>
+- hooks: settings.json 기준
+- 스킬 경로: .claude/skills/
+...</pre>
+        </div>
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <div class="callout-body">
+            Claude Code의 <code>@import</code> 문법은 공식 문서에 명시되어 있으나 정확한 구문은 버전별로 다를 수 있습니다.
+            실제 사용 전 <code>claude --version</code> 버전과 릴리즈 노트 확인 권장.
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <li>
+      <div class="setup-step-body">
+        <h4>디렉터리 구조 세팅</h4>
+        <p>
+          설정·스킬·에이전트 경로가 완전히 분리되어 있으므로 파일 충돌은 없습니다.
+          아래 구조를 그대로 사용하면 됩니다.
+        </p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="lang">repo-root/</span></div>
+          <pre>├── CLAUDE.md                  <span class="cm"># Claude Code 지시</span>
+├── AGENTS.md                  <span class="cm"># Codex 지시</span>
+│
+├── .claude/                   <span class="cm"># Claude Code 전용</span>
+│   ├── settings.json          <span class="cm"># 권한, 모델, hooks</span>
+│   ├── settings.local.json    <span class="cm"># 개인 로컬 (.gitignore)</span>
+│   ├── agents/                <span class="cm"># 서브에이전트 (.md)</span>
+│   │   ├── reviewer.md
+│   │   └── architect.md
+│   └── skills/                <span class="cm"># 프로젝트 스킬</span>
+│
+├── .agents/                   <span class="cm"># Codex 전용</span>
+│   ├── skills/                <span class="cm"># Codex 스킬</span>
+│   └── ...
+│
+├── .codex/                    <span class="cm"># Codex 설정 (신뢰 프로젝트)</span>
+│   ├── config.toml
+│   └── agents/                <span class="cm"># Codex 에이전트 (.toml)</span>
+│       └── codex-reviewer.toml
+│
+└── .mcp.json                  <span class="cm"># Claude Code MCP 서버</span></pre>
+        </div>
+      </div>
+    </li>
+
+    <li>
+      <div class="setup-step-body">
+        <h4>.gitignore 설정 — 런타임 파일 배제</h4>
+        <p>두 도구가 생성하는 세션 캐시·로그를 각각 gitignore에 추가합니다.</p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="lang">.gitignore</span></div>
+          <pre><span class="cm"># ── Claude Code 런타임 (커밋 불필요) ──</span>
+.claude/projects/
+.claude/file-history/
+.claude/debug/
+.claude/todos/
+.claude/tasks/
+.claude/session-env/
+.claude/cache/
+.claude/history.jsonl
+.claude/settings.local.json  <span class="cm"># 개인 로컬 오버라이드</span>
+.claude.json                 <span class="cm"># OAuth 상태 (개인)</span>
+
+<span class="cm"># ── Codex 런타임 (커밋 불필요) ──</span>
+.codex/history.jsonl
+.codex/sessions/
+.codex/cache/
+.agents/history.jsonl
+.agents/sessions/
+
+<span class="cm"># ── 공통 ──</span>
+.env
+.env.local
+*.log</pre>
+        </div>
+        <div class="callout tip">
+          <span class="callout-icon">✅</span>
+          <div class="callout-body">
+            <strong>커밋해야 할 것 vs 말아야 할 것</strong>
+            <code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>.claude/settings.json</code>, <code>.claude/agents/</code>, <code>.claude/skills/</code>,
+            <code>.codex/config.toml</code>, <code>.codex/agents/</code> → 팀 공유를 위해 커밋 OK.<br/>
+            <code>settings.local.json</code>, <code>.claude.json</code>, <code>history.jsonl</code> → 개인/런타임, gitignore.
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <li>
+      <div class="setup-step-body">
+        <h4>스킬 이름 충돌 방지</h4>
+        <p>
+          두 도구가 각자의 경로에서 스킬을 검색하므로 기본적으로 충돌하지 않습니다.
+          단, 스킬 이름을 도구별로 구분하면 디버깅이 더 쉽습니다.
+        </p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="lang">.claude/skills/</span></div>
+          <pre>claude-review/SKILL.md     <span class="cm"># Claude Code 전용</span>
+claude-deploy/SKILL.md</pre>
+        </div>
+        <div class="code-block">
+          <div class="code-block-header"><span class="lang">.agents/skills/</span></div>
+          <pre>codex-review/SKILL.md      <span class="cm"># Codex 전용</span>
+codex-test/SKILL.md</pre>
+        </div>
+        <p>공통으로 쓰는 절차라면 <strong>SKILL.md 내용을 복사</strong>하거나, AGENTS.md/CLAUDE.md에 직접 인라인으로 작성하는 방법도 있습니다.</p>
+      </div>
+    </li>
+
+    <li>
+      <div class="setup-step-body">
+        <h4>동시 실행 충돌 방지 — Git 워크트리 활용</h4>
+        <p>두 도구를 동시에 같은 파일에서 실행하면 충돌합니다. 아래 두 방법을 권장합니다.</p>
+
+        <p><strong>방법 1 — 한 번에 하나씩 (가장 단순)</strong></p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="lang">bash</span></div>
+          <pre><span class="cm"># Claude Code 작업</span>
+<span class="kw">claude</span>
+
+<span class="cm"># 완료 후 Codex로 전환 (같은 저장소)</span>
+<span class="kw">codex</span></pre>
+        </div>
+
+        <p><strong>방법 2 — Git 워크트리로 분리 실행</strong></p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="lang">bash</span></div>
+          <pre><span class="cm"># Claude Code용 워크트리</span>
+git worktree add ../my-project-claude feature/claude-work
+cd ../my-project-claude
+<span class="kw">claude</span>
+
+<span class="cm"># Codex용 워크트리 (다른 터미널)</span>
+git worktree add ../my-project-codex feature/codex-work
+cd ../my-project-codex
+<span class="kw">codex</span></pre>
+        </div>
+        <div class="callout tip">
+          <span class="callout-icon">✅</span>
+          <div class="callout-body">
+            워크트리 방식은 같은 저장소를 두 위치에서 독립적으로 체크아웃합니다.
+            각 도구가 다른 브랜치·디렉터리에서 동작하므로 파일 충돌이 없습니다.
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <li>
+      <div class="setup-step-body">
+        <h4>환경 변수 충돌 방지</h4>
+        <p>두 도구가 같은 이름의 환경 변수를 사용하면 덮어쓸 수 있습니다. 도구별 prefix를 붙이세요.</p>
+        <div class="code-block">
+          <div class="code-block-header"><span class="lang">~/.codex/config.toml</span></div>
+          <pre>[env]
+CODEX_MODEL = "gpt-4o"
+CODEX_DEBUG = "true"</pre>
+        </div>
+        <div class="code-block">
+          <div class="code-block-header"><span class="lang">~/.claude/settings.json</span></div>
+          <pre>{
+  "env": {
+    "CLAUDE_MODEL": "claude-sonnet-4-6"
+  }
+}</pre>
+        </div>
+      </div>
+    </li>
+
+  </ol>
+
+  <!-- ── 교차 사용 체크리스트 ─────────────── -->
+  <h2 class="section" id="checklist">교차 사용 체크리스트</h2>
+
+  <div class="check-group">
+    <h4>초기 설정 <span class="badge both">공통</span></h4>
+    <ul class="check-list">
+      <li><code>CLAUDE.md</code>와 <code>AGENTS.md</code> 양쪽 모두 repo root에 생성</li>
+      <li><code>.claude/settings.json</code>과 <code>.codex/config.toml</code> 분리 생성</li>
+      <li><code>.gitignore</code>에 양쪽 런타임 파일 추가 (위 4단계 참고)</li>
+      <li>스킬 이름에 도구 prefix 부여 (<code>claude-*</code> / <code>codex-*</code>)</li>
+    </ul>
+  </div>
+
+  <div class="check-group">
+    <h4>Claude Code 전용 <span class="badge a">Claude</span></h4>
+    <ul class="check-list">
+      <li><code>.claude/agents/*.md</code>에 서브에이전트 정의</li>
+      <li><code>.mcp.json</code>에 MCP 서버 등록</li>
+      <li><code>.claude/settings.json</code>에 hooks / 권한 설정</li>
+      <li><code>CLAUDE.md</code>에서 <code>@AGENTS.md</code> import (공통 지시 공유 시)</li>
+    </ul>
+  </div>
+
+  <div class="check-group">
+    <h4>Codex 전용 <span class="badge b">Codex</span></h4>
+    <ul class="check-list">
+      <li><code>.codex/agents/*.toml</code>에 서브에이전트 정의</li>
+      <li><code>~/.codex/config.toml</code>에 전역 모델·권한 설정</li>
+      <li><code>AGENTS.md</code> 최상위에 공통 지시 작성 (32KiB 제한 주의)</li>
+      <li>하위 디렉터리에 디렉터리별 <code>AGENTS.md</code> 배치 (지시 체인)</li>
+    </ul>
+  </div>
+
+  <div class="check-group">
+    <h4>일일 운영 <span class="badge both">공통</span></h4>
+    <ul class="check-list">
+      <li>한 번에 한 도구만 실행 (동일 파일 동시 편집 금지)</li>
+      <li>동시 사용 필요 시 Git 워크트리로 분리</li>
+      <li><code>CLAUDE.md</code>와 <code>AGENTS.md</code> 공통 내용 주기적 동기화</li>
+      <li>환경 변수 충돌 모니터링 (<code>CODEX_*</code> vs <code>CLAUDE_*</code>)</li>
+    </ul>
+  </div>
+
+  <!-- ── 상황별 추천 ─────────────────────── -->
+  <h2 class="section" id="scenarios">상황별 어떤 도구를?</h2>
+  <div class="scenarios">
+    <div class="sc-card pick-a">
+      <div class="sc-h">시나리오 1</div>
+      <h4>Claude 전용 워크플로우</h4>
+      <p>CLAUDE.md · hooks · MCP 서버 · 역할별 서브에이전트(reviewer, architect)를 최대한 활용하는 프로젝트.</p>
+      <span class="sc-pick">PICK · Claude Code</span>
+    </div>
+    <div class="sc-card pick-b">
+      <div class="sc-h">시나리오 2</div>
+      <h4>범용 에이전트 구성</h4>
+      <p>AGENTS.md 표준을 따르는 다른 AI 도구와도 함께 쓸 저장소. Open Agent Skills 생태계를 활용하고 싶을 때.</p>
+      <span class="sc-pick">PICK · Codex</span>
+    </div>
+    <div class="sc-card pick-tie">
+      <div class="sc-h">시나리오 3</div>
+      <h4>교차 사용 (이 문서의 핵심)</h4>
+      <p>Claude로 설계·리뷰, Codex로 구현·병렬 처리 등 역할을 나눠서 쓰고 싶을 때. 파일 구조 분리 후 "한 번에 하나씩" 규칙 준수.</p>
+      <span class="sc-pick">BOTH · 파일 분리</span>
+    </div>
+    <div class="sc-card pick-a">
+      <div class="sc-h">시나리오 4</div>
+      <h4>IDE 통합이 중요한 프로젝트</h4>
+      <p>VS Code / JetBrains IDE 확장을 통해 인라인 코드 제안·리뷰가 필요한 경우.</p>
+      <span class="sc-pick">PICK · Claude Code</span>
+    </div>
+    <div class="sc-card pick-b">
+      <div class="sc-h">시나리오 5</div>
+      <h4>병렬 에이전트 작업 분해</h4>
+      <p>큰 작업을 여러 specialized agent로 동시에 처리하고 결과를 합치는 워크플로우. Codex의 기본 철학에 부합.</p>
+      <span class="sc-pick">PICK · Codex</span>
+    </div>
+    <div class="sc-card pick-a">
+      <div class="sc-h">시나리오 6</div>
+      <h4>MCP 서버·외부 도구 통합</h4>
+      <p>GitHub, Jira, Google Docs 등 외부 서비스를 MCP로 연결하는 워크플로우. Claude Code 네이티브 지원.</p>
+      <span class="sc-pick">PICK · Claude Code</span>
+    </div>
+  </div>
+
+  <!-- ── 의사결정 가이드 ────────────────────── -->
+  <h2 class="section" id="decision">의사결정 — 3-step 가이드</h2>
+  <div class="decision-tree">
+    <div class="dt-node">
+      <div class="diamond"><span>1</span></div>
+      <span class="dt-q">Anthropic Claude 모델만 쓸 것인가?</span>
+    </div>
+    <div class="dt-branch">
+      <div class="dt-ans a"><div class="lbl">YES</div><div class="pick">Claude Code 중심으로 구성</div></div>
+      <div class="dt-ans tie"><div class="lbl">NO / 미정</div><div class="pick">→ 2단계로</div></div>
+    </div>
+
+    <div class="dt-node">
+      <div class="diamond"><span>2</span></div>
+      <span class="dt-q">다른 AI 도구와 같은 저장소에서 함께 쓸 것인가?</span>
+    </div>
+    <div class="dt-branch">
+      <div class="dt-ans b"><div class="lbl">YES</div><div class="pick">AGENTS.md canonical 전략 채택</div></div>
+      <div class="dt-ans tie"><div class="lbl">NO</div><div class="pick">→ 3단계로</div></div>
+    </div>
+
+    <div class="dt-node">
+      <div class="diamond"><span>3</span></div>
+      <span class="dt-q">병렬 에이전트 분해 vs 역할 기반 전문가 에이전트?</span>
+    </div>
+    <div class="dt-branch">
+      <div class="dt-ans b"><div class="lbl">병렬 분해 중심</div><div class="pick">Codex</div></div>
+      <div class="dt-ans a"><div class="lbl">역할 기반 전문가</div><div class="pick">Claude Code</div></div>
+    </div>
+  </div>
+
+  <!-- ── 주의사항 ──────────────────────────── -->
+  <h2 class="section" id="gotchas">주의사항 — 공식 문서 미확인 사항</h2>
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div class="callout-body">
+      <strong>테스트 후 사용 권장</strong>
+      아래 사항들은 2026-05-23 기준 공식 문서에 명확히 기술되지 않아 실제 동작을 확인해야 합니다.
+      <ul style="margin: 8px 0 0; padding-left: 18px; line-height: 2;">
+        <li>Claude Code의 정확한 <code>@import</code> 문법 — 버전별 상이할 수 있음</li>
+        <li>공유 스킬 폴더를 두 도구에 동시 등록하는 명시적 방법 (현재 미지원 가능성)</li>
+        <li><code>.codex/config.toml</code>의 신뢰 프로젝트 등록 상세 프로세스</li>
+        <li>MCP 서버 이름 충돌 시 정확한 우선순위</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="U2HZ7J6" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
