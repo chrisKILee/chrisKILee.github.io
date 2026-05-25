@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chrome DevTools MCP</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap { max-width: 1080px; margin: 0 auto; }
+
+    /* topbar */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 48px;
+      z-index: 90;
+    }
+    .topbar-brand { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+    .topbar-meta  { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+
+    /* hero */
+    .hero { background: var(--surface); border-bottom: 1px solid var(--border); padding: 72px 28px 60px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-bg); border: 1px solid var(--accent-bdr); color: var(--accent);
+      border-radius: 99px; padding: 5px 14px; font-size: 12px; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900;
+      line-height: 1.1; letter-spacing: -0.025em; color: var(--ink); max-width: 760px; margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
+    .hero-desc { font-size: 17px; color: var(--ink-3); max-width: 620px; line-height: 1.75; margin-bottom: 36px; }
+    .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px; background: var(--bg-2);
+      border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px;
+      font-size: 13px; font-weight: 500; color: var(--ink-2);
+    }
+
+    /* section */
+    .section { padding: 56px 28px; border-bottom: 1px solid var(--border); }
+    .section-label {
+      display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); max-width: 80px; }
+    .section-title { font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 10px; }
+    .section-desc { font-size: 15px; color: var(--ink-3); max-width: 620px; margin-bottom: 32px; line-height: 1.7; }
+
+    /* cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card__header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+    .card__icon { font-size: 22px; margin-bottom: 8px; }
+    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__body { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__body ul { margin-top: 10px; padding-left: 0; list-style: none; }
+    .card__body ul li { font-size: 13.5px; color: var(--ink-3); padding: 4px 0; display: flex; gap: 8px; }
+    .card__body ul li::before { content: '—'; color: var(--accent); flex-shrink: 0; }
+    .card__footer { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+    .card__tag { font-size: 11px; font-weight: 600; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* before/after compare */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-top: 24px; }
+    @media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } }
+    .compare-col { padding: 24px; }
+    .compare-col.before { background: #fef2f2; border-right: 1px solid var(--border); }
+    .compare-col.after  { background: var(--success-bg); }
+    @media (max-width: 640px) { .compare-col.before { border-right: none; border-bottom: 1px solid var(--border); } }
+    .compare-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; }
+    .compare-col.before .compare-label { color: #b91c1c; }
+    .compare-col.after  .compare-label { color: var(--success); }
+    .compare-col ul { list-style: none; padding: 0; }
+    .compare-col ul li { font-size: 14px; padding: 6px 0; display: flex; gap: 10px; line-height: 1.55; }
+    .compare-col.before ul li::before { content: '✗'; color: #ef4444; font-weight: 700; flex-shrink: 0; }
+    .compare-col.after  ul li::before { content: '✓'; color: var(--success); font-weight: 700; flex-shrink: 0; }
+
+    /* table */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--bg-2); border: 1px solid var(--border); padding: 11px 16px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:hover td { background: var(--bg); }
+
+    /* callouts */
+    .callout { border-left: 3px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; font-size: 14px; line-height: 1.65; }
+    .callout.info   { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip    { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn   { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title  { font-weight: 700; margin-bottom: 4px; }
+
+    /* code blocks */
+    .code-wrap { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 0; }
+    .code-bar  { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--bg-2); }
+    .code-dot  { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body { padding: 18px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; color: var(--ink-2); }
+
+    /* steps */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step  { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--surface); margin-top: 2px; }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body  { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* tool grid */
+    .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 24px; }
+    .tool-group { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .tool-group-title { font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; font-family: var(--font-mono); }
+    .tool-group ul { list-style: none; padding: 0; }
+    .tool-group ul li { font-size: 13px; color: var(--ink-3); padding: 3px 0; font-family: var(--font-mono); }
+
+    /* tags */
+    .tag { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+    .tag.green  { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray   { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+
+    /* SVG diagram */
+    .diagram-wrap { margin: 28px 0; overflow-x: auto; }
+    .diagram-wrap svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+
+    /* use-case grid */
+    .usecase-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 24px; }
+    .usecase { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; }
+    .usecase-num { font-size: 11px; font-weight: 700; color: var(--accent); font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+    .usecase-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .usecase-body  { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .usecase-steps { margin-top: 12px; padding-left: 0; list-style: none; }
+    .usecase-steps li { font-size: 13px; color: var(--ink-3); padding: 3px 0; display: flex; gap: 8px; }
+    .usecase-steps li::before { content: counter(step) '.'; counter-increment: step; color: var(--accent); font-weight: 700; flex-shrink: 0; font-family: var(--font-mono); }
+    .usecase-steps { counter-reset: step; }
+
+    footer { padding: 28px; border-top: 1px solid var(--border); background: var(--surface); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--ink-4); }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+      .topbar { padding: 0 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">Chrome DevTools MCP</span>
+  <span class="topbar-meta">Google Chrome Team · 2026</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">🌉 MCP Server · chrome-devtools-mcp</div>
+    <h1>AI 에이전트에<br><em>브라우저 '눈'</em>을 달다</h1>
+    <p class="hero-desc">
+      Google Chrome 팀이 공식 출시한 MCP 서버. <code style="font-family:var(--font-mono);font-size:14px;background:var(--code-bg);padding:2px 6px;border-radius:4px;">npx -y chrome-devtools-mcp@latest</code> 한 줄로
+      AI 에이전트가 실제 Chrome 브라우저를 직접 검사하고 제어합니다.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">👁 성능 분석</span>
+      <span class="chip">🐛 브라우저 디버깅</span>
+      <span class="chip">🤖 Puppeteer 자동화</span>
+      <span class="chip">⚡ Claude Code · Cursor · Cline 지원</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: 왜 필요한가 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 배경</div>
+    <h2 class="section-title">기존 에이전트의 한계</h2>
+    <p class="section-desc">
+      코딩 에이전트는 코드를 수정해도 브라우저 결과를 스스로 확인할 수 없었습니다.
+      "생성하고 기도하는" 방식이었죠. Chrome DevTools MCP가 이 문제를 해결합니다.
+    </p>
+
+    <div class="compare-grid">
+      <div class="compare-col before">
+        <div class="compare-label">이전</div>
+        <ul>
+          <li>코드 생성 후 브라우저 결과 확인 불가</li>
+          <li>콘솔 에러를 에이전트가 직접 볼 수 없음</li>
+          <li>성능 문제 측정 불가, 추정만 가능</li>
+          <li>네트워크 오류·CORS 진단 불가</li>
+          <li>개발자가 직접 브라우저 확인 후 다시 설명</li>
+        </ul>
+      </div>
+      <div class="compare-col after">
+        <div class="compare-label">Chrome DevTools MCP 이후</div>
+        <ul>
+          <li>스크린샷·DOM 검사로 시각적 검증</li>
+          <li>콘솔 로그·에러 실시간 분석</li>
+          <li>실제 Core Web Vitals 측정 (LCP, FID, CLS)</li>
+          <li>네트워크 탭에서 정확한 CORS 에러 확인</li>
+          <li>에이전트가 관찰→분석→즉시 수정</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SVG 아키텍처 다이어그램 -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Inter', sans-serif; min-width: 600px;">
+        <!-- AI Agent -->
+        <rect x="20" y="60" width="160" height="80" rx="10" fill="#FAFAF8" stroke="#C4522A" stroke-width="2"/>
+        <text x="100" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#1C1C1A">AI 코딩 에이전트</text>
+        <text x="100" y="112" text-anchor="middle" font-size="11" fill="#6B6B66">Claude Code / Cursor</text>
+        <text x="100" y="128" text-anchor="middle" font-size="11" fill="#6B6B66">Copilot / Cline</text>
+
+        <!-- Arrow 1 -->
+        <line x1="182" y1="100" x2="250" y2="100" stroke="#C4522A" stroke-width="2" marker-end="url(#arr)"/>
+        <text x="216" y="92" text-anchor="middle" font-size="10" fill="#6B6B66">MCP</text>
+
+        <!-- Chrome DevTools MCP Server -->
+        <rect x="252" y="50" width="180" height="100" rx="10" fill="#FEF3ED" stroke="#C4522A" stroke-width="2"/>
+        <text x="342" y="88" text-anchor="middle" font-size="13" font-weight="700" fill="#C4522A">Chrome DevTools</text>
+        <text x="342" y="106" text-anchor="middle" font-size="13" font-weight="700" fill="#C4522A">MCP Server</text>
+        <text x="342" y="130" text-anchor="middle" font-size="10" fill="#A8A8A3" font-family="'JetBrains Mono', monospace">npx chrome-devtools-mcp</text>
+
+        <!-- Arrow 2 -->
+        <line x1="434" y1="100" x2="500" y2="100" stroke="#C4522A" stroke-width="2" marker-end="url(#arr)"/>
+        <text x="467" y="92" text-anchor="middle" font-size="10" fill="#6B6B66">CDP</text>
+
+        <!-- Chrome Browser -->
+        <rect x="502" y="40" width="170" height="120" rx="10" fill="#F0FDF4" stroke="#1A7F5A" stroke-width="2"/>
+        <text x="587" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#1A7F5A">Chrome Browser</text>
+        <text x="587" y="98" text-anchor="middle" font-size="11" fill="#6B6B66">📸 스크린샷</text>
+        <text x="587" y="116" text-anchor="middle" font-size="11" fill="#6B6B66">📊 성능 분석</text>
+        <text x="587" y="134" text-anchor="middle" font-size="11" fill="#6B6B66">🐛 콘솔·네트워크</text>
+
+        <!-- Arrow 3 (return) -->
+        <path d="M 672 115 Q 750 160 750 100 Q 750 40 672 85" fill="none" stroke="#6B6B66" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-gray)"/>
+        <text x="762" y="104" text-anchor="middle" font-size="10" fill="#6B6B66">결과</text>
+        <text x="762" y="116" text-anchor="middle" font-size="10" fill="#6B6B66">반환</text>
+
+        <!-- Arrow markers -->
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 Z" fill="#C4522A"/>
+          </marker>
+          <marker id="arr-gray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 Z" fill="#6B6B66"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: 핵심 기능 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 핵심 기능</div>
+    <h2 class="section-title">3가지 핵심 기능</h2>
+    <p class="section-desc">성능 분석 · 브라우저 디버깅 · 자동화. 26개 도구가 카테고리별로 제공됩니다.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">👁</div>
+          <div class="card__title">성능 분석</div>
+        </div>
+        <div class="card__body">
+          <p>Core Web Vitals (LCP, FID, CLS)를 실측하고 Lighthouse 감사를 실행합니다. Google CrUX API와 연동해 실사용자 데이터도 분석합니다.</p>
+          <ul>
+            <li>페이지 로드 트레이스 기록</li>
+            <li>LCP 병목 이미지 진단</li>
+            <li>Lighthouse 접근성·SEO 감사</li>
+            <li>모바일·느린 3G 환경 시뮬레이션</li>
+          </ul>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">performance · lighthouse · crux</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🐛</div>
+          <div class="card__title">브라우저 디버깅</div>
+        </div>
+        <div class="card__body">
+          <p>콘솔 에러, 네트워크 요청, DOM 스냅샷을 직접 분석합니다. 번들 코드에서도 소스맵 스택 트레이스로 원본 파일을 추적합니다.</p>
+          <ul>
+            <li>콘솔 로그·에러 메시지 수집</li>
+            <li>CORS·API 실패 네트워크 진단</li>
+            <li>스크린샷·DOM 스냅샷 캡처</li>
+            <li>힙 스냅샷으로 메모리 누수 추적</li>
+          </ul>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">console · network · memory · screenshot</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🤖</div>
+          <div class="card__title">자동화</div>
+        </div>
+        <div class="card__body">
+          <p>Puppeteer 기반의 스마트 대기 메커니즘으로 안정적인 브라우저 자동화를 제공합니다. 폼 작성부터 파일 업로드까지 복잡한 상호작용도 지원합니다.</p>
+          <ul>
+            <li>클릭·폼 입력·드래그 & 드롭</li>
+            <li>파일 업로드·키 입력</li>
+            <li>기기·위치·CPU 에뮬레이션</li>
+            <li>버튼 클릭 후 데이터 로딩 대기</li>
+          </ul>
+        </div>
+        <div class="card__footer">
+          <span class="card__tag">puppeteer · emulation · automation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: 설치 방법 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 설치 방법</div>
+    <h2 class="section-title">에이전트별 설치 방법</h2>
+    <p class="section-desc">Node.js 20.19+ 와 최신 Chrome이 필요합니다. 에이전트에 따라 설치 방식이 다릅니다.</p>
+
+    <div class="callout accent">
+      <div class="callout-title">시스템 요구사항</div>
+      Node.js 20.19.0 / 22.12.0 / 23+ · Chrome 최신 안정화 버전 이상 (또는 Chrome for Testing)
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Claude Code — CLI 명령 한 줄</div>
+          <div class="step-body">Claude Code CLI에서 직접 등록합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body">claude mcp add chrome-devtools npx chrome-devtools-mcp@latest</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Cursor / VS Code Copilot / Cline — settings.json</div>
+          <div class="step-body">MCP 설정 파일에 아래 내용을 추가합니다. (<code style="font-family:var(--font-mono);font-size:12px;">~/.cursor/settings.json</code> 또는 각 에이전트의 MCP 설정 파일)</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">json</span>
+            </div>
+            <pre class="code-body">{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"]
+    }
+  }
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">고급 옵션 — 기존 Chrome 인스턴스 연결</div>
+          <div class="step-body">이미 로그인된 Chrome에 연결하거나, 경량 모드로 실행할 수 있습니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">json</span>
+            </div>
+            <pre class="code-body">{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest",
+        "--slim",                               // 성능 트레이싱 없는 경량 모드
+        "--no-usage-statistics",                // 사용 통계 비활성화
+        "--browser-url=http://127.0.0.1:9222"  // 기존 Chrome에 연결
+      ]
+    }
+  }
+}</pre>
+          </div>
+          <div class="callout tip" style="margin-top:12px;">
+            <div class="callout-title">기존 Chrome 원격 디버깅 활성화</div>
+            <code style="font-family:var(--font-mono);font-size:12px;">/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: 활용 예시 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 활용 예시</div>
+    <h2 class="section-title">실제 사용 시나리오</h2>
+    <p class="section-desc">에이전트에게 자연어로 요청하면, MCP가 Chrome DevTools를 직접 제어합니다.</p>
+
+    <div class="usecase-grid">
+      <div class="usecase">
+        <div class="usecase-num">시나리오 01</div>
+        <div class="usecase-title">📊 Core Web Vitals 성능 최적화</div>
+        <div class="usecase-body">"페이지 성능 분석해서 개선 방법 알려줘"</div>
+        <ol class="usecase-steps">
+          <li>navigate_page → 대상 페이지 이동</li>
+          <li>performance_start_trace → 트레이싱 시작</li>
+          <li>performance_stop_trace → LCP 병목 분석</li>
+          <li>에이전트: 이미지 프리로딩, 압축 코드 제안</li>
+        </ol>
+      </div>
+
+      <div class="usecase">
+        <div class="usecase-num">시나리오 02</div>
+        <div class="usecase-title">🐛 JavaScript 에러 자동 진단</div>
+        <div class="usecase-body">"모바일에서 발생하는 에러 재현하고 원인 찾아줘"</div>
+        <ol class="usecase-steps">
+          <li>emulate_device → 모바일 환경 시뮬레이션</li>
+          <li>사용자 동작 시나리오 재현</li>
+          <li>get_console_messages → 에러 스택 트레이스 분석</li>
+          <li>list_network_requests → CORS·API 실패 확인</li>
+        </ol>
+      </div>
+
+      <div class="usecase">
+        <div class="usecase-num">시나리오 03</div>
+        <div class="usecase-title">🧪 메모리 누수 진단</div>
+        <div class="usecase-body">"앱이 시간이 지나면서 메모리가 증가해요"</div>
+        <ol class="usecase-steps">
+          <li>take_heapsnapshot → 초기 메모리 캡처</li>
+          <li>반복 작업 시뮬레이션</li>
+          <li>take_heapsnapshot → 이후 메모리 캡처</li>
+          <li>analyze_heapsnapshot → 누수 경로 추적·수정안 제시</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: 26개 도구 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 도구 목록</div>
+    <h2 class="section-title">26개 도구 — 카테고리별</h2>
+    <p class="section-desc">에이전트가 자동으로 선택해 사용합니다. 직접 지시할 수도 있습니다.</p>
+
+    <div class="tool-grid">
+      <div class="tool-group">
+        <div class="tool-group-title">입력 자동화 (10)</div>
+        <ul>
+          <li>click</li>
+          <li>drag</li>
+          <li>fill / fill_form</li>
+          <li>hover</li>
+          <li>press_key / type_text</li>
+          <li>upload_file</li>
+          <li>dismiss_dialog</li>
+          <li>wait_for</li>
+        </ul>
+      </div>
+      <div class="tool-group">
+        <div class="tool-group-title">네비게이션 (6)</div>
+        <ul>
+          <li>navigate_page</li>
+          <li>new_page</li>
+          <li>select_page</li>
+          <li>close_page</li>
+          <li>list_pages</li>
+          <li>wait_for_navigation</li>
+        </ul>
+      </div>
+      <div class="tool-group">
+        <div class="tool-group-title">성능 (3)</div>
+        <ul>
+          <li>performance_start_trace</li>
+          <li>performance_stop_trace</li>
+          <li>lighthouse_audit</li>
+        </ul>
+      </div>
+      <div class="tool-group">
+        <div class="tool-group-title">메모리 (5)</div>
+        <ul>
+          <li>take_heapsnapshot</li>
+          <li>get_heapsnapshot_details</li>
+          <li>get_heapsnapshot_node_children</li>
+          <li>get_heapsnapshot_node_paths_to_root</li>
+          <li>analyze_heapsnapshot</li>
+        </ul>
+      </div>
+      <div class="tool-group">
+        <div class="tool-group-title">네트워크 (2)</div>
+        <ul>
+          <li>list_network_requests</li>
+          <li>get_network_request</li>
+        </ul>
+      </div>
+      <div class="tool-group">
+        <div class="tool-group-title">디버깅 (4)</div>
+        <ul>
+          <li>take_screenshot</li>
+          <li>get_page_content</li>
+          <li>get_console_messages</li>
+          <li>evaluate_script</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: 지원 도구 & 주의사항 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">06 지원 도구 & 주의사항</div>
+    <h2 class="section-title">지원 AI 도구 & 알려진 한계</h2>
+    <p class="section-desc">MCP를 지원하는 20개 이상의 코딩 에이전트와 연동됩니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>에이전트</th>
+            <th>설치 방식</th>
+            <th>지원 수준</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Claude Code</strong></td>
+            <td><code style="font-family:var(--font-mono);font-size:12px;">claude mcp add</code> CLI</td>
+            <td><span class="tag green">공식 1차 지원</span></td>
+          </tr>
+          <tr>
+            <td><strong>Cursor</strong></td>
+            <td>settings.json</td>
+            <td><span class="tag green">공식 1차 지원</span></td>
+          </tr>
+          <tr>
+            <td><strong>VS Code Copilot</strong></td>
+            <td>마켓플레이스 or settings.json</td>
+            <td><span class="tag green">공식 1차 지원</span></td>
+          </tr>
+          <tr>
+            <td><strong>Cline</strong></td>
+            <td>cline_config.json</td>
+            <td><span class="tag green">공식 1차 지원</span></td>
+          </tr>
+          <tr>
+            <td><strong>Antigravity 2.0</strong></td>
+            <td>사전 번들 (<code style="font-family:var(--font-mono);font-size:12px;">/browser</code> 슬래시 커맨드)</td>
+            <td><span class="tag orange">사전 통합</span></td>
+          </tr>
+          <tr>
+            <td><strong>Gemini CLI, JetBrains AI</strong></td>
+            <td>MCP 확장</td>
+            <td><span class="tag gray">2차 지원</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:16px;font-weight:700;margin:36px 0 16px;">알려진 한계</h3>
+
+    <div class="callout warn">
+      <div class="callout-title">⚠️ 인증 세션 제한</div>
+      MCP가 실행하는 Chrome 인스턴스는 확장 프로그램 설치 불가 → OAuth·Cookie 주입이 어렵습니다.
+      기존 로그인된 Chrome에 <code style="font-family:var(--font-mono);font-size:12px;">--browser-url</code>로 연결하는 방법을 사용하세요.
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">⚠️ Chrome 전용</div>
+      Chrome DevTools Protocol(CDP) 기반이므로 Firefox·Safari는 공식 미지원입니다.
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">🔒 보안 권장사항</div>
+      민감한 정보가 있는 페이지를 디버깅할 때는 별도의 Chrome for Testing 프로필 사용을 권장합니다.
+      <code style="font-family:var(--font-mono);font-size:12px;">--no-usage-statistics --no-performance-crux</code> 플래그로 데이터 전송을 차단할 수 있습니다.
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>Chrome DevTools MCP — <a href="https://github.com/ChromeDevTools/chrome-devtools-mcp" target="_blank">github.com/ChromeDevTools/chrome-devtools-mcp</a></span>
+  <span>Apache-2.0 · Google LLC · v1.0.1</span>
+</footer>
+
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="7VAGDJK" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
