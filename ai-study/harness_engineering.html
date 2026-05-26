@@ -1,868 +1,627 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Harness Engineering — AI가 잘 일하는 환경 설계</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg:          #FAFAF8;
-      --bg-2:        #F4F4F1;
-      --surface:     #FFFFFF;
-      --border:      #E8E8E4;
-      --border-2:    #D4D4CF;
-      --ink:         #1C1C1A;
-      --ink-2:       #3D3D3A;
-      --ink-3:       #6B6B66;
-      --ink-4:       #A8A8A3;
-      --accent:      #C4522A;
-      --accent-bg:   #FEF3ED;
-      --accent-bdr:  #F9C3AD;
-      --success:     #1A7F5A;
-      --success-bg:  #F0FDF4;
-      --warn:        #92400E;
-      --warn-bg:     #FFFBEB;
-      --code-bg:     #F1F1EE;
-      --font-display: 'Fraunces', Georgia, serif;
-      --font-body:    'Inter', system-ui, sans-serif;
-      --font-mono:    'JetBrains Mono', monospace;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: var(--font-body);
-      font-size: 16px;
-      line-height: 1.7;
-      -webkit-font-smoothing: antialiased;
-    }
-    .page-wrap { max-width: 1100px; margin: 0 auto; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Harness Engineering 입문 — AI가 잘 일하는 환경 설계</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent:      #4f46e5;
+  --accent-2:    #6366f1;
+  --accent-soft: #eef0fe;
+  --accent-bdr:  #c7d0fc;
+  --bg:          #fafaf8;
+  --bg-2:        #f4f4f1;
+  --surface:     #ffffff;
+  --border:      #e8e8e4;
+  --border-2:    #d4d4cf;
+  --ink:         #1c1c1a;
+  --ink-2:       #3d3d3a;
+  --ink-3:       #6b6b66;
+  --ink-4:       #a8a8a3;
+  --success:     #1a7f5a;
+  --success-bg:  #f0fdf4;
+  --success-bdr: #bbf7d0;
+  --warn:        #92400e;
+  --warn-bg:     #fffbeb;
+  --warn-bdr:    #fde68a;
+  --tip:         #1d4ed8;
+  --tip-bg:      #eff6ff;
+  --tip-bdr:     #bfdbfe;
+  --code-bg:     #f1f1ee;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: var(--font-mono); font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); }
+pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; overflow-x: auto; white-space: pre; font-family: var(--font-mono); font-size: 13px; line-height: 1.65; margin: 18px 0; }
+pre code { background: none; border: none; padding: 0; font-size: inherit; }
 
-    /* Top Bar */
-    .topbar {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 28px;
-      height: 52px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .topbar-brand { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--ink); }
-    .topbar-meta { font-size: 12px; color: var(--ink-4); font-family: var(--font-mono); }
+.layout { display: grid; grid-template-columns: 260px minmax(0,1fr); min-height: 100vh; max-width: 1280px; margin: 0 auto; }
+@media (max-width:900px) { .layout { grid-template-columns:1fr; } .toc-wrap { position:relative!important; height:auto!important; border-right:0!important; border-bottom:1px solid var(--border); } }
 
-    /* Hero */
-    .hero { background: var(--surface); border-bottom: 1px solid var(--border); padding: 72px 28px 60px; }
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--accent-bg); border: 1px solid var(--accent-bdr);
-      color: var(--accent); border-radius: 99px; padding: 5px 14px;
-      font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
-      text-transform: uppercase; margin-bottom: 24px;
-    }
-    .hero h1 {
-      font-family: var(--font-display);
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      font-weight: 900; line-height: 1.08;
-      letter-spacing: -0.025em; color: var(--ink);
-      max-width: 780px; margin-bottom: 20px;
-    }
-    .hero h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
-    .hero-desc { font-size: 17px; color: var(--ink-3); max-width: 620px; line-height: 1.75; margin-bottom: 36px; }
-    .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-    .chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: var(--bg-2); border: 1px solid var(--border);
-      border-radius: 6px; padding: 6px 12px;
-      font-size: 13px; font-weight: 500; color: var(--ink-2);
-    }
+.toc-wrap { position:sticky; top:48px; height:calc(100vh - 48px); overflow-y:auto; border-right:1px solid var(--border); padding:28px 20px 28px 24px; background:var(--bg); }
+.brand { display:flex; align-items:center; gap:10px; margin-bottom:22px; padding-bottom:18px; border-bottom:1px solid var(--border); }
+.brand-mark { width:28px; height:28px; background:var(--accent); border-radius:7px; display:inline-flex; align-items:center; justify-content:center; color:#fff; font-family:var(--font-mono); font-size:13px; font-weight:700; flex-shrink:0; }
+.brand-name { font-size:13px; font-weight:600; line-height:1.3; }
+.brand-sub { font-size:11px; color:var(--ink-4); font-family:var(--font-mono); letter-spacing:.04em; }
+.toc-nav h4 { font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); margin:20px 0 6px; font-weight:700; }
+.toc-nav ul { list-style:none; }
+.toc-nav a { display:block; padding:5px 10px; color:var(--ink-3); font-size:13px; border-radius:5px; border-left:2px solid transparent; line-height:1.35; transition:background .12s,color .12s; }
+.toc-nav a:hover { background:var(--bg-2); color:var(--ink); text-decoration:none; }
+.toc-nav a.active { color:var(--accent); border-left-color:var(--accent); background:var(--accent-soft); font-weight:600; }
+.toc-nav .l3 { padding-left:22px; font-size:12px; color:var(--ink-4); }
 
-    /* Section */
-    .section { padding: 56px 28px; border-bottom: 1px solid var(--border); }
-    .section-label {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
-      text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
-    }
-    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); max-width: 80px; }
-    .section-title {
-      font-family: var(--font-display);
-      font-size: clamp(1.4rem, 3vw, 1.9rem);
-      font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 10px;
-    }
-    .section-desc { font-size: 15px; color: var(--ink-3); max-width: 620px; margin-bottom: 36px; line-height: 1.7; }
+.content { padding:56px clamp(24px,6vw,80px) 120px; max-width:820px; }
 
-    /* Cards */
-    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; }
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; overflow: hidden;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-    .card__header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
-    .card__icon { font-size: 22px; margin-bottom: 8px; }
-    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
-    .card__body { padding: 16px 20px; }
-    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
-    .card__body ul { font-size: 13px; color: var(--ink-3); line-height: 1.8; padding-left: 16px; margin-top: 8px; }
-    .card__footer { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--bg); }
-    .card__tag { font-size: 11px; font-weight: 600; font-family: var(--font-mono); color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; }
-    .card.accent-card { border-color: var(--accent-bdr); }
-    .card.accent-card .card__header { background: var(--accent-bg); }
+.doc-header { margin-bottom:48px; padding-bottom:28px; border-bottom:1px solid var(--border); }
+.doc-eyebrow { display:inline-flex; align-items:center; gap:8px; background:var(--accent-soft); border:1px solid var(--accent-bdr); color:var(--accent); border-radius:99px; padding:5px 14px; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:20px; font-family:var(--font-mono); }
+.doc-title { font-family:var(--font-display); font-size:clamp(2rem,4.5vw,3rem); font-weight:900; line-height:1.1; letter-spacing:-0.025em; margin-bottom:14px; }
+.doc-title em { font-style:normal; color:var(--accent); }
+.doc-deck { font-size:17px; color:var(--ink-2); line-height:1.6; max-width:600px; }
+.doc-meta { display:flex; gap:20px; flex-wrap:wrap; margin-top:18px; font-size:12px; color:var(--ink-4); font-family:var(--font-mono); }
+.doc-meta strong { color:var(--ink-3); font-weight:500; }
 
-    /* Stat cards */
-    .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-    .stat-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; padding: 24px 20px;
-    }
-    .stat-card .company { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 8px; }
-    .stat-card .stat-num { font-family: var(--font-display); font-size: 2.2rem; font-weight: 900; color: var(--ink); line-height: 1; margin-bottom: 8px; }
-    .stat-card .stat-desc { font-size: 13px; color: var(--ink-3); line-height: 1.6; }
-    .stat-card.dark { background: var(--ink); border-color: var(--ink); }
-    .stat-card.dark .company { color: var(--ink-4); }
-    .stat-card.dark .stat-num { color: #fff; }
-    .stat-card.dark .stat-desc { color: #999; }
+h2.section { font-family:var(--font-display); font-size:clamp(1.4rem,3vw,1.8rem); font-weight:800; margin:64px 0 18px; letter-spacing:-0.02em; scroll-margin-top:72px; padding-top:8px; border-top:2px solid var(--border); }
+h2.section:first-of-type { margin-top:0; border-top:none; padding-top:0; }
+h3.subsection { font-size:17px; font-weight:700; margin:36px 0 10px; scroll-margin-top:72px; color:var(--ink); }
 
-    /* Table */
-    .table-wrap { overflow-x: auto; margin-top: 24px; }
-    table { width: 100%; border-collapse: collapse; }
-    th {
-      background: var(--bg-2); border: 1px solid var(--border);
-      padding: 11px 16px; text-align: left;
-      font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
-      text-transform: uppercase; color: var(--ink-3);
-    }
-    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
-    tr:hover td { background: var(--bg); }
+.callout { border:1px solid var(--border); border-left:3px solid var(--accent); background:var(--accent-soft); border-radius:8px; padding:14px 18px; margin:20px 0; font-size:14.5px; color:var(--ink-2); line-height:1.65; }
+.callout-tag { font-size:10.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:5px; display:block; font-family:var(--font-mono); }
+.callout.warn { border-left-color:#d97706; background:var(--warn-bg); }
+.callout.warn .callout-tag { color:#d97706; }
+.callout.tip { border-left-color:var(--tip); background:var(--tip-bg); }
+.callout.tip .callout-tag { color:var(--tip); }
+.callout.success { border-left-color:var(--success); background:var(--success-bg); }
+.callout.success .callout-tag { color:var(--success); }
 
-    /* Callout */
-    .callout { border-left: 3px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; font-size: 14px; line-height: 1.65; }
-    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
-    .callout.tip { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
-    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
-    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
-    .callout-title { font-weight: 700; margin-bottom: 4px; }
+.step { display:grid; grid-template-columns:36px 1fr; gap:16px; margin:22px 0; align-items:start; }
+.step-num { width:30px; height:30px; border-radius:50%; background:var(--accent); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; font-family:var(--font-mono); flex-shrink:0; }
+.step h4 { margin:0 0 5px; font-size:16px; font-weight:700; }
+.step p { margin:4px 0; color:var(--ink-2); font-size:15px; line-height:1.65; }
 
-    /* Code */
-    .code-wrap { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 0; }
-    .code-bar { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--bg-2); }
-    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
-    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
-    pre.code-body { padding: 18px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; color: var(--ink-2); }
+table { width:100%; border-collapse:collapse; margin:20px 0; font-size:14.5px; }
+th { text-align:left; padding:10px 14px; background:var(--bg-2); border:1px solid var(--border); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); font-family:var(--font-mono); }
+td { padding:10px 14px; border:1px solid var(--border); vertical-align:top; line-height:1.55; }
+tr:nth-child(even) td { background:#fafaf8; }
 
-    /* Steps */
-    .steps { display: flex; flex-direction: column; gap: 0; }
-    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
-    .step:last-child { border-bottom: none; }
-    .step-num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--surface); margin-top: 2px; }
-    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-    .step-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin:24px 0; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 16px; text-align:center; }
+.stat-number { font-family:var(--font-display); font-size:2rem; font-weight:900; color:var(--accent); line-height:1; margin-bottom:6px; }
+.stat-label { font-size:13px; font-weight:600; color:var(--ink); margin-bottom:4px; }
+.stat-desc { font-size:12px; color:var(--ink-3); line-height:1.4; }
 
-    /* Tags */
-    .tag { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
-    .tag.green { background: var(--success-bg); color: var(--success); }
-    .tag.orange { background: var(--accent-bg); color: var(--accent); }
-    .tag.gray { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
-    .tag.dark { background: var(--ink); color: #fff; }
+.axis-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin:24px 0; }
+.axis-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 18px; }
+.axis-card.c1 { border-top:3px solid #4f46e5; }
+.axis-card.c2 { border-top:3px solid #0ea5e9; }
+.axis-card.c3 { border-top:3px solid #8b5cf6; }
+.axis-card.c4 { border-top:3px solid #10b981; }
+.axis-card.c5 { border-top:3px solid #f59e0b; }
+.axis-card.c6 { border-top:3px solid #ef4444; }
+.axis-num { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-4); margin-bottom:6px; }
+.axis-title { font-size:16px; font-weight:700; margin-bottom:6px; color:var(--ink); }
+.axis-sub { font-size:12px; color:var(--accent); font-family:var(--font-mono); margin-bottom:8px; }
+.axis-desc { font-size:13.5px; color:var(--ink-3); line-height:1.55; }
 
-    /* Two col layout */
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+.level-flow { display:flex; align-items:center; gap:0; margin:24px 0; overflow-x:auto; }
+.level-block { flex:1; min-width:150px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px 16px; text-align:center; }
+.level-block.current { background:var(--accent-soft); border:2px solid var(--accent-bdr); }
+.level-era { font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); margin-bottom:4px; }
+.level-name { font-size:16px; font-weight:700; margin-bottom:6px; }
+.level-desc { font-size:12px; color:var(--ink-3); line-height:1.4; }
+.level-arrow { font-size:20px; color:var(--ink-4); padding:0 8px; flex-shrink:0; }
 
-    /* Axis diagram */
-    .axis-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
-    @media (max-width: 640px) { .axis-grid { grid-template-columns: 1fr 1fr; } }
-    .axis-item {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; padding: 20px 16px; text-align: center;
-    }
-    .axis-item.active { background: var(--ink); border-color: var(--ink); }
-    .axis-item .axis-num { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 6px; }
-    .axis-item.active .axis-num { color: #666; }
-    .axis-item .axis-name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
-    .axis-item.active .axis-name { color: #fff; }
-    .axis-item .axis-sub { font-size: 12px; color: var(--ink-4); }
-    .axis-item.active .axis-sub { color: #888; }
+.checklist-section { margin:20px 0; }
+.checklist-axis { margin-bottom:32px; }
+.checklist-axis-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid var(--border); }
+.axis-badge { font-family:var(--font-mono); font-size:10.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:3px 9px; border-radius:5px; }
+.checklist-axis h3 { font-size:15px; font-weight:700; }
+.check-item { display:flex; align-items:flex-start; gap:12px; padding:10px 14px; border-radius:7px; margin-bottom:6px; background:var(--surface); border:1px solid var(--border); font-size:14.5px; line-height:1.55; }
+.check-item:hover { border-color:var(--border-2); }
+.check-box { width:18px; height:18px; border:2px solid var(--border-2); border-radius:4px; flex-shrink:0; margin-top:2px; }
+.level-badge { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:.06em; padding:2px 7px; border-radius:4px; flex-shrink:0; margin-top:2px; }
+.level-badge.l1 { background:var(--success-bg); color:var(--success); border:1px solid var(--success-bdr); }
+.level-badge.l2 { background:var(--tip-bg); color:var(--tip); border:1px solid var(--tip-bdr); }
+.level-badge.l3 { background:#faf5ff; color:#7c3aed; border:1px solid #ddd6fe; }
 
-    /* Checklist */
-    .checklist { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .checklist li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--ink-2); }
-    .checklist li .chk { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
-    .chk.good { background: var(--success-bg); color: var(--success); }
-    .chk.bad { background: #fee2e2; color: #dc2626; }
+.skill-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin:24px 0; }
+.skill-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 18px; }
+.skill-cmd { font-family:var(--font-mono); font-size:13px; font-weight:600; color:var(--accent); background:var(--accent-soft); padding:5px 10px; border-radius:6px; display:inline-block; margin-bottom:10px; border:1px solid var(--accent-bdr); }
+.skill-name { font-size:15px; font-weight:700; margin-bottom:6px; }
+.skill-desc { font-size:13.5px; color:var(--ink-3); line-height:1.55; }
 
-    /* Footer */
-    footer { padding: 28px; border-top: 1px solid var(--border); background: var(--surface); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--ink-4); }
-    footer a { color: var(--ink-3); text-decoration: none; }
-    footer a:hover { color: var(--accent); }
+.diagram-wrap { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px; margin:24px 0; text-align:center; }
 
-    @media (max-width: 640px) {
-      .hero, .section { padding-left: 16px; padding-right: 16px; }
-      .topbar { padding: 0 16px; }
-      footer { padding: 20px 16px; }
-    }
-    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-  </style>
+.maturity-timeline { display:flex; gap:0; margin:24px 0; position:relative; }
+.maturity-timeline::before { content:''; position:absolute; top:32px; left:32px; right:32px; height:2px; background:var(--border); z-index:0; }
+.mat-step { flex:1; text-align:center; position:relative; z-index:1; padding:0 8px; }
+.mat-circle { width:56px; height:56px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:16px; font-weight:700; margin-bottom:12px; background:var(--surface); border:2px solid var(--border); }
+.mat-step.l1 .mat-circle { background:var(--success-bg); color:var(--success); border-color:var(--success-bdr); }
+.mat-step.l2 .mat-circle { background:var(--tip-bg); color:var(--tip); border-color:var(--tip-bdr); }
+.mat-step.l3 .mat-circle { background:#faf5ff; color:#7c3aed; border-color:#ddd6fe; }
+.mat-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+.mat-sub { font-size:12px; color:var(--ink-3); line-height:1.4; }
+
+.pager { display:flex; justify-content:space-between; gap:14px; margin-top:60px; padding-top:24px; border-top:1px solid var(--border); }
+.pager a { flex:1; padding:16px 18px; border:1px solid var(--border); border-radius:10px; color:var(--ink); background:var(--surface); }
+.pager a:hover { border-color:var(--accent); background:var(--accent-soft); text-decoration:none; }
+.pager .label { font-size:10.5px; color:var(--ink-4); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.08em; }
+.pager .title { font-weight:600; margin-top:4px; font-size:15px; }
+.pager .next { text-align:right; }
+
+p { margin:10px 0; color:var(--ink-2); line-height:1.7; font-size:15px; }
+ul, ol { padding-left:22px; margin:12px 0; }
+li { margin:6px 0; color:var(--ink-2); font-size:15px; line-height:1.65; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style>
 </head>
 <body>
+<div class="layout">
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <span class="topbar-brand">Harness Engineering</span>
-  <span class="topbar-meta">이호연 · 2026.04.07</span>
-</div>
-
-<!-- HERO -->
-<div class="hero">
-  <div class="page-wrap">
-    <div class="hero-eyebrow">Team Attention · AI Agent</div>
-    <h1>Harness Engineering<br><em>AI가 잘 일하는 환경을 설계하는 기술</em></h1>
-    <p class="hero-desc">
-      프롬프트만으로는 부족하다. "말을 잘 하는 것"에서 "일하는 방법을 설계해주는 것"으로.
-      AI가 혼자서도 잘 일할 수 있는 작업 환경을 만드는 6가지 축을 정리한 발표 자료입니다.
-    </p>
-    <div class="hero-chips">
-      <span class="chip">🏗️ Scaffolding</span>
-      <span class="chip">🧠 Context Engineering</span>
-      <span class="chip">📋 Planning</span>
-      <span class="chip">⚙️ Orchestration</span>
-      <span class="chip">✅ Verification</span>
-      <span class="chip">📈 Compounding</span>
+<aside class="toc-wrap">
+  <div class="brand">
+    <span class="brand-mark">H</span>
+    <div>
+      <div class="brand-name">Harness Engineering</div>
+      <div class="brand-sub">입문 가이드 · 2026.04</div>
     </div>
   </div>
-</div>
+  <nav class="toc-nav">
+    <h4>기초</h4>
+    <ul>
+      <li><a href="#overview" class="active">하네스 엔지니어링이란</a></li>
+      <li><a href="#evolution">진화 흐름</a></li>
+      <li><a href="#why">왜 중요한가</a></li>
+    </ul>
+    <h4>6개 축</h4>
+    <ul>
+      <li><a href="#six-axes">6개 축 개요</a></li>
+      <li><a href="#scaffolding" class="l3">① 구조 (Scaffolding)</a></li>
+      <li><a href="#context" class="l3">② 맥락 (Context)</a></li>
+      <li><a href="#planning" class="l3">③ 계획 (Planning)</a></li>
+      <li><a href="#execution" class="l3">④ 실행 (Execution)</a></li>
+      <li><a href="#verification" class="l3">⑤ 검증 (Verification)</a></li>
+      <li><a href="#compounding" class="l3">⑥ 개선 (Compounding)</a></li>
+    </ul>
+    <h4>실습</h4>
+    <ul>
+      <li><a href="#tools">4가지 스킬</a></li>
+      <li><a href="#checklist">35항목 체크리스트</a></li>
+    </ul>
+    <h4>마무리</h4>
+    <ul>
+      <li><a href="#next">다음 단계</a></li>
+    </ul>
+  </nav>
+</aside>
 
-<!-- SECTION 1: 왜 Harness Engineering인가 -->
-<section class="section">
-  <div class="page-wrap">
-    <div class="section-label">01 배경</div>
-    <h2 class="section-title">이미 빠른 테크 회사들은 Harness를 구성하고 있다</h2>
-    <p class="section-desc">같은 모델을 쓰면서 결과가 극명하게 갈리는 이유는 하네스 설계에 있다.</p>
+<main class="content">
+  <header class="doc-header">
+    <div class="doc-eyebrow">AI Engineering · 입문 가이드</div>
+    <h1 class="doc-title">Harness<br><em>Engineering</em></h1>
+    <p class="doc-deck">AI가 잘 일하는 환경을 설계하는 기술. 같은 모델, 다른 성과 — 그 차이를 만드는 6개의 축.</p>
+    <div class="doc-meta">
+      <span><strong>출처</strong> · Team Attention 이호연, 2026.04.07</span>
+      <span><strong>깃허브</strong> · team-attention/harness</span>
+      <span><strong>체크리스트</strong> · 35개 항목</span>
+    </div>
+  </header>
 
-    <div class="stat-cards">
-      <div class="stat-card dark">
-        <div class="company">LangChain</div>
-        <div class="stat-num">+14%p</div>
-        <div class="stat-desc">같은 모델, 하네스만 변경<br>30위 → Top 5<br><br>GPT-5.2-Codex 교체, 셀프 검증 루프 + 컨텍스트 자동 수집 + 툴 루프 탐지 추가. TerminalBench 52.8→66.5%</div>
-      </div>
-      <div class="stat-card dark">
-        <div class="company">OpenAI</div>
-        <div class="stat-num">100만 줄</div>
-        <div class="stat-desc">인간 코드 0줄<br>엔지니어 3~7명, 5개월<br><br>5개월을 쓴 곳: 코딩이 아니라 하네스 설계. 5가지 교훈 중 "더 좋은 모델 써라"는 없다.</div>
+  <section id="overview">
+    <h2 class="section">하네스 엔지니어링이란</h2>
+    <div class="callout success">
+      <span class="callout-tag">핵심 정의</span>
+      <strong>"AI가 잘 일하는 환경을 설계하는 기술"</strong> — 모델의 능력 자체가 아니라, 모델이 작동하는 구조와 환경을 최적화하는 것.
+    </div>
+    <p>프롬프트 엔지니어링이 AI에게 무엇을 말할지를 다루고, 컨텍스트 엔지니어링이 무엇을 알려줄지를 다룬다면, 하네스 엔지니어링은 <strong>AI가 어떤 환경에서 작동하는가</strong>를 다룹니다.</p>
+    <p>"하네스(Harness)"는 말에 마차를 연결하는 마구(馬具)를 의미합니다. 말의 능력 자체를 바꾸지 않아도, 마구를 잘 설계하면 더 먼 거리를 더 안전하게 갈 수 있습니다. AI 개발에서도 마찬가지입니다.</p>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">+14%p</div>
+        <div class="stat-label">LangChain 성과</div>
+        <div class="stat-desc">같은 모델, 하네스만 변경 시 성능 향상</div>
       </div>
       <div class="stat-card">
-        <div class="company">Anthropic</div>
-        <div class="stat-num" style="color:var(--accent);">$9 vs $200</div>
-        <div class="stat-desc">$9는 비기능, $200은 완성<br>차이는 모델이 아니라 하네스<br><br>싱글 에이전트 20분/$9 → 실패, 3에이전트 하네스 6h/$200 → 완전 동작. $124로 품질 유지.</div>
+        <div class="stat-number">100만</div>
+        <div class="stat-label">OpenAI 코드 줄</div>
+        <div class="stat-desc">인간 코드 없이 AI가 생성한 라인 수</div>
       </div>
       <div class="stat-card">
-        <div class="company">Stripe</div>
-        <div class="stat-num" style="color:var(--ink);">1,000 PR/주</div>
-        <div class="stat-desc">완전 무인 자동 머지<br>전문화된 소형 에이전트 다수<br><br>매 스텝 검증 게이트 + 정밀 컨텍스트 관리. 하네스 없이는 불가능한 규모.</div>
+        <div class="stat-number">$9 vs $200</div>
+        <div class="stat-label">Anthropic 비용</div>
+        <div class="stat-desc">단일 vs 3-에이전트 하네스 비용</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">1,000</div>
+        <div class="stat-label">Stripe PR/주</div>
+        <div class="stat-desc">AI 하네스를 통해 생성된 주간 PR</div>
       </div>
     </div>
+  </section>
 
-    <div class="callout accent" style="margin-top:28px;">
-      <div class="callout-title">핵심 인사이트</div>
-      모델 교체로 5% 개선하는 것보다, <strong>하네스 설계로 15% 개선하는 것이 현실적이다</strong>
-    </div>
-  </div>
-</section>
-
-<!-- SECTION 2: 진화 흐름 -->
-<section class="section">
-  <div class="page-wrap">
-    <div class="section-label">02 개념</div>
-    <h2 class="section-title">진화 흐름 — 3단계</h2>
-    <p class="section-desc">AI 활용의 성숙도는 프롬프트에서 컨텍스트, 그리고 환경 설계로 이동하고 있다.</p>
-
-    <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
-      <div class="card">
-        <div class="card__header">
-          <div class="card__icon">💬</div>
-          <div class="card__title">LEVEL 1 · Prompt Engineering</div>
-        </div>
-        <div class="card__body">
-          <p><em>"이렇게 말해봐"</em></p>
-          <p style="margin-top:8px;">질문을 잘 하면 답이 좋아진다.</p>
-        </div>
-        <div class="card__footer"><span class="card__tag">말 잘하기</span></div>
+  <section id="evolution">
+    <h2 class="section">진화 흐름</h2>
+    <p>AI와 함께 일하는 방식은 세 단계를 거쳐 진화해왔습니다. 각 단계는 이전 단계를 포함하며, 더 높은 레이어를 추가합니다.</p>
+    <div class="level-flow">
+      <div class="level-block">
+        <div class="level-era">1세대</div>
+        <div class="level-name" style="color:#6b6b66">프롬프트<br>엔지니어링</div>
+        <div class="level-desc">AI에게 무엇을 말할지 최적화. 질문 방식·지시어·형식 개선.</div>
       </div>
-      <div class="card">
-        <div class="card__header">
-          <div class="card__icon">🗂️</div>
-          <div class="card__title">LEVEL 2 · Context Engineering</div>
-        </div>
-        <div class="card__body">
-          <p><em>"이런 배경지식을 줘봐"</em></p>
-          <p style="margin-top:8px;">배경을 알려주면 맥락을 이해한다.</p>
-        </div>
-        <div class="card__footer"><span class="card__tag">배경 알려주기</span></div>
+      <div class="level-arrow">→</div>
+      <div class="level-block">
+        <div class="level-era">2세대</div>
+        <div class="level-name" style="color:#3d3d3a">컨텍스트<br>엔지니어링</div>
+        <div class="level-desc">AI에게 무엇을 알려줄지 설계. 메모리·RAG·시스템 프롬프트.</div>
       </div>
-      <div class="card accent-card">
-        <div class="card__header">
-          <div class="card__icon">🏗️</div>
-          <div class="card__title">LEVEL 3 · Harness Engineering</div>
-        </div>
-        <div class="card__body">
-          <p><em>"환경 자체를 설계하자"</em></p>
-          <p style="margin-top:8px;">작업 환경을 만들어주면 혼자서도 잘한다.</p>
-        </div>
-        <div class="card__footer"><span class="card__tag" style="color:var(--accent);">환경 설계</span></div>
+      <div class="level-arrow">→</div>
+      <div class="level-block current">
+        <div class="level-era">3세대 (현재)</div>
+        <div class="level-name" style="color:var(--accent)">하네스<br>엔지니어링</div>
+        <div class="level-desc">AI가 일하는 환경 자체를 설계. 구조·도구·검증·자율화.</div>
       </div>
     </div>
-
-    <div class="callout info" style="margin-top:28px;">
-      <div class="callout-title">Harness Engineering 정의</div>
-      AI가 혼자서도 잘 일할 수 있는 <strong>작업 환경을 만들어주는 것</strong>. 맥락(뭘 해야 하는지), 제한(뭘 하면 안 되는지), 작업 흐름(어떻게 일하는지), 검증(잘 했는지 확인) — 이 모든 것을 포괄하는 개념.
+    <div class="callout tip">
+      <span class="callout-tag">핵심 통찰</span>
+      같은 Claude Sonnet을 사용해도 하네스 설계에 따라 <strong>14%p 이상의 성능 차이</strong>가 발생합니다. 모델 업그레이드보다 하네스 개선이 더 효과적일 수 있습니다.
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- SECTION 3: 6개 축 -->
-<section class="section">
-  <div class="page-wrap">
-    <div class="section-label">03 구조</div>
-    <h2 class="section-title">Harness의 6개 축 — 순환 구조</h2>
-    <p class="section-desc">구조를 만들고, 맥락을 채우고, 계획하고, 실행하고, 검증하고, 개선한다. 이 사이클이 반복될수록 AI 품질이 올라간다.</p>
+  <section id="why">
+    <h2 class="section">왜 중요한가</h2>
+    <p>AI 도구가 범람하는 시대에 중요한 것은 "어떤 도구를 쓰는가"가 아니라 <strong>"AI가 어떤 환경에서 작동하는가"</strong>입니다.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 580 200" xmlns="http://www.w3.org/2000/svg" style="max-width:540px;width:100%">
+        <rect x="8" y="8" width="175" height="184" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+        <rect x="203" y="8" width="175" height="184" rx="10" fill="#f0fdf4" stroke="#bbf7d0"/>
+        <rect x="398" y="8" width="174" height="184" rx="10" fill="#eef0fe" stroke="#c7d0fc"/>
+        <text x="96" y="32" text-anchor="middle" font-size="10" font-weight="700" fill="#94a3b8" font-family="monospace">No Harness</text>
+        <text x="291" y="32" text-anchor="middle" font-size="10" font-weight="700" fill="#16a34a" font-family="monospace">Basic Harness</text>
+        <text x="485" y="32" text-anchor="middle" font-size="10" font-weight="700" fill="#4f46e5" font-family="monospace">Full Harness</text>
+        <text x="96" y="70" text-anchor="middle" font-size="24" font-weight="900" fill="#94a3b8" font-family="Georgia,serif">60%</text>
+        <text x="96" y="86" text-anchor="middle" font-size="10" fill="#94a3b8">성공률</text>
+        <text x="96" y="118" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">3× 재작업</text>
+        <text x="96" y="155" text-anchor="middle" font-size="12" font-weight="600" fill="#94a3b8">느린 복구</text>
+        <text x="291" y="70" text-anchor="middle" font-size="24" font-weight="900" fill="#16a34a" font-family="Georgia,serif">78%</text>
+        <text x="291" y="86" text-anchor="middle" font-size="10" fill="#16a34a">성공률</text>
+        <text x="291" y="118" text-anchor="middle" font-size="14" font-weight="700" fill="#16a34a">1.5× 재작업</text>
+        <text x="291" y="155" text-anchor="middle" font-size="12" font-weight="600" fill="#16a34a">중간 복구</text>
+        <text x="485" y="64" text-anchor="middle" font-size="20" font-weight="900" fill="#4f46e5" font-family="Georgia,serif">+14%p</text>
+        <text x="485" y="80" text-anchor="middle" font-size="10" fill="#4f46e5">LangChain 실측치</text>
+        <text x="485" y="118" text-anchor="middle" font-size="14" font-weight="700" fill="#4f46e5">자동 재시도</text>
+        <text x="485" y="155" text-anchor="middle" font-size="12" font-weight="600" fill="#4f46e5">즉시 복구</text>
+      </svg>
+      <p style="font-size:12px;color:var(--ink-4);margin-top:8px;font-family:var(--font-mono)">FIG.1 · 하네스 수준별 성과 비교 (개념도)</p>
+    </div>
+
+    <h3 class="subsection">실제 사례</h3>
+    <table>
+      <thead><tr><th>기업</th><th>적용 내용</th><th>성과</th></tr></thead>
+      <tbody>
+        <tr><td><strong>LangChain</strong></td><td>같은 모델(Claude Sonnet)로 하네스만 변경</td><td>+14%p 성능 향상</td></tr>
+        <tr><td><strong>OpenAI</strong></td><td>내부 AI 코딩 환경 구축</td><td>인간 코드 0줄, AI 생성 100만 줄</td></tr>
+        <tr><td><strong>Anthropic</strong></td><td>단일 에이전트 vs 3-에이전트 하네스</td><td>$200 → $9 (비용 95% 절감)</td></tr>
+        <tr><td><strong>Stripe</strong></td><td>AI 하네스 기반 개발 파이프라인</td><td>1,000 PR/주 자동 생성</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="six-axes">
+    <h2 class="section">6개 축 개요</h2>
+    <p>하네스 엔지니어링은 6개의 축으로 구성됩니다. 각 축은 독립적이지만 서로 연결되어 하나의 생태계를 이룹니다.</p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 400 360" xmlns="http://www.w3.org/2000/svg" style="max-width:380px;width:100%">
+        <circle cx="200" cy="180" r="50" fill="#eef0fe" stroke="#4f46e5" stroke-width="2.5"/>
+        <text x="200" y="175" text-anchor="middle" font-size="12" font-weight="700" fill="#4f46e5" font-family="Georgia,serif">Harness</text>
+        <text x="200" y="191" text-anchor="middle" font-size="12" font-weight="700" fill="#4f46e5" font-family="Georgia,serif">Engineering</text>
+        <line x1="200" y1="130" x2="200" y2="76" stroke="#4f46e5" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle cx="200" cy="54" r="30" fill="#eef0fe" stroke="#4f46e5" stroke-width="2"/>
+        <text x="200" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#4f46e5">① 구조</text>
+        <text x="200" y="63" text-anchor="middle" font-size="9" fill="#4f46e5">Scaffolding</text>
+        <line x1="234" y1="148" x2="282" y2="100" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle cx="305" cy="78" r="30" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="2"/>
+        <text x="305" y="74" text-anchor="middle" font-size="10" font-weight="700" fill="#0ea5e9">② 맥락</text>
+        <text x="305" y="87" text-anchor="middle" font-size="9" fill="#0ea5e9">Context</text>
+        <line x1="244" y1="190" x2="292" y2="208" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle cx="320" cy="218" r="30" fill="#faf5ff" stroke="#8b5cf6" stroke-width="2"/>
+        <text x="320" y="214" text-anchor="middle" font-size="10" font-weight="700" fill="#8b5cf6">③ 계획</text>
+        <text x="320" y="227" text-anchor="middle" font-size="9" fill="#8b5cf6">Planning</text>
+        <line x1="200" y1="230" x2="200" y2="278" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle cx="200" cy="306" r="30" fill="#f0fdf4" stroke="#10b981" stroke-width="2"/>
+        <text x="200" y="302" text-anchor="middle" font-size="10" font-weight="700" fill="#10b981">④ 실행</text>
+        <text x="200" y="315" text-anchor="middle" font-size="9" fill="#10b981">Execution</text>
+        <line x1="156" y1="208" x2="108" y2="218" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle cx="80" cy="218" r="30" fill="#fffbeb" stroke="#f59e0b" stroke-width="2"/>
+        <text x="80" y="214" text-anchor="middle" font-size="10" font-weight="700" fill="#d97706">⑤ 검증</text>
+        <text x="80" y="227" text-anchor="middle" font-size="9" fill="#d97706">Verification</text>
+        <line x1="166" y1="148" x2="118" y2="100" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle cx="95" cy="78" r="30" fill="#fff1f2" stroke="#ef4444" stroke-width="2"/>
+        <text x="95" y="74" text-anchor="middle" font-size="10" font-weight="700" fill="#ef4444">⑥ 개선</text>
+        <text x="95" y="87" text-anchor="middle" font-size="9" fill="#ef4444">Compounding</text>
+      </svg>
+      <p style="font-size:12px;color:var(--ink-4);margin-top:8px;font-family:var(--font-mono)">FIG.2 · Harness Engineering 6개 축 구조</p>
+    </div>
 
     <div class="axis-grid">
-      <div class="axis-item active">
-        <div class="axis-num">01</div>
-        <div class="axis-name">구조</div>
-        <div class="axis-sub">Scaffolding<br>뭘 깔아두는가</div>
+      <div class="axis-card c1"><div class="axis-num">축 1</div><div class="axis-title">구조</div><div class="axis-sub">Scaffolding</div><div class="axis-desc">AI가 독립적으로 프로젝트를 파악할 수 있는 파일/폴더 구조. 네이밍 규칙, 역할 분리, 진입점 문서.</div></div>
+      <div class="axis-card c2"><div class="axis-num">축 2</div><div class="axis-title">맥락</div><div class="axis-sub">Context</div><div class="axis-desc">시스템 프롬프트, CLAUDE.md, 규칙 파일, 외부 시스템 연결. 정보를 점진적으로 노출하는 설계.</div></div>
+      <div class="axis-card c3"><div class="axis-num">축 3</div><div class="axis-title">계획</div><div class="axis-sub">Planning</div><div class="axis-desc">복잡한 작업을 실행 전에 먼저 계획하게 하는 구조. 스펙 문서, 태스크 분해, 의존성 파악.</div></div>
+      <div class="axis-card c4"><div class="axis-num">축 4</div><div class="axis-title">실행</div><div class="axis-sub">Execution</div><div class="axis-desc">도구 호출, 반복 루프, 병렬 처리, 에이전트 오케스트레이션. AI가 완료 기준까지 스스로 실행.</div></div>
+      <div class="axis-card c5"><div class="axis-num">축 5</div><div class="axis-title">검증</div><div class="axis-sub">Verification</div><div class="axis-desc">자동 테스트, 린터, 위험 작업 차단 훅. 생성 AI와 검증 AI를 분리하는 이중 구조.</div></div>
+      <div class="axis-card c6"><div class="axis-num">축 6</div><div class="axis-title">개선</div><div class="axis-sub">Compounding</div><div class="axis-desc">AI의 반복 실수를 규칙으로 전환하고 자동화하는 피드백 루프. 사용할수록 나아지는 시스템.</div></div>
+    </div>
+  </section>
+
+  <section id="scaffolding">
+    <h2 class="section">① 구조 (Scaffolding)</h2>
+    <p>AI가 세션을 새로 시작해도 프로젝트를 독립적으로 파악할 수 있도록 하는 구조 설계입니다.</p>
+    <div class="callout">
+      <span class="callout-tag">핵심 원칙</span>
+      "새 팀원이 설정 파일만 읽고 개발을 시작할 수 있다면, AI도 마찬가지다."
+    </div>
+    <div class="step"><span class="step-num">1</span><div><h4>역할이 드러나는 디렉토리 구조</h4><p>폴더 이름만 봐도 각 모듈의 역할을 알 수 있어야 합니다. <code>src/auth/</code>, <code>src/payments/</code>처럼 기능 단위로 구성.</p></div></div>
+    <div class="step"><span class="step-num">2</span><div><h4>CLAUDE.md — AI 진입점 문서</h4><p>프로젝트 설명, 코딩 규칙, 금지 사항, 중요 파일 경로를 담는 AI 전용 가이드. 세션 시작 시 자동 로드.</p></div></div>
+    <div class="step"><span class="step-num">3</span><div><h4>도메인별 규칙 분리</h4><p>전체 규칙은 루트 CLAUDE.md에, 도메인별 세부 규칙은 각 폴더의 규칙 파일로 분리. 관련 작업 시에만 자동 로드.</p></div></div>
+    <div class="step"><span class="step-num">4</span><div><h4>민감 파일 보호</h4><p><code>.env</code>, 시크릿 파일, 운영 DB 설정 등을 AI가 함부로 수정하지 못하도록 명시적으로 제한.</p></div></div>
+    <pre>project/
+├── CLAUDE.md          ← AI 진입점 (전체 규칙)
+├── src/
+│   ├── auth/
+│   │   └── CLAUDE.md  ← 도메인 규칙 (인증 관련만)
+│   └── payments/
+├── .env.example       ← 실제 .env는 gitignore
+└── docs/              ← 긴 맥락은 별도 분리</pre>
+  </section>
+
+  <section id="context">
+    <h2 class="section">② 맥락 (Context)</h2>
+    <p>AI가 작업에 필요한 정보를 정확하게, 적시에 받을 수 있도록 설계합니다.</p>
+    <h3 class="subsection">점진적 노출 (Progressive Disclosure)</h3>
+    <p>모든 정보를 한꺼번에 주입하면 컨텍스트 창이 낭비됩니다. <strong>필요한 맥락을 필요할 때만</strong> 로드하는 설계가 핵심입니다.</p>
+    <table>
+      <thead><tr><th>범위</th><th>위치</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>전체 프로젝트</td><td>루트 CLAUDE.md</td><td>코딩 컨벤션, 금지 사항, 주요 파일 경로</td></tr>
+        <tr><td>프로젝트 도메인</td><td>폴더별 CLAUDE.md</td><td>도메인 특화 규칙, 용어 정의</td></tr>
+        <tr><td>외부 시스템</td><td>MCP / API 연결</td><td>Jira, Confluence, Google Sheets 실시간 조회</td></tr>
+        <tr><td>작업별 컨텍스트</td><td>HANDOFF.md / SPEC.md</td><td>현재 진행 상황, 결정 사항, 다음 단계</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn">
+      <span class="callout-tag">주의</span>
+      CLAUDE.md가 너무 길어지면 역효과. 핵심만 남기고, 상세 내용은 별도 문서로 분리한 뒤 참조하는 구조를 사용하세요.
+    </div>
+  </section>
+
+  <section id="planning">
+    <h2 class="section">③ 계획 (Planning)</h2>
+    <p>복잡한 작업을 실행 전에 먼저 계획하게 하는 구조. "코드부터 짜봐"가 아닌 <strong>"먼저 계획을 세워봐"</strong>.</p>
+    <div class="callout success">
+      <span class="callout-tag">효과</span>
+      계획 단계를 명시적으로 강제하면 AI의 실행 품질이 크게 향상됩니다. 계획 없이 바로 코딩하면 중간에 방향을 바꾸거나 재작업이 발생합니다.
+    </div>
+    <div class="step"><span class="step-num">1</span><div><h4>Plan 모드</h4><p>Claude Code에서 <code>Shift+Tab</code>으로 Plan 모드 토글. 실행 없이 계획만 수립하고 사용자 승인 후 진행.</p></div></div>
+    <div class="step"><span class="step-num">2</span><div><h4>SPEC.md 작성</h4><p>변경 목적, 영향 범위, 성공/실패 케이스를 문서화. 구현 전에 스펙부터 합의하는 SDD 방식.</p></div></div>
+    <div class="step"><span class="step-num">3</span><div><h4>Task 분해</h4><p>큰 작업을 독립적인 작은 태스크로 분해. 의존성을 파악하고 병렬 처리 가능한 것을 식별.</p></div></div>
+    <div class="step"><span class="step-num">4</span><div><h4>HANDOFF.md</h4><p>장시간 작업 시 세션 간 인수인계 문서. 다음 세션에서 컨텍스트를 즉시 복원할 수 있게 구조화.</p></div></div>
+  </section>
+
+  <section id="execution">
+    <h2 class="section">④ 실행 (Execution)</h2>
+    <p>AI가 도구를 호출하고, 반복하고, 병렬 처리하며 완료 기준까지 스스로 작업을 완수하는 구조.</p>
+    <h3 class="subsection">오케스트레이션 패턴</h3>
+    <table>
+      <thead><tr><th>작업 규모</th><th>실행 방식</th><th>예시</th></tr></thead>
+      <tbody>
+        <tr><td>소형 (단순 반복)</td><td>AI 단독 실행</td><td>코드 포맷팅, 주석 추가</td></tr>
+        <tr><td>중형 (복잡한 단일 작업)</td><td>Plan 모드 + 실행</td><td>새 기능 구현, 버그 수정</td></tr>
+        <tr><td>대형 (복수 파일/시스템)</td><td>서브에이전트 파견</td><td>리팩토링, 아키텍처 변경</td></tr>
+        <tr><td>복합 (독립 태스크)</td><td>병렬 에이전트 실행</td><td>멀티 파일 동시 수정</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <span class="callout-tag">자율 실행 구조</span>
+      AI가 <strong>완료 기준까지 스스로 반복 시도</strong>하는 구조를 만드세요. "한 번만 실행하고 결과 보고"가 아닌 "기준을 충족할 때까지 계속 시도"가 목표입니다.
+    </div>
+    <pre>## 실행 원칙 (CLAUDE.md에 명시)
+- 테스트가 통과할 때까지 수정을 반복한다
+- 빌드 에러는 자동으로 수정 시도한다
+- 완료 기준: 테스트 Green + 린트 통과 + 타입 체크 통과</pre>
+  </section>
+
+  <section id="verification">
+    <h2 class="section">⑤ 검증 (Verification)</h2>
+    <p>AI의 실수를 자동으로 감지하고, 위험 작업을 차단하며, 되돌릴 수 있는 구조를 만듭니다.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0">
+      <div class="callout success" style="margin:0"><span class="callout-tag">자동 검증</span>린터, 포맷터, 타입 체커를 훅으로 자동 실행. AI 작업 후 즉시 품질 게이트 통과 여부 확인.</div>
+      <div class="callout warn" style="margin:0"><span class="callout-tag">위험 작업 차단</span>삭제, 배포, 민감 파일 수정을 자동으로 차단하는 가드레일. 시뮬레이션→확인→실행 흐름.</div>
+    </div>
+    <h3 class="subsection">이중 검증 구조</h3>
+    <div class="step"><span class="step-num">1</span><div><h4>생성 AI와 검증 AI 분리</h4><p>코드를 작성한 에이전트가 직접 검증하면 실수를 놓칩니다. <strong>별도 에이전트가 검증</strong>하는 이중 구조를 사용하세요.</p></div></div>
+    <div class="step"><span class="step-num">2</span><div><h4>격리 환경 E2E 테스트</h4><p>메인 환경에 영향 없이 격리된 환경(브랜치, 도커)에서 End-to-End 검증 가능한 구조.</p></div></div>
+  </section>
+
+  <section id="compounding">
+    <h2 class="section">⑥ 개선 (Compounding)</h2>
+    <p>AI와 협업하면서 발견한 패턴을 규칙으로 전환하고, 반복 작업을 자동화하는 피드백 루프입니다.</p>
+    <div class="callout tip">
+      <span class="callout-tag">복리 효과</span>
+      하네스는 사용할수록 나아지는 시스템입니다. AI의 실수 패턴 → 규칙 추가 → 다음 세션부터 자동 적용. 이것이 "Compounding(복리)"의 의미입니다.
+    </div>
+    <div class="step"><span class="step-num">1</span><div><h4>실수 패턴 → 규칙화</h4><p>AI가 같은 실수를 반복하면 즉시 CLAUDE.md에 규칙으로 추가. 다음 세션부터 자동으로 적용.</p></div></div>
+    <div class="step"><span class="step-num">2</span><div><h4>반복 작업 → 스킬(Skill)화</h4><p>3회 이상 반복하는 작업 패턴을 인식하고, 슬래시 커맨드(Skill)로 자동화합니다.</p></div></div>
+    <div class="step"><span class="step-num">3</span><div><h4>작업 관찰 및 추적</h4><p>AI 작업의 토큰 사용량, 성공/실패 패턴, 재작업 횟수를 추적. 개선 방향을 데이터로 파악.</p></div></div>
+    <div class="step"><span class="step-num">4</span><div><h4>정기 정리 (Pruning)</h4><p>미사용 자동화, 오래된 규칙, 더 이상 유효하지 않은 연결을 정기적으로 정리. 시스템의 신선도 유지.</p></div></div>
+  </section>
+
+  <section id="tools">
+    <h2 class="section">4가지 실습 스킬</h2>
+    <p><a href="https://github.com/team-attention/harness" target="_blank">team-attention/harness</a> 리포지토리는 Claude Code 플러그인으로 설치할 수 있는 4가지 스킬을 제공합니다.</p>
+    <div class="skill-grid">
+      <div class="skill-card">
+        <div class="skill-cmd">/check-harness</div>
+        <div class="skill-name">하네스 성숙도 진단</div>
+        <div class="skill-desc">현재 프로젝트의 AI 최적화 수준을 5축 35개 항목으로 진단합니다. L1/L2/L3 성숙도 점수와 개선 우선순위를 제시.</div>
       </div>
-      <div class="axis-item">
-        <div class="axis-num">02</div>
-        <div class="axis-name">맥락</div>
-        <div class="axis-sub">Context<br>AI가 뭘 아는가</div>
+      <div class="skill-card">
+        <div class="skill-cmd">/scaffold</div>
+        <div class="skill-name">AI 친화적 구조 생성</div>
+        <div class="skill-desc">신규 프로젝트에 CLAUDE.md, 규칙 파일, 폴더 구조, Hook 템플릿 등 AI 최적화 스캐폴딩을 자동으로 생성합니다.</div>
       </div>
-      <div class="axis-item">
-        <div class="axis-num">03</div>
-        <div class="axis-name">계획</div>
-        <div class="axis-sub">Planning<br>뭘 할지 정하는가</div>
+      <div class="skill-card">
+        <div class="skill-cmd">/specify</div>
+        <div class="skill-name">스펙 문서 작성</div>
+        <div class="skill-desc">목표를 입력하면 상세한 구현 계획(spec.md)으로 변환합니다. 영향 범위, 성공/실패 케이스, 태스크 분해를 포함.</div>
       </div>
-      <div class="axis-item">
-        <div class="axis-num">04</div>
-        <div class="axis-name">실행</div>
-        <div class="axis-sub">Execution<br>어떻게 시키는가</div>
-      </div>
-      <div class="axis-item">
-        <div class="axis-num">05</div>
-        <div class="axis-name">검증</div>
-        <div class="axis-sub">Verification<br>어떻게 믿는가</div>
-      </div>
-      <div class="axis-item">
-        <div class="axis-num">06</div>
-        <div class="axis-name">개선</div>
-        <div class="axis-sub">Compounding<br>어떻게 나아지는가</div>
+      <div class="skill-card">
+        <div class="skill-cmd">/deep-interview</div>
+        <div class="skill-name">요구사항 인터뷰</div>
+        <div class="skill-desc">소크라테스 방식의 질문으로 요구사항의 불명확성을 해소합니다. "무엇을 왜 어떻게"를 구조화하는 심층 인터뷰.</div>
       </div>
     </div>
-
-    <!-- SVG 순환 다이어그램 -->
-    <div style="margin-top:32px; text-align:center;">
-      <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;font-family:'Inter',sans-serif;">
-        <!-- 화살표 마커 -->
-        <defs>
-          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L8,3 z" fill="#A8A8A3"/>
-          </marker>
-        </defs>
-        <!-- 노드 박스 -->
-        <rect x="10" y="70" width="72" height="36" rx="6" fill="#1C1C1A"/>
-        <text x="46" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">구조</text>
-        <rect x="110" y="70" width="72" height="36" rx="6" fill="#E8E8E4"/>
-        <text x="146" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#3D3D3A">맥락</text>
-        <rect x="210" y="70" width="72" height="36" rx="6" fill="#E8E8E4"/>
-        <text x="246" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#3D3D3A">계획</text>
-        <rect x="310" y="70" width="72" height="36" rx="6" fill="#E8E8E4"/>
-        <text x="346" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#3D3D3A">실행</text>
-        <rect x="410" y="70" width="72" height="36" rx="6" fill="#E8E8E4"/>
-        <text x="446" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#3D3D3A">검증</text>
-        <rect x="478" y="70" width="72" height="36" rx="6" fill="#C4522A"/>
-        <text x="514" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">개선</text>
-        <!-- 연결 화살표 -->
-        <line x1="82" y1="88" x2="108" y2="88" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
-        <line x1="182" y1="88" x2="208" y2="88" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
-        <line x1="282" y1="88" x2="308" y2="88" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
-        <line x1="382" y1="88" x2="408" y2="88" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
-        <line x1="482" y1="88" x2="480" y2="88" stroke="#A8A8A3" stroke-width="1.5" marker-end="url(#arr)"/>
-        <!-- 개선 → 구조 피드백 루프 -->
-        <path d="M514,106 Q514,160 46,160 Q46,160 46,106" stroke="#C4522A" stroke-width="1.5" fill="none" marker-end="url(#arr)" stroke-dasharray="4,3"/>
-        <text x="280" y="178" text-anchor="middle" font-size="10" fill="#C4522A">개선 루프 — 반복할수록 품질 상승</text>
-      </svg>
+    <div class="callout">
+      <span class="callout-tag">설치 방법</span>
+      Claude Code에서 <code>/install-plugin https://github.com/team-attention/harness</code> 실행 후 <code>/scaffold</code>로 현재 프로젝트에 AI 친화적 구조를 즉시 적용할 수 있습니다.
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- SECTION 4: 구조 (Scaffolding) -->
-<section class="section">
-  <div class="page-wrap">
-    <div class="section-label">04 구조 (Scaffolding)</div>
-    <h2 class="section-title">프로젝트 구조, 도구 배치, 경계 설정</h2>
-    <p class="section-desc">한 번 해두면 계속 쓰는 것. 프로젝트 구조를 잘 설계하면, AI는 그 구조에 맞춰 따라간다.</p>
+  <section id="checklist">
+    <h2 class="section">35항목 체크리스트</h2>
+    <p>5개 축 35개 항목으로 구성된 자가진단 체크리스트입니다. <code>/check-harness</code>로 자동 진단하거나 직접 확인하세요.</p>
+    <div class="maturity-timeline">
+      <div class="mat-step l1"><div class="mat-circle">L1</div><div class="mat-title">시작하기</div><div class="mat-sub">기본 구조 수립<br>12개 항목</div></div>
+      <div class="mat-step l2"><div class="mat-circle">L2</div><div class="mat-title">내 것으로 만들기</div><div class="mat-sub">프로세스 정착<br>15개 항목</div></div>
+      <div class="mat-step l3"><div class="mat-circle">L3</div><div class="mat-title">자율 운영</div><div class="mat-sub">지속 가능한 시스템<br>8개 항목</div></div>
+    </div>
 
-    <div class="two-col">
-      <div>
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;">권장 프로젝트 구조</h3>
-        <div class="code-wrap">
-          <div class="code-bar">
-            <div class="code-dot" style="background:#ef4444;"></div>
-            <div class="code-dot" style="background:#f59e0b;"></div>
-            <div class="code-dot" style="background:#22c55e;"></div>
-            <span class="code-lang">folder</span>
-          </div>
-          <pre class="code-body">my-project/
-├── src/        # 비즈니스 로직
-├── docs/       # AI의 참고 문서
-├── tests/      # 검증 인프라
-├── .dev/       # 개발 도구/스크립트
-├── .claude/    # AI 설정
-├── out/        # 빌드 산출물
-└── CLAUDE.md   # 프로젝트 지도</pre>
+    <div class="checklist-section">
+      <div class="checklist-axis">
+        <div class="checklist-axis-header">
+          <span class="axis-badge" style="background:#eef0fe;color:#4f46e5;border:1px solid #c7d0fc">축 1</span>
+          <h3>준비 (Scaffolding) — AI가 독립적으로 프로젝트를 파악할 수 있는 구조</h3>
         </div>
-        <p style="font-size:13px;color:var(--ink-3);margin-top:8px;">AI가 "테스트 작성해줘"→tests/, "문서 업데이트"→docs/에 자동으로 찾아간다</p>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>디렉토리 구조만 보고 프로젝트의 역할 구분을 알 수 있다</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>AI에게 프로젝트 설명을 전달하는 파일이 있다 (CLAUDE.md 등)</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>긴 맥락은 별도 문서로 분리하고, 메인 파일에서 참조한다</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>민감 파일(.env, 시크릿 등)을 AI가 함부로 수정하지 못하게 보호</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>도메인별 규칙 파일 분리, 관련 작업 시에만 자동 로드</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>프로젝트 전용 자동화(Skill, Hook 등) 1개 이상 보유</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>AI 행동 범위를 명시적으로 제한 (샌드박스, 경로 제한, 권한)</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l3">L3</span><span>새 팀원이 설정 파일만 읽고 개발 시작 가능</span></div>
       </div>
-      <div>
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;">사람의 문서 vs AI의 문서</h3>
-        <div class="card" style="margin-bottom:12px;">
-          <div class="card__header">
-            <div class="card__title">docs/ — 사람이 관리</div>
-          </div>
-          <div class="card__body">
-            <ul>
-              <li>비즈니스 룰·도메인 정의</li>
-              <li>체크리스트·온보딩 가이드</li>
-              <li>ADR·API 스펙·외부 연동 규격</li>
-            </ul>
-          </div>
+
+      <div class="checklist-axis">
+        <div class="checklist-axis-header">
+          <span class="axis-badge" style="background:#f0f9ff;color:#0ea5e9;border:1px solid #bae6fd">축 2</span>
+          <h3>맥락 (Context) — 문서, 규칙, 정보의 점진적 노출</h3>
         </div>
-        <div class="card">
-          <div class="card__header">
-            <div class="card__title">.dev/ — AI가 남기는 기록</div>
-          </div>
-          <div class="card__body">
-            <ul>
-              <li>learnings·troubleshooting 기록</li>
-              <li>작업 로그·디버깅 히스토리</li>
-              <li>실험 결과·스크래치패드</li>
-            </ul>
-          </div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>반복 지시 내용을 설정 파일에 기록</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>설정 파일이 간결함 (핵심만, 길면 분리)</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>AI 예상 외 행동 시 암묵지를 명시지로 기록</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>정보 범위를 구분해서 배치 (전체/프로젝트/폴더 설정)</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>도메인 용어, 정책, 장애 기록 등을 문서화</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>외부 시스템을 AI가 직접 조회 가능하게 연결</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l3">L3</span><span>필요한 맥락을 "필요할 때만" 로드 (Progressive Disclosure)</span></div>
+      </div>
+
+      <div class="checklist-axis">
+        <div class="checklist-axis-header">
+          <span class="axis-badge" style="background:#faf5ff;color:#8b5cf6;border:1px solid #ddd6fe">축 3</span>
+          <h3>실행 (Orchestration) — 계획 수립, 위임, 조율 체계</h3>
         </div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>배경, 목적, 제약을 함께 전달</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>위임 시 완료 기준을 명시</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>복잡한 작업 전 계획을 먼저 세우게 함</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>작업 규모별로 혼자/부하 파견/팀 구성 구분</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>장시간 작업 시 세션 인수인계 문서 남김</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l3">L3</span><span>AI가 완료 기준까지 스스로 반복 시도하는 구조</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l3">L3</span><span>커스텀 계획 프로세스 보유 (인터뷰→스펙→실행)</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l3">L3</span><span>독립 작업을 병렬 동시 실행 구조</span></div>
+      </div>
+
+      <div class="checklist-axis">
+        <div class="checklist-axis-header">
+          <span class="axis-badge" style="background:#fffbeb;color:#d97706;border:1px solid #fde68a">축 4</span>
+          <h3>검증 (Verification) — 테스트, 코드 리뷰, 품질 관리</h3>
+        </div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>AI 작업 후 테스트 가능한 환경 구축</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>코드 포맷터/린터가 자동으로 적용</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>위험 작업(삭제, 배포, 민감파일 수정)을 자동 차단</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>되돌릴 수 있는 구조 (브랜치, 격리 환경)</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>시뮬레이션→확인→실행 흐름 적용</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>AI 실수 자동 감지 및 재시도 복구 구조</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>격리 환경에서 E2E 검증 가능</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l3">L3</span><span>생성 AI와 검증 AI 분리</span></div>
+      </div>
+
+      <div class="checklist-axis">
+        <div class="checklist-axis-header">
+          <span class="axis-badge" style="background:#fff1f2;color:#ef4444;border:1px solid #fecaca">축 5</span>
+          <h3>개선 (Compounding) — 학습 및 피드백 루프</h3>
+        </div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>반복 실수 패턴 발견 시 규칙으로 전환</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l1">L1</span><span>3회 이상 반복하는 작업 인식</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>반복 작업을 자동화로 구현 (Skill 등)</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l2">L2</span><span>AI 작업 관찰/추적 가능 (토큰, 로그 분석)</span></div>
+        <div class="check-item"><div class="check-box"></div><span class="level-badge l3">L3</span><span>미사용 자동화, 규칙, 연결을 정기 정리</span></div>
       </div>
     </div>
 
-    <h3 style="font-size:15px;font-weight:700;margin:28px 0 16px;">경계 설정 — AI가 뭘 알고, 뭘 할 수 있고, 뭘 하면 안 되는지</h3>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>구분</th><th>파일</th><th>역할</th><th>예시</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><span class="tag dark">뭘 알려줄까</span></td>
-            <td><code>CLAUDE.md</code> · <code>rules/</code></td>
-            <td>프로젝트 규칙, 코딩 스타일, 금기사항</td>
-            <td>기술 스택, 컨벤션, 중요 제약</td>
-          </tr>
-          <tr>
-            <td><span class="tag orange">어디까지 허용할까</span></td>
-            <td><code>settings.json</code></td>
-            <td>Permission Mode로 자동 허용 범위 설정</td>
-            <td>plan / auto / bypass 모드</td>
-          </tr>
-          <tr>
-            <td><span class="tag gray">뭘 막을까</span></td>
-            <td><code>.claude/hooks/</code></td>
-            <td>위험한 명령을 실행 전에 자동 차단</td>
-            <td>git push --force 차단, rm -rf 차단</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="callout">
+      <span class="callout-tag">진단 시작</span>
+      Claude Code에서 <code>/check-harness</code>를 실행하면 현재 프로젝트의 35개 항목을 자동 진단하고 성숙도 점수와 개선 우선순위를 제시합니다.
+    </div>
+  </section>
+
+  <section id="next">
+    <h2 class="section">다음 단계</h2>
+    <p>하네스 엔지니어링 도입을 위한 단계별 실행 계획입니다.</p>
+    <div class="step"><span class="step-num">1</span><div><h4>진단 먼저</h4><p>team-attention/harness 플러그인을 설치하고 <code>/check-harness</code>로 현재 프로젝트 상태를 진단하세요. 어느 축이 가장 취약한지 파악합니다.</p></div></div>
+    <div class="step"><span class="step-num">2</span><div><h4>구조부터 (L1 완성)</h4><p><code>/scaffold</code>로 CLAUDE.md, 폴더 구조, 기본 규칙 파일을 자동 생성하세요. 구조(Scaffolding)와 맥락(Context) L1 항목을 먼저 완성합니다.</p></div></div>
+    <div class="step"><span class="step-num">3</span><div><h4>루프 만들기 (L2)</h4><p>반복되는 작업을 Skill로 만들고, 위험 작업 차단 훅을 추가하세요. 계획→실행→검증 루프가 자동화되기 시작합니다.</p></div></div>
+    <div class="step"><span class="step-num">4</span><div><h4>자율화 (L3)</h4><p>AI가 완료 기준까지 스스로 작업하고, 병렬 에이전트로 독립 태스크를 동시 처리하는 구조로 발전합니다.</p></div></div>
+
+    <div class="callout success">
+      <span class="callout-tag">참고 자료</span>
+      <strong>GitHub 리포지토리</strong>: <a href="https://github.com/team-attention/harness">github.com/team-attention/harness</a><br>
+      <strong>발표 자료</strong>: Team Attention 이호연, Harness Engineering 세션 (2026.04.07)
     </div>
 
-    <h3 style="font-size:15px;font-weight:700;margin:28px 0 16px;">AI 도구 배치 5종</h3>
-    <div class="cards">
-      <div class="card"><div class="card__header"><div class="card__icon">📜</div><div class="card__title">Skills</div></div><div class="card__body"><p>반복 작업의 레시피화. /commit, /review 같은 슬래시 명령</p></div><div class="card__footer"><span class="card__tag">.claude/skills/</span></div></div>
-      <div class="card"><div class="card__header"><div class="card__icon">🪝</div><div class="card__title">Hooks</div></div><div class="card__body"><p>자동 안전장치. Pre(차단) / Post(검사) / Stop(일지) / Notification(알림)</p></div><div class="card__footer"><span class="card__tag">.claude/hooks/</span></div></div>
-      <div class="card"><div class="card__header"><div class="card__icon">🤖</div><div class="card__title">Agents</div></div><div class="card__body"><p>전문가 팀원. 서브에이전트 파견 또는 팀 구성</p></div><div class="card__footer"><span class="card__tag">subagent</span></div></div>
-      <div class="card"><div class="card__header"><div class="card__icon">🔌</div><div class="card__title">MCP</div></div><div class="card__body"><p>외부 시스템 연결. DB, Slack, Linear 등 연동</p></div><div class="card__footer"><span class="card__tag">model context protocol</span></div></div>
-      <div class="card"><div class="card__header"><div class="card__icon">📦</div><div class="card__title">Plugins</div></div><div class="card__body"><p>위 컴포넌트들을 하나의 패키지로 묶어서 배포/공유</p></div><div class="card__footer"><span class="card__tag">패키지 배포</span></div></div>
-    </div>
-  </div>
-</section>
+    <nav class="pager">
+      <a href="/ai-study/"><div class="label">← 목록</div><div class="title">AI Study 목록으로</div></a>
+      <a href="/ai-study/karpathy_skills.html" class="next"><div class="label">관련 →</div><div class="title">Karpathy AI 개발 방법론</div></a>
+    </nav>
+  </section>
 
-<!-- SECTION 5: 맥락 (Context Engineering) -->
-<section class="section">
-  <div class="page-wrap">
-    <div class="section-label">05 맥락 (Context Engineering)</div>
-    <h2 class="section-title">CLAUDE.md, 규칙, 점진적 노출</h2>
-    <p class="section-desc">AI가 뭘 알고 일하는가. "한꺼번에 다 주면 AI도 헷갈린다."</p>
+</main>
+</div>
 
-    <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;">설정 파일 상속 구조</h3>
-    <div class="callout info">
-      <div class="callout-title">하위가 상위를 덮어쓴다</div>
-      USER(<code>~/.claude/CLAUDE.md</code>) → PROJECT(<code>my-app/CLAUDE.md</code>) → FOLDER(<code>src/auth/CLAUDE.md</code>)<br>
-      가장 좁은 범위가 우선. 예: User에 "camelCase", Project에 "snake_case" → 이 프로젝트만 snake_case
-    </div>
-
-    <div class="two-col" style="margin-top:24px;">
-      <div>
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;">CLAUDE.md 실전 가이드</h3>
-        <div class="steps">
-          <div class="step">
-            <div class="step-num" style="background:var(--ink-3);">U</div>
-            <div>
-              <div class="step-title">User CLAUDE.md</div>
-              <div class="step-body">내 작업 습관, 선호하는 코딩 스타일, 공통 규칙</div>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-num" style="background:var(--ink);">P</div>
-            <div>
-              <div class="step-title">Project CLAUDE.md</div>
-              <div class="step-body">이 프로젝트의 기술 스택, 컨벤션, 중요한 제약. 팀 공유, Git 커밋.</div>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-num" style="background:var(--accent);">F</div>
-            <div>
-              <div class="step-title">Folder CLAUDE.md</div>
-              <div class="step-body">특정 모듈의 특수한 규칙. 이 폴더 작업 시만 자동 로드.</div>
-            </div>
-          </div>
-        </div>
-        <div class="callout tip" style="margin-top:16px;">
-          <div class="callout-title">팁</div>
-          최대 200줄 정도를 유지하며 계속 업데이트하라. 너무 길어지면 AI 성능이 급격히 저하된다.
-        </div>
-      </div>
-      <div>
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;">Progressive Disclosure</h3>
-        <p style="font-size:14px;color:var(--ink-3);margin-bottom:16px;">내용을 다 때려넣지 말고, "이런 상황에서는 이걸 참고해"라고 안내해서 필요한 것만 읽게 한다.</p>
-        <div class="code-wrap">
-          <div class="code-bar">
-            <div class="code-dot" style="background:#ef4444;"></div>
-            <div class="code-dot" style="background:#f59e0b;"></div>
-            <div class="code-dot" style="background:#22c55e;"></div>
-            <span class="code-lang">CLAUDE.md</span>
-          </div>
-          <pre class="code-body">코드 작성 시 → references/code-style.md 참고
-테스트 시   → references/testing-guide.md 참고
-API 설계 시 → references/api-convention.md 참고
-배포 시     → references/deploy-checklist.md 참고</pre>
-        </div>
-
-        <h3 style="font-size:15px;font-weight:700;margin:20px 0 12px;">세션 맥락 관리</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>사용량</th><th>명령</th><th>상황</th></tr></thead>
-            <tbody>
-              <tr><td>~50%</td><td><code>/compact</code></td><td>오래된 대화 요약·압축. 같은 주제 이어갈 때.</td></tr>
-              <tr><td>~80%</td><td><code>/clear</code></td><td>컨텍스트 완전 초기화. 다른 주제로 전환할 때.</td></tr>
-              <tr><td>전환 전</td><td><code>handoff</code></td><td>현재 세션의 맥락을 파일로 저장 → 새 세션에서 이어받기.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SECTION 6: 계획 (Planning) -->
-<section class="section">
-  <div class="page-wrap">
-    <div class="section-label">06 계획 (Planning)</div>
-    <h2 class="section-title">AI에게 일을 시키기 전에, 무엇을 할지 함께 정하기</h2>
-    <p class="section-desc">"해줘"가 아니라 "같이 계획 세워보자". 계획과 실행을 분리하면 검수 횟수가 줄고, 결과의 예측 가능성이 올라간다.</p>
-
-    <div class="two-col">
-      <div class="card" style="border-color:#fee2e2;">
-        <div class="card__header" style="background:#fff5f5;">
-          <div class="card__title" style="color:#dc2626;">❌ 안티패턴: "해줘"</div>
-        </div>
-        <div class="card__body">
-          <div class="steps" style="gap:0;">
-            <div class="step" style="padding:12px 0;"><div class="step-num" style="background:#dc2626;font-size:11px;">1</div><div><div class="step-body">"이거 만들어줘"</div></div></div>
-            <div class="step" style="padding:12px 0;"><div class="step-num" style="background:#dc2626;font-size:11px;">2</div><div><div class="step-body">AI가 알아서 만듦</div></div></div>
-            <div class="step" style="padding:12px 0;"><div class="step-num" style="background:#dc2626;font-size:11px;">3</div><div><div class="step-body">검수 → "아닌데..."</div></div></div>
-            <div class="step" style="padding:12px 0;border:none;"><div class="step-num" style="background:#dc2626;font-size:11px;">4</div><div><div class="step-body">다시 시킴 → 검수 → 다시... <strong>시간만 낭림</strong></div></div></div>
-          </div>
-        </div>
-      </div>
-      <div class="card accent-card">
-        <div class="card__header" style="background:var(--accent-bg);">
-          <div class="card__title" style="color:var(--accent);">✅ 올바른 방법: 같이 계획부터</div>
-        </div>
-        <div class="card__body">
-          <div class="steps" style="gap:0;">
-            <div class="step" style="padding:12px 0;"><div class="step-num">1</div><div><div class="step-body">"~~할 건데 같이 계획 세워보자"</div></div></div>
-            <div class="step" style="padding:12px 0;"><div class="step-num">2</div><div><div class="step-body">AI가 계획 작성 + AskUserQuestion으로 모호한 점 질문</div></div></div>
-            <div class="step" style="padding:12px 0;"><div class="step-num">3</div><div><div class="step-body">사람이 검토 → 수정 → 승인</div></div></div>
-            <div class="step" style="padding:12px 0;border:none;"><div class="step-num" style="background:var(--accent);">4</div><div><div class="step-body">승인된 계획대로 실행 → <strong>높은 성공률</strong></div></div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="callout tip" style="margin-top:24px;">
-      <div class="callout-title">AskUserQuestion 활용</div>
-      스킬 프롬프트에 "이해한 것을 미러링하고, 모호한 점을 질문해서 명확하게 해줘"를 넣으면 AI가 자동으로 AskUserQuestion을 사용해 모호한 점을 물어본다. "해줘"가 아니라 "물어봐" — AI가 스스로 맥락을 채우게 하기.
-    </div>
-  </div>
-</section>
-
-<!-- SECTION 7: 실행 (Orchestration) -->
-<section class="section">
-  <div class="page-wrap">
-    <div class="section-label">07 실행 (Orchestration)</div>
-    <h2 class="section-title">혼자, 부하 파견, 팀 — 상황에 맞는 실행 패턴</h2>
-    <p class="section-desc">90%는 단일/서브에이전트로 충분하다. 팀 모드는 토큰 비용이 ~7배다.</p>
-
-    <div class="cards">
-      <div class="card">
-        <div class="card__header"><div class="card__icon">👤</div><div class="card__title">혼자 · Single</div></div>
-        <div class="card__body"><p>단순 작업, 대부분의 일상. AI 하나가 순차적으로 처리.</p><p style="margin-top:8px;"><strong>예:</strong> "블로그 글 조사 → 초안 작성 → 퇴고까지 순서대로"</p></div>
-        <div class="card__footer"><span class="card__tag">TaskCreate로 체크박스</span></div>
-      </div>
-      <div class="card">
-        <div class="card__header"><div class="card__icon">🔀</div><div class="card__title">부하 파견 · Subagent</div></div>
-        <div class="card__body"><p>병렬/전문화. 위임 → 종합. 독립적인 작업에 서브에이전트 3개 spawn.</p><p style="margin-top:8px;"><strong>예:</strong> "A사, B사, C사 랜딩 페이지를 각각 에이전트 파견해서 동시에 분석해줘"</p></div>
-        <div class="card__footer"><span class="card__tag">Agent 3개 spawn</span></div>
-      </div>
-      <div class="card accent-card">
-        <div class="card__header"><div class="card__icon">👥</div><div class="card__title">팀 협업 · Team Mode</div></div>
-        <div class="card__body"><p>다관점·복잡. 에이전트 간 소통. PM, 개발, 디자인, QA 역할 분리.</p><p style="margin-top:8px;"><strong>예:</strong> "Team 커서 설계자, 구현자, 리뷰어 3명으로 팀 꾸려줘"</p></div>
-        <div class="card__footer"><span class="card__tag" style="color:var(--accent);">TeamCreate · 토큰 ~7×</span></div>
-      </div>
-    </div>
-
-    <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">Ralph Loop — 될 때까지 반복</h3>
-    <div class="two-col">
-      <div>
-        <p style="font-size:14px;color:var(--ink-3);margin-bottom:16px;">완료 기준을 정하고, 충족할 때까지 AI가 알아서 돈다. "뭐가 되면 끝인지"만 정해주면 AI가 될 때까지 계속 돈다.</p>
-        <div class="steps">
-          <div class="step"><div class="step-num">1</div><div><div class="step-title">완료 기준 합의</div><div class="step-body">측정 가능한 조건으로 작성. "테스트 통과 + 빌드 성공 + 카피 3번 이상 퇴고"</div></div></div>
-          <div class="step"><div class="step-num">2</div><div><div class="step-title">AI가 작업</div><div class="step-body">기준을 향해 자율적으로 실행</div></div></div>
-          <div class="step" style="border:none;"><div class="step-num" style="background:var(--accent);">3</div><div><div class="step-title">기준 충족? → 완료, 미달 → 2번으로</div><div class="step-body">기준이 명확하면 자동 반복이 가능해진다</div></div></div>
-        </div>
-      </div>
-      <div>
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;">Auto Research — 자율 실험 루프</h3>
-        <p style="font-size:14px;color:var(--ink-3);margin-bottom:16px;">사람은 방향만 정하고, AI가 밤새 실험을 돌린다. karpathy/autoresearch 패턴.</p>
-        <div class="code-wrap">
-          <div class="code-bar">
-            <div class="code-dot" style="background:#ef4444;"></div>
-            <div class="code-dot" style="background:#f59e0b;"></div>
-            <div class="code-dot" style="background:#22c55e;"></div>
-            <span class="code-lang">패턴</span>
-          </div>
-          <pre class="code-body">코드 수정 (train.py 변경)
-    ↓
-실행 (5분간 학습)
-    ↓
-평가 (성능 비교)
-    ↓
-판단 (유지 / 폐기)
-    ↓ 자동 반복
-다음 실험</pre>
-        </div>
-        <p style="font-size:13px;color:var(--ink-3);margin-top:8px;">시간당 ~12개 실험 자율 수행, 밤새 무인 운영</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SECTION 8: 검증 (Verification) -->
-<section class="section">
-  <div class="page-wrap">
-    <div class="section-label">08 검증 (Verification)</div>
-    <h2 class="section-title">결과물을 어떻게 믿을 것인가</h2>
-    <p class="section-desc">기준이 있어야 검증이 가능하다. "뭐가 되면 끝인가"를 작업 시작 전에 정한다.</p>
-
-    <div class="cards">
-      <div class="card">
-        <div class="card__header"><div class="card__icon">📋</div><div class="card__title">원칙 01 · Sprint Contract</div></div>
-        <div class="card__body">
-          <p>작업 전에 "뭘 만들고 어떻게 검증할지" 합의. 기준 없이 시키면 AI가 끝없이 하거나 대충 끝냈다고 한다.</p>
-          <ul style="margin-top:8px;">
-            <li>완료 조건을 먼저 정한다</li>
-            <li>조건을 측정 가능하게 쓴다</li>
-            <li>미달이면 다시 돌린다</li>
-          </ul>
-        </div>
-        <div class="card__footer"><span class="card__tag">Ralph Loop와 연동</span></div>
-      </div>
-      <div class="card">
-        <div class="card__header"><div class="card__icon">⚖️</div><div class="card__title">원칙 02 · Generator vs Evaluator</div></div>
-        <div class="card__body">
-          <p>만든 AI와 확인하는 AI를 분리. 같은 컨텍스트에서 만들고 평가하면 quality가 mediocre해도 자신있게 칭찬한다.</p>
-          <div style="display:flex;align-items:center;gap:12px;margin-top:12px;font-size:13px;">
-            <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;">Generator<br><span style="color:var(--ink-4);">결과물 생성</span></div>
-            <span style="color:var(--ink-4);">→ 분리 →</span>
-            <div style="background:var(--ink);border-radius:6px;padding:8px 12px;color:#fff;">Evaluator<br><span style="color:#999;">결과물 평가</span></div>
-          </div>
-        </div>
-        <div class="card__footer"><span class="card__tag">컨텍스트 물리적 분리</span></div>
-      </div>
-      <div class="card">
-        <div class="card__header"><div class="card__icon">🧪</div><div class="card__title">원칙 03 · 모델도 역할도 나눈다</div></div>
-        <div class="card__body">
-          <ul>
-            <li><strong>Codex</strong> — 코드 리뷰 (로직 오류, 보안 취약점)</li>
-            <li><strong>Gemini</strong> — 문서 리뷰 (일관성, 정확성)</li>
-            <li><strong>Opus/Sonnet</strong> — 성능별 분업</li>
-          </ul>
-          <div class="callout warn" style="margin-top:12px;padding:10px 14px;">
-            "Out of the box, Claude is a poor QA agent." — 검증 에이전트도 튜닝이 필요하다.
-          </div>
-        </div>
-        <div class="card__footer"><span class="card__tag">교차 검증</span></div>
-      </div>
-      <div class="card">
-        <div class="card__header"><div class="card__icon">👁️</div><div class="card__title">원칙 04 · 에이전트에게 눈을 달아주기</div></div>
-        <div class="card__body">
-          <p>코드만 검증하는 게 아니라, 화면도 직접 보고 확인할 수 있어야 한다.</p>
-          <ul style="margin-top:8px;">
-            <li><strong>Browser Agent</strong> — Chrome CDP, DOM 탐색, 스크린샷, UX 직접 검증</li>
-            <li><strong>Computer Use</strong> — 스크린샷 + 마우스/키보드로 모든 앱 제어</li>
-            <li><strong>시각 검증 루프</strong> — 만든다 → 스크린샷 → 보고 판단 → 수정</li>
-          </ul>
-        </div>
-        <div class="card__footer"><span class="card__tag">chrome-cdp · computer-use MCP</span></div>
-      </div>
-    </div>
-
-    <h3 style="font-size:15px;font-weight:700;margin:28px 0 16px;">안전장치 — "실수해도 괜찮은 구조"를 만드는 것이 핵심</h3>
-    <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-      <div class="card"><div class="card__header"><div class="card__icon">🛡️</div><div class="card__title">되돌릴 수 있는 환경</div></div><div class="card__body"><p>브랜치/Worktree 격리에서 작업. 실수해도 메인은 안전.</p></div><div class="card__footer"><span class="card__tag">git worktree add</span></div></div>
-      <div class="card"><div class="card__header"><div class="card__icon">⚠️</div><div class="card__title">위험한 건 사람이 확인</div></div><div class="card__body"><p>삭제, 배포, 외부 발송 같은 작업은 승인 후 실행. Runtime Gate.</p></div><div class="card__footer"><span class="card__tag">runtime gate</span></div></div>
-      <div class="card"><div class="card__header"><div class="card__icon">👁️‍🗨️</div><div class="card__title">Dry-run 먼저</div></div><div class="card__body"><p>"이렇게 할 건데 맞나?" 미리보기 후 실행. 예측 가능한 작업만.</p></div><div class="card__footer"><span class="card__tag">--dry-run</span></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- SECTION 9: 개선 (Compound) -->
-<section class="section">
-  <div class="page-wrap">
-    <div class="section-label">09 개선 (Compound)</div>
-    <h2 class="section-title">어떻게 계속 나아질 것인가</h2>
-    <p class="section-desc">작업 → 관측(세션+사용 패턴) → 패턴 발견 → Skill 또는 Rule → 더 나은 작업</p>
-
-    <div class="two-col">
-      <div>
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;">관측하기</h3>
-        <div class="card" style="margin-bottom:12px;"><div class="card__header"><div class="card__title">세션 분석</div></div><div class="card__body"><p>프롬프트 패턴 + Skill/Agent 호출 빈도를 분석. 어디서 시간을 쓰는지, 어디서 실패하는지.</p></div></div>
-        <div class="card"><div class="card__header"><div class="card__title">AI Slop 감지</div></div><div class="card__body"><p>작업하다 보면 불필요한 코드, 중복 설정, 안 쓰는 규칙이 쌓인다. 이게 AI slop.</p></div></div>
-      </div>
-      <div>
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;">개선하기</h3>
-        <div class="steps">
-          <div class="step"><div class="step-num">3×</div><div><div class="step-title">3번 반복 → Skill로</div><div class="step-body">같은 작업을 3번 반복하면 자동화할 타이밍. 스킬로 만들어서 재사용.</div></div></div>
-          <div class="step"><div class="step-num">3✗</div><div><div class="step-title">3번 틀리면 → Rule 또는 CLAUDE.md에</div><div class="step-body">같은 실수가 반복되면 .claude/rules/에 규칙 추가하거나 CLAUDE.md에 명시.</div></div></div>
-          <div class="step" style="border:none;"><div class="step-num" style="background:var(--accent);">↑</div><div><div class="step-title">Skill 개선 루프</div><div class="step-body">만들기 → 사용 → 세션 분석 → 병목 → 개선. 스킬도 계속 다듬는다.</div></div></div>
-        </div>
-      </div>
-    </div>
-
-    <h3 style="font-size:15px;font-weight:700;margin:28px 0 16px;">단순화하기 — 좋은 Harness는 점점 단순해진다</h3>
-    <div class="cards">
-      <div class="card"><div class="card__header"><div class="card__icon">🗑️</div><div class="card__title">안 쓰는 건 치운다</div></div><div class="card__body"><p>필요 없어진 Skill, MCP, Rule은 바로 삭제. 쌓이면 AI slop.</p></div><div class="card__footer"><span class="card__tag">-1 원칙</span></div></div>
-      <div class="card"><div class="card__header"><div class="card__icon">🔄</div><div class="card__title">모델이 좋아지면 재평가</div></div><div class="card__body"><p>예전에 필요했던 가드레일이 지금은 불필요할 수 있다. 주기적으로 재검토.</p></div><div class="card__footer"><span class="card__tag">↑ 모델 업그레이드 시</span></div></div>
-      <div class="card"><div class="card__header"><div class="card__icon">⚡</div><div class="card__title">과설계 신호 인식</div></div><div class="card__body"><p>설정이 너무 복잡하면 뭔가 잘못된 것. 점점 단순해져야 정상.</p></div><div class="card__footer"><span class="card__tag">Anthropic 인용</span></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- SECTION 10: 자가 진단 -->
-<section class="section">
-  <div class="page-wrap">
-    <div class="section-label">10 자가 진단</div>
-    <h2 class="section-title">잘 가고 있나? — Harness 건강 체크</h2>
-    <p class="section-desc">복잡해지고 있다면 뭔가 잘못된 것. 좋은 Harness는 점점 단순해진다.</p>
-
-    <div class="two-col">
-      <div>
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--success);">✅ 잘 가고 있다는 신호</h3>
-        <ul class="checklist">
-          <li><span class="chk good">+</span><div><strong>같은 말을 두 번 하지 않는다</strong><br><span style="color:var(--ink-4);">맥락 전달이 잘 되고 있다</span></div></li>
-          <li><span class="chk good">+</span><div><strong>실수가 규칙이 된다</strong><br><span style="color:var(--ink-4);">개선 루프가 돌고 있다</span></div></li>
-          <li><span class="chk good">+</span><div><strong>차단 장치가 뭔가를 막고 있다</strong><br><span style="color:var(--ink-4);">사고가 구조적으로 예방되고 있다</span></div></li>
-          <li><span class="chk good">+</span><div><strong>불필요한 것이 줄어든다</strong><br><span style="color:var(--ink-4);">복잡해지는 게 아니라 단순해지고 있다</span></div></li>
-        </ul>
-      </div>
-      <div>
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:#dc2626;">❌ 실패하고 있다는 징후</h3>
-        <ul class="checklist">
-          <li><span class="chk bad">−</span><div><strong>검수에 시간이 더 오래 걸린다</strong><br><span style="color:var(--ink-4);">검증 자동화가 필요하다는 신호</span></div></li>
-          <li><span class="chk bad">−</span><div><strong>시켰는데 원하는 결과가 안 나온다</strong><br><span style="color:var(--ink-4);">맥락 전달 또는 계획 단계가 부족</span></div></li>
-          <li><span class="chk bad">−</span><div><strong>스킬·에이전트가 많은데 잘 안 쓴다</strong><br><span style="color:var(--ink-4);">context pollution + 제대로 동작 안 함</span></div></li>
-          <li><span class="chk bad">−</span><div><strong>가이드 파일이 길어지고 관리 안 된다</strong><br><span style="color:var(--ink-4);">CLAUDE.md·docs 분리/정리 없이 쌓임</span></div></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SECTION 11: 마무리 -->
-<section class="section" style="border-bottom:none;">
-  <div class="page-wrap">
-    <div class="section-label">11 마무리</div>
-    <h2 class="section-title">사람의 역할은 "잘 짜기"에서 "잘 일하는 환경 만들기"로 바뀐다</h2>
-    <p class="section-desc">AI가 코드를 쓰는 시대. 지금 바로 할 수 있는 것들.</p>
-
-    <div class="cards">
-      <div class="card">
-        <div class="card__header"><div class="card__icon">🏗️</div><div class="card__title">구조(Scaffold) — 환경을 설계하고 유지</div></div>
-        <div class="card__body"><ul><li>비즈니스 요구사항이 바뀔 때마다 코드베이스 구조 발전시키기</li><li>새 도구/서비스 도입 시 폴더링과 경계 재설계</li><li>AI가 따라올 수 있는 아키텍처 유지</li></ul></div>
-      </div>
-      <div class="card">
-        <div class="card__header"><div class="card__icon">🧠</div><div class="card__title">맥락(Context) — AI가 아는 것을 최신으로 유지</div></div>
-        <div class="card__body"><ul><li>CLAUDE.md와 docs/를 코드와 함께 갱신</li><li>새 컨벤션이 생기면 rules/에 추가</li><li>오래된 규칙은 정리 — 가비지 컬렉션</li></ul></div>
-      </div>
-      <div class="card accent-card">
-        <div class="card__header"><div class="card__icon">📈</div><div class="card__title">개선(Compound) — AI Slop이 나오지 않도록 점검</div></div>
-        <div class="card__body"><ul><li>AI 산출물의 품질을 지속적으로 모니터링</li><li>반복되는 실수 → 규칙으로, 반복 작업 → 스킬로</li><li>안 쓰는 건 치우고, 쓰는 건 날카롭게</li></ul></div>
-      </div>
-    </div>
-
-    <div class="callout accent" style="margin-top:28px;">
-      <div class="callout-title">조심할 점</div>
-      Harness를 설계할 때 너무 욕죄려고 하지 말 것. <strong>자유도를 높게 주고, 안 되는 것만 제한하기.</strong> 생각보다 Agent는 예측 가능하게 잘 움직인다.
-    </div>
-
-    <div style="margin-top:28px;">
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;">참고 자료</h3>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>리소스</th><th>설명</th><th>유형</th></tr></thead>
-          <tbody>
-            <tr><td><strong>team-attention/harness</strong></td><td>materials/slides 강의자료 · harness-checklist.md 기본 체크리스트</td><td><span class="tag orange">Plugin</span> <span class="tag gray">Slides</span></td></tr>
-            <tr><td><strong>team-attention/hoyeon</strong></td><td>이호연 개인 Harness 전체 구성 레포</td><td><span class="tag gray">Example</span></td></tr>
-            <tr><td><strong>plugins-for-claude-natives</strong></td><td>Team Attention에서 자주 쓰는 플러그인 모음. 실무에서 검증된 도구들.</td><td><span class="tag gray">Plugins</span></td></tr>
-            <tr><td><strong>karpathy/autoresearch</strong></td><td>자율 실험 루프 레퍼런스 구현</td><td><span class="tag gray">Example</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <span>Harness Engineering — AI가 잘 일하는 환경 설계 · Team Attention 이호연</span>
-  <span>2026.04.07</span>
-</footer>
-
-  <script src="/assets/js/page-header.js"></script>
-  <script data-page-hash="D2JAS7L" src="/assets/js/page-footer.js"></script>
+<script>
+(function() {
+  const links = Array.from(document.querySelectorAll(".toc-nav a"));
+  const sections = links.map(a => document.querySelector(a.getAttribute("href"))).filter(Boolean);
+  function onScroll() {
+    let active = sections[0];
+    const y = window.scrollY + 100;
+    for (const s of sections) { if (s.offsetTop <= y) active = s; }
+    links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + active.id));
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="GUV86S2" src="/assets/js/page-footer.js"></script>
 </body>
 </html>
