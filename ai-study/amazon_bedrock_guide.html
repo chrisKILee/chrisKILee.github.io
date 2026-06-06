@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amazon Bedrock 완전 가이드 | AI Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── IBM Carbon Design Tokens ── */
+:root {
+  --blue: #0F62FE;
+  --blue-light: #EDF5FF;
+  --blue-mid: #4589FF;
+  --dark: #161616;
+  --g90: #262626;
+  --g80: #393939;
+  --g70: #525252;
+  --g60: #6F6F6F;
+  --g30: #C6C6C6;
+  --g20: #E0E0E0;
+  --g10: #F4F4F4;
+  --white: #FFFFFF;
+  --red: #DA1E28;
+  --green: #24A148;
+  --teal: #009D9A;
+  --purple: #8A3FFC;
+  --font: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --max: 1200px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  color: var(--dark);
+  background: var(--white);
+  line-height: 1.5;
+  padding-top: 48px;
+}
+
+/* ── Hero ── */
+.hero {
+  background: var(--dark);
+  color: var(--white);
+  padding: 72px 32px 60px;
+}
+.hero-inner { max-width: var(--max); margin: 0 auto; }
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 12px; color: var(--blue-mid);
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 18px;
+}
+.hero h1 {
+  font-size: clamp(36px, 5.5vw, 66px);
+  font-weight: 300; line-height: 1.06; letter-spacing: -.015em; margin-bottom: 22px;
+}
+.hero h1 strong { font-weight: 700; color: var(--blue-mid); }
+.hero-desc {
+  font-size: 17px; font-weight: 300; color: var(--g30);
+  max-width: 660px; line-height: 1.7; margin-bottom: 36px;
+}
+.hero-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.hero-tag {
+  background: var(--g80); color: var(--g20);
+  font-family: var(--mono); font-size: 11px; padding: 5px 12px; letter-spacing: .04em;
+}
+
+/* ── Layout ── */
+.container { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+section { padding: 64px 0; }
+section + section { border-top: 1px solid var(--g20); }
+.eyebrow {
+  font-family: var(--mono); font-size: 12px; color: var(--blue);
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 10px; font-weight: 500;
+}
+h2 {
+  font-size: clamp(26px, 3vw, 38px);
+  font-weight: 300; letter-spacing: -.01em; margin-bottom: 8px;
+}
+h2 strong { font-weight: 600; }
+.desc {
+  font-size: 15px; color: var(--g70); max-width: 640px; line-height: 1.7; margin-bottom: 36px;
+}
+
+/* ── Stat Grid ── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px; background: var(--g20); border: 1px solid var(--g20);
+}
+.stat-card { background: var(--white); padding: 32px 24px; }
+.stat-n {
+  font-size: clamp(38px, 5vw, 56px);
+  font-weight: 300; color: var(--blue); line-height: 1; margin-bottom: 8px;
+}
+.stat-n sup { font-size: .55em; font-weight: 600; vertical-align: super; }
+.stat-l { font-size: 14px; color: var(--g70); line-height: 1.55; }
+.stat-src { font-family: var(--mono); font-size: 11px; color: var(--g30); margin-top: 10px; }
+
+/* ── Architecture SVG ── */
+.arch-box {
+  background: var(--g10); padding: 40px 32px; overflow-x: auto; margin: 28px 0;
+}
+.arch-box svg { display: block; margin: 0 auto; max-width: 700px; width: 100%; min-width: 420px; }
+
+/* ── Bento Feature Grid ── */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: var(--g20); border: 1px solid var(--g20);
+}
+.bento-card { background: var(--white); padding: 28px 24px; }
+.bento-card.wide { grid-column: span 2; }
+.bento-icon {
+  width: 36px; height: 36px; background: var(--blue-light);
+  display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 18px;
+}
+.bento-t { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+.bento-d { font-size: 13.5px; color: var(--g70); line-height: 1.65; }
+.tag {
+  display: inline-block; font-family: var(--mono); font-size: 11px; padding: 3px 8px; margin-top: 10px;
+}
+.tag-blue { background: var(--blue-light); color: var(--blue); }
+.tag-teal { background: #D9FBFB; color: var(--teal); }
+.tag-red { background: #FFF1F1; color: var(--red); }
+.tag-gray { background: var(--g10); color: var(--g70); }
+.tag-green { background: #DEFBE6; color: var(--green); }
+
+/* ── IBM Tables ── */
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; margin: 4px 0 10px; }
+.tbl thead tr { background: var(--dark); color: var(--white); }
+.tbl th {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+  padding: 13px 16px; text-align: left; font-weight: 500;
+}
+.tbl td {
+  padding: 13px 16px; border-bottom: 1px solid var(--g20); line-height: 1.5; vertical-align: middle;
+}
+.tbl tbody tr:hover td { background: var(--g10); }
+.tbl .price { font-family: var(--mono); color: var(--blue); font-weight: 600; }
+.tbl .model-name { font-weight: 600; }
+.badge {
+  display: inline-block; font-family: var(--mono); font-size: 11px;
+  padding: 2px 8px; letter-spacing: .03em;
+}
+.bd-blue { background: var(--blue-light); color: var(--blue); }
+.bd-green { background: #DEFBE6; color: var(--green); }
+.bd-gray { background: var(--g10); color: var(--g70); }
+.bd-preview { background: #F6F2FF; color: var(--purple); }
+.bd-soon { background: var(--g10); color: var(--g60); }
+.tbl-note { font-family: var(--mono); font-size: 11px; color: var(--g60); margin: 6px 0 0; }
+.tbl-label {
+  font-size: 13px; font-weight: 600; margin: 32px 0 8px;
+  color: var(--g70); font-family: var(--mono); letter-spacing: .06em; text-transform: uppercase;
+}
+.tbl-label:first-of-type { margin-top: 0; }
+
+/* ── Pain Cards ── */
+.pain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.pain-card { border-left: 4px solid var(--blue); padding: 18px 20px; background: var(--g10); }
+.pain-problem {
+  font-family: var(--mono); font-size: 11px; color: var(--red);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px;
+}
+.pain-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.pain-solution { font-size: 13.5px; color: var(--g70); line-height: 1.65; }
+.pain-vs { font-family: var(--mono); font-size: 11px; color: var(--g60); margin-top: 8px; }
+
+/* ── Case Studies ── */
+.case-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: var(--g20); border: 1px solid var(--g20);
+}
+.case-card { background: var(--white); padding: 28px 24px; }
+.case-co { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+.case-ind {
+  font-family: var(--mono); font-size: 11px; color: var(--g60);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 20px;
+}
+.case-n { font-size: 38px; font-weight: 300; color: var(--blue); line-height: 1; }
+.case-m { font-size: 13px; color: var(--g70); margin-top: 4px; margin-bottom: 14px; }
+
+/* ── Cost Optimization ── */
+.cost-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; }
+.cost-item { border-top: 3px solid var(--blue); padding-top: 16px; }
+.cost-pct { font-size: 32px; font-weight: 300; color: var(--blue); margin-bottom: 4px; }
+.cost-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.cost-desc { font-size: 13px; color: var(--g70); line-height: 1.6; }
+
+/* ── Security ── */
+.cert-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+.cert {
+  border: 1px solid var(--g20); background: var(--g10);
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  padding: 8px 16px; letter-spacing: .04em;
+}
+.sec-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 32px; }
+.sec-block .sec-label {
+  font-family: var(--mono); font-size: 11px; color: var(--blue);
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px;
+}
+.sec-block p { font-size: 14px; color: var(--g70); line-height: 1.65; }
+
+/* ── Callout ── */
+.callout-blue {
+  background: var(--blue-light); border-left: 4px solid var(--blue);
+  padding: 16px 20px; margin-top: 20px;
+}
+.callout-label {
+  font-family: var(--mono); font-size: 12px; color: var(--blue);
+  font-weight: 600; margin-bottom: 6px;
+}
+.callout-blue p { font-size: 14px; color: var(--dark); line-height: 1.65; }
+
+/* ── Footer ── */
+.site-footer {
+  background: var(--dark); padding: 28px 32px;
+  font-family: var(--mono); font-size: 11px; color: var(--g60);
+}
+.site-footer-inner {
+  max-width: var(--max); margin: 0 auto;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .bento { grid-template-columns: 1fr 1fr; }
+  .bento-card.wide { grid-column: span 1; }
+  .cost-grid { grid-template-columns: repeat(3, 1fr); }
+  .sec-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px) {
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .pain-grid { grid-template-columns: 1fr; }
+  .case-grid { grid-template-columns: 1fr; }
+  .sec-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 580px) {
+  .bento { grid-template-columns: 1fr; }
+  .cost-grid { grid-template-columns: 1fr 1fr; }
+  .hero { padding: 48px 16px 40px; }
+  .container { padding: 0 16px; }
+}
+@media (max-width: 480px) {
+  .cost-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- ────────────── HERO ────────────── -->
+<div class="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">AWS · Generative AI Platform · 완전 가이드</p>
+    <h1>Amazon <strong>Bedrock</strong></h1>
+    <p class="hero-desc">
+      완전관리형 생성형 AI 서비스. 인프라 구축 없이 Anthropic Claude, Amazon Nova, Meta Llama 등
+      100+ 파운데이션 모델을 단일 API로 활용하고, 기업 보안·규제 요건을 충족하는
+      AI 애플리케이션을 서버리스로 구축하세요.
+    </p>
+    <div class="hero-tags">
+      <span class="hero-tag">Serverless</span>
+      <span class="hero-tag">Pay-as-you-go</span>
+      <span class="hero-tag">FedRAMP High</span>
+      <span class="hero-tag">HIPAA</span>
+      <span class="hero-tag">ISMS 지원</span>
+      <span class="hero-tag">100+ Models</span>
+      <span class="hero-tag">VPC / PrivateLink</span>
+      <span class="hero-tag">RAG · Agents · Guardrails</span>
+    </div>
+  </div>
+</div>
+
+<!-- ────────────── STATS ────────────── -->
+<section style="padding:0;">
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-n">100<sup>+</sup></div>
+      <div class="stat-l">파운데이션 모델<br/>단일 API로 통합 접근</div>
+      <div class="stat-src">출처: AWS 공식</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n">88<sup>%</sup></div>
+      <div class="stat-l">Guardrails 유해 콘텐츠<br/>최대 차단율</div>
+      <div class="stat-src">출처: AWS 공식</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n">75<sup>%</sup></div>
+      <div class="stat-l">모델 증류를 통한<br/>최대 비용 절감</div>
+      <div class="stat-src">출처: AWS 공식</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n">80<sup>%</sup></div>
+      <div class="stat-l">Robinhood AI 비용 감소<br/>(토큰 처리량 10× 증가, 6개월)</div>
+      <div class="stat-src">출처: AWS 사례 연구</div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────── ARCHITECTURE ────────────── -->
+<section>
+  <div class="container">
+    <p class="eyebrow">Architecture</p>
+    <h2>핵심 <strong>컴포넌트 구조</strong></h2>
+    <p class="desc">파운데이션 모델을 중심으로 RAG·에이전트·가드레일·AgentCore가 단일 관리형 플랫폼으로 통합됩니다.</p>
+
+    <div class="arch-box">
+      <!--
+        좌표 계산 (겹침 검증):
+        FM:        y=[20,80]   x=[170,530]
+        Central:   y=[152,225] x=[240,460]
+        KB:        y=[148,226] x=[20,195]   gap to central: 45px ✓
+        Guardrails:y=[148,226] x=[505,680]  gap to central: 45px ✓
+        Agents:    y=[295,365] x=[50,330]
+        AgentCore: y=[295,365] x=[370,650]  gap: 40px ✓
+      -->
+      <svg viewBox="0 0 700 390" style="min-width:420px;">
+        <!-- Foundation Models -->
+        <rect x="170" y="20" width="360" height="60" fill="#EDF5FF" stroke="#4589FF" stroke-width="1.5"/>
+        <text x="350" y="45" text-anchor="middle" font-size="13" font-weight="600" fill="#161616" font-family="IBM Plex Sans,sans-serif">Foundation Models</text>
+        <text x="350" y="65" text-anchor="middle" font-size="11" fill="#6F6F6F" font-family="IBM Plex Mono,monospace">Claude · Nova · Llama · Mistral · Stability AI · 100+</text>
+
+        <!-- Arrow: FM → Bedrock -->
+        <line x1="350" y1="80" x2="350" y2="149" stroke="#0F62FE" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <polygon points="344,146 356,146 350,153" fill="#0F62FE"/>
+
+        <!-- Amazon Bedrock (central) -->
+        <rect x="240" y="152" width="220" height="73" fill="#0F62FE"/>
+        <text x="350" y="182" text-anchor="middle" font-size="15" font-weight="600" fill="white" font-family="IBM Plex Sans,sans-serif">Amazon Bedrock</text>
+        <text x="350" y="200" text-anchor="middle" font-size="11" fill="#EDF5FF" font-family="IBM Plex Mono,monospace">단일 통합 API · 완전관리형</text>
+        <text x="350" y="217" text-anchor="middle" font-size="11" fill="#EDF5FF" font-family="IBM Plex Mono,monospace">서버리스 · Pay-as-you-go</text>
+
+        <!-- Knowledge Bases (left) -->
+        <rect x="20" y="148" width="175" height="78" fill="white" stroke="#E0E0E0" stroke-width="1.5"/>
+        <rect x="20" y="148" width="4" height="78" fill="#009D9A"/>
+        <text x="110" y="177" text-anchor="middle" font-size="13" font-weight="600" fill="#161616" font-family="IBM Plex Sans,sans-serif">Knowledge Bases</text>
+        <text x="110" y="196" text-anchor="middle" font-size="11" fill="#525252" font-family="IBM Plex Mono,monospace">RAG · S3 · OpenSearch</text>
+        <text x="110" y="214" text-anchor="middle" font-size="11" fill="#525252" font-family="IBM Plex Mono,monospace">벡터 임베딩 자동화</text>
+
+        <!-- Arrow: KB → Bedrock -->
+        <line x1="195" y1="187" x2="237" y2="187" stroke="#009D9A" stroke-width="1.5"/>
+        <polygon points="233,182 233,192 239,187" fill="#009D9A"/>
+
+        <!-- Guardrails (right) -->
+        <rect x="505" y="148" width="175" height="78" fill="white" stroke="#E0E0E0" stroke-width="1.5"/>
+        <rect x="676" y="148" width="4" height="78" fill="#DA1E28"/>
+        <text x="592" y="177" text-anchor="middle" font-size="13" font-weight="600" fill="#161616" font-family="IBM Plex Sans,sans-serif">Guardrails</text>
+        <text x="592" y="196" text-anchor="middle" font-size="11" fill="#525252" font-family="IBM Plex Mono,monospace">유해콘텐츠 88% 차단</text>
+        <text x="592" y="214" text-anchor="middle" font-size="11" fill="#525252" font-family="IBM Plex Mono,monospace">PII 필터링 · 99% 정확도</text>
+
+        <!-- Arrow: Bedrock → Guardrails -->
+        <line x1="460" y1="187" x2="503" y2="187" stroke="#DA1E28" stroke-width="1.5"/>
+        <polygon points="499,182 499,192 505,187" fill="#DA1E28"/>
+
+        <!-- Arrows: Bedrock → bottom 2 -->
+        <line x1="306" y1="225" x2="192" y2="292" stroke="#C6C6C6" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <polygon points="187,288 197,288 192,294" fill="#C6C6C6"/>
+        <line x1="394" y1="225" x2="508" y2="292" stroke="#C6C6C6" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <polygon points="503,288 513,288 508,294" fill="#C6C6C6"/>
+
+        <!-- Agents & Flows (bottom-left) -->
+        <rect x="50" y="295" width="280" height="72" fill="white" stroke="#E0E0E0" stroke-width="1.5"/>
+        <rect x="50" y="295" width="4" height="72" fill="#8A3FFC"/>
+        <text x="190" y="324" text-anchor="middle" font-size="13" font-weight="600" fill="#161616" font-family="IBM Plex Sans,sans-serif">Agents &amp; Flows</text>
+        <text x="190" y="342" text-anchor="middle" font-size="11" fill="#525252" font-family="IBM Plex Mono,monospace">자율 작업 · 외부 API 호출</text>
+        <text x="190" y="358" text-anchor="middle" font-size="11" fill="#525252" font-family="IBM Plex Mono,monospace">시각적 워크플로우 빌더</text>
+
+        <!-- AgentCore (bottom-right) -->
+        <rect x="370" y="295" width="280" height="72" fill="white" stroke="#E0E0E0" stroke-width="1.5"/>
+        <rect x="370" y="295" width="4" height="72" fill="#0F62FE"/>
+        <text x="510" y="324" text-anchor="middle" font-size="13" font-weight="600" fill="#161616" font-family="IBM Plex Sans,sans-serif">AgentCore</text>
+        <text x="510" y="342" text-anchor="middle" font-size="11" fill="#525252" font-family="IBM Plex Mono,monospace">Gateway · Memory · Runtime</text>
+        <text x="510" y="358" text-anchor="middle" font-size="11" fill="#525252" font-family="IBM Plex Mono,monospace">Identity · Observability</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────── CORE FEATURES ────────────── -->
+<section>
+  <div class="container">
+    <p class="eyebrow">Core Features</p>
+    <h2>5가지 <strong>핵심 기능</strong></h2>
+    <p class="desc">AI 개발의 전 주기를 단일 플랫폼으로 지원합니다.</p>
+
+    <div class="bento">
+      <div class="bento-card wide">
+        <div class="bento-icon">🗄️</div>
+        <div class="bento-t">Knowledge Bases — RAG</div>
+        <div class="bento-d">
+          자체 데이터로 RAG(검색 증강 생성)를 구성합니다. Amazon S3, OpenSearch, Salesforce, ServiceNow 등
+          다양한 데이터 소스와 연결하면 벡터 임베딩이 자동으로 생성됩니다.
+          모델이 학습하지 않은 사내 문서를 기반으로 정확한 답변을 생성하고 출처 인용까지 함께 제공합니다.
+          정형 데이터(SQL, Neptune Analytics)도 지원합니다.
+        </div>
+        <span class="tag tag-teal">S3 · OpenSearch · Kendra</span>
+        <span class="tag tag-gray">멀티모달 지원</span>
+        <span class="tag tag-gray">SQL 자동 변환</span>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">🤖</div>
+        <div class="bento-t">Agents</div>
+        <div class="bento-d">
+          단순 챗봇을 넘어 외부 API 호출, 예약 처리, 이메일 전송 등 실제 자율 작업을 수행하는
+          AI 에이전트를 구축합니다. 프롬프트 엔지니어링, 메모리, 모니터링, IAM 권한 관리를 자동 처리합니다.
+        </div>
+        <span class="tag tag-blue">자율 워크플로우</span>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">🛡️</div>
+        <div class="bento-t">Guardrails</div>
+        <div class="bento-d">
+          유해 콘텐츠 최대 88% 차단, 최대 99% 정확도로 기업 보안 정책을 AI에 적용합니다.
+          PII 필터링, 기밀 정보 유출 방지, 할루시네이션 감소를 제공합니다.
+        </div>
+        <span class="tag tag-red">PII 필터링</span>
+        <span class="tag tag-green">할루시네이션 최소화</span>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">🔀</div>
+        <div class="bento-t">Bedrock Flows</div>
+        <div class="bento-d">
+          노드 기반 시각적 빌더로 복잡한 AI 워크플로우를 구성합니다.
+          코딩 없이 멀티스텝 에이전트 파이프라인을 설계하고 테스트할 수 있습니다.
+        </div>
+        <span class="tag tag-blue">Visual Builder</span>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">📊</div>
+        <div class="bento-t">Model Evaluation &amp; Routing</div>
+        <div class="bento-d">
+          성능·비용·지연시간 기준으로 모델을 평가하고 최적 모델을 선택합니다.
+          지능형 프롬프트 라우팅으로 요청 복잡도에 따라 자동으로 최적 모델을 선택해
+          비용을 최대 30% 절감합니다.
+        </div>
+        <span class="tag tag-green">최대 30% 비용 절감</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────── PRICING ────────────── -->
+<section>
+  <div class="container">
+    <p class="eyebrow">Pricing</p>
+    <h2>모델별 <strong>가격 비교</strong></h2>
+    <p class="desc">
+      사용한 만큼만 지불하는 Pay-as-you-go 방식. 배치 처리 시 50%, 프롬프트 캐싱 시 최대 90% 추가 절감 가능합니다.
+    </p>
+
+    <p class="tbl-label">Claude 모델 (Anthropic)</p>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>모델</th>
+          <th>입력 / 1M tokens</th>
+          <th>출력 / 1M tokens</th>
+          <th>특징</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="model-name">Claude Opus 4</td>
+          <td class="price">$15.00</td>
+          <td class="price">$75.00</td>
+          <td><span class="badge bd-blue">최고 성능 · 복잡한 추론</span></td>
+        </tr>
+        <tr>
+          <td class="model-name">Claude Sonnet 4.5 / 3.7</td>
+          <td class="price">$3.00</td>
+          <td class="price">$15.00</td>
+          <td><span class="badge bd-green">성능·비용 균형 ★추천</span></td>
+        </tr>
+        <tr>
+          <td class="model-name">Claude Haiku 3.5</td>
+          <td class="price">$0.80</td>
+          <td class="price">$4.00</td>
+          <td><span class="badge bd-gray">저비용 고속 처리</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="tbl-note">※ 가격은 변동될 수 있습니다. 최신 정보: <strong>aws.amazon.com/bedrock/pricing</strong></p>
+
+    <p class="tbl-label">Amazon Nova 모델 (자체 개발)</p>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>모델</th>
+          <th>입력 / 1M tokens</th>
+          <th>출력 / 1M tokens</th>
+          <th>특징</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="model-name">Nova Micro</td>
+          <td class="price">$0.035</td>
+          <td class="price">$0.14</td>
+          <td><span class="badge bd-green">초저비용 · 텍스트 전용</span></td>
+        </tr>
+        <tr>
+          <td class="model-name">Nova Lite</td>
+          <td class="price">$0.060</td>
+          <td class="price">$0.24</td>
+          <td><span class="badge bd-green">멀티모달 · 저비용</span></td>
+        </tr>
+        <tr>
+          <td class="model-name">Nova Pro</td>
+          <td class="price">$0.80</td>
+          <td class="price">$3.20</td>
+          <td><span class="badge bd-blue">성능·속도·비용 최적</span></td>
+        </tr>
+        <tr>
+          <td class="model-name">Nova Premier</td>
+          <td class="price">$2.50</td>
+          <td class="price">$12.50</td>
+          <td><span class="badge bd-blue">최고 성능 · 멀티모달</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="tbl-note">※ Nova 가격: <strong>aws.amazon.com/nova/pricing</strong> 공식 기준. 지역별 차이 있을 수 있음.</p>
+
+    <p class="tbl-label">가격 최적화 옵션 요약</p>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>옵션</th>
+          <th>절감률</th>
+          <th>조건</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>배치 처리 (Batch Inference)</strong></td>
+          <td class="price">최대 -50%</td>
+          <td>비실시간 대량 처리</td>
+        </tr>
+        <tr>
+          <td><strong>프롬프트 캐싱</strong></td>
+          <td class="price">캐시 읽기 최대 -90%</td>
+          <td>반복되는 긴 컨텍스트</td>
+        </tr>
+        <tr>
+          <td><strong>Provisioned Throughput</strong></td>
+          <td class="price">-30~40%</td>
+          <td>1개월 이상 약정</td>
+        </tr>
+        <tr>
+          <td><strong>모델 증류 (Distillation)</strong></td>
+          <td class="price">최대 -75%</td>
+          <td>소형 모델로 다운사이징</td>
+        </tr>
+        <tr>
+          <td><strong>지능형 프롬프트 라우팅</strong></td>
+          <td class="price">최대 -30%</td>
+          <td>복잡도별 모델 자동 선택</td>
+        </tr>
+        <tr>
+          <td><strong>Cross-Region Inference</strong></td>
+          <td class="price">추가 비용 없음</td>
+          <td>자동 지역 페일오버·처리량 증가</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ────────────── CLAUDE ON AWS 4경로 ────────────── -->
+<section>
+  <div class="container">
+    <p class="eyebrow">Claude on AWS · Megazone Cloud 오퍼링</p>
+    <h2>Claude on AWS <strong>4가지 소비 경로</strong></h2>
+    <p class="desc">
+      AWS Premier Partner이자 Anthropic 공식 파트너인 메가존 클라우드가 제시하는 기업 유형별 최적 Claude 도입 경로입니다.
+    </p>
+
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>구분</th>
+          <th>출시</th>
+          <th>시트비</th>
+          <th>EDP/PPA</th>
+          <th>데이터 경계</th>
+          <th>최적 고객</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>① Claude Code on Bedrock</strong></td>
+          <td><span class="badge bd-green">GA</span></td>
+          <td class="price">없음</td>
+          <td>100% uncapped</td>
+          <td>고객 AWS 계정 내</td>
+          <td>개발자 전용 · 데이터 레지던시 필수 · 비용 최적화</td>
+        </tr>
+        <tr>
+          <td><strong>② C4E on AWS Marketplace</strong></td>
+          <td><span class="badge bd-green">GA</span></td>
+          <td class="price">$20/user/월</td>
+          <td>100% (PPA 25% cap)</td>
+          <td>Anthropic 호스팅</td>
+          <td>전사 AI 도입 · Chat+Code+Cowork 풀 플랫폼</td>
+        </tr>
+        <tr>
+          <td><strong>③ Cowork 3P on Bedrock</strong></td>
+          <td><span class="badge bd-preview">PREVIEW</span></td>
+          <td class="price">없음 (토큰 과금)</td>
+          <td>100% uncapped</td>
+          <td>고객 AWS 계정 내</td>
+          <td>금융·의료·공공 규제 고객 · 비US 데이터 레지던시</td>
+        </tr>
+        <tr>
+          <td><strong>④ Claude Platform on AWS</strong></td>
+          <td><span class="badge bd-soon">SOON</span></td>
+          <td class="price">TBD</td>
+          <td>TBD</td>
+          <td>Anthropic (AWS 외부)</td>
+          <td>Anthropic 네이티브 UX + Beta · 레지던시 무관</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout-blue">
+      <p class="callout-label">KEY INSIGHT</p>
+      <p>
+        <strong>Cowork 3P on Bedrock</strong>은 C4E의 부가 옵션이 아닌 <strong>독립형 대체 배포 모드</strong>입니다.
+        시트 라이선스를 순수 토큰 과금으로 전환하며, 금융·의료·공공 규제 고객의 데이터 레지던시 요건을 완벽히 충족합니다.
+        Anthropic에 프롬프트가 전송되지 않으며, CloudTrail 추론 감사로그를 지원합니다.
+      </p>
+    </div>
+
+    <p class="tbl-label" style="margin-top:32px;">고객 시나리오별 추천</p>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>고객 시나리오</th>
+          <th>추천 옵션</th>
+          <th>핵심 셀링 포인트</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>개발자 팀만 도입 (스타트업/테크기업)</td>
+          <td><strong>Claude Code on Bedrock</strong></td>
+          <td>시트비 없이 토큰 기반 Pay-As-You-Go · EDP 100% · IAM/SSO 통합</td>
+        </tr>
+        <tr>
+          <td>전사 지식 노동자 AI 도입</td>
+          <td><strong>C4E on AWS Marketplace</strong></td>
+          <td>Chat+Cowork+Code 풀 플랫폼 · 웹검색·음성·Chrome 확장 · 관리 콘솔</td>
+        </tr>
+        <tr>
+          <td>금융/의료/공공 규제 고객 (데이터 외부 반출 불가)</td>
+          <td><strong>Cowork 3P + Code on Bedrock</strong></td>
+          <td>고객 AWS 계정 내 완전한 데이터 레지던시 · ISMS·HIPAA 지원 · MDM 중앙 배포</td>
+        </tr>
+        <tr>
+          <td>개발자 + 일반직원 혼재 조직</td>
+          <td><strong>Hybrid: Bedrock + C4E</strong></td>
+          <td>단일 AWS 청구 · EDP drawdown 통합 · 직군별 최적 도구 제공</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="tbl-note">출처: Megazone Cloud 고객 오퍼링 가이드 (AWS Premier Partner × Anthropic Partner)</p>
+  </div>
+</section>
+
+<!-- ────────────── ENTERPRISE PAIN POINTS ────────────── -->
+<section>
+  <div class="container">
+    <p class="eyebrow">Enterprise Value</p>
+    <h2>엔터프라이즈 <strong>Pain Point 해소</strong></h2>
+    <p class="desc">기업 AI 도입의 핵심 장벽 4가지를 Amazon Bedrock이 해소합니다.</p>
+
+    <div class="pain-grid">
+      <div class="pain-card">
+        <div class="pain-problem">Pain #1 — 중앙 모니터링·보안 제어 부재</div>
+        <div class="pain-title">세분화된 조직 단위 제어</div>
+        <div class="pain-solution">
+          사용자별 프롬프트 저장·감사 구성 / Bedrock Guardrails로 PII 필터링 /
+          개인·팀·조직 단위 모델 접근 및 사용량 제어가 가능합니다.
+        </div>
+        <div class="pain-vs">경쟁사 대비: 타사 대비 세분화된 제어 가능</div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-problem">Pain #2 — 인터넷 경유 민감 데이터 전송</div>
+        <div class="pain-title">완전 Private Network 구성</div>
+        <div class="pain-solution">
+          VPC/PrivateLink로 완전 프라이빗 네트워크 구성 /
+          LLM Gateway를 AWS 내부 네트워크에서 운영 가능.
+          데이터가 인터넷을 경유하지 않습니다.
+        </div>
+        <div class="pain-vs">경쟁사: Cursor, GitHub Copilot 등은 인터넷 경유 필수</div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-problem">Pain #3 — 고정 토큰 제한으로 생산성 저하</div>
+        <div class="pain-title">토큰 상한 없는 Pay-As-You-Go</div>
+        <div class="pain-solution">
+          사용량에 따른 종량제 과금 /
+          비용 소진율에 따라 Opus→Sonnet→Haiku 유동 라우팅 가능.
+          고정 토큰 제한 없음.
+        </div>
+        <div class="pain-vs">경쟁사: 고정 토큰 제한 도달 시 생산성 저하</div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-problem">Pain #4 — 보안 인증 인프라 미비</div>
+        <div class="pain-title">엔터프라이즈급 보안 인증 완비</div>
+        <div class="pain-solution">
+          ISMS, FedRAMP High, HIPAA, DoD IL 4/5, ISO 27001/42001 지원 /
+          AWS Enterprise Support 24/7 / 국내 금융보안원 가이드라인 준수 아키텍처 설계 가능.
+        </div>
+        <div class="pain-vs">특히 ISMS는 Anthropic 1P에서 미지원 — Bedrock만 충족</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────── CASE STUDIES ────────────── -->
+<section>
+  <div class="container">
+    <p class="eyebrow">Case Studies</p>
+    <h2>실제 <strong>도입 성과</strong></h2>
+    <p class="desc">Amazon Bedrock을 도입한 기업들의 실측 수치입니다.</p>
+
+    <div class="case-grid">
+      <div class="case-card">
+        <div class="case-co">Robinhood</div>
+        <div class="case-ind">핀테크 · 미국</div>
+        <div class="case-n">×10</div>
+        <div class="case-m">일일 토큰 처리량 증가<br/>(5억 → 50억 tokens/일, 6개월)</div>
+        <div class="case-n">80%</div>
+        <div class="case-m">AI 비용 감소</div>
+        <div class="case-n">50%</div>
+        <div class="case-m">개발 시간 단축</div>
+        <div class="stat-src">출처: AWS 공식 사례 연구</div>
+      </div>
+      <div class="case-card">
+        <div class="case-co">BDM</div>
+        <div class="case-ind">데이터 분석 · 엔터프라이즈</div>
+        <div class="case-n">50%</div>
+        <div class="case-m">개발 비용 절감<br/>(기존 대비)</div>
+        <div class="case-n">98%</div>
+        <div class="case-m">정확도 달성</div>
+        <div class="case-n">85%</div>
+        <div class="case-m">처리 속도 향상<br/>(수동 대비)</div>
+        <div class="stat-src">출처: AWS 공식 사례 연구</div>
+      </div>
+      <div class="case-card">
+        <div class="case-co">Coast Capital Savings</div>
+        <div class="case-ind">금융 · 캐나다</div>
+        <div class="case-n">3주</div>
+        <div class="case-m">Knowledge Bases 활용<br/>프로토타입 구축 기간</div>
+        <p style="font-size:13.5px; color:var(--g70); line-height:1.65; margin-top:12px;">
+          구현 용이성과 저비용을 이유로 Bedrock 선택.
+          HR 콘텐츠까지 빠르게 확장.
+        </p>
+        <div class="stat-src">출처: AWS 공식 사례 연구</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────── COST OPTIMIZATION ────────────── -->
+<section>
+  <div class="container">
+    <p class="eyebrow">Cost Optimization</p>
+    <h2>5가지 <strong>비용 최적화 전략</strong></h2>
+    <p class="desc">워크로드 특성에 맞는 다양한 절감 옵션을 조합할 수 있습니다.</p>
+
+    <div class="cost-grid">
+      <div class="cost-item">
+        <div class="cost-pct">-75%</div>
+        <div class="cost-name">모델 증류</div>
+        <div class="cost-desc">대형 모델의 지식을 소형 모델로 전달. 비용 대폭 절감, 속도 최대 500% 향상.</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-pct">-50%</div>
+        <div class="cost-name">배치 처리</div>
+        <div class="cost-desc">비실시간 대량 작업은 배치 인퍼런스로. 동일 품질, 절반 비용.</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-pct">-90%</div>
+        <div class="cost-name">프롬프트 캐싱</div>
+        <div class="cost-desc">동일 컨텍스트 반복 시 캐시 읽기 비용만 부담. 긴 시스템 프롬프트에 효과적.</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-pct">-30%</div>
+        <div class="cost-name">지능형 라우팅</div>
+        <div class="cost-desc">요청 복잡도별 최적 모델 자동 선택. 단순 쿼리는 저렴한 모델로 분기.</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-pct">-40%</div>
+        <div class="cost-name">Provisioned Throughput</div>
+        <div class="cost-desc">1개월 이상 약정 시 처리량 확보 + 온디맨드 대비 대폭 절감.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────── SECURITY ────────────── -->
+<section>
+  <div class="container">
+    <p class="eyebrow">Security &amp; Compliance</p>
+    <h2>엔터프라이즈급 <strong>보안 인증</strong></h2>
+    <p class="desc">
+      고객 데이터는 모델 학습에 사용되지 않으며, 전송 중·저장 데이터 모두 암호화됩니다.
+      AWS IAM 및 VPC와 완벽히 연동됩니다.
+    </p>
+
+    <div class="cert-wrap">
+      <span class="cert">ISO 27001</span>
+      <span class="cert">ISO 42001</span>
+      <span class="cert">SOC 2 Type II</span>
+      <span class="cert">CSA STAR Level 2</span>
+      <span class="cert">GDPR</span>
+      <span class="cert">FedRAMP High</span>
+      <span class="cert">HIPAA</span>
+      <span class="cert">DoD IL 4/5</span>
+      <span class="cert">ISMS (국내)</span>
+      <span class="cert">금융보안원 가이드라인</span>
+    </div>
+
+    <div class="sec-grid">
+      <div class="sec-block">
+        <p class="sec-label">데이터 주권</p>
+        <p>고객 입력 데이터는 AI 모델 학습에 사용되지 않습니다. 선택한 AWS 리전 내에 데이터가 유지됩니다.</p>
+      </div>
+      <div class="sec-block">
+        <p class="sec-label">네트워크 격리</p>
+        <p>VPC/PrivateLink로 완전 프라이빗 네트워크 구성. 데이터가 인터넷을 경유하지 않고 AWS 내부망에서 처리됩니다.</p>
+      </div>
+      <div class="sec-block">
+        <p class="sec-label">감사 로그</p>
+        <p>AWS CloudTrail과 통합된 추론 감사 로그. Cross-Region Inference 사용 시에도 실제 처리 리전 추적이 가능합니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────── FOOTER ────────────── -->
+<div class="site-footer">
+  <div class="site-footer-inner">
+    <span>Amazon Bedrock 완전 가이드 · page.chrisnolja.dev</span>
+    <span>출처: AWS 공식 문서 · Megazone Cloud 오퍼링 가이드 · AWS 사례 연구</span>
+    <span>2026년 6월 기준</span>
+  </div>
+</div>
+
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="WJBJZPX" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
