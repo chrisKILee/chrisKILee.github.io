@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>designlang — 웹사이트 디자인 추출</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── precision: 무채색 엔지니어링 명세 스타일 ── */
+    :root {
+      --bg:        #FFFFFF;
+      --surface:   #FAFAFA;
+      --surface-2: #F4F4F4;
+      --border:    #E5E5E5;
+      --border-2:  #D4D4D4;
+      --ink:       #0A0A0A;
+      --ink-2:     #404040;
+      --ink-3:     #6B6B6B;
+      --ink-4:     #9A9A9A;
+      --line:      #111111;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+
+    /* ── masthead — page-header.js nav(48px) 아래 sticky ── */
+    .masthead {
+      position: sticky; top: 48px; z-index: 50;
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 28px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .masthead-id { font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--ink); }
+    .masthead-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); letter-spacing: 0.04em; }
+
+    /* ── Hero ── */
+    .hero { border-bottom: 1px solid var(--line); padding: 64px 0 48px; }
+    .kicker {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-4);
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 900; line-height: 1.02; letter-spacing: -0.035em;
+      color: var(--ink); max-width: 880px; margin-bottom: 22px;
+    }
+    .hero p.lede {
+      font-size: 18px; color: var(--ink-2); line-height: 1.7;
+      max-width: 660px; margin-bottom: 34px;
+    }
+    /* key-value spec list */
+    .spec {
+      border-top: 1px solid var(--border);
+      max-width: 720px;
+    }
+    .spec-row {
+      display: grid; grid-template-columns: 160px 1fr; gap: 16px;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 13px;
+    }
+    .spec-key { color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.05em; }
+    .spec-val { color: var(--ink); }
+    .spec-val a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+    .spec-val a:hover { color: var(--ink-3); }
+
+    .hero-actions { margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+      text-decoration: none; padding: 10px 18px; border-radius: 2px;
+      border: 1px solid var(--line); transition: background 0.18s, color 0.18s;
+    }
+    .btn.solid { background: var(--ink); color: var(--bg); }
+    .btn.solid:hover { background: var(--ink-2); }
+    .btn.ghost { background: transparent; color: var(--ink); }
+    .btn.ghost:hover { background: var(--surface-2); }
+
+    /* ── Section ── */
+    section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+    .sec-num { font-family: var(--font-mono); font-size: 12px; color: var(--ink-4); letter-spacing: 0.1em; margin-bottom: 8px; }
+    .sec-title { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 900; letter-spacing: -0.025em; margin-bottom: 12px; }
+    .sec-desc { font-size: 16px; color: var(--ink-2); max-width: 680px; line-height: 1.7; margin-bottom: 32px; }
+
+    /* ── Figure ── */
+    .figure { border: 1px solid var(--border); border-radius: 2px; padding: 28px 22px; background: var(--surface); overflow-x: auto; }
+    .figure svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+    .figure-cap { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); text-align: center; margin-top: 16px; letter-spacing: 0.03em; }
+
+    /* ── Feature rows (key-value cards, no nesting) ── */
+    .frows { border-top: 1px solid var(--line); }
+    .frow { display: grid; grid-template-columns: 220px 1fr; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--border); }
+    .frow-key { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+    .frow-key .mono { display: block; font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--ink-4); margin-top: 4px; text-transform: none; letter-spacing: 0; }
+    .frow-val { font-size: 14px; color: var(--ink-2); line-height: 1.65; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 2px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--surface-2); border-bottom: 1px solid var(--line); padding: 11px 16px; text-align: left; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+    td { border-bottom: 1px solid var(--border); padding: 11px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface); }
+    code.k { font-family: var(--font-mono); font-size: 12.5px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 2px; padding: 1px 6px; color: var(--ink); white-space: nowrap; }
+    .ver { font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); border: 1px solid var(--border-2); border-radius: 2px; padding: 1px 5px; margin-left: 6px; }
+
+    /* ── Code block ── */
+    .code { border: 1px solid var(--line); border-radius: 2px; overflow: hidden; margin: 18px 0; background: var(--ink); }
+    .code-bar { display: flex; align-items: center; padding: 8px 14px; border-bottom: 1px solid #2a2a2a; }
+    .code-bar .t { font-family: var(--font-mono); font-size: 11px; color: #8a8a8a; letter-spacing: 0.05em; }
+    .code-bar .lang { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: #6a6a6a; }
+    pre.code-body { padding: 16px; font-family: var(--font-mono); font-size: 13px; line-height: 1.75; overflow-x: auto; white-space: pre; color: #E5E5E5; }
+    pre.code-body .cm { color: #6a6a6a; }
+    pre.code-body .fl { color: #FFFFFF; font-weight: 500; }
+
+    /* ── Callout ── */
+    .callout { border-left: 3px solid var(--line); background: var(--surface); padding: 14px 18px; margin: 22px 0; font-size: 14px; color: var(--ink-2); line-height: 1.65; }
+    .callout strong { color: var(--ink); }
+    .callout a { color: var(--ink); }
+
+    /* ── Surface grid ── */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; border: 1px solid var(--border); border-radius: 2px; overflow: hidden; }
+    .cell { padding: 20px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .cell h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .cell .mono { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); }
+    .cell p { font-size: 13px; color: var(--ink-3); line-height: 1.6; margin-top: 6px; }
+
+    /* ── Footer ── */
+    footer { padding: 28px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-4); }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--ink); }
+
+    @media (max-width: 640px) {
+      .spec-row { grid-template-columns: 110px 1fr; }
+      .frow { grid-template-columns: 1fr; gap: 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <span class="masthead-id">designlang · design-extract</span>
+  <span class="masthead-meta">v12.18.0 · MIT · 2026-06-14</span>
+</div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">CLI · Playwright · MCP · Agent Skill</div>
+    <h1>웹사이트의 디자인 시스템을<br>명령 한 줄로 추출한다</h1>
+    <p class="lede">
+      designlang(저장소명 design-extract)은 헤드리스 브라우저를 임의의 URL에 붙여
+      살아있는 DOM에서 디자인 시스템을 읽어냅니다. 단일 실행으로 DTCG 토큰·Tailwind 설정·
+      Figma 변수·모션 토큰·컴포넌트 해부도·브랜드 보이스·붙여넣기용 프롬프트 팩까지
+      <strong>17개 이상의 파일</strong>을 한 번에 내보냅니다.
+    </p>
+
+    <div class="spec">
+      <div class="spec-row"><span class="spec-key">repository</span><span class="spec-val"><a href="https://github.com/Manavarya09/design-extract" target="_blank" rel="noopener">Manavarya09/design-extract</a></span></div>
+      <div class="spec-row"><span class="spec-key">npm</span><span class="spec-val"><a href="https://www.npmjs.com/package/designlang" target="_blank" rel="noopener">designlang</a> · v12.18.0</span></div>
+      <div class="spec-row"><span class="spec-key">stars / forks</span><span class="spec-val">3,192 ★ · 304 forks</span></div>
+      <div class="spec-row"><span class="spec-key">license</span><span class="spec-val">MIT · Manav Arya Singh</span></div>
+      <div class="spec-row"><span class="spec-key">runtime</span><span class="spec-val">Node 20+ · Playwright (Chromium)</span></div>
+      <div class="spec-row"><span class="spec-key">website</span><span class="spec-val"><a href="https://www.designlang.app" target="_blank" rel="noopener">designlang.app</a></span></div>
+    </div>
+
+    <div class="hero-actions">
+      <a class="btn solid" href="https://github.com/Manavarya09/design-extract" target="_blank" rel="noopener">GitHub →</a>
+      <a class="btn ghost" href="https://www.npmjs.com/package/designlang" target="_blank" rel="noopener">npm 패키지</a>
+    </div>
+  </div>
+</header>
+
+<!-- 01 개요 -->
+<section>
+  <div class="wrap">
+    <div class="sec-num">01 / OVERVIEW</div>
+    <h2 class="sec-title">페인트가 아니라 아키텍처를 읽는다</h2>
+    <p class="sec-desc">
+      대부분의 추출기는 색·폰트 같은 "표면"만 뽑습니다. designlang은 한 발 더 들어가
+      레이아웃 시스템, 4개 브레이크포인트의 반응형 거동, hover/focus/active 상태,
+      WCAG 대비 점수, 멀티페이지 일관성, 라이브 소스 대비 드리프트까지 읽습니다.
+    </p>
+
+    <div class="callout">
+      <code class="k">npx designlang https://stripe.com</code> 한 줄이면 충분합니다. 결과물은
+      <code class="k">./design-extract-output/</code> 에 17개 이상 파일로 기록되며, 그대로 LLM·디자인 도구·코드베이스에 투입할 수 있습니다.
+    </div>
+
+    <div class="table-wrap" style="margin-top:8px;">
+      <table>
+        <thead><tr><th>측정 축</th><th>읽어내는 것</th></tr></thead>
+        <tbody>
+          <tr><td><strong>레이아웃 시스템</strong></td><td>그리드 패턴, flex 컨테이너, 컨테이너 너비, gap 값 — 토큰이 아닌 구조</td></tr>
+          <tr><td><strong>반응형</strong></td><td>4개 브레이크포인트를 크롤해 무엇이 바뀌는지 보고 <code class="k">--responsive</code></td></tr>
+          <tr><td><strong>인터랙션 상태</strong></td><td>프로그램으로 hover·focus를 발생시켜 델타 캡처 <code class="k">--interactions</code></td></tr>
+          <tr><td><strong>모션 언어</strong></td><td>duration·easing 계열·스프링 감지·스크롤 연동 플래그, feel 지문(springy/smooth/mechanical/mixed)</td></tr>
+          <tr><td><strong>컴포넌트 해부도</strong></td><td>variant × size × state 매트릭스를 가진 슬롯 트리를 타입드 <code class="k">.tsx</code>로 출력</td></tr>
+          <tr><td><strong>브랜드 보이스</strong></td><td>톤, 대명사 태도, 헤딩 스타일, CTA 동사 인벤토리</td></tr>
+          <tr><td><strong>WCAG</strong></td><td>모든 fg/bg 쌍을 채점하고, 통과에 가장 가까운 색을 제안하는 remediation 팔레트</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 02 작동 원리 (SVG 파이프라인) -->
+<section>
+  <div class="wrap">
+    <div class="sec-num">02 / PIPELINE</div>
+    <h2 class="sec-title">6단계 파이프라인</h2>
+    <p class="sec-desc">Playwright로 페이지를 열고, 단일 <code class="k">page.evaluate()</code>가 최대 5,000개 DOM 요소를 순회하며 25개 이상의 computed 속성을 수집합니다.</p>
+
+    <div class="figure">
+      <!-- vertical step boxes: x=40 w=420 h=58 gap=14
+           box1[24,82] box2[96,154] box3[168,226] box4[240,298] box5[312,370] box6[384,442]
+           center_y = y+29; viewBox h = 442+30 = 472
+           right side: annotation text aligned to each box center -->
+      <svg viewBox="0 0 760 472" role="img" aria-label="designlang 6단계 추출 파이프라인">
+        <defs>
+          <marker id="dn" markerWidth="9" markerHeight="9" refX="4" refY="7" orient="auto">
+            <path d="M0,0 L8,0 L4,8 Z" fill="#9A9A9A"/>
+          </marker>
+        </defs>
+
+        <!-- step 1 -->
+        <rect x="40" y="24" width="420" height="58" rx="2" fill="#0A0A0A"/>
+        <text x="64" y="49" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#9A9A9A">1</text>
+        <text x="92" y="49" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#FFFFFF">Crawl</text>
+        <text x="92" y="68" font-family="Inter, sans-serif" font-size="12" fill="#A3A3A3">Playwright 헤드리스 Chromium · network idle·폰트 대기</text>
+        <!-- step 2 -->
+        <rect x="40" y="96" width="420" height="58" rx="2" fill="#FAFAFA" stroke="#D4D4D4"/>
+        <text x="64" y="121" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#9A9A9A">2</text>
+        <text x="92" y="121" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#0A0A0A">Extract</text>
+        <text x="92" y="140" font-family="Inter, sans-serif" font-size="12" fill="#6B6B6B">DOM 5,000개 순회 · 25+ computed 속성·SVG·폰트·이미지</text>
+        <!-- step 3 -->
+        <rect x="40" y="168" width="420" height="58" rx="2" fill="#FAFAFA" stroke="#D4D4D4"/>
+        <text x="64" y="193" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#9A9A9A">3</text>
+        <text x="92" y="193" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#0A0A0A">Process</text>
+        <text x="92" y="212" font-family="Inter, sans-serif" font-size="12" fill="#6B6B6B">17개 추출 모듈이 파싱·중복제거·클러스터·분류</text>
+        <!-- step 4 -->
+        <rect x="40" y="240" width="420" height="58" rx="2" fill="#FAFAFA" stroke="#D4D4D4"/>
+        <text x="64" y="265" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#9A9A9A">4</text>
+        <text x="92" y="265" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#0A0A0A">Format</text>
+        <text x="92" y="284" font-family="Inter, sans-serif" font-size="12" fill="#6B6B6B">12+ 포매터 모듈이 출력 파일을 방출</text>
+        <!-- step 5 -->
+        <rect x="40" y="312" width="420" height="58" rx="2" fill="#FAFAFA" stroke="#D4D4D4"/>
+        <text x="64" y="337" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#9A9A9A">5</text>
+        <text x="92" y="337" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#0A0A0A">Score</text>
+        <text x="92" y="356" font-family="Inter, sans-serif" font-size="12" fill="#6B6B6B">모든 색 쌍의 WCAG 대비 비율 계산</text>
+        <!-- step 6 -->
+        <rect x="40" y="384" width="420" height="58" rx="2" fill="#FAFAFA" stroke="#D4D4D4"/>
+        <text x="64" y="409" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#9A9A9A">6</text>
+        <text x="92" y="409" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#0A0A0A">Capture</text>
+        <text x="92" y="428" font-family="Inter, sans-serif" font-size="12" fill="#6B6B6B">선택: 스크린샷·반응형 뷰포트·인터랙션 상태 기록</text>
+
+        <!-- arrows between boxes center x=250 -->
+        <line x1="250" y1="82" x2="250" y2="94" stroke="#9A9A9A" stroke-width="1.5" marker-end="url(#dn)"/>
+        <line x1="250" y1="154" x2="250" y2="166" stroke="#9A9A9A" stroke-width="1.5" marker-end="url(#dn)"/>
+        <line x1="250" y1="226" x2="250" y2="238" stroke="#9A9A9A" stroke-width="1.5" marker-end="url(#dn)"/>
+        <line x1="250" y1="298" x2="250" y2="310" stroke="#9A9A9A" stroke-width="1.5" marker-end="url(#dn)"/>
+        <line x1="250" y1="370" x2="250" y2="382" stroke="#9A9A9A" stroke-width="1.5" marker-end="url(#dn)"/>
+
+        <!-- output annotation -->
+        <line x1="480" y1="53" x2="500" y2="53" stroke="#D4D4D4" stroke-width="1"/>
+        <text x="510" y="49" font-family="JetBrains Mono, monospace" font-size="11" fill="#9A9A9A">URL 입력</text>
+        <line x1="480" y1="413" x2="500" y2="413" stroke="#D4D4D4" stroke-width="1"/>
+        <text x="510" y="409" font-family="JetBrains Mono, monospace" font-size="11" fill="#0A0A0A" font-weight="700">17+ 파일 출력</text>
+      </svg>
+      <div class="figure-cap">그림 1 · Crawl → Extract → Process → Format → Score → Capture</div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 출력물 -->
+<section>
+  <div class="wrap">
+    <div class="sec-num">03 / OUTPUTS</div>
+    <h2 class="sec-title">한 번 실행 = 17개 이상 파일</h2>
+    <p class="sec-desc">모든 실행은 <code class="k">./design-extract-output/</code> 에 기록됩니다. 대표 출력물은 다음과 같습니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>파일</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td><code class="k">*-design-language.md</code></td><td>19개 섹션 마크다운 — 어떤 LLM에든 먹여 디자인 재현</td></tr>
+          <tr><td><code class="k">*-design-tokens.json</code></td><td>W3C DTCG 토큰 (primitive + semantic + composite 레이어)</td></tr>
+          <tr><td><code class="k">*-tailwind.config.js</code></td><td>드롭인 Tailwind 테마</td></tr>
+          <tr><td><code class="k">*-shadcn-theme.css</code></td><td>shadcn/ui <code class="k">globals.css</code> 변수</td></tr>
+          <tr><td><code class="k">*-figma-variables.json</code></td><td>Figma Variables import (라이트 + 다크)</td></tr>
+          <tr><td><code class="k">*-anatomy.tsx</code></td><td>감지된 모든 컴포넌트 + variant의 타입드 React 스텁</td></tr>
+          <tr><td><code class="k">*-motion-tokens.json</code></td><td>duration·easing·spring·스크롤 연동 플래그</td></tr>
+          <tr><td><code class="k">*-voice.json</code></td><td>브랜드 보이스 — 톤·대명사 태도·CTA 동사</td></tr>
+          <tr><td><code class="k">*-prompts/</code></td><td>v0·Lovable·Cursor·Claude Artifacts 붙여넣기용 프롬프트</td></tr>
+          <tr><td><code class="k">*-mcp.json</code></td><td>디스크 기반 MCP 서버 페이로드</td></tr>
+          <tr><td><code class="k">*-grade.html / .svg</code></td><td>공유 가능한 디자인 리포트 카드 + Shields 스타일 배지<span class="ver">v12.1·v12.2</span></td></tr>
+          <tr><td><code class="k">*-remix.&lt;vocab&gt;.html</code></td><td>brutalist·swiss·art-deco·cyberpunk·soft-ui·editorial로 리스타일<span class="ver">v12.3</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <strong>멀티플랫폼</strong> — <code class="k">--platforms web,ios,android,flutter,wordpress,all</code> 을 더하면
+      iOS SwiftUI·Android Compose·Flutter·WordPress 블록 테마 출력이 추가됩니다.
+      <code class="k">--emit-agent-rules</code> 는 Cursor·Claude Code·범용 에이전트 규칙 파일을 생성합니다.
+    </div>
+  </div>
+</section>
+
+<!-- 04 명령어 -->
+<section>
+  <div class="wrap">
+    <div class="sec-num">04 / COMMANDS</div>
+    <h2 class="sec-title">명령어 레퍼런스</h2>
+    <p class="sec-desc">기본 추출 외에도 점수화·비교·리믹스·브랜드북·CI 가드까지 하위 명령으로 제공됩니다.</p>
+
+    <div class="frows">
+      <div class="frow"><div class="frow-key">extract<span class="mono">designlang &lt;url&gt;</span></div><div class="frow-val">색·타이포·간격·그림자·반경·CSS 변수·브레이크포인트·애니메이션·컴포넌트 기본 추출</div></div>
+      <div class="frow"><div class="frow-key">verify<span class="mono">designlang verify &lt;url&gt; · v12.18</span></div><div class="frow-val">토큰으로 재구성한 결과를 라이브와 대조해 충실도(fidelity) 점수 산출</div></div>
+      <div class="frow"><div class="frow-key">grade / battle<span class="mono">v12.1 · v12.2</span></div><div class="frow-val">공유용 HTML 리포트 카드(레터 등급 + 근거) / 두 사이트의 정면 채점 대결 카드</div></div>
+      <div class="frow"><div class="frow-key">remix<span class="mono">remix &lt;url&gt; --as &lt;vocab&gt; · v12.3</span></div><div class="frow-val">감사한 페이지를 다른 어휘로 리스타일. <code class="k">--all</code> 은 6종 일괄 출력</div></div>
+      <div class="frow"><div class="frow-key">pack<span class="mono">designlang pack &lt;url&gt; · v12.4</span></div><div class="frow-val">토큰·컴포넌트·Storybook·스타터·프롬프트를 하나의 디자인 시스템 디렉토리로 번들</div></div>
+      <div class="frow"><div class="frow-key">theme-swap<span class="mono">--primary &lt;hex&gt; · v12.6</span></div><div class="frow-val">OKLCH 색상 회전으로 새 브랜드 주색에 맞춰 재색상. 타입·간격·모션은 보존</div></div>
+      <div class="frow"><div class="frow-key">brand<span class="mono">designlang brand &lt;url&gt; · v12.7</span></div><div class="frow-val">13개 챕터의 편집형 브랜드 가이드라인 문서. 인쇄용·다크모드 토글·핸드오프 준비 완료</div></div>
+      <div class="frow"><div class="frow-key">pair<span class="mono">pair &lt;A&gt; &lt;B&gt; · v12.8</span></div><div class="frow-val">7개 축으로 두 디자인 융합(기본: A의 비주얼 + B의 보이스·타입)</div></div>
+      <div class="frow"><div class="frow-key">clone / apply<span class="mono">clone · apply -d ./app</span></div><div class="frow-val">동작하는 Next.js 스타터 생성 / 프레임워크 자동 감지 후 토큰 주입</div></div>
+      <div class="frow"><div class="frow-key">drift / lint / visual-diff<span class="mono">v9 · CI-ready</span></div><div class="frow-val">라이브 사이트 대비 드리프트 검사 / 토큰 파일 린트 / 두 URL 사이드바이사이드 diff. 실패 시 non-zero exit</div></div>
+      <div class="frow"><div class="frow-key">mcp<span class="mono">designlang mcp</span></div><div class="frow-val">토큰·영역·컴포넌트·대비 쌍을 MCP 리소스+툴로 노출(stdio)</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 설치 & 서피스 -->
+<section>
+  <div class="wrap">
+    <div class="sec-num">05 / INSTALL</div>
+    <h2 class="sec-title">설치 &amp; 표면</h2>
+    <p class="sec-desc">CLI 한 줄로 쓰거나, 40개 이상 AI 코딩 에이전트의 스킬·MCP·Claude Code 플러그인으로 설치할 수 있습니다.</p>
+
+    <div class="code">
+      <div class="code-bar"><span class="t">install</span><span class="lang">bash</span></div>
+      <pre class="code-body"><span class="cm"># 전역 CLI</span>
+npm i -g designlang
+
+<span class="cm"># 에이전트 스킬 (40+ 에이전트 · Cursor·Codex·Claude Code…)</span>
+npx skills add Manavarya09/design-extract
+
+<span class="cm"># Claude Code 플러그인</span>
+<span class="fl">/plugin install</span> Manavarya09/design-extract
+
+<span class="cm"># 즉시 실행 — 설치 없이</span>
+npx designlang https://stripe.com</pre>
+    </div>
+
+    <div class="code">
+      <div class="code-bar"><span class="t">example · vercel.com --full</span><span class="lang">output</span></div>
+      <pre class="code-body">Colors: 27 · Fonts: Geist + Geist Mono · Spacing: 18 (base 2px)
+Shadows: 11 · Radii: 10 · CSS vars: 407 · Layout: 55 grids / 492 flex
+Responsive: 4 viewports, 3 breakpoint changes · Interactions: 8 transitions
+A11y: 94% WCAG · Score: 68/100 (D) · 4 issues
+<span class="fl">→ 17 files written to ./design-extract-output/</span></pre>
+    </div>
+
+    <h3 style="font-size:15px;font-weight:700;margin:28px 0 12px;">설치 표면 7종</h3>
+    <div class="grid">
+      <div class="cell"><h4>CLI</h4><span class="mono">npx designlang &lt;url&gt;</span><p>메인 진입점</p></div>
+      <div class="cell"><h4>VS Code</h4><span class="mono">vscode-extension/</span><p>"Extract design from URL" 명령 + 워크스페이스 자동 주입</p></div>
+      <div class="cell"><h4>Raycast</h4><span class="mono">raycast-extension/</span><p>추출·점수화·CLI 명령 복사</p></div>
+      <div class="cell"><h4>Figma 플러그인</h4><span class="mono">figma-plugin/</span><p>Figma 내에서 URL 붙여넣기 → Variables 컬렉션</p></div>
+      <div class="cell"><h4>GitHub Action</h4><span class="mono">github-action/</span><p>"디자인 회귀 가드" — PR마다 토큰 diff·코멘트</p></div>
+      <div class="cell"><h4>Chrome 확장</h4><span class="mono">chrome-extension/</span><p>임의 탭에서 원클릭 핸드오프 (MV3, activeTab)</p></div>
+      <div class="cell"><h4>MCP 서버</h4><span class="mono">npx designlang mcp</span><p>Cursor·Claude Code·Windsurf에 리소스+툴 노출</p></div>
+    </div>
+
+    <div class="callout" style="margin-top:24px;">
+      <strong>Claude Code 슬래시 명령 5종</strong> — 플러그인 설치 시 모든 CLI가 슬래시 명령이 됩니다:
+      <code class="k">/extract</code> · <code class="k">/grade</code> · <code class="k">/battle</code> · <code class="k">/remix</code> · <code class="k">/pack</code>.
+      Cursor·Codex 등에서는 <code class="k">/extract-design &lt;url&gt;</code> 로 사용합니다.
+    </div>
+
+    <div class="callout">
+      <strong>출처</strong> — 모든 수치·명령·출력 목록은 공식 저장소
+      <a href="https://github.com/Manavarya09/design-extract" target="_blank" rel="noopener">Manavarya09/design-extract</a> README와
+      GitHub API 실측(2026-06-14 기준 3,192★ / 304 forks / npm v12.18.0)을 근거로 작성했습니다.
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>designlang — design-extract · MIT © 2026 Manav Arya Singh</span>
+  <span><a href="https://github.com/Manavarya09/design-extract" target="_blank" rel="noopener">GitHub</a> · <a href="https://www.npmjs.com/package/designlang" target="_blank" rel="noopener">npm</a> · <a href="https://www.designlang.app" target="_blank" rel="noopener">designlang.app</a></span>
+</footer>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="J6BPCS2" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
