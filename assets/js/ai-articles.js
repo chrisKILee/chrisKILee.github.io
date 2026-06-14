@@ -689,5 +689,116 @@ const AI_ARTICLES = [
         { date: "2026-04-16", event: "Claude 용어사전 29개 완전 정리 (이 페이지)" }
       ]
     }
+  },
+  {
+    id: "usecase-007",
+    category: "usecase",
+    title: "Zhipu GLM-5.2 출시 — 1M 컨텍스트 오픈소스 코딩 특화 모델",
+    date: "2026-06-13",
+    summary: "1M 토큰 컨텍스트·코딩 우선 포지셔닝, MIT 라이선스 오픈웨이트·API 다음 주 공개",
+    originalUrl: "https://news.hada.io/topic?id=30478",
+    detail: {
+      overview: "중국 Zhipu AI(Z.ai)가 2026년 6월 13일 자사 최강 오픈소스 모델 GLM-5.2를 발표했다. 1M 토큰 컨텍스트 윈도우와 '코딩 우선' 포지셔닝을 앞세웠으며, GLM Coding Plan(Lite/Pro/Max/Team) 사용자에게 즉시 제공되고 독립 API·Z.ai 챗봇·MIT 라이선스 오픈웨이트는 다음 주 공개 예정이다. Zhipu는 프런티어 모델 접근이 비기술적 이유로 차단되는 현실 속에서 AGI는 '소수의 특권이 아닌 공동 기반'이어야 한다며 '급진적 개방' 전략을 강조했다.",
+      keyPoints: [
+        { label: "핵심 기능", value: "실사용 가능한 1M 토큰 컨텍스트 윈도우, 코딩·롱호라이즌(long-horizon) 에이전트 작업 특화" },
+        { label: "출력 한도", value: "최대 출력 131,072 토큰 — 리포지토리 규모 에이전트 리팩토링에 충분" },
+        { label: "라이선스/가격", value: "오픈웨이트 MIT 라이선스, GLM Coding Plan 즉시 제공 / API 다음 주 공개" },
+        { label: "툴 호환성", value: "Claude Code·Cline·OpenCode·Roo Code·Goose·Crush·OpenClaw·Kilo Code 기본 호환" },
+        { label: "제한/주의", value: "출시 시점 GLM-5.2 전용 벤치마크·파라미터 수 미공개 — 널리 인용되는 744B는 이전 GLM-5 수치" },
+        { label: "커뮤니티 반응", value: "'오픈웨이트는 규제에 면역에 가깝다'는 평가와 함께 벤치마크 부재·프런티어 대비 약 6개월 격차 지적" }
+      ],
+      comparison: [
+        { "구분": "GLM-5", "출시": "2026-02-11", "구조": "744B MoE (활성 40B)", "특징": "AA Intelligence Index v4.0 50점, Huawei Ascend 전용 학습" },
+        { "구분": "GLM-5.2", "출시": "2026-06-13", "구조": "미공개 (5.2 전용 스펙 비공개)", "특징": "1M 컨텍스트, 코딩 우선, MIT 오픈웨이트" }
+      ],
+      timeline: [
+        { date: "2026-01-08", event: "Zhipu AI 홍콩증시 IPO — 약 43.5억 HKD(약 5.58억 USD) 조달" },
+        { date: "2026-02-11", event: "GLM-5 공개 — 744B MoE, 오픈웨이트 최초 AA Index 50점 돌파" },
+        { date: "2026-06-13", event: "GLM-5.2 발표 — 1M 컨텍스트, GLM Coding Plan 즉시 제공" },
+        { date: "2026-06 다음 주", event: "독립 API·Z.ai 챗봇·MIT 오픈웨이트 공개 예정" }
+      ]
+    }
+  },
+  {
+    id: "claude-011",
+    category: "claude",
+    title: "미국 정부, Anthropic Fable 5·Mythos 5 외국인 접근 전면 차단",
+    date: "2026-06-13",
+    summary: "출시 4일 만에 국가안보 이유로 해외 접근 봉쇄 — 강력 LLM 대중 접근 제한 분기점 우려",
+    originalUrl: "https://news.hada.io/topic?id=30474",
+    detail: {
+      overview: "미국 트럼프 행정부가 국가안보를 이유로 Anthropic의 최상위 모델 Fable 5·Mythos 5에 대한 모든 외국 국적자의 접근을 금지했다. 금요일 오후 5시 21분(ET) 지시가 전달되자 Anthropic은 실시간 국적 필터링이 불가능해 전 세계 모든 고객 접근을 차단했고, 이는 외국 국적 자사 직원까지 포함됐다. Anthropic은 정부가 우려한 탈옥(jailbreak) 취약점이 '이미 다른 공개 모델에도 존재하는 알려진 경미한 수준'이라 반박했으나, 업계는 이 사건을 '강력한 LLM의 대중 접근이 정부 통제로 제한되는 중대한 선례'로 해석한다.",
+      keyPoints: [
+        { label: "조치 내용", value: "Fable 5·Mythos 5 전 세계 외국 국적자 접근 전면 차단 (Commerce/BIS 수출통제)" },
+        { label: "발동 시점", value: "금요일 오후 5시 21분(ET) 지시 → 즉시 전면 차단, 출시 4일 만(6/9 출시)" },
+        { label: "우려 근거", value: "코드베이스를 읽혀 SW 취약점을 찾아내는 탈옥 기법 — 사이버공격 정보 추출 가능성" },
+        { label: "Anthropic 입장", value: "문제의 능력은 이미 다른 공개 모델에도 존재하는 경미한 취약점이라 반박" },
+        { label: "제한/주의", value: "안전 규제인지 정치적 압박인지 구분 어려움 — IPO 임박 시점 조치로 의혹" },
+        { label: "파급 우려", value: "정부가 최고 성능 모델 접근을 일방 차단한 선례 — 수조 달러 AI 투자에 장애물 가능성" }
+      ],
+      comparison: [
+        { "구분": "차단 모델", "대상": "Fable 5 · Mythos 5", "비고": "Anthropic 최상위 신규 모델" },
+        { "구분": "차단 제외", "대상": "기타 Anthropic 모델", "비고": "접근 제한 없음" }
+      ],
+      timeline: [
+        { date: "2026-06-09", event: "Anthropic, Fable 5·Mythos 5 출시" },
+        { date: "2026-06-11", event: "공개 연구자 Pliny the Liberator 탈옥 주장 (48시간 내)" },
+        { date: "2026-06-13", event: "트럼프 행정부 지시 — 외국인 접근 전면 차단, 즉시 시행" }
+      ]
+    }
+  },
+  {
+    id: "claude-012",
+    category: "claude",
+    title: "WSJ — Amazon CEO 재시가 촉발한 Anthropic 모델 단속",
+    date: "2026-06-13",
+    summary: "Amazon 연구진의 Fable 5 사이버공격 정보 추출 보고가 미 정부 수출통제로 이어져",
+    originalUrl: "https://news.hada.io/topic?id=30472",
+    detail: {
+      overview: "Wall Street Journal 보도에 따르면, 트럼프 행정부의 Anthropic 모델 해외 차단은 Amazon CEO 앤디 재시가 재무장관 스콧 베센트 등 당국자와 나눈 대화에서 비롯됐다. Amazon 연구진이 프롬프트로 Fable 5에서 사이버공격에 활용 가능한 정보를 추출했다고 보고했고, 백악관 회의·보안 검증을 거쳐 트럼프 대통령이 접근 제한을 승인했다. Amazon은 Anthropic 최대 투자자(누적 130억 달러+)이자 AWS 인프라 공급사이면서 동시에 자체 Nova 모델로 경쟁하는 이해상충 위치에 있어 논란이 크다.",
+      keyPoints: [
+        { label: "촉발 경로", value: "Amazon CEO 재시 → 재무장관 베센트 등 당국자에 보안 우려 전달 → 백악관 회의" },
+        { label: "탈옥 기법", value: "특정 코드베이스를 읽혀 SW 결함을 식별 — Fable 5 추론능력을 취약점 탐지 도구로 전환" },
+        { label: "차단 범위", value: "Mythos·Fable 전 버전, 전 세계 기업·개인·정부·외국 출신 연구진" },
+        { label: "이해상충", value: "Amazon = Anthropic 최대 투자자 + AWS 공급사 + Nova 경쟁사 (지분 5% 초과)" },
+        { label: "제한/주의", value: "'GPT 등 타 모델도 같은 능력인데 왜 Fable만'이라는 차등 대우 비판" },
+        { label: "IPO 영향", value: "올가을 예정된 Anthropic 기업공개에 타격 우려" }
+      ],
+      comparison: [
+        { "구분": "Amazon 역할 1", "내용": "최대 투자자", "규모": "기존 80억 + 신규 50억 달러" },
+        { "구분": "Amazon 역할 2", "내용": "AWS 인프라 공급", "규모": "Anthropic 1,000억 달러+ 지출 약정" },
+        { "구분": "Amazon 역할 3", "내용": "직접 경쟁사", "규모": "자체 Nova 모델군 보유" }
+      ],
+      timeline: [
+        { date: "2026-04", event: "Anthropic AWS 1,000억 달러+ 지출 약정, Amazon 50억 달러 추가 투자" },
+        { date: "2026-06-09", event: "Fable 5·Mythos 5 출시" },
+        { date: "2026-06-13", event: "Reuters 최초 보도 → WSJ·The Information 상세 보도, 정부 차단 시행" }
+      ]
+    }
+  },
+  {
+    id: "usecase-008",
+    category: "usecase",
+    title: "\"그냥 ChatGPT에 올리면 되잖아요?\" — AI 번역의 진짜 한계",
+    date: "2026-06-12",
+    summary: "프리랜서 번역가가 말하는 AI 번역의 함정 — 문맥·현지화·용어 일관성은 여전히 사람 몫",
+    originalUrl: "https://news.hada.io/topic?id=30451",
+    detail: {
+      overview: "한 프리랜서 번역가가 헬스장에서 받은 \"그냥 ChatGPT에 업로드하면 되는 거 아니냐\"는 질문을 계기로 AI 번역의 한계를 짚었다. 저자는 번역이 단순 변환이 아니라 문맥 이해·현지화·용어 조사·일관성 확인이 필요한 전문 작업이며, ChatGPT는 서식 깨짐·약어 임의 생성·문장 누락·제공된 용어 무시 같은 문제를 낳는다고 지적한다. AI는 대체자가 아닌 도구일 뿐이며, AI의 존재만으로 전문가 보수가 낮아져선 안 된다고 강조한다.",
+      keyPoints: [
+        { label: "핵심 주장", value: "번역 = 단순 변환이 아닌 문맥·현지화·용어조사·일관성 확인이 필요한 전문 작업" },
+        { label: "AI 한계", value: "서식 깨짐, 약어 임의 생성, 문장 누락, 제공된 용어집 무시" },
+        { label: "도구 vs 대체", value: "AI·DeepL·Google Translate는 보조 도구일 뿐 전문가 대체 불가" },
+        { label: "보수 문제", value: "AI 존재만으로 전문가 보수가 낮아지는 압력에 반대" },
+        { label: "커뮤니티 모순", value: "'내 일은 AI가 못하지만 남의 일은 AI로 충분'이라는 모순된 인식 지적" },
+        { label: "예외 영역", value: "기술 문서는 점차 AI 가능성 / 문학 번역은 예술이라 자동화 불가" }
+      ],
+      comparison: [
+        { "영역": "문학 번역", "AI 적합도": "낮음", "이유": "예술 작품 — 뉘앙스·창작성 필요" },
+        { "영역": "전문/현지화 번역", "AI 적합도": "보조만", "이유": "용어 일관성·문맥 검증 필수" },
+        { "영역": "기술 문서", "AI 적합도": "점차 상승", "이유": "정형화된 구조, 사후 검수 전제" }
+      ],
+      timeline: []
+    }
   }
 ];
