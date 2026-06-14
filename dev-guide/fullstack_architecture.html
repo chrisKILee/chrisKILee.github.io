@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>풀스택 아키텍처 — NestJS · React · TS · Prisma · PostgreSQL · Docker</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#FBFBFA; --surface:#FFFFFF; --surface-2:#F4F5F4; --border:#E6E7E4; --border-2:#D6D8D3;
+      --ink:#15171A; --ink-2:#3D4148; --ink-3:#6A6F77; --ink-4:#9AA0A6;
+      --nest:#E0234E; --react:#61DAFB; --ts:#3178C6; --prisma:#2D3748; --pg:#336791; --docker:#2496ED;
+      --accent:#3178C6; --accent-bg:#EBF2FA;
+      --font-display:'Fraunces',Georgia,serif; --font:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+    .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+
+    .masthead{position:sticky;top:48px;z-index:50;background:rgba(251,251,250,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:11px 28px;display:flex;align-items:center;gap:10px}
+    .masthead-id{font-size:14px;font-weight:700}
+    .masthead-meta{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-4)}
+
+    .hero{padding:68px 0 48px;border-bottom:1px solid var(--border)}
+    .eyebrow{display:inline-block;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-bg);border-radius:99px;padding:5px 14px;margin-bottom:22px}
+    .hero h1{font-family:var(--font-display);font-size:clamp(2.2rem,5vw,3.5rem);font-weight:900;letter-spacing:-.025em;line-height:1.08;margin-bottom:18px;max-width:840px}
+    .hero h1 em{font-style:italic;font-weight:600;color:var(--accent)}
+    .hero .lede{font-size:18px;color:var(--ink-2);max-width:680px;margin-bottom:26px}
+    .stack-chips{display:flex;gap:8px;flex-wrap:wrap}
+    .schip{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;background:var(--surface);border:1px solid var(--border-2);border-radius:8px;padding:6px 12px}
+    .schip .b{width:9px;height:9px;border-radius:2px}
+
+    section{padding:54px 0;border-bottom:1px solid var(--border)}
+    .sec-label{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.08em;margin-bottom:8px}
+    .sec-title{font-family:var(--font-display);font-size:clamp(1.5rem,3vw,2rem);font-weight:600;letter-spacing:-.02em;margin-bottom:10px}
+    .sec-desc{font-size:15px;color:var(--ink-3);max-width:700px;margin-bottom:30px}
+
+    .figure{border:1px solid var(--border);border-radius:14px;padding:28px 22px;background:var(--surface);overflow-x:auto}
+    .figure svg{display:block;margin:0 auto;max-width:100%;height:auto}
+    .figure-cap{font-family:var(--mono);font-size:11px;color:var(--ink-4);text-align:center;margin-top:16px}
+
+    .layers{display:grid;gap:12px}
+    .layer{display:grid;grid-template-columns:160px 1fr;gap:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+    .layer-h{display:flex;flex-direction:column;gap:4px}
+    .layer-h b{font-size:15px;font-weight:700}
+    .layer-h span{font-family:var(--mono);font-size:11px;color:var(--ink-4)}
+    .layer-b{font-size:14px;color:var(--ink-2);line-height:1.65}
+
+    .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+    table{width:100%;border-collapse:collapse}
+    th{background:var(--surface-2);text-align:left;padding:11px 16px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border)}
+    td{padding:11px 16px;font-size:14px;color:var(--ink-2);border-bottom:1px solid var(--border);vertical-align:top}
+    tr:last-child td{border-bottom:none}
+    tbody tr:hover td{background:var(--surface-2)}
+    code.k{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--accent);white-space:nowrap}
+
+    .code{border:1px solid var(--border-2);border-radius:10px;overflow:hidden;margin:16px 0;background:#15171A}
+    .code-bar{display:flex;align-items:center;gap:6px;padding:9px 14px;border-bottom:1px solid #2A2D31;background:#1E2125}
+    .code-bar .t{font-family:var(--mono);font-size:11px;color:#8A9098;letter-spacing:.04em}
+    .code-bar .lang{margin-left:auto;font-family:var(--mono);font-size:11px;color:#6A6F77}
+    pre.code-body{padding:16px;font-family:var(--mono);font-size:12.5px;line-height:1.75;overflow-x:auto;white-space:pre;color:#DCE0E4}
+    pre.code-body .cm{color:#6A6F77}.kw{color:#C792EA}.st{color:#86E1A0}.fn{color:#82AAFF}.ty{color:#FFCB6B}
+
+    .folder{background:#15171A;border:1px solid var(--border-2);border-radius:10px;padding:18px 20px;font-family:var(--mono);font-size:12.5px;line-height:1.8;color:#DCE0E4;overflow-x:auto;white-space:pre;margin:16px 0}
+    .folder .c{color:#6A6F77}
+
+    .callout{border-left:3px solid var(--accent);background:var(--surface);padding:14px 18px;border-radius:0 8px 8px 0;margin:20px 0;font-size:14px;color:var(--ink-2);line-height:1.65}
+    .callout.tip{border-color:#1A7F5A;background:#F0FAF5}
+    .callout strong{color:var(--ink)}
+
+    footer{padding:30px 28px;font-family:var(--mono);font-size:12px;color:var(--ink-4);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;max-width:1080px;margin:0 auto}
+    @media(max-width:640px){.hero,section .wrap{padding-left:16px;padding-right:16px}.layer{grid-template-columns:1fr;gap:8px}}
+    @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+
+<div class="masthead">
+  <span class="masthead-id">풀스택 아키텍처 가이드</span>
+  <span class="masthead-meta">2026-06-14</span>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">FULL-STACK ARCHITECTURE</div>
+    <h1>모던 풀스택 서비스의 <em>전체 구조</em><br>한눈에 이해하기</h1>
+    <p class="lede">React 프론트엔드 → NestJS API → Prisma ORM → PostgreSQL, 그리고 전체를 Docker로 묶는 표준 구성. 각 레이어가 무슨 역할을 하고 어떻게 연결되는지, 폴더 구조와 코드 예시로 정리한다.</p>
+    <div class="stack-chips">
+      <span class="schip"><span class="b" style="background:var(--react)"></span>React</span>
+      <span class="schip"><span class="b" style="background:var(--ts)"></span>TypeScript</span>
+      <span class="schip"><span class="b" style="background:var(--nest)"></span>NestJS</span>
+      <span class="schip"><span class="b" style="background:var(--prisma)"></span>Prisma ORM</span>
+      <span class="schip"><span class="b" style="background:var(--pg)"></span>PostgreSQL</span>
+      <span class="schip"><span class="b" style="background:var(--docker)"></span>Docker</span>
+    </div>
+  </div>
+</header>
+
+<!-- 01 전체 아키텍처 SVG -->
+<section><div class="wrap">
+  <div class="sec-label">01 / ARCHITECTURE</div>
+  <h2 class="sec-title">전체 아키텍처</h2>
+  <p class="sec-desc">사용자의 브라우저에서 데이터베이스까지, 요청이 흐르는 경로. 전체 구성요소는 Docker 컨테이너로 격리되어 함께 실행된다.</p>
+
+  <div class="figure">
+    <!-- horizontal pipeline inside a docker dashed box
+         boxes y=70 h=80 center=110; widths 150 gap auto
+         x: browser 30..180, react 220..370, nest 410..560, prisma 600..720, pg 760..900 -->
+    <svg viewBox="0 0 940 260" role="img" aria-label="풀스택 아키텍처">
+      <defs><marker id="f1" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#6A6F77"/></marker></defs>
+
+      <!-- docker boundary -->
+      <rect x="206" y="40" width="710" height="150" rx="12" fill="none" stroke="#2496ED" stroke-width="1.5" stroke-dasharray="6 5"/>
+      <text x="220" y="58" font-family="JetBrains Mono" font-size="11" font-weight="700" fill="#2496ED">🐳 docker compose</text>
+
+      <!-- browser (outside) -->
+      <rect x="20" y="70" width="150" height="80" rx="10" fill="#FFFFFF" stroke="#D6D8D3"/>
+      <text x="95" y="104" text-anchor="middle" font-family="Inter" font-size="14" font-weight="700" fill="#15171A">브라우저</text>
+      <text x="95" y="125" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#6A6F77">사용자</text>
+
+      <!-- React -->
+      <rect x="226" y="70" width="150" height="80" rx="10" fill="#FFFFFF" stroke="#61DAFB" stroke-width="1.5"/>
+      <text x="301" y="100" text-anchor="middle" font-family="Inter" font-size="14" font-weight="700" fill="#15171A">React SPA</text>
+      <text x="301" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#6A6F77">TS · Vite</text>
+      <text x="301" y="135" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#6A6F77">UI 렌더링</text>
+
+      <!-- NestJS -->
+      <rect x="416" y="70" width="150" height="80" rx="10" fill="#FFFFFF" stroke="#E0234E" stroke-width="1.5"/>
+      <text x="491" y="100" text-anchor="middle" font-family="Inter" font-size="14" font-weight="700" fill="#15171A">NestJS API</text>
+      <text x="491" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#6A6F77">REST / GraphQL</text>
+      <text x="491" y="135" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#6A6F77">비즈니스 로직</text>
+
+      <!-- Prisma -->
+      <rect x="606" y="70" width="120" height="80" rx="10" fill="#FFFFFF" stroke="#2D3748" stroke-width="1.5"/>
+      <text x="666" y="104" text-anchor="middle" font-family="Inter" font-size="13" font-weight="700" fill="#15171A">Prisma</text>
+      <text x="666" y="124" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#6A6F77">ORM</text>
+
+      <!-- PostgreSQL -->
+      <rect x="766" y="70" width="140" height="80" rx="10" fill="#EAF1F7" stroke="#336791" stroke-width="1.5"/>
+      <text x="836" y="104" text-anchor="middle" font-family="Inter" font-size="13" font-weight="700" fill="#336791">PostgreSQL</text>
+      <text x="836" y="124" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#6A6F77">데이터 저장</text>
+
+      <!-- arrows center_y=110 -->
+      <line x1="170" y1="110" x2="222" y2="110" stroke="#6A6F77" stroke-width="1.8" marker-end="url(#f1)"/>
+      <line x1="376" y1="110" x2="412" y2="110" stroke="#6A6F77" stroke-width="1.8" marker-end="url(#f1)"/>
+      <line x1="566" y1="110" x2="602" y2="110" stroke="#6A6F77" stroke-width="1.8" marker-end="url(#f1)"/>
+      <line x1="726" y1="110" x2="762" y2="110" stroke="#6A6F77" stroke-width="1.8" marker-end="url(#f1)"/>
+
+      <!-- labels under arrows -->
+      <text x="196" y="100" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#9AA0A6">HTTPS</text>
+      <text x="394" y="100" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#9AA0A6">JSON</text>
+      <text x="584" y="100" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#9AA0A6">호출</text>
+      <text x="744" y="100" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#9AA0A6">SQL</text>
+
+      <text x="470" y="220" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#9AA0A6">응답은 역방향으로: PostgreSQL → Prisma → NestJS → React → 브라우저</text>
+    </svg>
+    <div class="figure-cap">그림 1 · 요청 흐름 — 브라우저 → React → NestJS → Prisma → PostgreSQL (전체 Docker 격리)</div>
+  </div>
+</div></section>
+
+<!-- 02 레이어별 역할 -->
+<section><div class="wrap">
+  <div class="sec-label">02 / LAYERS</div>
+  <h2 class="sec-title">레이어별 역할</h2>
+  <p class="sec-desc">각 기술이 담당하는 책임. 관심사를 분리(separation of concerns)해 유지보수성과 테스트 용이성을 확보한다.</p>
+  <div class="layers">
+    <div class="layer"><div class="layer-h"><b>React + TS</b><span>Frontend</span></div><div class="layer-b">컴포넌트 기반 UI. 상태 관리·라우팅·API 호출을 담당한다. TypeScript로 타입 안정성을 확보하고, Vite로 빠르게 빌드한다. 서버의 JSON 응답을 화면으로 렌더링.</div></div>
+    <div class="layer"><div class="layer-h"><b>NestJS</b><span>Backend / API</span></div><div class="layer-b">Controller(요청 라우팅) → Service(비즈니스 로직) → Repository(데이터 접근)의 계층 구조. 의존성 주입(DI), 모듈 시스템, Guard·Pipe·Interceptor로 인증·검증·로깅을 일관되게 처리.</div></div>
+    <div class="layer"><div class="layer-h"><b>Prisma</b><span>ORM</span></div><div class="layer-b">스키마 파일(<code class="k">schema.prisma</code>)로 DB 모델을 정의하고, 타입 안전한 쿼리 클라이언트를 자동 생성. 마이그레이션으로 DB 스키마 버전을 관리한다.</div></div>
+    <div class="layer"><div class="layer-h"><b>PostgreSQL</b><span>Database</span></div><div class="layer-b">관계형 데이터베이스. 트랜잭션·인덱스·JSON 컬럼·강력한 쿼리를 지원. 실제 데이터가 영속 저장되는 곳(Docker 볼륨에 보존).</div></div>
+    <div class="layer"><div class="layer-h"><b>Docker</b><span>Infra</span></div><div class="layer-b">프론트·백엔드·DB를 각각 컨테이너로 격리하고 <code class="k">docker compose</code>로 한 번에 실행. "내 컴퓨터에선 됐는데" 문제를 제거하고 배포 환경을 통일.</div></div>
+  </div>
+</div></section>
+
+<!-- 03 폴더 구조 -->
+<section><div class="wrap">
+  <div class="sec-label">03 / STRUCTURE</div>
+  <h2 class="sec-title">모노레포 폴더 구조</h2>
+  <p class="sec-desc">프론트·백엔드를 한 저장소에 두는 모노레포 예시. 각자 독립 배포도 가능하다.</p>
+  <div class="folder">myapp/
+├── <span class="c"># 프론트엔드</span>
+│   web/
+│   ├── src/
+│   │   ├── components/      <span class="c"># UI 컴포넌트</span>
+│   │   ├── pages/           <span class="c"># 라우트 페이지</span>
+│   │   ├── api/             <span class="c"># API 클라이언트</span>
+│   │   └── main.tsx
+│   ├── Dockerfile
+│   └── package.json
+│
+├── <span class="c"># 백엔드</span>
+│   api/
+│   ├── src/
+│   │   ├── app.module.ts    <span class="c"># 루트 모듈</span>
+│   │   ├── users/
+│   │   │   ├── users.controller.ts   <span class="c"># 라우팅</span>
+│   │   │   ├── users.service.ts      <span class="c"># 비즈니스 로직</span>
+│   │   │   └── users.module.ts
+│   │   └── prisma/
+│   │       └── prisma.service.ts     <span class="c"># DB 연결</span>
+│   ├── prisma/
+│   │   ├── schema.prisma    <span class="c"># 데이터 모델</span>
+│   │   └── migrations/
+│   ├── Dockerfile
+│   └── package.json
+│
+└── docker-compose.yml       <span class="c"># 전체 오케스트레이션</span></div>
+</div></section>
+
+<!-- 04 코드: Prisma schema -->
+<section><div class="wrap">
+  <div class="sec-label">04 / CODE</div>
+  <h2 class="sec-title">레이어별 핵심 코드</h2>
+  <p class="sec-desc">데이터 모델 정의부터 API 엔드포인트, 프론트 호출까지 한 흐름으로.</p>
+
+  <div class="code">
+    <div class="code-bar"><span class="t">prisma/schema.prisma</span><span class="lang">prisma</span></div>
+    <pre class="code-body"><span class="cm">// 데이터 모델 정의 → 타입 안전 클라이언트 자동 생성</span>
+<span class="kw">model</span> <span class="ty">User</span> {
+  id        <span class="ty">Int</span>      <span class="fn">@id @default</span>(autoincrement())
+  email     <span class="ty">String</span>   <span class="fn">@unique</span>
+  name      <span class="ty">String</span>?
+  posts     <span class="ty">Post</span>[]
+  createdAt <span class="ty">DateTime</span> <span class="fn">@default</span>(now())
+}
+
+<span class="kw">model</span> <span class="ty">Post</span> {
+  id       <span class="ty">Int</span>     <span class="fn">@id @default</span>(autoincrement())
+  title    <span class="ty">String</span>
+  author   <span class="ty">User</span>    <span class="fn">@relation</span>(fields: [authorId], references: [id])
+  authorId <span class="ty">Int</span>
+}</pre>
+  </div>
+
+  <div class="code">
+    <div class="code-bar"><span class="t">마이그레이션 & 클라이언트 생성</span><span class="lang">bash</span></div>
+    <pre class="code-body"><span class="cm"># 스키마 → DB 반영 + 마이그레이션 파일 생성</span>
+npx prisma migrate dev --name init
+<span class="cm"># 타입 안전 클라이언트 생성</span>
+npx prisma generate</pre>
+  </div>
+
+  <div class="code">
+    <div class="code-bar"><span class="t">api/src/users/users.service.ts</span><span class="lang">typescript</span></div>
+    <pre class="code-body"><span class="kw">import</span> { Injectable } <span class="kw">from</span> <span class="st">'@nestjs/common'</span>;
+<span class="kw">import</span> { PrismaService } <span class="kw">from</span> <span class="st">'../prisma/prisma.service'</span>;
+
+<span class="fn">@Injectable</span>()
+<span class="kw">export class</span> <span class="ty">UsersService</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> prisma: <span class="ty">PrismaService</span>) {}
+
+  <span class="cm">// 타입 안전 — 반환 타입이 자동 추론된다</span>
+  <span class="fn">findAll</span>() {
+    <span class="kw">return</span> <span class="kw">this</span>.prisma.user.<span class="fn">findMany</span>({ include: { posts: <span class="kw">true</span> } });
+  }
+
+  <span class="fn">create</span>(email: <span class="ty">string</span>, name?: <span class="ty">string</span>) {
+    <span class="kw">return</span> <span class="kw">this</span>.prisma.user.<span class="fn">create</span>({ data: { email, name } });
+  }
+}</pre>
+  </div>
+
+  <div class="code">
+    <div class="code-bar"><span class="t">api/src/users/users.controller.ts</span><span class="lang">typescript</span></div>
+    <pre class="code-body"><span class="fn">@Controller</span>(<span class="st">'users'</span>)
+<span class="kw">export class</span> <span class="ty">UsersController</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> users: <span class="ty">UsersService</span>) {}
+
+  <span class="fn">@Get</span>()                       <span class="cm">// GET /users</span>
+  <span class="fn">findAll</span>() { <span class="kw">return</span> <span class="kw">this</span>.users.<span class="fn">findAll</span>(); }
+
+  <span class="fn">@Post</span>()                      <span class="cm">// POST /users</span>
+  <span class="fn">create</span>(<span class="fn">@Body</span>() dto: <span class="ty">CreateUserDto</span>) {
+    <span class="kw">return</span> <span class="kw">this</span>.users.<span class="fn">create</span>(dto.email, dto.name);
+  }
+}</pre>
+  </div>
+
+  <div class="code">
+    <div class="code-bar"><span class="t">web/src/api/users.ts (React 쪽 호출)</span><span class="lang">typescript</span></div>
+    <pre class="code-body"><span class="kw">export async function</span> <span class="fn">getUsers</span>() {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="st">'/api/users'</span>);
+  <span class="kw">if</span> (!res.ok) <span class="kw">throw new</span> <span class="ty">Error</span>(<span class="st">'failed to load users'</span>);
+  <span class="kw">return</span> res.<span class="fn">json</span>();
+}</pre>
+  </div>
+</div></section>
+
+<!-- 05 docker-compose -->
+<section><div class="wrap">
+  <div class="sec-label">05 / DEPLOY</div>
+  <h2 class="sec-title">docker-compose 로 전체 실행</h2>
+  <p class="sec-desc">세 컨테이너(web·api·db)를 한 파일로 정의하고 <code class="k">docker compose up</code> 한 번에 띄운다.</p>
+  <div class="code">
+    <div class="code-bar"><span class="t">docker-compose.yml</span><span class="lang">yaml</span></div>
+    <pre class="code-body"><span class="ty">services</span>:
+  <span class="fn">db</span>:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports: [<span class="st">"5432:5432"</span>]
+
+  <span class="fn">api</span>:
+    build: ./api
+    depends_on: [db]
+    environment:
+      DATABASE_URL: <span class="st">"postgresql://app:secret@db:5432/app"</span>
+    ports: [<span class="st">"3000:3000"</span>]
+
+  <span class="fn">web</span>:
+    build: ./web
+    depends_on: [api]
+    ports: [<span class="st">"5173:5173"</span>]
+
+<span class="ty">volumes</span>:
+  pgdata:</pre>
+  </div>
+
+  <div class="code">
+    <div class="code-bar"><span class="t">실행</span><span class="lang">bash</span></div>
+    <pre class="code-body">docker compose up -d --build     <span class="cm"># 빌드 + 백그라운드 실행</span>
+docker compose logs -f api       <span class="cm"># API 로그 확인</span>
+docker compose down              <span class="cm"># 정지 + 제거</span></pre>
+  </div>
+
+  <div class="callout tip"><strong>💡 핵심 포인트.</strong> 컨테이너끼리는 서비스 이름(<code class="k">db</code>, <code class="k">api</code>)을 호스트명처럼 쓴다. 그래서 <code class="k">DATABASE_URL</code>의 호스트가 <code class="k">localhost</code>가 아니라 <code class="k">db</code>다. 데이터는 <code class="k">pgdata</code> 볼륨에 보존되어 컨테이너를 지워도 살아남는다.</div>
+</div></section>
+
+<!-- 06 기술 선택 이유 -->
+<section><div class="wrap">
+  <div class="sec-label">06 / WHY</div>
+  <h2 class="sec-title">이 조합을 쓰는 이유</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>기술</th><th>역할</th><th>핵심 강점</th></tr></thead>
+      <tbody>
+        <tr><td><strong>React</strong></td><td>UI</td><td>거대한 생태계, 컴포넌트 재사용, 풍부한 라이브러리</td></tr>
+        <tr><td><strong>TypeScript</strong></td><td>언어</td><td>프론트·백엔드 공통 타입, 컴파일 단계에서 버그 차단</td></tr>
+        <tr><td><strong>NestJS</strong></td><td>백엔드 프레임워크</td><td>구조화된 아키텍처(DI·모듈), 엔터프라이즈에 적합</td></tr>
+        <tr><td><strong>Prisma</strong></td><td>ORM</td><td>타입 안전 쿼리, 직관적 스키마, 마이그레이션 관리</td></tr>
+        <tr><td><strong>PostgreSQL</strong></td><td>DB</td><td>안정성·트랜잭션·JSON·확장성, 오픈소스 표준</td></tr>
+        <tr><td><strong>Docker</strong></td><td>인프라</td><td>환경 일관성, 손쉬운 배포, 컨테이너 격리</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout"><strong>한 줄 요약</strong> — TypeScript로 프론트(React)와 백엔드(NestJS)를 통일하고, Prisma로 타입 안전하게 PostgreSQL을 다루며, Docker로 전체를 재현 가능한 환경으로 묶는다. 작은 서비스부터 엔터프라이즈까지 확장되는 검증된 조합이다.</div>
+</div></section>
+
+<footer>
+  <span>풀스택 아키텍처 가이드 · Dev Guide</span>
+  <span>NestJS · React · TypeScript · Prisma · PostgreSQL · Docker · 2026-06-14</span>
+</footer>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="6E7UDMA" src="/assets/js/page-footer.js"></script>
+</body>
+</html>

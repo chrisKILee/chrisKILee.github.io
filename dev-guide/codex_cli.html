@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenAI Codex CLI 완전 가이드</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0B0F0E; --surface:#121817; --surface-2:#1A2220; --border:#243230;
+      --ink:#ECF2F0; --ink-2:#AFC0BC; --ink-3:#7E928E; --ink-4:#52635F;
+      --accent:#10B981; --accent-2:#34D399; --accent-bg:#0C231C;
+      --amber:#F59E0B; --blue:#60A5FA;
+      --font:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+    .wrap{max-width:1060px;margin:0 auto;padding:0 28px}
+
+    .masthead{position:sticky;top:48px;z-index:50;background:rgba(11,15,14,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:11px 28px;display:flex;align-items:center;gap:10px}
+    .masthead .dot{width:14px;height:14px;border-radius:50%;background:var(--accent)}
+    .masthead-id{font-size:14px;font-weight:700}
+    .masthead-meta{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-4)}
+
+    .hero{padding:72px 0 52px;border-bottom:1px solid var(--border);background:radial-gradient(900px 400px at 15% -10%, rgba(16,185,129,.10), transparent)}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);border:1px solid var(--accent-bg);background:var(--accent-bg);border-radius:99px;padding:5px 14px;margin-bottom:22px}
+    .hero h1{font-size:clamp(2.3rem,5.5vw,3.8rem);font-weight:900;letter-spacing:-.03em;line-height:1.05;margin-bottom:18px;max-width:820px}
+    .hero h1 em{font-style:normal;color:var(--accent)}
+    .hero .lede{font-size:18px;color:var(--ink-2);max-width:660px;margin-bottom:30px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;text-decoration:none;padding:11px 20px;border-radius:8px;transition:all .18s ease-out}
+    .btn.solid{background:var(--accent);color:#04140f}.btn.solid:hover{background:var(--accent-2)}
+    .btn.ghost{border:1px solid var(--border);color:var(--ink)}.btn.ghost:hover{border-color:var(--ink-4)}
+
+    section{padding:54px 0;border-bottom:1px solid var(--border)}
+    .sec-label{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.08em;margin-bottom:8px}
+    .sec-title{font-size:clamp(1.5rem,3vw,2rem);font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+    .sec-desc{font-size:15px;color:var(--ink-3);max-width:680px;margin-bottom:32px}
+
+    .figure{border:1px solid var(--border);border-radius:12px;padding:26px 20px;background:var(--surface);overflow-x:auto}
+    .figure svg{display:block;margin:0 auto;max-width:100%;height:auto}
+    .figure-cap{font-family:var(--mono);font-size:11px;color:var(--ink-4);text-align:center;margin-top:14px}
+
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color .18s}
+    .card:hover{border-color:var(--accent)}
+    .card .ic{width:38px;height:38px;border-radius:10px;background:var(--accent-bg);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:12px}
+    .card h3{font-size:15px;font-weight:700;margin-bottom:5px}
+    .card p{font-size:13.5px;color:var(--ink-3);line-height:1.6}
+
+    .code{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:16px 0;background:#070A09}
+    .code-bar{display:flex;align-items:center;gap:6px;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
+    .code-bar .d{width:9px;height:9px;border-radius:50%}
+    .code-bar .lang{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-4)}
+    pre.code-body{padding:16px;font-family:var(--mono);font-size:13px;line-height:1.75;overflow-x:auto;white-space:pre;color:#D2DEDB}
+    pre.code-body .cm{color:#52635F}.ac{color:var(--accent-2)}.am{color:var(--amber)}.gr{color:#86E6C5}
+
+    .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+    table{width:100%;border-collapse:collapse}
+    th{background:var(--surface-2);text-align:left;padding:11px 16px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border)}
+    td{padding:11px 16px;font-size:14px;color:var(--ink-2);border-bottom:1px solid var(--border);vertical-align:top}
+    tr:last-child td{border-bottom:none}
+    tbody tr:hover td{background:var(--surface)}
+    code.k{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--accent-2);white-space:nowrap}
+
+    .callout{border-left:3px solid var(--accent);background:var(--surface);padding:14px 18px;border-radius:0 8px 8px 0;margin:20px 0;font-size:14px;color:var(--ink-2);line-height:1.65}
+    .callout.warn{border-color:var(--amber)} .callout.info{border-color:var(--blue)}
+    .callout strong{color:var(--ink)} .callout a{color:var(--accent-2)}
+
+    footer{padding:30px 28px;font-family:var(--mono);font-size:12px;color:var(--ink-4);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;max-width:1060px;margin:0 auto}
+    footer a{color:var(--ink-3);text-decoration:none}footer a:hover{color:var(--accent)}
+    @media(max-width:640px){.hero,section .wrap{padding-left:16px;padding-right:16px}}
+    @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+
+<div class="masthead">
+  <span class="dot"></span>
+  <span class="masthead-id">OpenAI Codex CLI 가이드</span>
+  <span class="masthead-meta">2026-06-14</span>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">⌨ AI CODING CLI · #2</div>
+    <h1>OpenAI <em>Codex CLI</em><br>터미널 코딩 에이전트</h1>
+    <p class="lede">Codex는 OpenAI의 코딩 에이전트로, 터미널에서 대화형으로 코드를 읽고 수정하고 명령을 실행한다. ChatGPT 계정으로 로그인해 바로 쓰거나 API 키로도 동작하며, IDE·웹·데스크톱 버전과 연결된다.</p>
+    <div class="actions">
+      <a class="btn solid" href="https://developers.openai.com/codex/cli" target="_blank" rel="noopener">공식 문서 →</a>
+      <a class="btn ghost" href="https://github.com/openai/codex" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</header>
+
+<!-- 01 설치 -->
+<section><div class="wrap">
+  <div class="sec-label">01 / INSTALL</div>
+  <h2 class="sec-title">설치 &amp; 인증</h2>
+  <p class="sec-desc">npm·Homebrew·설치 스크립트 중 택일. 설치 후 <code class="k">codex</code> 한 줄로 시작한다.</p>
+
+  <div class="code">
+    <div class="code-bar"><span class="d" style="background:#ef4444"></span><span class="d" style="background:#f59e0b"></span><span class="d" style="background:#22c55e"></span><span class="lang">bash</span></div>
+    <pre class="code-body"><span class="cm"># npm (전역)</span>
+npm install -g @openai/codex
+
+<span class="cm"># Homebrew</span>
+brew install --cask codex
+
+<span class="cm"># 설치 스크립트 (Mac/Linux)</span>
+curl -fsSL https://chatgpt.com/codex/install.sh | sh
+
+<span class="cm"># 시작</span>
+<span class="ac">codex</span></pre>
+  </div>
+
+  <div class="callout info"><strong>인증</strong> — <code class="k">codex</code> 실행 후 <strong>"Sign in with ChatGPT"</strong>가 권장 방식이며 Plus·Pro·Business·Edu·Enterprise 플랜과 통합된다. 또는 <code class="k">OPENAI_API_KEY</code> 환경변수로 API 키 인증도 가능하다.</div>
+</div></section>
+
+<!-- 02 작동 모드 SVG -->
+<section><div class="wrap">
+  <div class="sec-label">02 / MODES</div>
+  <h2 class="sec-title">대화형 vs 비대화(exec)</h2>
+  <p class="sec-desc">Codex는 터미널 UI로 대화하며 작업하거나, <code class="k">exec</code> 서브명령으로 스크립트·자동화에 비대화로 끼워 넣을 수 있다.</p>
+
+  <div class="figure">
+    <!-- two-branch: codex box top, splits to interactive / exec -->
+    <svg viewBox="0 0 820 260" role="img" aria-label="Codex 실행 모드">
+      <defs><marker id="c1" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#10B981"/></marker></defs>
+      <rect x="320" y="20" width="180" height="56" rx="10" fill="#0C231C" stroke="#10B981"/>
+      <text x="410" y="44" text-anchor="middle" font-family="JetBrains Mono" font-size="14" font-weight="700" fill="#34D399">codex</text>
+      <text x="410" y="63" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#AFC0BC">진입점</text>
+
+      <!-- left: interactive -->
+      <rect x="90" y="140" width="280" height="80" rx="10" fill="#121817" stroke="#243230"/>
+      <text x="230" y="168" text-anchor="middle" font-family="Inter" font-size="14" font-weight="700" fill="#ECF2F0">대화형 TUI</text>
+      <text x="230" y="190" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#7E928E">codex · /model 로 모델 전환</text>
+      <text x="230" y="208" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#7E928E">대화하며 편집·실행 승인</text>
+
+      <!-- right: exec -->
+      <rect x="450" y="140" width="280" height="80" rx="10" fill="#121817" stroke="#243230"/>
+      <text x="590" y="168" text-anchor="middle" font-family="Inter" font-size="14" font-weight="700" fill="#ECF2F0">codex exec</text>
+      <text x="590" y="190" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#7E928E">비대화 · 스크립트/CI</text>
+      <text x="590" y="208" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#7E928E">자동화 파이프라인</text>
+
+      <line x1="380" y1="76" x2="250" y2="136" stroke="#10B981" stroke-width="2" marker-end="url(#c1)"/>
+      <line x1="440" y1="76" x2="570" y2="136" stroke="#10B981" stroke-width="2" marker-end="url(#c1)"/>
+    </svg>
+    <div class="figure-cap">그림 1 · codex(대화형 TUI) ↔ codex exec(비대화 자동화)</div>
+  </div>
+</div></section>
+
+<!-- 03 기능 -->
+<section><div class="wrap">
+  <div class="sec-label">03 / FEATURES</div>
+  <h2 class="sec-title">핵심 기능</h2>
+  <div class="cards">
+    <div class="card"><div class="ic">💬</div><h3>대화형 TUI</h3><p><code class="k">codex</code>로 터미널 UI 진입. 자연어로 작업을 지시하고 편집·명령 실행을 승인한다.</p></div>
+    <div class="card"><div class="ic">🤖</div><h3>모델 전환</h3><p>세션 안에서 <code class="k">/model</code>로 모델 변경 및 추론 강도(reasoning) 조정.</p></div>
+    <div class="card"><div class="ic">🔌</div><h3>MCP 지원</h3><p>Model Context Protocol로 서드파티 도구·컨텍스트를 Codex에 연결.</p></div>
+    <div class="card"><div class="ic">🛡️</div><h3>승인 모드</h3><p>Codex가 파일을 편집하거나 명령을 실행하기 전, 사용자 편의 수준에 맞는 승인 모드를 선택.</p></div>
+    <div class="card"><div class="ic">🧩</div><h3>IDE 통합</h3><p>VS Code·Cursor·Windsurf에서 사용. 웹 버전(chatgpt.com/codex)은 클라우드 에이전트.</p></div>
+    <div class="card"><div class="ic">⚙️</div><h3>설정 파일</h3><p><code class="k">~/.codex/config.toml</code>로 기본 모델·승인 정책·MCP 서버 등을 구성.</p></div>
+  </div>
+</div></section>
+
+<!-- 04 사용 -->
+<section><div class="wrap">
+  <div class="sec-label">04 / USAGE</div>
+  <h2 class="sec-title">실전 사용법</h2>
+  <div class="code">
+    <div class="code-bar"><span class="d" style="background:#ef4444"></span><span class="d" style="background:#f59e0b"></span><span class="d" style="background:#22c55e"></span><span class="lang">bash</span></div>
+    <pre class="code-body"><span class="cm"># 대화형 세션</span>
+codex
+
+<span class="cm"># 작업 지시와 함께 시작</span>
+codex <span class="gr">"refactor utils.py and add unit tests"</span>
+
+<span class="cm"># 비대화 실행 (스크립트/CI)</span>
+codex exec <span class="gr">"run the test suite and summarize failures"</span>
+
+<span class="cm"># 데스크톱 앱</span>
+codex app</pre>
+  </div>
+
+  <div class="callout warn"><strong>⚠️ 승인·샌드박스</strong> — Codex는 파일 쓰기/명령 실행 범위를 제어하는 승인 모드와 샌드박스를 제공한다. 자동 실행 범위를 넓힐수록 편하지만 위험도 커지므로, 신뢰할 수 있는 작업에만 넓은 권한을 부여한다. 정확한 플래그/정책 값은 공식 <a href="https://developers.openai.com/codex/cli" target="_blank" rel="noopener">CLI 레퍼런스</a>를 확인하세요.</div>
+</div></section>
+
+<!-- 05 설정 -->
+<section><div class="wrap">
+  <div class="sec-label">05 / CONFIG</div>
+  <h2 class="sec-title">설정 (config.toml)</h2>
+  <p class="sec-desc">전역 설정은 <code class="k">~/.codex/config.toml</code>에 둔다. 기본 모델·MCP 서버 등을 선언.</p>
+  <div class="code">
+    <div class="code-bar"><span class="d" style="background:#ef4444"></span><span class="d" style="background:#f59e0b"></span><span class="d" style="background:#22c55e"></span><span class="lang">~/.codex/config.toml</span></div>
+    <pre class="code-body"><span class="cm"># 예시 (실제 키/값은 공식 Config Reference 참조)</span>
+<span class="am">model</span> = <span class="gr">"gpt-5-codex"</span>
+
+<span class="cm"># MCP 서버 등록</span>
+[mcp_servers.filesystem]
+command = <span class="gr">"npx"</span>
+args = [<span class="gr">"-y"</span>, <span class="gr">"@modelcontextprotocol/server-filesystem"</span>, <span class="gr">"."</span>]</pre>
+  </div>
+  <div class="callout info">설정 키의 전체 목록과 환경변수는 공식 문서의 Config Basics / Advanced Config / Config Reference, 그리고 MCP 페이지를 참고하세요.</div>
+</div></section>
+
+<!-- 06 비교 -->
+<section><div class="wrap">
+  <div class="sec-label">06 / COMPARE</div>
+  <h2 class="sec-title">Claude Code vs Codex (요약)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>항목</th><th>Claude Code</th><th>Codex CLI</th></tr></thead>
+      <tbody>
+        <tr><td>제공사</td><td>Anthropic</td><td>OpenAI</td></tr>
+        <tr><td>설치</td><td><code class="k">claude.ai/install.sh</code> · brew · winget</td><td><code class="k">@openai/codex</code> · brew · 스크립트</td></tr>
+        <tr><td>실행</td><td><code class="k">claude</code> / <code class="k">-p</code> 헤드리스</td><td><code class="k">codex</code> / <code class="k">codex exec</code></td></tr>
+        <tr><td>인증</td><td>Claude 구독 · Console · 서드파티</td><td>ChatGPT 로그인 · API 키</td></tr>
+        <tr><td>MCP</td><td>지원</td><td>지원</td></tr>
+        <tr><td>설정</td><td>CLAUDE.md · settings</td><td><code class="k">~/.codex/config.toml</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">두 도구 모두 MCP·IDE·웹을 지원하는 에이전트형 코딩 CLI다. 워크플로우·생태계·구독 환경에 맞춰 선택하면 된다. <a href="claude_cli.html">→ Claude Code CLI 가이드(#1)</a></div>
+</div></section>
+
+<footer>
+  <span>OpenAI Codex CLI 가이드 · Dev Guide</span>
+  <span><a href="https://github.com/openai/codex" target="_blank" rel="noopener">github.com/openai/codex</a> · 2026-06-14</span>
+</footer>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="B93KHKA" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
