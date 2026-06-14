@@ -1,18 +1,46 @@
 # 작업 인계 문서
-> 생성: 2026-05-22
+> 갱신: 2026-06-14
 > 브랜치: master
-> 마지막 커밋: d4a033d — feat: Ice-Breaking 섹션0 추가 + 섹션6 비전 Padlet 링크 추가
+> 마지막 커밋: b86e196 — style(blog): 본문 폰트 축소 + table 윤곽선
+> (오늘 다수 커밋, 별도 세션의 aifeed·about·dependabot 작업 혼재)
 
 ## 새 세션 시작 방법
 ```
-HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업" 이어서 작업해줘.
+HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — Dev Guide/블로그 후속 작업.
 ```
 
 ---
 
 ## 완료된 작업
 
-### 이번 세션 (2026-05-22)
+### 이번 세션 (2026-06-14) — Dev Guide·템플릿·블로그
+
+- [x] **Taste Skill / designlang 도구 소개** — `taste_skill.html`(heroui), `designlang.html`(#34 precision), Design study 카테고리
+  - 교훈: 입력 수치는 **GitHub API 실측 검증**. "Star 4.2k"=42k 오기→42,393 정정
+- [x] **add-new-page 템플릿 8종 생성** (`~/.claude/skills/add-new-page/templates/`)
+  - **함정**: TEMPLATES.md엔 #1~#40 정의됐으나 #33~#40 파일 부재였음. precision·notion·linear·stripe·spotify·apple·ibm·airbnb 생성
+  - ⚠️ `~/.claude` repo라 사이트와 별개 — **아직 push 안 함**(sync 필요). 갤러리 index.html은 #26까지만 등록
+- [x] **기존 tip 포스트 5종 보강** — git/jekyll/docker/short_cut/bash (`_posts/`), 설치+기본+advanced
+- [x] **Dev Guide 카테고리 `KHBBP3P` `/dev-guide/`** + 독립 HTML 3종 — claude_cli·codex_cli·fullstack_architecture (SVG 다이어그램). 커밋 `2f01b59`
+- [x] **블로그 포스트 3종** — `_posts/2026-06-1{4,3,2}-*.md`, featured, 각각 Dev Guide HTML로 링크. SVG 썸네일 3종(`img/`). 커밋 `443e611`
+- [x] **이슈 해결**: 신규 페이지 "안 보임" → ① site.json version bump(4.0→4.1) 캐시 무효화 ② 사용자 의도는 `/blog/`(Jekyll _posts)였음 → 블로그 포스트로 추가
+- [x] **블로그 스타일**: alertbar div 제거, `.article-post` 본문 1.2→1rem + table 윤곽선(`screen.css`)
+
+### 이전 세션 (2026-06-06 ~ 06-07)
+
+- [x] **Understand Anything 페이지 추가** `MXEVBVL` — `/ai-study/understand_anything.html`, heroui(골드)
+  - GitHub 화제 오픈소스(Lum1104/Understand-Anything) 소개. 8섹션 + SCAN/MAP/TEACH SVG + 카드뉴스 7장 갤러리
+  - **교훈**: 입력 "Star 52,519개"를 GitHub API로 검증 → 실측 **52,909개** 정정. Explore 조사 환각(웹사이트·버전) 의심분은 `api.github.com`으로 재확인 후 사실만 채택
+  - 슬래시 명령어 8종은 세션 로드된 `understand-anything:*` 플러그인 스킬과 대조해 확정 (추측 금지)
+  - 커밋 `712f02e`
+- [x] **cv.chrisnolja.dev 인증서 오류 진단** — 코드 변경 없는 트러블슈팅 (06-07)
+  - 증상: Chrome "잘못된 인증 정보" + HSTS 차단. 콘텐츠는 정상, **TLS 인증서만 `CN=*.github.io`**
+  - **근본 원인 = Cloudflare 구름색 차이**: page=🟠Proxied(CF 인증서로 가려짐) vs cv=⚪DNS only(GitHub 직결, cv용 인증서 미발급 `cert.state=None`)
+  - cv → CNAME → `chrisklee.github.io`(**옛 계정 chrisKlee**, 현 계정 chrisKILee 아님 → 내 토큰 pull만 가능)
+  - **해결책(사용자 조치 대기)**: 옵션A=cv 구름 🟠Proxied로(전제 SSL모드 Full) / 옵션B=옛 저장소 Pages custom domain remove→재입력해 인증서 재발급
+  - 판별법: IP대역(185.199=GH / 104·172=CF) + 인증서 CN + server 헤더 3종
+
+### 이전 세션 (2026-05-22)
 
 - [x] **cto_synergy.html 인원 수정** — R&D 직속 2명, 플랫폼개발팀 6명, R&D실 합계 8명
 - [x] **kpi_2026.html 신규 생성** `5SA5HVS` — `/c/work/`, company tier
@@ -42,6 +70,10 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업" 이어서 작업해줘.
 
 ## 남은 작업 (우선순위 순)
 
+0. **[신규]** **`~/.claude` skills sync** — add-new-page 신규 템플릿 8종(#33~#40) 아직 push 안 됨. `/sync-claude`로 동기화
+1. **[결정]** **Dev Guide 독립 HTML vs 블로그 포스트 중복** — 같은 콘텐츠가 `/dev-guide/*.html`(site.json)와 `_posts/2026-06-1*.md`(블로그) 두 곳. 현재 블로그→Dev Guide 링크로 병행. 일원화할지 결정
+2. **[선택]** `templates/index.html`(--preview 갤러리) #1~#40 번호 정합 정리 — 현재 montage(#26)까지만 등록, T1~T6·#33~#40 누락
+0. **[대기]** **cv.chrisnolja.dev 인증서** — Cloudflare에서 cv 레코드 🟠Proxied로 전환(SSL모드 Full 확인). 또는 옛 계정 chrisKlee 저장소 Pages 도메인 재발급. (06-07 진단 완료, 사용자 조치 대기)
 1. **[미완료]** `gemini_html/aiworker_policy_v1.4.html` 1205번 줄 — `수정` 배지 스팬 잔존, 삭제 필요
 2. **[신규]** **Beta Release Letter 페이지 생성** — `terroir_beta_release.html` 6번 카드 `disabled` → `<a>` 교체
 3. **[권장]** 여행지 지도 이미지 업데이트 — 모알보알·오키나와·미야코지마 핀 추가
@@ -109,8 +141,9 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업" 이어서 작업해줘.
 
 - 정적 GitHub Pages — 실행 서버 없음
 - 배포 URL: `https://page.chrisnolja.dev`
-- 최신 push 완료 (d4a033d)
+- 최신 push 완료 (HEAD 139bd2e, 이번 세션 712f02e)
 - 테스트: `cd /home/chris/git/chrisKILee.github.io && npm test`
+- ⚠️ cv.chrisnolja.dev는 별도 호스팅(옛 계정 chrisKlee/chrisklee.github.io), 본 저장소와 무관
 
 ---
 
