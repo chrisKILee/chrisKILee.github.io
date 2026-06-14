@@ -237,6 +237,94 @@
       defaultMoodIds: ["cozy_brown"],
       defaultRuleIds: ["preserve_identity"],
     },
+    {
+      id: "miniature",
+      name: "3D 미니어처 카드뉴스",
+      description: "주제를 표현한 감성 3D 미니어처 인스타 카드뉴스 (파스텔톤, 손글씨 메모)",
+      fields: [
+        {
+          id: "theme",
+          label: "주제",
+          type: "text",
+          defaultValue: "제주도 한 달 살기",
+          placeholder: "예: 제주도 한 달 살기, 첫 캠핑, 홈카페",
+        },
+        {
+          id: "title",
+          label: "메인 문구",
+          type: "text",
+          defaultValue: "제주에서 보낸 한 달",
+        },
+        {
+          id: "subtitle",
+          label: "부제 문구",
+          type: "text",
+          defaultValue: "느리게 걷는 하루의 기록",
+        },
+        {
+          id: "memos",
+          label: "손글씨 메모 (줄당 1개)",
+          type: "textarea",
+          defaultValue: "오늘도 바다 보러 가기\n귤 한 박스 도착\n돌담길 산책\n노을 맛집 발견",
+        },
+        {
+          id: "ratio",
+          label: "비율",
+          type: "select",
+          defaultValue: "4:5",
+          options: ["4:5", "1:1", "9:16", "2:3"],
+        },
+      ],
+      defaultMoodIds: ["korean_instagram", "minimal_clean"],
+      defaultRuleIds: ["korean_text_accuracy"],
+    },
+    {
+      id: "travel_typography",
+      name: "트래블로그 타이포 포스터",
+      description: "거대 도시명 타이포 위를 미니 chibi가 여행하는 premium travel-log 포스터",
+      fields: [
+        {
+          id: "city",
+          label: "도시 (대형 타이포)",
+          type: "text",
+          defaultValue: "PARIS",
+        },
+        {
+          id: "country",
+          label: "국가",
+          type: "text",
+          defaultValue: "FRANCE",
+        },
+        {
+          id: "travelDate",
+          label: "여행 날짜",
+          type: "text",
+          defaultValue: "2025.04.27 ~ 2025.05.02",
+        },
+        {
+          id: "landmarks",
+          label: "랜드마크 (줄당 1개, 타이포 안 콜라주)",
+          type: "textarea",
+          defaultValue: "Eiffel Tower\nLouvre Museum\nArc de Triomphe\nParis cafe streets\nSeine River\ncity night lights",
+        },
+        {
+          id: "miniCount",
+          label: "미니 캐릭터 수",
+          type: "select",
+          defaultValue: "6",
+          options: ["4", "5", "6", "8"],
+        },
+        {
+          id: "ratio",
+          label: "비율",
+          type: "select",
+          defaultValue: "4:5",
+          options: ["4:5", "2:3", "9:16"],
+        },
+      ],
+      defaultMoodIds: ["editorial_travel"],
+      defaultRuleIds: ["preserve_identity"],
+    },
   ];
 
   const moodPresets = [
@@ -717,6 +805,25 @@
           `Interaction rules:\nUse 2-3 subtle connected interactions only:\n${linesToBullets(v.interactions)}\nDo not make every cell interact, or the image will become too cluttered.`,
           `Handwritten memo rules:\nSmall handwritten pen doodle style. Not large typography. Small emotional memo on cardboard walls. White or cream pen feeling.\nExample wall memos:\n${linesToBullets(v.wallMemos)}`,
           "Camera and lighting:\nSoft warm studio lighting, warm amber tone, shallow depth of field, soft shadows, cinematic cozy photography, eye-level miniature camera angle, slight macro photography feeling.",
+        ]);
+      case "miniature":
+        return compactSections([
+          `${v.theme}을(를) 표현한 감성적인 3D 미니어처 인스타그램 카드뉴스 이미지를 만들어줘.`,
+          `세로형 ${v.ratio} 비율. 중앙에는 귀여운 3D 미니 캐릭터가 있고, 주변에는 ${v.theme}와(과) 관련된 작은 소품들이 아기자기하게 배치되어 있다.`,
+          "전체 분위기:\n따뜻하고 포근한 파스텔톤, 부드러운 조명, 미니어처 장난감 같은 질감, 감성적인 일상 기록 느낌.",
+          `텍스트:\n상단에는 큰 한국어 손글씨 제목: "${v.title}"\n그 아래 짧은 부제: "${v.subtitle}"`,
+          `손글씨 메모:\n이미지 곳곳에 손글씨 메모와 작은 화살표를 자연스럽게 넣어줘. 메모 문구:\n${linesToBullets(v.memos)}`,
+        ]);
+      case "travel_typography":
+        return compactSections([
+          `Input:\nReference image: uploaded person photo.\nCity / Destination: ${v.city}\nCountry: ${v.country}\nTravel date: ${v.travelDate}`,
+          "Top priority — Identity preservation:\nPreserve the exact identity of the uploaded person. Maintain the same facial structure, eyes, nose, mouth, skin texture, hairstyle, and overall likeness. Do not transform the person into someone else. Avoid excessive AI beautification. The result should feel like the real person became a miniature realistic chibi character inside a travel poster.",
+          "Core concept:\nCreate a premium emotional travel-log poster where miniature realistic chibi versions of the uploaded person explore giant destination typography. It should feel like premium travel branding / a high-end travel magazine cover, not a simple cartoon illustration.",
+          `Typography:\nUse the destination name as massive bold centered typography: "${v.city}". The letters must be extremely large and thick. Inside the letters, mask realistic photo collage textures of ${v.city} landmarks and city scenes:\n${linesToBullets(v.landmarks)}\nThe typography itself acts as a photo mask; the city photos inside the letters must look sharp, realistic, and premium.`,
+          `Mini characters:\nCreate exactly ${v.miniCount} realistic chibi / SD miniature versions of the same uploaded person (Pixar-inspired realistic chibi hybrid, collectible figure feeling). The face must clearly reflect the real uploaded person. Each character shows a different travel moment and pose (front / side / back / slight top-down, sitting on a letter, walking across a letter, pulling a suitcase, holding a camera, drinking coffee, leaning on the typography). Place them naturally on and around the giant letters with soft realistic shadows so the letters feel like a physical 3D space.`,
+          `Bottom design:\nLarge handwritten-style text: "TRAVEL LOG"\nBelow it: "${v.travelDate}"\nAdd tasteful travel graphic elements: passport stamps, map route lines, compass mark, boarding pass fragments.`,
+          `Style & ratio:\nPremium travel poster, cinematic travel branding, vibrant clean background, ultra clean composition, layered depth, soft realistic shadows, Instagram travel aesthetic. Vertical poster ratio ${v.ratio}.`,
+          `Text accuracy:\nMain typography must read exactly "${v.city}". Bottom text must read exactly "TRAVEL LOG" and "${v.travelDate}". Avoid misspelled text, random extra words, watermark, distorted faces, and loss of identity.`,
         ]);
       default:
         return "";

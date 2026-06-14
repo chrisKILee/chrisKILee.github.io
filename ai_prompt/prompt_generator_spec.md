@@ -80,7 +80,9 @@ type TemplateId =
   | "keyring"
   | "mini_aegyo"
   | "travel_poster"
-  | "cardboard_toddler";
+  | "cardboard_toddler"
+  | "miniature"
+  | "travel_typography";
 
 type Template = {
   id: TemplateId;
@@ -454,6 +456,39 @@ const keyringVariables: VariableDefinition[] = [
     defaultValue: "gray sweatshirt"
   }
 ];
+```
+
+### 6.4 miniature
+
+```ts
+const miniatureVariables: VariableDefinition[] = [
+  { id: "theme", label: "주제", type: "text", defaultValue: "제주도 한 달 살기" },
+  { id: "title", label: "메인 문구", type: "text", defaultValue: "제주에서 보낸 한 달" },
+  { id: "subtitle", label: "부제 문구", type: "text", defaultValue: "느리게 걷는 하루의 기록" },
+  { id: "memos", label: "손글씨 메모 (줄당 1개)", type: "textarea",
+    defaultValue: "오늘도 바다 보러 가기\n귤 한 박스 도착\n돌담길 산책\n노을 맛집 발견" },
+  { id: "ratio", label: "비율", type: "select", defaultValue: "4:5",
+    options: ["4:5", "1:1", "9:16", "2:3"] }
+];
+// defaultMoodIds: ["korean_instagram", "minimal_clean"]
+// recommendedRuleIds: ["korean_text_accuracy"]
+```
+
+### 6.5 travel_typography
+
+```ts
+const travelTypographyVariables: VariableDefinition[] = [
+  { id: "city", label: "도시 (대형 타이포)", type: "text", defaultValue: "PARIS" },
+  { id: "country", label: "국가", type: "text", defaultValue: "FRANCE" },
+  { id: "travelDate", label: "여행 날짜", type: "text", defaultValue: "2025.04.27 ~ 2025.05.02" },
+  { id: "landmarks", label: "랜드마크 (줄당 1개)", type: "textarea",
+    defaultValue: "Eiffel Tower\nLouvre Museum\nArc de Triomphe\nParis cafe streets\nSeine River\ncity night lights" },
+  { id: "miniCount", label: "미니 캐릭터 수", type: "select", defaultValue: "6", options: ["4", "5", "6", "8"] },
+  { id: "ratio", label: "비율", type: "select", defaultValue: "4:5", options: ["4:5", "2:3", "9:16"] }
+];
+// defaultMoodIds: ["editorial_travel"]
+// recommendedRuleIds: ["preserve_identity"]
+// 핵심: 도시명을 거대 typography photo-mask로, chibi 6종이 letters 위/주변 탐험. 하단 "TRAVEL LOG" + 날짜
 ```
 
 ## 7. Prompt Rendering
