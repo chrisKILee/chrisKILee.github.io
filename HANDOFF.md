@@ -1,19 +1,32 @@
 # 작업 인계 문서
-> 갱신: 2026-06-14
+> 갱신: 2026-06-15
 > 브랜치: master
-> 마지막 커밋: 44fe33c — fix(about): 한국어 탭 Build×Run 도식 카드 미표시 수정 (HANDOFF 문서: 5989607)
-> (오늘 다수 커밋 — about·Dependabot·Dev Guide·블로그·AI Tech Feed 등 다중 세션 혼재)
+> 마지막 커밋: 73a7930 — docs(ai_prompt): 템플릿 추가 표준 절차 SPEC 가이드 작성
+> (다중 세션 혼재 — ai_prompt 템플릿·about·Dependabot·Dev Guide·블로그·AI Tech Feed)
 
 ## 새 세션 시작 방법
 ```
-HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — about/Dev Guide/블로그/AI Tech Feed 후속.
+HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — ai_prompt 템플릿/Dev Guide/블로그 후속.
 ```
 
 ---
 
 ## 완료된 작업
 
-### 이번 세션 (2026-06-14) — about 재작성·Dependabot 0건
+### 이번 세션 (2026-06-15) — ai_prompt 템플릿 2종·추가 가이드
+
+- [x] **`/ai_prompt/` 템플릿 2종 추가** — 커밋 `d6dc937` (6→8종)
+  - `miniature`(3D 미니어처 카드뉴스): text×3 + textarea(memos) + select(ratio). mood `korean_instagram`+`minimal_clean`, rule `korean_text_accuracy`
+  - `travel_typography`(트래블로그 타이포 포스터): 거대 도시명 typography photo-mask + chibi N종. **기존 `travel_poster`(콜라주)와 별개**. mood `editorial_travel`, rule `preserve_identity`
+  - 원본 소스: Obsidian `Personal/메모/Prompt.md`의 "미니어처"·"여행" 섹션
+  - 수정 지점: `app.js` `templates[]` + `renderTemplateBody()` switch 2곳. 실시간변경·복사는 공통 로직이라 자동 적용
+  - 검증: `node --check` + **v.참조↔fields 교차검증 통과**(undefined 0건). PRD(G/H)·SPEC(TemplateId·6.4/6.5) 동기화
+- [x] **템플릿 추가 표준 절차 SPEC 작성** — 커밋 `73a7930`
+  - `ai_prompt/prompt_generator_template_guide.md` — STEP 1~7, fields 3종, mood/rule 카탈로그, 검증 3종 스크립트, 함정 정리
+  - 메모리 `project_ai_prompt_templates.md` + MEMORY.md 포인터 → 다음 "템플릿 추가" 요청 시 자동 recall
+  - **앞으로 ai_prompt 템플릿 추가 시 이 가이드를 먼저 읽고 동일 패턴으로 작업**
+
+### 이전 세션 (2026-06-14) — about 재작성·Dependabot 0건
 
 - [x] **/about Medium 스타일 전면 재작성** — 커밋 `9f20a7b`, 톤개정 `f13aa30`, 도식수정 `44fe33c`
   - 기존 Mediumish 데모 제거 → 본인 소개. 영/한 탭(영문 기본), 인라인 SVG 히어로(기술↔사람 브릿지)·Build×Run 도식·커리어 타임라인·People 책임맵·링크블록(CV·LinkedIn·GitHub·IG)
@@ -97,6 +110,7 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — about/Dev
 
 ## 남은 작업 (우선순위 순)
 
+0. **[반복작업]** **ai_prompt 템플릿 추가** — 새 템플릿 요청 시 `ai_prompt/prompt_generator_template_guide.md` 먼저 읽고 STEP 1~7 따름. 원본은 Obsidian `Personal/메모/Prompt.md`
 0. **[신규]** **`~/.claude` skills sync** — add-new-page 신규 템플릿 8종(#33~#40) 아직 push 안 됨. `/sync-claude`로 동기화
 1. **[결정]** **Dev Guide 독립 HTML vs 블로그 포스트 중복** — 같은 콘텐츠가 `/dev-guide/*.html`(site.json)와 `_posts/2026-06-1*.md`(블로그) 두 곳. 현재 블로그→Dev Guide 링크로 병행. 일원화할지 결정
 2. **[선택]** `templates/index.html`(--preview 갤러리) #1~#40 번호 정합 정리 — 현재 montage(#26)까지만 등록, T1~T6·#33~#40 누락
