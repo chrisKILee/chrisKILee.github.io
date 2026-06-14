@@ -314,7 +314,11 @@ comments: false
 
     <div class="am-fig">
       <svg viewBox="0 0 1000 360" role="img" aria-label="R&D실은 만들고 플랫폼서비스실은 운영하며 Chris가 정렬을 거든다">
-        <rect x="40" y="60" width="370" height="240" rx="20" fill="url(#amBuild)"/>
+        <defs>
+          <linearGradient id="amBuildKo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e293b"/><stop offset="1" stop-color="#334155"/></linearGradient>
+          <linearGradient id="amRunKo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f97316"/><stop offset="1" stop-color="#ea580c"/></linearGradient>
+        </defs>
+        <rect x="40" y="60" width="370" height="240" rx="20" fill="url(#amBuildKo)"/>
         <text x="70" y="108" fill="#fb923c" font-family="-apple-system,sans-serif" font-size="15" font-weight="800" letter-spacing="2">R&amp;D실</text>
         <text x="70" y="146" fill="#fff" font-family="-apple-system,sans-serif" font-size="30" font-weight="800">Build</text>
         <text x="70" y="178" fill="#cbd5e1" font-family="-apple-system,sans-serif" font-size="15">플랫폼을 연구하고 구축</text>
@@ -323,7 +327,7 @@ comments: false
           <text x="70" y="244">• 내부 개발자 플랫폼(IDP)</text>
           <text x="70" y="272">• CI/CD · GitOps · SDD</text>
         </g>
-        <rect x="590" y="60" width="370" height="240" rx="20" fill="url(#amRun)"/>
+        <rect x="590" y="60" width="370" height="240" rx="20" fill="url(#amRunKo)"/>
         <text x="620" y="108" fill="#fff7ed" font-family="-apple-system,sans-serif" font-size="15" font-weight="800" letter-spacing="2">플랫폼서비스실</text>
         <text x="620" y="146" fill="#fff" font-family="-apple-system,sans-serif" font-size="30" font-weight="800">Run</text>
         <text x="620" y="178" fill="#fff7ed" font-family="-apple-system,sans-serif" font-size="15">플랫폼을 운영하고 서비스</text>
