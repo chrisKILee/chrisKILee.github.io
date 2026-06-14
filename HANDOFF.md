@@ -1,17 +1,28 @@
 # 작업 인계 문서
 > 갱신: 2026-06-14
 > 브랜치: master
-> 마지막 커밋: b86e196 — style(blog): 본문 폰트 축소 + table 윤곽선
-> (오늘 다수 커밋, 별도 세션의 aifeed·about·dependabot 작업 혼재)
+> 마지막 커밋: d5bd0c5 — docs: HANDOFF 갱신 (코드 마지막: b33bd71 detail.html 캐시버스팅)
+> (오늘 다수 커밋 — Dev Guide·블로그·about·dependabot·AI Tech Feed 등 다중 세션 혼재)
 
 ## 새 세션 시작 방법
 ```
-HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — Dev Guide/블로그 후속 작업.
+HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — Dev Guide/블로그/AI Tech Feed 후속.
 ```
 
 ---
 
 ## 완료된 작업
+
+### 이번 세션 (2026-06-14) — AI Tech Feed·캐시버스팅
+
+- [x] **AI Tech Feed 4건 추가** (`/add-new-rssblog`, GeekNews 토픽) — `assets/js/ai-articles.js`. 커밋 `bdb3865`
+  - `usecase-007` GLM-5.2(Zhipu 1M 컨텍스트 오픈소스) / `usecase-008` AI 번역 한계
+  - `claude-011` 미 정부 Fable 5·Mythos 5 외국인 접근 차단 / `claude-012` WSJ Amazon CEO 촉발 단속
+  - **함정**: WebFetch 요약이 모델명 "Fable 5·Mythos 5"를 환각한 줄 의심 → WebSearch 교차검증(TechCrunch·WSJ·Reuters)으로 **실제 명칭(6/9 출시) 확인 후 채택**. 짧은 트윗 원문은 관련 보도 2~3개 조합해 보강
+- [x] **aifeed 캐시버스팅 적용** — 커밋 `9a5692d`(목록), `b33bd71`(상세)
+  - 증상: 카드 push 후 `/aifeed/`에 새 항목 미노출 → 클릭 시 상세에서 "claude-011 찾을 수 없습니다"
+  - 원인: `ai-articles.js` 로드하는 2곳이 **캐시버스팅 쿼리 없이** 로드 → 브라우저가 옛 JS 캐시. 데이터·배포는 처음부터 정상(curl 확인)
+  - 해결: `aifeed/index.html` + `ai-news/detail.html` 둘 다 `?v=20260614` 부착. `grep -rn ai-articles.js`로 참조처 2곳뿐임 전수 확인
 
 ### 이번 세션 (2026-06-14) — Dev Guide·템플릿·블로그
 
@@ -124,6 +135,12 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — Dev Guide
 ### Tier 시스템
 - `public → /slug/`, `company → /c/slug/`, `private → /s/slug/`
 
+### AI Tech Feed 캐시버스팅 (2026-06-14)
+- 실제 피드 URL은 `/aifeed/` (스킬 문서가 말하는 `index.html`/`ai-news/detail.html` 직접 경로 아님)
+- 카드 목록=`aifeed/index.html`, 상세=`ai-news/detail.html`, 데이터=`assets/js/ai-articles.js`
+- **두 파일 모두 `<script src="/assets/js/ai-articles.js?v=YYYYMMDD">`** — ai-articles.js 갱신 시 **두 곳의 `?v=` 날짜를 함께 올려야** 즉시 반영. 한쪽만 고치면 목록은 떠도 상세가 깨짐
+- 렌더링은 date 내림차순 + 페이지네이션 → 데이터만 맞으면 최신 항목이 1페이지 상단 노출
+
 ---
 
 ## 알려진 문제 / 주의사항
@@ -134,6 +151,7 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — Dev Guide
 - LazyWeb MCP 토큰(`lw_xxx`)은 공개 저장소 커밋 금지
 - `terroir_beta_release.html` Beta Release Letter 카드 — 파일 생성 후 disabled → `<a>` 교체 필요
 - 새 파일 수동 생성 시 `<link rel="icon" type="image/svg+xml" href="/favicon.svg">` 태그 필수
+- AI Tech Feed(`ai-articles.js`) 갱신 시 `aifeed/index.html` + `ai-news/detail.html`의 `?v=` 날짜 동시 갱신 필수 (안 하면 브라우저 캐시로 상세 404)
 
 ---
 
