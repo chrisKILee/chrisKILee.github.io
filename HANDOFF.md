@@ -1,17 +1,33 @@
 # 작업 인계 문서
 > 갱신: 2026-06-14
 > 브랜치: master
-> 마지막 커밋: d5bd0c5 — docs: HANDOFF 갱신 (코드 마지막: b33bd71 detail.html 캐시버스팅)
-> (오늘 다수 커밋 — Dev Guide·블로그·about·dependabot·AI Tech Feed 등 다중 세션 혼재)
+> 마지막 커밋: 44fe33c — fix(about): 한국어 탭 Build×Run 도식 카드 미표시 수정 (HANDOFF 문서: 5989607)
+> (오늘 다수 커밋 — about·Dependabot·Dev Guide·블로그·AI Tech Feed 등 다중 세션 혼재)
 
 ## 새 세션 시작 방법
 ```
-HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — Dev Guide/블로그/AI Tech Feed 후속.
+HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — about/Dev Guide/블로그/AI Tech Feed 후속.
 ```
 
 ---
 
 ## 완료된 작업
+
+### 이번 세션 (2026-06-14) — about 재작성·Dependabot 0건
+
+- [x] **/about Medium 스타일 전면 재작성** — 커밋 `9f20a7b`, 톤개정 `f13aa30`, 도식수정 `44fe33c`
+  - 기존 Mediumish 데모 제거 → 본인 소개. 영/한 탭(영문 기본), 인라인 SVG 히어로(기술↔사람 브릿지)·Build×Run 도식·커리어 타임라인·People 책임맵·링크블록(CV·LinkedIn·GitHub·IG)
+  - **자료 정본**: `../chris_kms/private/iam/` (career-profile·linkedin-about·engineering-manager-role·education-certs) + cv.chrisnolja.dev
+  - **톤 피드백 반영**: "내가 다 이끄는 것처럼 보여 겸손하지 못함" → lead/driving/총괄 → support/help/거든다/함께/꿈꾼다. 사실(212명 96%·W3C 5명세·70명)은 유지, 표현만 겸손화
+  - 폰트 Merriweather/Georgia serif → **Pretendard**(jsDelivr `@import`), 본문 19→17px, max-width 740→680
+  - **함정1**: nano-banana 히어로 이미지 → `GOOGLE_API_KEY`는 Sheets/Drive용이라 generativelanguage **403 API_KEY_SERVICE_BLOCKED** → SVG로 대체
+  - **함정2(KO 탭 도식 안 보임)**: 카드 그라데이션이 영어 SVG `<defs>`에만 정의 → 탭 전환 시 영어 패널 `display:none` → `url(#id)` 참조 실패 → rect 투명. **해결**: KO SVG에 자체 `amBuildKo`/`amRunKo` defs. 교훈=토글 영역 인라인 SVG는 defs self-contained
+- [x] **Dependabot 보안 경고 44 → 0 전량 해소** — 커밋 `e053bed`·`21318c4`·`259a360`·`53ee55c`
+  - **핵심 통찰**: 44건 중 34건이 빌드 산출물 `_site/chris/js/package-lock.json`. `.gitignore`(46줄)에 있는데도 과거 커밋되어 198파일 추적 중 → `git rm -r --cached _site`로 untrack(GitHub Pages 원격 재빌드라 라이브 무영향, 리스크 0) → critical 2 + high 32 소멸
+  - 정적 사이트라 npm/gem이 방문자 브라우저에서 실행 안 됨 = 실제 위협 0. 전부 빌드/개발 도구
+  - `chris/js/package.json`(옛 CV 배포 헬퍼) 제거, `npm audit fix`로 picomatch 2.3.1→2.3.2
+  - **Gemfile.lock 5건**: `gem install --user-install bundler`(시스템 권한 회피) + **`github-pages` gem 핀** → kramdown 1.17→2.4·jekyll 3.8.3→3.10·addressable 2.5.2→2.9. `bundle config set --local path vendor/bundle` 격리
+  - 로컬 `jekyll build`는 `PAGES_REPO_NWO=chrisKILee/chrisKILee.github.io` 필요(jekyll-github-metadata)
 
 ### 이번 세션 (2026-06-14) — AI Tech Feed·캐시버스팅
 
@@ -92,7 +108,8 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — Dev Guide
 5. **[권장]** `scripts/sync-tiers.js` 실제 실행 테스트
 6. **[확인 필요]** share 링크 생성 → GitHub 저장 → `/share/[token].html` 배포 확인
 7. **[나중에]** Cloudflare Access 설정 (유료 플랜 확인 후)
-8. **[나중에]** GitHub Dependabot 보안 경고 44개 (5 critical, 26 high) 검토
+8. **[완료]** ~~GitHub Dependabot 보안 경고 44개 검토~~ → **0건 해소 완료** (2026-06-14)
+9. **[선택]** `GEMINI_API_KEY`를 `~/.secrets`에 추가하면 nano-banana 래스터 이미지 생성 가능 (현재 `GOOGLE_API_KEY`는 generativelanguage 차단)
 
 ---
 
@@ -101,7 +118,9 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — Dev Guide
 | 파일 | 상태 | 비고 |
 |------|------|------|
 | `index.html` | ✅ 최신 | 메인 포털 |
-| `site.json` | ✅ 최신 | 폴더 32개+, 파일 294개+ |
+| `about.md` | ✅ 최신 | Medium 스타일 본인 소개, EN/KO 탭, Pretendard, 인라인 SVG (2026-06-14) |
+| `Gemfile` / `Gemfile.lock` | ✅ 최신 | `github-pages` gem 핀(232), 패치 버전. `vendor/bundle` 격리(gitignore) |
+| `site.json` | ✅ 최신 | version 4.1, 폴더 32개+, 파일 294개+ |
 | `favicon.svg` / `favicon.ico` | ✅ 최신 | SVG 기반 멀티사이즈 ICO (2026-05-21) |
 | `_layouts/default.html` | ✅ 최신 | favicon.svg 적용 |
 | `c/work/kpi_2026.html` | ✅ 최신 | `5SA5HVS`, 라이트 테마, CT2~CT7 + 정량 |
@@ -135,6 +154,22 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — Dev Guide
 ### Tier 시스템
 - `public → /slug/`, `company → /c/slug/`, `private → /s/slug/`
 
+### 로컬 Jekyll 빌드 환경 (2026-06-14 구축)
+- ruby 3.2.3 시스템 설치됨(`ruby-full`), bundler는 **사용자 영역**: `gem install --user-install bundler` (PATH: `$(ruby -e 'print Gem.user_dir')/bin`)
+- `bundle config set --local path vendor/bundle` → gem을 프로젝트 `vendor/bundle`에 격리(시스템 권한 회피, gitignore됨)
+- 빌드: `PAGES_REPO_NWO=chrisKILee/chrisKILee.github.io JEKYLL_ENV=production bundle exec jekyll build --destination /tmp/_site_test`
+- `Gemfile`은 `github-pages` gem을 핀 → 라이브(github.io)와 동일 버전으로 로컬 빌드. jekyll-archives만 별도(화이트리스트 밖, 라이브 무시)
+
+### Dependabot 정리 원칙 (2026-06-14)
+- 정적 GitHub Pages = npm/gem이 방문자 브라우저에서 실행 안 됨 → lockfile 경고는 실제 위협 0(빌드/개발 도구)
+- `_site`는 빌드 산출물 → 절대 커밋 금지(gitignore 46줄). 과거 커밋분은 `git rm -r --cached _site`로 정리 완료
+- 유지보수 시 `bundle update`/`npm update`는 vendor/bundle 격리 환경에서
+
+### about 페이지 구조 (2026-06-14)
+- `about.md`(Jekyll `layout: page`) 내 인라인 `<style>`+`<script>`로 EN/KO 탭 토글. 스코프 클래스 `.am`
+- 톤 원칙: People-first·협업·지원·꿈(겸손). 사실관계는 KMS `private/iam/` 정본 기준
+- **토글 영역 인라인 SVG는 그라데이션/필터 defs를 self-contained로** (다른 패널 `display:none` 시 `url(#id)` 참조 깨짐)
+
 ### AI Tech Feed 캐시버스팅 (2026-06-14)
 - 실제 피드 URL은 `/aifeed/` (스킬 문서가 말하는 `index.html`/`ai-news/detail.html` 직접 경로 아님)
 - 카드 목록=`aifeed/index.html`, 상세=`ai-news/detail.html`, 데이터=`assets/js/ai-articles.js`
@@ -146,7 +181,9 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — Dev Guide
 ## 알려진 문제 / 주의사항
 
 - `gemini_html/aiworker_policy_v1.4.html` 1205번 줄: `수정` 배지 스팬 잔존
-- `site.json` version `4.0` — localStorage 캐시 version과 일치해야 오버라이드 적용
+- `site.json` version `4.1` — localStorage 캐시 version과 일치해야 오버라이드 적용 (site.json 변경 시 version bump 필수)
+- nano-banana 이미지 생성 불가 — `~/.secrets`의 `GOOGLE_API_KEY`는 Sheets/Drive 전용(generativelanguage 403). 별도 `GEMINI_API_KEY` 필요
+- 토글(탭/아코디언) 영역의 인라인 SVG는 그라데이션·필터 defs를 같은 SVG 안에 둘 것 — 다른 패널 `display:none` 시 `url(#id)` 참조가 깨져 도형이 투명해짐
 - 여행지 지도(`s/travel/map.png`)에 모알보알·오키나와·미야코지마 핀 없음
 - LazyWeb MCP 토큰(`lw_xxx`)은 공개 저장소 커밋 금지
 - `terroir_beta_release.html` Beta Release Letter 카드 — 파일 생성 후 disabled → `<a>` 교체 필요
@@ -159,8 +196,10 @@ HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — Dev Guide
 
 - 정적 GitHub Pages — 실행 서버 없음
 - 배포 URL: `https://page.chrisnolja.dev`
-- 최신 push 완료 (HEAD 139bd2e, 이번 세션 712f02e)
-- 테스트: `cd /home/chris/git/chrisKILee.github.io && npm test`
+- 최신 push 완료 (코드 HEAD 44fe33c, HANDOFF 5989607)
+- 테스트: `cd /home/chris/git/chrisKILee.github.io && npm test` (vitest 25/25 통과)
+- 로컬 Jekyll 빌드 가능 (ruby 3.2.3 + 사용자 bundler, `github-pages` gem 핀 — 위 "로컬 Jekyll 빌드 환경" 참조)
+- Dependabot 보안 경고 **0건** (44→0, 2026-06-14)
 - ⚠️ cv.chrisnolja.dev는 별도 호스팅(옛 계정 chrisKlee/chrisklee.github.io), 본 저장소와 무관
 
 ---
