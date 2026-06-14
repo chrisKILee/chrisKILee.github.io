@@ -4,6 +4,7 @@
     { label: 'Blog', href: '/blog/' },
     { label: 'About', href: '/about' },
     { label: 'AI Tech Feed', href: '/aifeed/' },
+    { label: 'AI Image Prompt', href: '/ai_prompt/' },
   ];
 
   const currentPath = location.pathname;
