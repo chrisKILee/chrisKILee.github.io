@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>바이브 코딩 이후의 새로운 SDLC — Google 백서 심층 분석</title>
+<link rel="stylesheet" href="/templates/assets/common.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --accent: #0f766e;
+    --accent-soft: #e3f1ef;
+    --maxw: 880px;
+  }
+  [data-theme="dark"] {
+    --accent: #5fd0c2;
+    --accent-soft: color-mix(in oklab, #5fd0c2 16%, #18181a);
+  }
+  body { font-family: var(--font-serif); }
+
+  .container { max-width: var(--maxw); margin: 0 auto; padding: 64px 28px 100px; }
+
+  .paper-head { border-bottom: 1px solid var(--ink); padding-bottom: 28px; margin-bottom: 36px; }
+  .paper-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; color: var(--accent); text-transform: uppercase; margin-bottom: 14px; }
+  .paper-title { font-family: var(--font-serif); font-weight: 700; font-size: clamp(28px, 4vw, 44px); line-height: 1.18; letter-spacing: -.015em; margin: 0 0 14px; }
+  .paper-authors { font-size: 15px; color: var(--ink-2); margin: 0 0 6px; line-height: 1.5; }
+  .paper-authors sup { color: var(--accent); font-size: 0.75em; }
+  .paper-affil { font-size: 12px; color: var(--ink-3); font-family: var(--font-mono); }
+  .paper-meta { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 16px; font-size: 12px; font-family: var(--font-mono); color: var(--ink-3); }
+  .paper-meta strong { color: var(--accent); font-weight: 600; }
+
+  .abstract {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 20px 24px;
+    margin: 0 0 30px;
+    font-size: 15.5px;
+    line-height: 1.7;
+    color: var(--ink-2);
+    border-radius: 4px;
+  }
+  .abstract h3 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; color: var(--accent); text-transform: uppercase; margin: 0 0 8px; font-weight: 700; }
+
+  .twocol { display: grid; grid-template-columns: 200px 1fr; gap: 28px; align-items: flex-start; }
+  @media (max-width: 720px) { .twocol { grid-template-columns: 1fr; } }
+  .twocol .lab { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); padding-top: 4px; }
+
+  h2.s { font-family: var(--font-serif); font-size: 24px; font-weight: 700; margin: 50px 0 14px; letter-spacing: -.005em; padding-bottom: 8px; border-bottom: 1px solid var(--line); scroll-margin-top: 24px; }
+  h3.ss { font-family: var(--font-serif); font-size: 18px; font-weight: 700; margin: 28px 0 8px; }
+
+  p { font-size: 17px; line-height: 1.78; color: var(--ink); margin: 0 0 16px; }
+  p .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+  .figure-caption { font-size: 13px; color: var(--ink-3); font-family: var(--font-sans); margin-top: 10px; line-height: 1.55; }
+  .figure-caption strong { color: var(--ink-2); font-weight: 600; }
+
+  .svg-wrap { border: 1px solid var(--line); border-radius: 8px; background: var(--bg-elev); padding: 22px 16px; margin: 24px 0 4px; overflow-x: auto; }
+  .svg-wrap svg { display: block; width: 100%; height: auto; min-width: 600px; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 26px 0; }
+  .stat-card { border: 1px solid var(--line); border-radius: 8px; padding: 18px 16px; background: var(--bg-elev); }
+  .stat-card .big { font-family: var(--font-serif); font-weight: 700; font-size: 34px; color: var(--accent); line-height: 1.1; letter-spacing: -.02em; }
+  .stat-card .lab { font-size: 13px; color: var(--ink-2); font-family: var(--font-sans); margin-top: 6px; line-height: 1.45; }
+
+  .results-table .cc-best { color: var(--accent); }
+
+  .takeaways {
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 18px 22px;
+    margin: 30px 0;
+  }
+  .takeaways h3 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; color: var(--accent); text-transform: uppercase; margin: 0 0 10px; font-weight: 700; }
+  .takeaways ol { margin: 0; padding-left: 20px; }
+  .takeaways li { margin: 8px 0; font-size: 15px; color: var(--ink-2); line-height: 1.55; }
+
+  .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0; }
+  @media (max-width: 600px) { .pros-cons { grid-template-columns: 1fr; } }
+  .pc-card { border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; background: var(--bg-elev); }
+  .pc-card h4 { margin: 0 0 10px; font-size: 13px; font-family: var(--font-mono); letter-spacing: .1em; text-transform: uppercase; }
+  .pc-card.up h4 { color: var(--accent); }
+  .pc-card.down h4 { color: #b3261e; }
+  [data-theme="dark"] .pc-card.down h4 { color: #ff8c80; }
+  .pc-card ul { margin: 0; padding-left: 18px; font-size: 14.5px; color: var(--ink-2); line-height: 1.65; font-family: var(--font-sans); }
+  .pc-card li { margin: 5px 0; }
+
+  .footnote-list { font-size: 13px; color: var(--ink-3); padding-left: 18px; font-family: var(--font-sans); line-height: 1.65; }
+  .footnote-list li { margin: 5px 0; }
+  .footnote-list a { color: var(--accent); text-decoration: none; word-break: break-all; }
+  .footnote-list a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="container" data-search-root>
+
+  <header class="paper-head">
+    <div class="paper-tag">Whitepaper analysis · Agentic engineering · 2026</div>
+    <h1 class="paper-title">바이브 코딩 이후의 새로운 SDLC<br/>— 코더에서 오케스트레이터로</h1>
+    <p class="paper-authors">
+      Google<sup>1</sup> · <span style="color:var(--ink-3)">Kaggle Whitepaper Series</span>
+    </p>
+    <p class="paper-affil"><sup>1</sup>「5-Day AI Agents: Intensive Vibe Coding Course with Google」 부속 백서 (2026-06-15~19)</p>
+    <div class="paper-meta">
+      <span><strong>원제</strong> The New SDLC With Vibe Coding</span>
+      <span><strong>분량</strong> 약 51p · 무료</span>
+      <span><strong>읽기</strong> 14분</span>
+      <span><strong>난이도</strong> 중</span>
+      <span><a href="#" data-copy="https://www.kaggle.com/whitepaper-the-new-SDLC-with-vibe-coding">링크 복사</a></span>
+    </div>
+  </header>
+
+  <div class="abstract">
+    <h3>Abstract — 한 단락 요약</h3>
+    Google이 Kaggle 백서 시리즈로 공개한 이 문서는 소프트웨어 공학이 <strong>고급 프로그래밍 언어 등장 이래
+    가장 큰 전환</strong>을 맞고 있다고 주장한다. 개발자의 인터페이스가 “문법(how)”에서 “의도(what)”로
+    옮겨가며, 기계가 구현을 맡고 인간은 의도·아키텍처·판단을 제공한다. 백서는 이 변화가 미래가 아니라
+    현재임을 데이터로 못박는다 — <span class="num">2026년 초 기준 전문 개발자의 85%가 AI 코딩
+    에이전트를 정기적으로, 51%가 매일 사용</span>. 그러나 “느낌에 맡기는” 바이브 코딩만으로는 프로덕션이
+    무너지므로, 검증·제약·컨텍스트로 에이전트를 통제하는 <strong>에이전틱 엔지니어링</strong>과
+    개발자의 <strong>오케스트레이터 전환</strong>을 새 SDLC의 핵심으로 제시한다.
+  </div>
+
+  <div class="twocol">
+    <div class="lab">큐레이터 노트</div>
+    <div>
+      <p>
+        이 백서가 의미 있는 이유는 “AI가 코드를 쓴다”는 사실 자체가 아니라, <strong>그 사실을 전제로
+        SDLC 전체를 다시 그렸다</strong>는 데 있다. 자동완성→자율 에이전트로의 진화는 이미 끝난 이야기고,
+        남은 질문은 “사람이 어디에서 가치를 더하는가”다.
+      </p>
+      <p>
+        백서의 답은 명료하다. 사람은 더 이상 타이핑하는 사람이 아니라, 에이전트가 안전하게 폭주하도록
+        <em>평가·제약·컨텍스트의 하네스(harness)를 설계하는 사람</em>이다. 이른바 “팩토리 모델”이다.
+      </p>
+    </div>
+  </div>
+
+  <div class="cc-tldr">
+    <h3>3-bullet TL;DR</h3>
+    <ul>
+      <li><strong>What.</strong> 문법 중심 코딩이 의도 중심 “바이브 코딩 + 에이전틱 엔지니어링”으로 대체되는 새 SDLC.</li>
+      <li><strong>Why it matters.</strong> 이미 개발자 85%가 AI 에이전트를 쓰는 현실 — 역할이 코더에서 오케스트레이터로 이동.</li>
+      <li><strong>Caveat.</strong> 바이브 코딩만으로는 프로덕션이 무너짐 — 검증·제약·컨텍스트 설계가 필수.</li>
+    </ul>
+  </div>
+
+  <h2 class="s" id="shift">1. 패러다임 전환 — 문법에서 의도로</h2>
+  <p>
+    백서는 수십 년간 개발자가 기계와 맞닿는 면이 “문법”이었다고 짚는다 — 중괄호, 세미콜론, 타입 주석,
+    그리고 언어의 정밀한 문법. 백서의 표현을 빌리면 <em>“그 시대가 끝나가고 있다(That era is ending)”</em>.
+    새 패러다임에서 개발자는 <strong>무엇을 만들지를 표현</strong>하고, 어떻게 만들지는 기계가 처리하며,
+    인간은 의도(intent)·아키텍처(architecture)·판단(judgment)을 제공한다.
+  </p>
+  <p>
+    이 전환은 어느 날 갑자기 온 것이 아니다. 백서는 그 진화를 네 단계로 정리한다 — 에디터 안의 단순한
+    토큰 예측(자동완성)에서, 함수 전체를 완성하는 인라인 제안으로, 다시 자연어로 기능을 묘사하면 동작하는
+    구현을 돌려주는 대화형 인터페이스로, 그리고 마침내 저장소를 클론하고 멀티 파일 변경을 계획하며
+    샌드박스에서 실행·테스트하고 PR까지 제출하는 <strong>완전 자율 에이전트</strong>로.
+  </p>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 840 200" role="img" aria-label="AI 코딩 도구의 4단계 진화">
+      <defs>
+        <marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+      <!-- 4 boxes: x=20,225,430,635 width=185 h=92 y=44 -->
+      <g font-family="var(--font-sans)">
+        <!-- box 1 -->
+        <rect x="20" y="44" width="185" height="92" rx="9" fill="var(--bg)" stroke="var(--line)"/>
+        <text x="112" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">자동완성</text>
+        <text x="112" y="98" text-anchor="middle" font-size="11" fill="var(--ink-3)">토큰 단위 예측</text>
+        <text x="112" y="116" text-anchor="middle" font-size="11" fill="var(--ink-3)">(autocomplete)</text>
+        <!-- box 2 -->
+        <rect x="225" y="44" width="185" height="92" rx="9" fill="var(--bg)" stroke="var(--line)"/>
+        <text x="317" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">인라인 제안</text>
+        <text x="317" y="98" text-anchor="middle" font-size="11" fill="var(--ink-3)">함수 전체 완성</text>
+        <text x="317" y="116" text-anchor="middle" font-size="11" fill="var(--ink-3)">(inline)</text>
+        <!-- box 3 -->
+        <rect x="430" y="44" width="185" height="92" rx="9" fill="var(--bg)" stroke="var(--line)"/>
+        <text x="522" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">대화형 인터페이스</text>
+        <text x="522" y="98" text-anchor="middle" font-size="11" fill="var(--ink-3)">자연어로 기능 구현</text>
+        <text x="522" y="116" text-anchor="middle" font-size="11" fill="var(--ink-3)">(chat)</text>
+        <!-- box 4 accent -->
+        <rect x="635" y="44" width="185" height="92" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="727" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent)">자율 에이전트</text>
+        <text x="727" y="92" text-anchor="middle" font-size="11" fill="var(--ink-2)">repo 클론·계획·</text>
+        <text x="727" y="108" text-anchor="middle" font-size="11" fill="var(--ink-2)">실행·테스트·PR</text>
+        <text x="727" y="124" text-anchor="middle" font-size="11" fill="var(--ink-2)">(autonomous)</text>
+        <!-- arrows between, y=90 -->
+        <line x1="206" y1="90" x2="223" y2="90" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="411" y1="90" x2="428" y2="90" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="616" y1="90" x2="633" y2="90" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar)"/>
+        <!-- top labels -->
+        <text x="20" y="28" font-size="11" font-family="var(--font-mono)" fill="var(--accent)" letter-spacing="0.1em">EVOLUTION OF AI CODING — 2020 → 2026</text>
+      </g>
+    </svg>
+  </div>
+  <p class="figure-caption"><strong>Figure 1.</strong> 백서가 정리한 AI 코딩 도구의 진화. 오른쪽으로 갈수록 인간이 작성하는 코드 라인은 줄고, 위임하는 판단의 범위는 커진다.</p>
+
+  <h2 class="s" id="vibe-vs-agentic">2. 바이브 코딩 vs 에이전틱 엔지니어링</h2>
+  <p>
+    “바이브 코딩(vibe coding)”은 AI 연구자 <strong>Andrej Karpathy</strong>가 X 게시물에서 처음 제시한 용어다.
+    그는 이를 <em>“완전히 바이브에 몸을 맡기고… 코드가 존재한다는 사실조차 잊는다. 사실 코딩이라기보다
+    그냥 뭔가를 보고, 말하고, 실행하고, 복붙하면 대체로 굴러간다”</em>고 묘사했다. 빠른 프로토타이핑에는
+    강력하지만, 느슨한 묘사에 의존하는 방식은 <strong>프로덕션 시스템에서 무너진다</strong>.
+  </p>
+  <p>
+    Karpathy 본인이 다음 단계로 지목한 것이 <strong>에이전틱 엔지니어링(agentic engineering)</strong>이다.
+    단지 에이전트가 코드를 쓰기 때문이 아니라 <em>“거기엔 예술과 과학, 전문성이 있기(there is an art &amp;
+    science and expertise to it)”</em> 때문이다. 에이전틱 엔지니어링은 바이브 코딩의 후계자이되, <strong>감독과
+    검증(oversight &amp; scrutiny)</strong>을 더한다 — 방향과 검증의 통제권은 엔지니어가 쥐고, 실행은 AI가 맡는다.
+  </p>
+
+  <div class="pros-cons">
+    <div class="pc-card up">
+      <h4>Vibe Coding</h4>
+      <ul>
+        <li>느슨한 자연어 묘사로 즉시 결과 생성</li>
+        <li>프로토타입·아이디어 검증·1회성 스크립트에 최적</li>
+        <li>속도는 빠르나 구조·검증·일관성은 보장 못 함</li>
+        <li>“코드를 보지 않는다” — 프로덕션엔 부적합</li>
+      </ul>
+    </div>
+    <div class="pc-card down">
+      <h4>Agentic Engineering</h4>
+      <ul>
+        <li>의도·명세·제약을 정의하고 에이전트에 위임</li>
+        <li>검증·리뷰·테스트가 워크플로우에 내장</li>
+        <li>방향성·아키텍처 통제권은 인간이 유지</li>
+        <li>프로덕션·팀 협업·대규모 시스템에 적합</li>
+      </ul>
+    </div>
+  </div>
+  <p class="figure-caption"><strong>Table 1.</strong> 두 방식은 대립이 아니라 성숙도 차이다 — 바이브 코딩은 탐색, 에이전틱 엔지니어링은 출하(production)를 위한 규율이다.</p>
+
+  <h2 class="s" id="context-eng">3. Context Engineering — 프롬프트보다 중요한 것</h2>
+  <p>
+    백서가 강조하는 스킬 위계는 직관과 다르다. 프롬프트 작성 능력(prompt craft)은 자동완성 수준,
+    <strong>컨텍스트 엔지니어링(context engineering)</strong>은 에이전트 보조 수준, 그리고 의도·명세
+    엔지니어링(intent &amp; spec engineering)이 오케스트레이터 수준이다. 진짜 생산성 배수는 위로 갈수록 커진다.
+  </p>
+  <p>
+    핵심 통찰은 <em>“컨텍스트 비대화(context bloat)가 에이전틱 코딩의 주된 실패 모드”</em>라는 점이다.
+    에이전트에게 무엇을 “말하느냐(프롬프트)”보다, 무엇을 “보게 하느냐(컨텍스트)”가 결과를 좌우한다.
+    실무 처방은 세 가지로 수렴한다.
+  </p>
+  <div class="cc-callout">
+    <ul style="margin:0;padding-left:18px;line-height:1.7;">
+      <li><strong>작업당 새 세션(fresh session per task)</strong> — 누적된 컨텍스트가 판단을 흐리기 전에 리셋.</li>
+      <li><strong>원자적 변경(atomic changes)</strong> — 한 세션에 하나의 기능만. 변경 범위를 좁게 유지.</li>
+      <li><strong>격리된 서브에이전트</strong> — 전용 컨텍스트 윈도우를 가진 보조 에이전트로 작업을 병렬 분할.</li>
+    </ul>
+  </div>
+  <p>
+    프로젝트 규약을 담는 <code>CLAUDE.md</code> 같은 컨텍스트 파일(약 2.5k 토큰 규모)이나 명세 문서가
+    “프롬프트”를 대체하는 1차 산출물이 된다. <strong>명세가 곧 소스</strong>이고, 코드는 그 명세의
+    컴파일 결과에 가까워진다.
+  </p>
+
+  <h2 class="s" id="new-sdlc">4. 새로운 SDLC 구조 — 팩토리 모델</h2>
+  <p>
+    AI 에이전트는 전통적 SDLC를 압축한다. 백서는 개발자가 자율 실행을 안전하게 인도하는
+    <strong>평가(evaluation)·제약(constraint)·컨텍스트(context) 하네스</strong>를 설계하는 “팩토리 모델”을
+    제시한다. 스펙 주도(spec-driven) 흐름은 대체로 <strong>조사 → 명세 → 구현 → 검증/출하</strong>의
+    네 단계로 정리되며, 각 단계에서 에이전트가 “연결 조직(connective tissue)”처럼 작동한다.
+  </p>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 840 320" role="img" aria-label="새로운 SDLC 팩토리 모델 다이어그램">
+      <defs>
+        <marker id="ar2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"/>
+        </marker>
+        <marker id="ar3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,3 L0,6 Z" fill="var(--ink-3)"/>
+        </marker>
+      </defs>
+      <g font-family="var(--font-sans)">
+        <!-- Layer 1: Human Orchestrator  x=170 y=18 w=500 h=58 -->
+        <rect x="170" y="18" width="500" height="58" rx="10" fill="var(--bg)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="420" y="44" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">👤 인간 오케스트레이터 (Orchestrator)</text>
+        <text x="420" y="64" text-anchor="middle" font-size="11.5" fill="var(--ink-3)">의도 · 아키텍처 · 판단 · 검증 책임</text>
+        <!-- arrow down 1 -->
+        <line x1="420" y1="76" x2="420" y2="96" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar2)"/>
+
+        <!-- Layer 2: Context Harness  x=120 y=98 w=600 h=58 -->
+        <rect x="120" y="98" width="600" height="58" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="420" y="124" text-anchor="middle" font-size="13.5" font-weight="700" fill="var(--accent)">컨텍스트 하네스 (Context Harness)</text>
+        <text x="420" y="144" text-anchor="middle" font-size="11.5" fill="var(--ink-2)">평가(eval) · 제약(constraint) · 명세(spec) · CLAUDE.md</text>
+        <!-- arrow down 2 -->
+        <line x1="420" y1="156" x2="420" y2="176" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar2)"/>
+
+        <!-- Layer 3: 5 agent stages y=178 h=72 -->
+        <!-- x: 20,182,344,506,668 w=148 -->
+        <g>
+          <rect x="20"  y="178" width="148" height="72" rx="9" fill="var(--bg)" stroke="var(--line)"/>
+          <text x="94"  y="208" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">① 조사</text>
+          <text x="94"  y="228" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">서브에이전트 병렬 분석</text>
+
+          <rect x="182" y="178" width="148" height="72" rx="9" fill="var(--bg)" stroke="var(--line)"/>
+          <text x="256" y="208" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">② 명세</text>
+          <text x="256" y="228" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">RFC형 스펙 문서</text>
+
+          <rect x="344" y="178" width="148" height="72" rx="9" fill="var(--bg)" stroke="var(--line)"/>
+          <text x="418" y="208" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">③ 구현</text>
+          <text x="418" y="228" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">태스크 분해·코드 생성</text>
+
+          <rect x="506" y="178" width="148" height="72" rx="9" fill="var(--bg)" stroke="var(--line)"/>
+          <text x="580" y="208" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">④ 검증</text>
+          <text x="580" y="228" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">테스트·스펙 대조 리뷰</text>
+
+          <rect x="668" y="178" width="148" height="72" rx="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="742" y="208" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--accent)">⑤ 출하</text>
+          <text x="742" y="228" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">PR·배포</text>
+        </g>
+        <!-- arrows between stages y=214 -->
+        <line x1="168" y1="214" x2="180" y2="214" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar2)"/>
+        <line x1="330" y1="214" x2="342" y2="214" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar2)"/>
+        <line x1="492" y1="214" x2="504" y2="214" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar2)"/>
+        <line x1="654" y1="214" x2="666" y2="214" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar2)"/>
+
+        <!-- feedback dashed loop: from stage4 bottom down, left, up into stage1 -->
+        <polyline points="580,250 580,288 94,288 94,252" fill="none" stroke="var(--ink-3)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ar3)"/>
+        <text x="337" y="304" text-anchor="middle" font-size="10.5" font-family="var(--font-mono)" fill="var(--ink-3)">검증 실패 시 새 세션으로 재반복 (atomic · fresh context)</text>
+      </g>
+    </svg>
+  </div>
+  <p class="figure-caption"><strong>Figure 2.</strong> 팩토리 모델. 인간은 상단에서 의도·하네스를 설계하고, 에이전트는 하단의 조사→명세→구현→검증→출하 루프를 실행한다. 검증에서 걸리면 누적 컨텍스트를 버리고 새 세션으로 되돌아간다.</p>
+
+  <h2 class="s" id="orchestrator">5. 코더에서 오케스트레이터로</h2>
+  <p>
+    백서의 결론은 개발자 역할의 재정의다. 가장 높은 가치를 내는 엔지니어는 코드 라인 작성이 아니라
+    <strong>문제 정의(problem framing)·시스템 설계·검증·보안·거버넌스, 그리고 AI 워크플로우의 오케스트레이션</strong>에
+    집중한다. 타이핑은 위임 가능한 활동이 되고, 위임할 수 없는 것 — 무엇을 왜 만들지, 결과가 옳은지를
+    판단하는 능력 — 이 핵심 역량으로 남는다.
+  </p>
+  <p>
+    이 전환의 실측 증거로 백서·업계 자료는 한 사람이 하루에 <strong>전부 AI가 작성한 PR을 22건</strong>
+    제출한 사례, 그리고 프런티어 팀에서 <strong>5개 이상의 에이전트를 병렬</strong>로 돌리는 패턴을 든다.
+    개발자 한 명의 “출력”이 직접 타이핑 속도가 아니라 “얼마나 많은 에이전트를 정확히 지휘하는가”로
+    측정되기 시작한 것이다.
+  </p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="big">85%</div><div class="lab">AI 코딩 에이전트를 정기 사용하는 전문 개발자 (2026 초)</div></div>
+    <div class="stat-card"><div class="big">51%</div><div class="lab">매일 AI 코딩 에이전트를 사용하는 비율</div></div>
+    <div class="stat-card"><div class="big">22</div><div class="lab">하루에 제출된, 100% AI 작성 PR 사례</div></div>
+    <div class="stat-card"><div class="big">5+</div><div class="lab">프런티어 팀의 동시 병렬 에이전트 수</div></div>
+  </div>
+  <p class="figure-caption"><strong>Note.</strong> 85%·51%는 백서 본문 인용(2026 초 기준). 22건·5+는 에이전틱 엔지니어링 실무 사례(아래 출처 [2]) 인용이며 백서 고유 수치가 아님.</p>
+
+  <div class="cc-quote">
+    “개발자의 일차 인터페이스가 문법에서 의도로 옮겨간다. 인간은 의도·아키텍처·판단을 제공하고,
+    기계가 구현을 맡는다.” — 백서 핵심 명제(의역)
+    <cite>The New SDLC With Vibe Coding</cite>
+  </div>
+
+  <div class="takeaways">
+    <h3>실무 시사점 — 6가지</h3>
+    <ol>
+      <li>바이브 코딩은 탐색용, 에이전틱 엔지니어링은 출하용 — 단계에 맞게 도구를 바꿔 쓴다.</li>
+      <li>프롬프트보다 컨텍스트가 결과를 좌우 — <code>CLAUDE.md</code>·스펙 문서를 1차 산출물로 관리한다.</li>
+      <li>“컨텍스트 비대화”가 최대 실패 모드 — 작업당 새 세션 + 원자적 변경을 원칙으로 한다.</li>
+      <li>검증·리뷰·테스트를 워크플로우에 내장 — 검증 실패는 수정이 아니라 새 세션 재반복으로 처리.</li>
+      <li>역량의 중심을 타이핑에서 문제 정의·시스템 설계·검증으로 이동시킨다.</li>
+      <li>생산성 측정 단위를 “라인 수”에서 “정확히 지휘한 에이전트 수”로 재정의한다.</li>
+    </ol>
+  </div>
+
+  <h2 class="s" id="caveat">6. 비판적 평가 — 무엇을 경계할까</h2>
+  <div class="pros-cons">
+    <div class="pc-card up">
+      <h4>설득력 있는 지점</h4>
+      <ul>
+        <li>“미래”가 아닌 “현재”임을 채택률 데이터로 입증.</li>
+        <li>도구 나열이 아니라 SDLC 전체를 재설계한 프레임.</li>
+        <li>컨텍스트 엔지니어링이라는 실무 처방이 구체적.</li>
+      </ul>
+    </div>
+    <div class="pc-card down">
+      <h4>유보가 필요한 지점</h4>
+      <ul>
+        <li>Google 자체 도구(Antigravity·AI Studio) 홍보 맥락의 백서.</li>
+        <li>85%/51% 통계의 표본·출처가 본문에서 제한적으로 제시.</li>
+        <li>보안·검증 부채, 모델 의존 리스크는 상대적으로 얕게 다룸.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 class="s" id="glossary">부록 — 용어 사전</h2>
+  <dl class="cc-glossary">
+    <dt>Vibe Coding <small>바이브 코딩</small></dt>
+    <dd>느슨한 자연어 묘사로 AI에 구현을 맡기는 방식. 빠른 프로토타이핑에 강하나 프로덕션엔 부적합. Karpathy가 명명.</dd>
+    <dt>Agentic Engineering <small>에이전틱 엔지니어링</small></dt>
+    <dd>바이브 코딩의 후계. 감독·검증을 더해 에이전트의 자율 실행을 통제하는 규율 있는 개발 방식.</dd>
+    <dt>Context Engineering <small>컨텍스트 엔지니어링</small></dt>
+    <dd>에이전트가 “보는” 정보(명세·규약·코드 범위)를 설계·관리하는 역량. 프롬프트보다 결과 영향이 크다.</dd>
+    <dt>Factory Model <small>팩토리 모델</small></dt>
+    <dd>개발자가 평가·제약·컨텍스트 하네스를 설계해 자율 에이전트의 실행을 안전하게 인도하는 SDLC 모델.</dd>
+    <dt>Orchestrator <small>오케스트레이터</small></dt>
+    <dd>코드를 직접 쓰는 대신 의도·아키텍처·검증을 정의하고 다수 에이전트를 지휘하는 개발자 역할.</dd>
+  </dl>
+
+  <h2 class="s" id="refs">참고 자료 (출처)</h2>
+  <ol class="footnote-list">
+    <li>[1] Google · Kaggle, <em>The New SDLC With Vibe Coding</em> (5-Day AI Agents Intensive, 2026). <a href="https://www.kaggle.com/whitepaper-the-new-SDLC-with-vibe-coding" target="_blank" rel="noopener">kaggle.com/whitepaper-the-new-SDLC-with-vibe-coding</a></li>
+    <li>[2] A. Lavaee, <em>The New SDLC: A Practical Guide to Agentic Engineering</em>. <a href="https://alexlavaee.me/blog/new-sdlc-agentic-engineering/" target="_blank" rel="noopener">alexlavaee.me/blog/new-sdlc-agentic-engineering</a></li>
+    <li>[3] Kaggle, <em>5-Day AI Agents: Intensive Vibe Coding Course With Google</em> (discussion). <a href="https://www.kaggle.com/competitions/5-day-ai-agents-intensive-vibecoding-course-with-google/discussion/708280" target="_blank" rel="noopener">kaggle.com/.../discussion/708280</a></li>
+    <li>[4] Backslash Security, <em>AI Across the SDLC: The New Role of Developers in 2026</em>. <a href="https://www.backslash.security/blog/the-new-role-of-developers-ai-sdlc" target="_blank" rel="noopener">backslash.security/blog/the-new-role-of-developers-ai-sdlc</a></li>
+    <li>[5] A. Karpathy, X 게시물(“vibe coding” 원전) 및 후속 “agentic engineering” 발언 — AOL 기사 인용. <a href="https://www.aol.com/articles/man-coined-vibe-coding-says-203029543.html" target="_blank" rel="noopener">aol.com — The Man Who Coined 'Vibe Coding'</a></li>
+  </ol>
+
+</div>
+
+<script src="/templates/assets/common.js"></script>
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="XACMSL3" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
