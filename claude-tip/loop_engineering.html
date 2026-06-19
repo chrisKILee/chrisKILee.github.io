@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>루프 엔지니어링과 루프 라이브러리</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── RawBlock Design System — anti-design brutalism ── */
+    :root {
+      --black:      #000000;
+      --white:      #FFFFFF;
+      --link:       #0000FF;
+      --sunken:     #F0F0F0;
+      --success:    #008000;
+      --warning:    #FFA500;
+      --error:      #FF0000;
+      --disabled:   #CCCCCC;
+
+      --bd-thin:    1px;
+      --bd-thick:   3px;
+      --bd-heavy:   5px;
+
+      --sp-1: 4px;  --sp-2: 8px;  --sp-3: 16px; --sp-4: 24px;
+      --sp-5: 40px; --sp-6: 64px; --sp-7: 80px; --sp-8: 120px;
+
+      --font-head: 'Archivo Black', system-ui, sans-serif;
+      --font-body: 'Work Sans', system-ui, sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--white);
+      color: var(--black);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--link); text-decoration: underline; }
+
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 0 var(--sp-4); }
+
+    /* ── Top Bar ── */
+    .topbar {
+      background: var(--white);
+      border-bottom: var(--bd-heavy) solid var(--black);
+      padding: var(--sp-3) var(--sp-4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 48px;
+      z-index: 90;
+    }
+    .topbar-brand {
+      font-family: var(--font-head);
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--black);
+    }
+    .topbar-meta { font-family: var(--font-mono); font-size: 13px; color: var(--black); }
+
+    /* ── Hero ── */
+    .hero { background: var(--black); color: var(--white); padding: var(--sp-8) var(--sp-4) var(--sp-7); }
+    .eyebrow {
+      display: inline-block;
+      border: var(--bd-thick) solid var(--white);
+      color: var(--white);
+      padding: var(--sp-1) var(--sp-3);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: var(--sp-5);
+    }
+    .hero h1 {
+      font-family: var(--font-head);
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      line-height: 1.0;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      max-width: 900px;
+      margin-bottom: var(--sp-4);
+    }
+    .hero h1 em { font-style: normal; color: var(--white); -webkit-text-stroke: 2px var(--white); -webkit-text-fill-color: var(--black); }
+    .hero-desc { font-size: 18px; line-height: 1.6; max-width: 660px; margin-bottom: var(--sp-5); color: var(--white); }
+    .hero-chips { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+    .chip-inv {
+      border: var(--bd-thick) solid var(--white);
+      color: var(--white);
+      padding: var(--sp-2) var(--sp-3);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ── Section ── */
+    .section { padding: var(--sp-7) var(--sp-4); border-bottom: var(--bd-heavy) solid var(--black); }
+    .section-label { font-family: var(--font-mono); font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: var(--sp-2); }
+    .section-title { font-family: var(--font-head); font-size: clamp(1.75rem, 4vw, 3rem); line-height: 1.05; text-transform: uppercase; margin-bottom: var(--sp-3); }
+    .section-desc { font-size: 16px; max-width: 680px; margin-bottom: var(--sp-5); }
+    .section-desc strong { background: var(--black); color: var(--white); padding: 1px 6px; }
+
+    /* ── Cards ── */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-4); }
+    .card { background: var(--white); border: var(--bd-thick) solid var(--black); padding: var(--sp-4); transition: background 0.15s ease-out, color 0.15s ease-out; }
+    .card:hover { background: var(--black); color: var(--white); }
+    .card-elevated { border-width: var(--bd-heavy); }
+    .card__num { font-family: var(--font-head); font-size: 40px; line-height: 1; margin-bottom: var(--sp-3); }
+    .card__title { font-family: var(--font-head); font-size: 20px; text-transform: uppercase; line-height: 1.1; margin-bottom: var(--sp-2); }
+    .card__body p { font-size: 15px; line-height: 1.6; }
+    .card__tag { display: inline-block; margin-top: var(--sp-3); font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-top: var(--bd-thin) solid currentColor; padding-top: var(--sp-2); }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; margin-top: var(--sp-4); border: var(--bd-thick) solid var(--black); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--black); color: var(--white); padding: var(--sp-3); text-align: left; font-family: var(--font-mono); font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    td { border-top: var(--bd-thick) solid var(--black); padding: var(--sp-3); font-size: 15px; vertical-align: top; }
+    td + td, th + th { border-left: var(--bd-thick) solid var(--black); }
+    tr:hover td { background: var(--sunken); }
+
+    /* ── Status chips ── */
+    .chip { display: inline-block; border: 2px solid var(--black); padding: 2px 10px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; background: var(--white); }
+    .chip.ok { color: var(--success); border-color: var(--success); }
+    .chip.warn { color: var(--warning); border-color: var(--warning); }
+    .chip.err { color: var(--error); border-color: var(--error); }
+
+    /* ── Callouts ── */
+    .callout { border: var(--bd-thick) solid var(--black); border-left-width: var(--bd-heavy); padding: var(--sp-3) var(--sp-4); margin: var(--sp-4) 0; font-size: 15px; line-height: 1.6; }
+    .callout.ok { border-color: var(--success); }
+    .callout.warn { border-color: var(--warning); }
+    .callout.err { border-color: var(--error); }
+    .callout-title { font-family: var(--font-head); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--sp-1); }
+
+    /* ── Code block ── */
+    .code-wrap { border: var(--bd-thick) solid var(--black); margin: var(--sp-4) 0; }
+    .code-bar { display: flex; align-items: center; justify-content: space-between; background: var(--black); color: var(--white); padding: var(--sp-2) var(--sp-3); }
+    .code-lang { font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    pre.code-body { background: var(--sunken); padding: var(--sp-4); font-family: var(--font-mono); font-size: 15px; line-height: 1.5; overflow-x: auto; white-space: pre; color: var(--black); }
+
+    /* ── Steps ── */
+    .steps { display: flex; flex-direction: column; gap: 0; border-top: var(--bd-thick) solid var(--black); }
+    .step { display: flex; gap: var(--sp-4); padding: var(--sp-4) 0; border-bottom: var(--bd-thick) solid var(--black); }
+    .step-num { flex-shrink: 0; width: 44px; height: 44px; background: var(--black); color: var(--white); display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-size: 20px; }
+    .step-title { font-family: var(--font-head); font-size: 18px; text-transform: uppercase; margin-bottom: var(--sp-1); }
+    .step-body { font-size: 15px; line-height: 1.6; }
+
+    /* ── Buttons ── */
+    .btn { display: inline-block; border: var(--bd-thick) solid var(--black); background: var(--black); color: var(--white); padding: 10px 24px; font-family: var(--font-body); font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; cursor: pointer; transition: background 0.15s ease-out, color 0.15s ease-out; }
+    .btn:hover { background: var(--white); color: var(--black); }
+    .btn.secondary { background: var(--white); color: var(--black); }
+    .btn.secondary:hover { background: var(--black); color: var(--white); }
+
+    /* ── Figure (SVG) ── */
+    figure { margin: var(--sp-4) 0; border: var(--bd-thick) solid var(--black); background: var(--white); }
+    figure svg { width: 100%; height: auto; display: block; }
+    figcaption { font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; padding: var(--sp-2) var(--sp-3); border-top: var(--bd-thick) solid var(--black); }
+
+    /* ── Footer ── */
+    footer { padding: var(--sp-5) var(--sp-4); background: var(--black); color: var(--white); display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); flex-wrap: wrap; font-family: var(--font-mono); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+    footer a { color: var(--white); }
+
+    @media (max-width: 640px) {
+      .hero { padding: var(--sp-6) var(--sp-4) var(--sp-5); }
+      .section { padding: var(--sp-5) var(--sp-4); }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">LOOP ENGINEERING</span>
+  <span class="topbar-meta">2026-06-20</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap">
+    <div class="eyebrow">LOOP LIBRARY · FORWARD FUTURE</div>
+    <h1>돌고 돌아, <em>프롬프트</em>로 온다</h1>
+    <p class="hero-desc">AI에게 일을 한 번 시키는 게 아니라, 끝날 때까지 알아서 돌게 만든다. 복잡한 장치를 쌓다 보면 무겁고 자주 깨진다 — 결국 검증된 프롬프트 한 줄로 온다. 그 한 줄들을 모은 것이 루프 라이브러리(Loop Library)다.</p>
+    <div class="hero-chips">
+      <span class="chip-inv">루프 31개</span>
+      <span class="chip-inv">5가지 뼈대</span>
+      <span class="chip-inv">Matthew Berman</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: 루프 엔지니어링이란 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">01 — 개념</div>
+    <h2 class="section-title">사람이 루프 밖으로 나온다</h2>
+    <p class="section-desc">지금까지는 사람이 AI 옆에 붙어 있었다. 한 번 시키고, 결과를 보고, 다시 시키고 — 그 반복의 한가운데에 사람이 있었다. <strong>루프 엔지니어링</strong>은 그 자리를 바꾼다. AI에게 목표 하나를 주고 끝날 때까지 스스로 돌게 두는 것. 사람은 루프 밖으로 나온다.</p>
+
+    <figure>
+      <svg viewBox="0 0 760 250" role="img" aria-label="사람이 루프 안에서 밖으로 이동하는 개념도">
+        <defs>
+          <marker id="arrk" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L7,3.2 L0,6.4 Z" fill="#000"/></marker>
+        </defs>
+        <!-- 좌 패널: 기존 -->
+        <text x="40" y="34" font-family="monospace" font-size="13" font-weight="700" fill="#000">BEFORE — 사람이 루프 안</text>
+        <circle cx="180" cy="135" r="70" fill="none" stroke="#000" stroke-width="3"/>
+        <path d="M180,65 A70,70 0 0,1 250,135" fill="none" stroke="#000" stroke-width="3" marker-end="url(#arrk)"/>
+        <path d="M250,135 A70,70 0 0,1 180,205" fill="none" stroke="#000" stroke-width="3" marker-end="url(#arrk)"/>
+        <path d="M180,205 A70,70 0 0,1 110,135" fill="none" stroke="#000" stroke-width="3" marker-end="url(#arrk)"/>
+        <rect x="142" y="115" width="76" height="40" fill="#000"/>
+        <text x="180" y="132" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">사람</text>
+        <text x="180" y="148" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#fff">매 턴 개입</text>
+
+        <!-- 구분선 -->
+        <line x1="380" y1="40" x2="380" y2="220" stroke="#000" stroke-width="3" stroke-dasharray="6 5"/>
+
+        <!-- 우 패널: 루프 엔지니어링 -->
+        <text x="420" y="34" font-family="monospace" font-size="13" font-weight="700" fill="#000">AFTER — AI가 자율 반복</text>
+        <circle cx="560" cy="135" r="70" fill="none" stroke="#000" stroke-width="5"/>
+        <path d="M560,65 A70,70 0 0,1 630,135" fill="none" stroke="#000" stroke-width="5" marker-end="url(#arrk)"/>
+        <path d="M630,135 A70,70 0 0,1 560,205" fill="none" stroke="#000" stroke-width="5" marker-end="url(#arrk)"/>
+        <path d="M560,205 A70,70 0 0,1 490,135" fill="none" stroke="#000" stroke-width="5" marker-end="url(#arrk)"/>
+        <rect x="520" y="113" width="80" height="44" fill="none" stroke="#000" stroke-width="3"/>
+        <text x="560" y="131" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#000">AI 에이전트</text>
+        <text x="560" y="147" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#000">목표까지 자율</text>
+        <!-- 사람은 밖 -->
+        <rect x="650" y="40" width="62" height="28" fill="#000"/>
+        <text x="681" y="59" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#fff">사람 ↗</text>
+      </svg>
+      <figcaption>FIG.01 — 반복의 중심에서 사람이 빠지고, AI가 목표까지 스스로 돈다</figcaption>
+    </figure>
+
+    <p class="section-desc" style="margin-top:var(--sp-5)">문제는 그 루프를 제대로 굴리려는 순간 일이 복잡해진다는 점이다. 정교한 하네스는 짜기 어렵고, 플러그인·스킬을 주렁주렁 달면 AI가 매번 읽을 짐이 늘어 비용이 커진다. 스크립트로 행동을 강제하면 자잘한 에러가 끊이질 않는다.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__num">01</div>
+        <div class="card__title">무겁다</div>
+        <div class="card__body"><p>정교한 작업 틀(하네스)을 짜는 일 자체가 어렵다.</p></div>
+        <span class="card__tag">하네스</span>
+      </div>
+      <div class="card">
+        <div class="card__num">02</div>
+        <div class="card__title">비싸다</div>
+        <div class="card__body"><p>플러그인·스킬이 늘수록 AI가 매번 읽는 컨텍스트가 커져 비용이 오른다.</p></div>
+        <span class="card__tag">플러그인</span>
+      </div>
+      <div class="card">
+        <div class="card__num">03</div>
+        <div class="card__title">깨진다</div>
+        <div class="card__body"><p>스크립트로 행동을 묶으면 자잘한 에러가 끊이지 않는다.</p></div>
+        <span class="card__tag">스크립트</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: 결승선 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">02 — 핵심</div>
+    <h2 class="section-title">어려운 건 '뭘 하라'가 아니라 '언제 끝났는지'다</h2>
+    <p class="section-desc">AI는 스스로 '다 됐다'는 감각이 없다. 사람은 어느 선에서 "이만하면 됐다"를 알지만 AI에겐 그 선이 없다. 멈출 조건을 안 정해주면 일을 하다 마는 게 아니라 <strong>끝없이 돈다</strong> — 돈이 떨어질 때까지.</p>
+    <p class="section-desc">그래서 좋은 지시는 단계별 설명서가 아니라 결승선을 그려주는 일이다. "코드를 빠르게 해줘"는 끝이 없다. 빠르다는 게 어디까지인지 AI가 모르니까.</p>
+
+    <div class="callout err">
+      <div class="callout-title">결승선 없음 (나쁜 지시)</div>
+      "코드를 빠르게 해줘" — 어디까지가 '빠름'인지 정의가 없어 AI가 멈출 지점을 모른다.
+    </div>
+    <div class="callout ok">
+      <div class="callout-title">결승선 있음 (좋은 지시)</div>
+      "모든 페이지가 <strong style="background:none;color:inherit;padding:0">50ms(0.05초)</strong> 안에 열릴 때까지, 매번 같은 방식으로 측정하면서 고쳐라." — AI가 언제 손을 떼야 하는지 안다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: 좋은 루프의 뼈대 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">03 — 뼈대</div>
+    <h2 class="section-title">잘 만든 루프엔 공통된 뼈대가 있다</h2>
+    <p class="section-desc">결승선만으론 부족하다. 루프 안에는 AI에게 "아니, 아직이야"라고 말해줄 장치 — 통과해야 할 테스트, 타입 검사, 실제로 터지는 에러 — 가 있어야 한다. 이게 없으면 AI는 자기가 한 일을 자기가 보고 "잘했네" 하며 같은 자리를 맴돈다. Loop Library가 정리한 좋은 루프의 다섯 구성요소는 다음과 같다.</p>
+
+    <figure>
+      <svg viewBox="0 0 760 210" role="img" aria-label="좋은 루프의 5가지 구성요소 흐름도">
+        <defs>
+          <marker id="arrf" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L7,3.2 L0,6.4 Z" fill="#000"/></marker>
+        </defs>
+        <!-- 4 박스 가로 + 멈출조건 강조 / 반복로직은 루프백 -->
+        <!-- box1 시작신호 -->
+        <rect x="20" y="44" width="160" height="64" fill="none" stroke="#000" stroke-width="3"/>
+        <text x="30" y="38" font-family="monospace" font-size="11" font-weight="700" fill="#000">01</text>
+        <text x="100" y="74" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#000">시작 신호</text>
+        <text x="100" y="93" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#000">언제 트리거되나</text>
+        <!-- box2 경계작업 -->
+        <rect x="200" y="44" width="160" height="64" fill="none" stroke="#000" stroke-width="3"/>
+        <text x="210" y="38" font-family="monospace" font-size="11" font-weight="700" fill="#000">02</text>
+        <text x="280" y="74" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#000">경계가 정한 작업</text>
+        <text x="280" y="93" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#000">측정 가능한 액션</text>
+        <!-- box3 완료증명 -->
+        <rect x="380" y="44" width="160" height="64" fill="none" stroke="#000" stroke-width="3"/>
+        <text x="390" y="38" font-family="monospace" font-size="11" font-weight="700" fill="#000">03</text>
+        <text x="460" y="74" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#000">완료 증명</text>
+        <text x="460" y="93" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#000">테스트·메트릭 통과</text>
+        <!-- box5 멈출조건 (강조: 채움) -->
+        <rect x="560" y="44" width="160" height="64" fill="#000" stroke="#000" stroke-width="3"/>
+        <text x="570" y="38" font-family="monospace" font-size="11" font-weight="700" fill="#000">05</text>
+        <text x="640" y="74" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#fff">멈출 조건</text>
+        <text x="640" y="93" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#fff">명확한 종료 기준</text>
+        <!-- 화살표 -->
+        <line x1="180" y1="76" x2="200" y2="76" stroke="#000" stroke-width="3" marker-end="url(#arrf)"/>
+        <line x1="360" y1="76" x2="380" y2="76" stroke="#000" stroke-width="3" marker-end="url(#arrf)"/>
+        <line x1="540" y1="76" x2="560" y2="76" stroke="#000" stroke-width="3" marker-end="url(#arrf)"/>
+        <!-- 04 반복로직: 완료증명 실패 시 작업으로 되돌림 -->
+        <path d="M460,108 L460,150 L280,150 L280,110" fill="none" stroke="#000" stroke-width="3" stroke-dasharray="6 5" marker-end="url(#arrf)"/>
+        <rect x="312" y="158" width="96" height="30" fill="#fff" stroke="#000" stroke-width="3"/>
+        <text x="360" y="170" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#000">04 반복 로직</text>
+        <text x="360" y="182" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#000">증명 실패 → 다시</text>
+      </svg>
+      <figcaption>FIG.02 — 시작 신호 → 경계 작업 → 완료 증명 → (반복 로직) → 멈출 조건</figcaption>
+    </figure>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>구성요소</th><th>역할</th><th>예시</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>시작 신호</strong></td><td>루프를 켜는 트리거 조건</td><td>"문서 업데이트가 필요할 때"</td></tr>
+          <tr><td><strong>경계가 정한 작업</strong></td><td>명확하고 측정 가능한 액션</td><td>"변경사항 검토 후 PR 열기"</td></tr>
+          <tr><td><strong>완료 증명</strong></td><td>성공의 증거</td><td>테스트 통과, 성능 메트릭 충족</td></tr>
+          <tr><td><strong>반복 로직</strong></td><td>다시 돌지 판단</td><td>"더 개선점 없으면 중단"</td></tr>
+          <tr><td><strong>멈출 조건</strong></td><td>명확한 종료 기준</td><td>"모든 페이지 50ms 이하 로드 시 중단"</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">No라고 말하는 눈</div>
+      Loop Library의 핵심 패턴은 <strong style="background:none;color:inherit;padding:0">이중 검증</strong>이다. 한 세션이 패치를 준비하면, 두 번째 세션이 명확한 기준으로 검증하고 통과해야만 배포한다. 혼자 끄덕이지 못하게 만드는 장치다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: Loop Library -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">04 — 라이브러리</div>
+    <h2 class="section-title">검증된 프롬프트를 모았다</h2>
+    <p class="section-desc">루프 라이브러리는 AI 뉴스로 알려진 <strong>매튜 버먼(Matthew Berman)</strong>의 <strong style="background:none;color:inherit;padding:0">포워드 퓨처(Forward Future)</strong>가 운영하는, 프로덕션에서 실제 쓰이는 에이전트 워크플로우 모음이다. 전부 멈출 조건과 점검이 처음부터 박혀 있다. 영역별로 정리된 31개 루프는 다음과 같다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>영역</th><th>루프 수</th><th>대표 루프</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Engineering</strong></td><td><span class="chip">13</span></td><td>야간 changelog 루프 · 문서 동기화(docs sweep) · 50ms 페이지 로드 루프 · 100% 테스트 커버리지 · 티켓→PR 루프</td></tr>
+          <tr><td><strong>Evaluation</strong></td><td><span class="chip">4</span></td><td>품질 스트릭 루프 · 전체 제품 평가 · 자기개선 챔피언 루프 · 악마의 변호인(devil's-advocate) 루프</td></tr>
+          <tr><td><strong>Operations</strong></td><td><span class="chip">4</span></td><td>미완료 제외 배치 릴리스 · 프로덕션 데이터 정리 · 릴리스 후 기준선 · 고객 AI 배포 루프</td></tr>
+          <tr><td><strong>Content</strong></td><td><span class="chip">2</span></td><td>SEO/GEO 가시성 감사 루프 · 제품 업데이트 팟캐스트 루프</td></tr>
+          <tr><td><strong>Design</strong></td><td><span class="chip">3</span></td><td>Boeing 747 벤치마크(Three.js) · 프런트엔드 재구성 · 썸네일 반복 루프</td></tr>
+          <tr><td><strong>Research / Other</strong></td><td><span class="chip">5</span></td><td>빌더↔리뷰어 자율 루프 · Codex 완료 계약 루프 · 5분 저장소 관리자 루프 · 최근 피드백 감사</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="section-desc" style="margin-top:var(--sp-4); font-family:var(--font-mono); font-size:13px;">매일 밤 코드를 훑어 문서를 최신으로 맞추는 루프, 만족할 때까지 구조를 다듬는 루프, 페이지가 충분히 빨라질 때까지 최적화하는 루프 — 엔지니어링부터 리서치·운영까지 박혀 있다.</p>
+  </div>
+</section>
+
+<!-- SECTION 5: 사용법 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">05 — 사용법</div>
+    <h2 class="section-title">거창한 설치가 필요 없다</h2>
+    <p class="section-desc">마음에 드는 루프를 복사해 쓰면 된다. 결승선과 'No라고 말할 눈'이 처음부터 들어가 있다. 자기가 쓰는 루프를 직접 제출할 수도 있다.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">루프를 고른다</div>
+          <div class="step-body">signals.forwardfuture.ai/loop-library 에서 영역별 루프를 둘러보고 필요한 것을 고른다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">복사해서 제출한다</div>
+          <div class="step-body"><strong>Copy loop</strong> 버튼으로 프롬프트 전문을 복사해 자신의 에이전트(Claude 등)에 그대로 붙여 넣는다. 스킬 시스템으로 설치할 수도 있다.</div>
+          <div class="code-wrap">
+            <div class="code-bar"><span class="code-lang">bash</span><span class="code-lang">$</span></div>
+            <pre class="code-body">npx skills add Forward-Future/loop-library --skill loop-library -g</pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">직접 제출한다 (선택)</div>
+          <div class="step-body">페이지 하단 기여 폼에 루프 제목·프롬프트 전문을 넣어 제출한다. 비공개 검토 후 게재된다.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:var(--sp-5); display:flex; gap:var(--sp-3); flex-wrap:wrap;">
+      <a class="btn" href="https://signals.forwardfuture.ai/loop-library/" target="_blank" rel="noopener">루프 라이브러리 열기</a>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: 비용 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">06 — 주의</div>
+    <h2 class="section-title">끝까지 도는 만큼, 돈도 같이 돈다</h2>
+    <p class="section-desc">루프는 공짜로 돌지 않는다. 목표에 닿을 때까지 스스로 돌고 또 돈다는 건 그동안 <strong>토큰을 계속 쓴다</strong>는 뜻이다. 토큰은 AI가 일을 처리하는 단위이자 곧 비용이다. 멈출 조건이 헐겁거나 결승선이 모호하면, 끝나지 않는 루프가 비용만 태운다.</p>
+
+    <div class="callout warn">
+      <div class="callout-title">안전장치로서의 종료 조건</div>
+      결승선과 멈출 조건은 멋이 아니라 안전장치다. AI가 어디서 손을 떼야 하는지를 분명히 해두는 것 — 그게 비용을 지키는 선이다. 실무에서는 <strong style="background:none;color:inherit;padding:0">최대 반복 횟수</strong>(max-iter)나 <strong style="background:none;color:inherit;padding:0">진행 중단</strong>(개선 불가 시 종료) 같은 한계를 함께 건다.
+    </div>
+    <div class="callout">
+      <div class="callout-title">'tokenmaxx'에 대하여</div>
+      버먼이 쓰는 "토큰맥스(tokenmaxx)"라는 표현은 아끼자는 게 아니라 마음껏 굴리자는 쪽이다. 다만 이 용어는 본 에세이의 인용이며, Loop Library 공식 페이지 본문에는 별도로 명시되어 있지 않다. 힘이 센 만큼 고삐가 필요하다는 취지로 이해하면 된다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 7: 결론 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">07 — 정리</div>
+    <h2 class="section-title">돌고 돌아, 프롬프트로 온다</h2>
+    <p class="section-desc">하네스를 짜고, 스킬을 붙이고, 스크립트로 행동을 묶는 길도 있다. 다 나름의 쓸모가 있다. 그런데 그 길을 한참 가다 보면 결국 같은 질문 앞에 선다 — <strong>AI에게 무엇을 결승선으로 줄 것인가.</strong></p>
+    <p class="section-desc">프롬프트가 다시 전부라는 말은 아니다. 다만 온갖 도구를 거쳐도, 결국 일을 끝맺는 건 "언제 멈출지"를 아는 한 줄이다. 루프 라이브러리는 그 한 줄들을 모아둔 곳이다. 가장 단순한 자리로 다시 눈이 가는 건, 어쩌면 도구가 충분히 자랐다는 신호인지도 모른다.</p>
+
+    <div class="cards" style="margin-top:var(--sp-5)">
+      <div class="card card-elevated">
+        <div class="card__title">결승선</div>
+        <div class="card__body"><p>무엇을 하라가 아니라, 언제 끝났다고 할지. 측정 가능한 종료점을 준다.</p></div>
+        <span class="card__tag">언제 멈출지</span>
+      </div>
+      <div class="card card-elevated">
+        <div class="card__title">No라고 말할 눈</div>
+        <div class="card__body"><p>테스트·타입체크·이중 검증. 스스로 끄덕이지 못하게 막는 장치.</p></div>
+        <span class="card__tag">검증 게이트</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 8: 부록 — 페이지 설명 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">부록 A — 페이지 소개</div>
+    <h2 class="section-title">signals.forwardfuture.ai/loop-library</h2>
+    <p class="section-desc">루프 라이브러리는 <strong>명확한 체크포인트와 종료 조건</strong>을 갖춘, 재반복 가능한 AI 에이전트 워크플로우를 큐레이션해 모아둔 페이지다. 에이전트가 복잡한 업무를 신뢰할 수 있게 자동화하도록 설계된 실무 프롬프트를 제공한다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>항목</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td><strong>운영</strong></td><td>Forward Future (유지보수) · here.now (호스팅)</td></tr>
+          <tr><td><strong>기여자</strong></td><td>Matthew Berman, Peter Steinberger, Hiten Shah 등 — 실제 프로덕션에서 쓰는 워크플로우를 제출</td></tr>
+          <tr><td><strong>저작 표기</strong></td><td>각 루프에 저자 표시(예: "By Matthew Berman"), X 핸들·소스 링크 가능</td></tr>
+          <tr><td><strong>제출 절차</strong></td><td>기여 폼 작성 → 비공개 검토 → 게재 승인</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">사용 3단계 요약</div>
+      ① 영역별 루프를 둘러본다 → ② <strong style="background:none;color:inherit;padding:0">Copy loop</strong>로 프롬프트 전문을 복사해 에이전트에 붙여 넣는다(또는 <code style="font-family:var(--font-mono)">npx skills add</code>로 설치) → ③ 필요하면 자신의 루프를 직접 제출한다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 9: 부록 — 전체 카탈로그 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">부록 B — 전체 카탈로그</div>
+    <h2 class="section-title">31개 루프 전체 목록</h2>
+    <p class="section-desc">조사 시점 기준 영역별 전체 루프와 한 줄 설명. 각 루프에는 멈출 조건과 검증 단계가 박혀 있다.</p>
+
+    <h3 style="font-family:var(--font-head);text-transform:uppercase;font-size:20px;margin:var(--sp-4) 0 var(--sp-2)">Engineering · 13</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>루프</th><th>하는 일</th></tr></thead>
+        <tbody>
+          <tr><td><strong>The docs sweep</strong></td><td>문서와 코드 구현을 동기화하고 리뷰 가능한 PR 생성</td></tr>
+          <tr><td><strong>The architecture satisfaction loop</strong></td><td>시스템을 점진적으로 리팩토링 + 테스트 + 커밋</td></tr>
+          <tr><td><strong>The sub-50 ms page-load loop</strong></td><td>모든 페이지가 50ms 이하로 열릴 때까지 최적화</td></tr>
+          <tr><td><strong>The production error sweep</strong></td><td>프로덕션 로그 오류 분석 → 근본 원인 → 수정 → 검증</td></tr>
+          <tr><td><strong>The 100% test coverage loop</strong></td><td>100% 커버리지 달성까지 테스트 추가</td></tr>
+          <tr><td><strong>The logging coverage loop</strong></td><td>모든 중요 실행 경로에 로깅 추가</td></tr>
+          <tr><td><strong>The nightly changelog loop</strong></td><td>일일 변경사항 검토 및 changelog 업데이트</td></tr>
+          <tr><td><strong>The test-suite speed loop</strong></td><td>커버리지·동작 유지하며 테스트 실행 속도 개선</td></tr>
+          <tr><td><strong>The repository cleanup loop</strong></td><td>브랜치·PR·worktree에서 가치 있는 작업 복구 및 정리</td></tr>
+          <tr><td><strong>The ticket-to-PR-ready loop</strong></td><td>버그 리포트 → 검증된 패치 + 근본 원인 분석</td></tr>
+          <tr><td><strong>The Clodex adversarial-review loop</strong></td><td>Codex로 PR을 반복 검토(문제 해결까지)</td></tr>
+          <tr><td><strong>The Loop Harness verification loop</strong></td><td>프로덕션 배포 전 독립적 검증으로 라우팅</td></tr>
+          <tr><td><strong>The fresh-clone loop</strong></td><td>깨끗한 환경에서 클론 후 README만으로 온보딩 검증</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-family:var(--font-head);text-transform:uppercase;font-size:20px;margin:var(--sp-5) 0 var(--sp-2)">Evaluation · 4</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>루프</th><th>하는 일</th></tr></thead>
+        <tbody>
+          <tr><td><strong>The quality streak loop</strong></td><td>시나리오 반복 테스트, 실패 문서화, 고친 뒤 스트릭 재시작</td></tr>
+          <tr><td><strong>The full product evaluation loop</strong></td><td>모든 주요 기능을 사전 정의 기준으로 테스트</td></tr>
+          <tr><td><strong>The self-improving champion loop</strong></td><td>보유 테스트에서 우수할 때만 프롬프트·정책 개선 적용</td></tr>
+          <tr><td><strong>The devil's-advocate loop</strong></td><td>설계·결정에 대한 반박 기록(고영향 우려 해결까지)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-family:var(--font-head);text-transform:uppercase;font-size:20px;margin:var(--sp-5) 0 var(--sp-2)">Operations · 4</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>루프</th><th>하는 일</th></tr></thead>
+        <tbody>
+          <tr><td><strong>The stale-safe batch release loop</strong></td><td>완료된 변경만 배치(미완료 작업 제외)</td></tr>
+          <tr><td><strong>The production data cleanup loop</strong></td><td>허용되지 않은 프로덕션 레코드 제거 + 분류 로직 개선</td></tr>
+          <tr><td><strong>The post-release baseline loop</strong></td><td>완료 릴리스 벤치마킹 및 재현 가능한 기준선 기록</td></tr>
+          <tr><td><strong>The customer AI deployment loop</strong></td><td>고객 AI 요청을 검증 → 제어된 출시 → 모니터링으로 이동</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-family:var(--font-head);text-transform:uppercase;font-size:20px;margin:var(--sp-5) 0 var(--sp-2)">Content · 2</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>루프</th><th>하는 일</th></tr></thead>
+        <tbody>
+          <tr><td><strong>The SEO/GEO visibility loop</strong></td><td>크롤링 가능성·인덱싱·의도 매핑·구조화 데이터 감사(중요 문제 해결까지)</td></tr>
+          <tr><td><strong>The product update podcast loop</strong></td><td>릴리스된 제품 변경을 3~5분 검증된 팟캐스트 에피소드로 변환</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-family:var(--font-head);text-transform:uppercase;font-size:20px;margin:var(--sp-5) 0 var(--sp-2)">Design · 3</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>루프</th><th>하는 일</th></tr></thead>
+        <tbody>
+          <tr><td><strong>The Boeing 747 benchmark</strong></td><td>Three.js 모델을 반복 구축(9개 시점, 시각 품질 기준까지)</td></tr>
+          <tr><td><strong>War Loops: frontend reconstruction</strong></td><td>스크린샷에서 인터페이스 재구성, 반응형 중단점 전체 시각·모션 수정</td></tr>
+          <tr><td><strong>The Infinite Clickbait thumbnail loop</strong></td><td>정확성·참여도 기준 통과까지 썸네일 컨셉 반복</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-family:var(--font-head);text-transform:uppercase;font-size:20px;margin:var(--sp-5) 0 var(--sp-2)">Research / Other · 5</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>루프</th><th>하는 일</th></tr></thead>
+        <tbody>
+          <tr><td><strong>The autonomy-loop builder-reviewer loop</strong></td><td>빌더↔리뷰어 간 코드 이동, 테스트 검증(둘 다 승인까지)</td></tr>
+          <tr><td><strong>The Codex completion-contract loop</strong></td><td>실행 전 필수 결과 + 증명 요건을 사전 정의</td></tr>
+          <tr><td><strong>The Revolve versioned-experiment loop</strong></td><td>검사점 실험으로 개선(고정 기준선 + 회귀 테스트)</td></tr>
+          <tr><td><strong>The five-minute repository maintainer loop</strong></td><td>5분 간격 저장소 트리아지, 권한 범위 내 작업 실행</td></tr>
+          <tr><td><strong>The recent-feedback sweep</strong></td><td>사용자 수정사항을 프로젝트 전체 감사로 변환(패턴 분석·검증된 수정)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">출처 메모</div>
+      위 카탈로그는 조사 시점의 <a href="https://signals.forwardfuture.ai/loop-library/" target="_blank" rel="noopener">공식 페이지</a> 기준이며, 루프 구성은 갱신될 수 있다. 영역 분류·개수도 페이지 업데이트에 따라 달라질 수 있으니 실제 사용 전 원문을 확인할 것.
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>루프 엔지니어링과 루프 라이브러리</span>
+  <span><a href="https://signals.forwardfuture.ai/loop-library/" target="_blank" rel="noopener">FORWARD FUTURE</a> · 2026-06-20</span>
+</footer>
+
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="B5C5J7T" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
