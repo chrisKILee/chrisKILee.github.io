@@ -36,6 +36,7 @@
 | `text` | 한 줄 입력 | `<input>` |
 | `select` | 고정 선택지(`options: [...]` 필수) | `<select>` |
 | `textarea` | 여러 줄(목록) | `<textarea>` → case에서 **`linesToBullets(v.xxx)`** 로 변환 |
+| `checkbox` | on/off 불리언 | 토글. case에서 `flag ? "..." : ""` 로 분기. `defaultValue: false` |
 
 ```js
 { id: "theme", label: "주제", type: "text", defaultValue: "...", placeholder: "예: ..." }
@@ -143,3 +144,50 @@ feat(ai_prompt): {템플릿명} 템플릿 추가
 - `travel_typography` (트래블로그 타이포 포스터): text×3 + textarea(landmarks) + select×2. mood `editorial_travel`, rule `preserve_identity`. 거대 도시명 typography photo-mask + chibi N종.
 
 두 구현 모두 위 STEP 1~7을 그대로 따랐다. 새 템플릿도 이 흐름을 복제하면 된다.
+
+---
+
+## 5. 사진 조건 / 가이드 (인물 화보 패턴, 2026-06-20 추가)
+
+입력 사진(헤어·선글라스·의상)에 따라 본문/네거티브가 달라지는 인물 화보 템플릿용 신구조.
+
+### photoGuide (선택)
+템플릿에 `photoGuide: { shot, must:[], nice:[] }` 를 넣으면 입력 패널 상단에 "어떤 사진을 넣을까요" 가이드 카드가 뜬다.
+
+### photoConditionIds (선택)
+공통 `photoConditions[]` 카탈로그에서 필요한 조건 id를 골라 `photoConditionIds: ["refHair", ...]` 로 참조. UI는 "📸 내 사진 조건" 섹션에 자동 렌더되고, `defaultValues()`가 fields와 병합한다.
+
+| 조건 id | type | 헬퍼 |
+|--------|------|------|
+| `refHair` | select | `hairClause(v.refHair, v.hairColor)` + `conditionNegatives` |
+| `hairColor` | select | `hairColorPhrase(v.hairColor)` |
+| `sunglasses` | select | `sunglassesClause(v.sunglasses)` + `conditionNegatives` |
+| `outfitFromRef` | checkbox | `outfitFromRefClause(v.outfitFromRef)` |
+| `signature` | text | `signatureClause(v.signature)` (빈 값이면 미삽입) |
+
+### case 작성 패턴
+```js
+case "my_portrait":
+  return compactSections([
+    "정체성 보존 도입 문단.",
+    hairClause(v.refHair, v.hairColor),
+    sunglassesClause(v.sunglasses),
+    `Outfit & pose: ... ${v.someField}.`,
+    "환경·카메라 문단.",
+    signatureClause(v.signature),   // 빈 문자열이면 compactSections가 자동 제거
+  ]);
+```
+- `conditionNegatives`는 `renderPrompt`가 공통 네거티브 뒤에 자동 결합 — case에서 신경 쓸 필요 없다.
+- 두 조각을 한 문단에 합칠 땐 `compactLine([a, optionalB])`.
+
+### 환경 경계 (중요)
+- 저장소 루트가 `type:module`이라 **`ai_prompt/package.json` 의 `type:commonjs`** 가 있어야 `app.js`를 Node에서 require/test할 수 있다.
+- `app.js`는 DOM 부트스트랩 전 `module.exports` early-return을 한다. 새 순수 함수를 테스트하려면 export 목록에 추가.
+
+## 6. 검증 (TDD)
+```bash
+node --check ai_prompt/app.js
+cd ai_prompt && npm test        # node --test tests/*.test.js
+```
+새 조건/매핑은 `tests/prompt.test.js`에 **먼저 실패 테스트(Red)** 로 추가하고 구현한다.
+

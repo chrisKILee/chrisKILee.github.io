@@ -325,6 +325,151 @@
       defaultMoodIds: ["editorial_travel"],
       defaultRuleIds: ["preserve_identity"],
     },
+    {
+      id: "yacht_selfie",
+      name: "요트 셀피 화보",
+      description: "인물 정체성을 유지한 럭셔리 요트 셀피 포트레이트 (헤어·선글라스 조건이 결과를 좌우)",
+      photoGuide: {
+        shot: "상반신 셀피 앵글, 얼굴 정면",
+        must: ["얼굴이 또렷한 정면/약간 위 각도 사진", "밝은 야외광"],
+        nice: ["선글라스 착용 사진", "여름 의상"],
+      },
+      fields: [
+        {
+          id: "topStyle",
+          label: "상의 스타일",
+          type: "select",
+          defaultValue: "fitted black ribbed deep scoop-neck top with thin straps",
+          options: [
+            "fitted black ribbed deep scoop-neck top with thin straps",
+            "white linen shirt",
+            "beige knit summer top",
+            "navy halter top",
+          ],
+        },
+      ],
+      photoConditionIds: ["refHair", "hairColor", "sunglasses", "signature"],
+      defaultMoodIds: ["editorial_travel"],
+      defaultRuleIds: ["preserve_identity"],
+    },
+    {
+      id: "beach_resort",
+      name: "해변 리조트 화보",
+      description: "전신 다이내믹 비치 리조트 패션 화보. 헤어는 레퍼런스 사진을 따른다",
+      photoGuide: {
+        shot: "전신이 보이는 사진 권장",
+        must: ["얼굴 정면이 선명", "밝은 자연광"],
+        nice: ["전신 포즈 사진", "바다·야외 배경"],
+      },
+      fields: [
+        {
+          id: "swimwear",
+          label: "수영복",
+          type: "select",
+          defaultValue: "brown and cream striped string bikini set",
+          options: [
+            "brown and cream striped string bikini set",
+            "black triangle bikini set",
+            "white one-piece swimsuit",
+            "pastel high-waist bikini set",
+          ],
+        },
+        {
+          id: "motion",
+          label: "동작",
+          type: "select",
+          defaultValue: "running and skipping playfully along the shoreline",
+          options: [
+            "running and skipping playfully along the shoreline",
+            "walking casually along the wet sand",
+            "standing confidently facing the camera",
+          ],
+        },
+      ],
+      photoConditionIds: ["refHair", "hairColor", "signature"],
+      defaultMoodIds: ["editorial_travel"],
+      defaultRuleIds: ["preserve_identity"],
+    },
+    {
+      id: "santorini_alley",
+      name: "산토리니 골목 여행",
+      description: "지중해 흰 골목 + 부겐빌레아 배경의 여행 포트레이트 (시나리오 선택)",
+      photoGuide: {
+        shot: "상반신~전신",
+        must: ["얼굴 정면/약측면이 선명", "자연광"],
+        nice: ["원피스 등 밝은 의상 사진"],
+      },
+      fields: [
+        {
+          id: "scenario",
+          label: "시나리오",
+          type: "select",
+          defaultValue: "walking slowly down the alley, full-body shot, slight low angle, dynamic diagonal framing",
+          options: [
+            "walking slowly down the alley, full-body shot, slight low angle, dynamic diagonal framing",
+            "checking a smartphone map, head slightly down, focused gaze, natural diagonal folds on the dress shoulder",
+            "leaning close to pink bougainvillea to smell the blossoms, one hand resting on the rough stucco wall",
+          ],
+        },
+        {
+          id: "dressColor",
+          label: "원피스 색",
+          type: "text",
+          defaultValue: "white",
+        },
+      ],
+      photoConditionIds: ["refHair", "hairColor", "outfitFromRef"],
+      defaultMoodIds: ["editorial_travel"],
+      defaultRuleIds: ["preserve_identity"],
+    },
+    {
+      id: "hydrangea_overhead",
+      name: "수국 버드아이 화보",
+      description: "수국 클러스터 사이로 보이는 위에서 내려다본(버드아이) 럭셔리 화보. 헤어는 업두로 고정",
+      photoGuide: {
+        shot: "얼굴 클로즈업 (위에서 내려다본 각도면 더 좋음)",
+        must: ["얼굴이 또렷한 사진", "가능하면 고개를 든 각도"],
+        nice: ["밝은 의상색 사진"],
+      },
+      fields: [
+        {
+          id: "faceVisible",
+          label: "얼굴 노출 비율",
+          type: "select",
+          defaultValue: "50-60%",
+          options: ["50-60%", "40%", "70%"],
+        },
+      ],
+      photoConditionIds: ["hairColor", "outfitFromRef", "signature"],
+      defaultMoodIds: ["quiet_emotional_poster"],
+      defaultRuleIds: ["preserve_identity"],
+    },
+    {
+      id: "goddess_plaza",
+      name: "여신 리조트 플라자",
+      description: "지중해 리조트 플라자 배경의 K-아이돌 무드 럭셔리 포트레이트",
+      photoGuide: {
+        shot: "상반신~전신",
+        must: ["얼굴 정면이 선명", "밝은 광"],
+        nice: ["여름 리조트 의상 사진"],
+      },
+      fields: [
+        {
+          id: "dressStyle",
+          label: "드레스 스타일",
+          type: "select",
+          defaultValue: "short black tight mini dress with draped cowl neckline and high thigh slit",
+          options: [
+            "short black tight mini dress with draped cowl neckline and high thigh slit",
+            "white flowing summer dress",
+            "beige knit mini dress",
+          ],
+        },
+      ],
+      photoConditionIds: ["refHair", "hairColor"],
+      defaultMoodIds: ["editorial_travel"],
+      defaultRuleIds: ["preserve_identity"],
+    },
   ];
 
   const moodPresets = [
@@ -431,6 +576,45 @@
     },
   ];
 
+  // 재사용 사진 조건 카탈로그 — 템플릿이 photoConditionIds로 참조한다.
+  const photoConditions = [
+    {
+      id: "refHair",
+      label: "내 사진 헤어",
+      type: "select",
+      defaultValue: "긴 생머리",
+      options: ["긴 생머리", "긴 웨이브", "단발/숏컷", "묶은 머리/업두"],
+    },
+    {
+      id: "hairColor",
+      label: "헤어 색",
+      type: "select",
+      defaultValue: "원본 그대로",
+      options: ["원본 그대로", "흑발", "갈색", "밝은 갈색"],
+    },
+    {
+      id: "sunglasses",
+      label: "선글라스",
+      type: "select",
+      defaultValue: "없음(맨얼굴)",
+      options: ["없음(맨얼굴)", "반사 선글라스 착용", "살짝 내린 선글라스"],
+    },
+    {
+      id: "outfitFromRef",
+      label: "의상 색 반영",
+      type: "checkbox",
+      defaultValue: false,
+      hint: "내 사진 옷 색을 의상 디자인에 반영",
+    },
+    {
+      id: "signature",
+      label: "서명 워터마크",
+      type: "text",
+      defaultValue: "",
+      placeholder: "예: Arif N Studio (비우면 미삽입)",
+    },
+  ];
+
   const negativePrompt =
     "Negative prompt:\n얼굴 변경, 정체성 손실, 인물 왜곡, 신체 왜곡, 손가락 오류, extra fingers, distorted hands, plastic skin, 3D render, sharp CGI, generic anime face, AI 미소녀 스타일, 과한 보정, 과한 채도, 복잡한 배경, 랜덤 문자, 깨진 한글, 부자연스러운 타이포그래피, 얼굴을 가리는 글씨, 과도한 장식, graphic sticker doodles, watermark, unrelated text";
 
@@ -482,14 +666,26 @@
   }
 
   function cryptoId() {
-    if (window.crypto && window.crypto.randomUUID) {
+    if (typeof window !== "undefined" && window.crypto && window.crypto.randomUUID) {
       return window.crypto.randomUUID();
     }
     return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
+  function photoConditionFields(template) {
+    return (template.photoConditionIds || [])
+      .map((id) => photoConditions.find((condition) => condition.id === id))
+      .filter(Boolean);
+  }
+
+  function allFields(template) {
+    return [...template.fields, ...photoConditionFields(template)];
+  }
+
   function defaultValues(template) {
-    return Object.fromEntries(template.fields.map((field) => [field.id, field.defaultValue || ""]));
+    return Object.fromEntries(
+      allFields(template).map((field) => [field.id, "defaultValue" in field ? field.defaultValue : ""])
+    );
   }
 
   function defaultState(templateId) {
@@ -528,6 +724,32 @@
     }
   }
 
+  // Node 테스트 환경: 순수 함수만 export하고 DOM/localStorage 부트스트랩은 건너뛴다.
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = {
+      templates,
+      photoConditions,
+      moodPresets,
+      ruleBlocks,
+      negativePrompt,
+      getTemplate,
+      defaultValues,
+      photoConditionFields,
+      renderTemplateBody,
+      renderPrompt,
+      conditionNegatives,
+      hairClause,
+      hairTypePhrase,
+      hairColorPhrase,
+      sunglassesClause,
+      signatureClause,
+      outfitFromRefClause,
+      compactSections,
+      linesToBullets,
+    };
+    return;
+  }
+
   let state = loadState();
 
   const els = {
@@ -536,6 +758,9 @@
     moodList: document.getElementById("moodList"),
     ruleList: document.getElementById("ruleList"),
     variableForm: document.getElementById("variableForm"),
+    photoGuide: document.getElementById("photoGuide"),
+    photoConditionSection: document.getElementById("photoConditionSection"),
+    photoConditionForm: document.getElementById("photoConditionForm"),
     messageEditorSection: document.getElementById("messageEditorSection"),
     messagePresetRow: document.getElementById("messagePresetRow"),
     messageList: document.getElementById("messageList"),
@@ -572,7 +797,9 @@
     renderTemplates();
     renderMoods();
     renderRules();
+    renderPhotoGuide(template);
     renderFields(template);
+    renderPhotoConditions(template);
     renderMessages();
     renderOutputMode();
     els.includeNegative.checked = state.includeNegative;
@@ -619,27 +846,73 @@
     });
   }
 
-  function renderFields(template) {
-    els.variableForm.innerHTML = "";
-    template.fields.forEach((field) => {
+  function renderFieldGroup(container, fields) {
+    container.innerHTML = "";
+    fields.forEach((field) => {
       const wrapper = document.createElement("div");
+      const value = state.values[field.id];
+      if (field.type === "checkbox") {
+        wrapper.className = "field full";
+        wrapper.innerHTML = `
+          <label class="toggle-field">
+            <input type="checkbox" data-field-id="${escapeHtml(field.id)}" ${value ? "checked" : ""} />
+            <span>${escapeHtml(field.hint || field.label)}</span>
+          </label>
+        `;
+        container.appendChild(wrapper);
+        return;
+      }
       wrapper.className = `field${field.type === "textarea" ? " full" : ""}`;
-      const value = state.values[field.id] || "";
+      const textValue = value == null ? "" : String(value);
       let inputHtml = "";
       if (field.type === "select") {
         inputHtml = `
           <select data-field-id="${escapeHtml(field.id)}">
-            ${field.options.map((option) => `<option value="${escapeHtml(option)}" ${option === value ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}
+            ${field.options.map((option) => `<option value="${escapeHtml(option)}" ${option === textValue ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}
           </select>
         `;
       } else if (field.type === "textarea") {
-        inputHtml = `<textarea data-field-id="${escapeHtml(field.id)}" placeholder="${escapeHtml(field.placeholder || "")}">${escapeHtml(value)}</textarea>`;
+        inputHtml = `<textarea data-field-id="${escapeHtml(field.id)}" placeholder="${escapeHtml(field.placeholder || "")}">${escapeHtml(textValue)}</textarea>`;
       } else {
-        inputHtml = `<input data-field-id="${escapeHtml(field.id)}" type="text" value="${escapeHtml(value)}" placeholder="${escapeHtml(field.placeholder || "")}" />`;
+        inputHtml = `<input data-field-id="${escapeHtml(field.id)}" type="text" value="${escapeHtml(textValue)}" placeholder="${escapeHtml(field.placeholder || "")}" />`;
       }
       wrapper.innerHTML = `<label>${escapeHtml(field.label)}</label>${inputHtml}`;
-      els.variableForm.appendChild(wrapper);
+      container.appendChild(wrapper);
     });
+  }
+
+  function renderFields(template) {
+    renderFieldGroup(els.variableForm, template.fields);
+  }
+
+  function renderPhotoConditions(template) {
+    const fields = photoConditionFields(template);
+    const show = fields.length > 0;
+    els.photoConditionSection.classList.toggle("hidden", !show);
+    if (!show) {
+      els.photoConditionForm.innerHTML = "";
+      return;
+    }
+    renderFieldGroup(els.photoConditionForm, fields);
+  }
+
+  function renderPhotoGuide(template) {
+    const guide = template.photoGuide;
+    if (!guide) {
+      els.photoGuide.classList.add("hidden");
+      els.photoGuide.innerHTML = "";
+      return;
+    }
+    const badges = (items, cls) =>
+      (items || []).map((text) => `<span class="pg-badge ${cls}">${escapeHtml(text)}</span>`).join("");
+    els.photoGuide.classList.remove("hidden");
+    els.photoGuide.innerHTML = `
+      <div class="pg-head">📸 어떤 사진을 넣을까요</div>
+      ${guide.shot ? `<div class="pg-shot">${escapeHtml(guide.shot)}</div>` : ""}
+      ${guide.must && guide.must.length ? `<div class="pg-row"><span class="pg-key">필수</span><div class="pg-badges">${badges(guide.must, "must")}</div></div>` : ""}
+      ${guide.nice && guide.nice.length ? `<div class="pg-row"><span class="pg-key">권장</span><div class="pg-badges">${badges(guide.nice, "nice")}</div></div>` : ""}
+      <div class="pg-tip">사진의 헤어·선글라스가 다르면 아래 <strong>내 사진 조건</strong>에서 맞추면 프롬프트가 자동으로 바뀝니다.</div>
+    `;
   }
 
   function renderMessages() {
@@ -741,12 +1014,18 @@
     const mood = renderMoodBlocks(currentState.selectedMoodIds);
     const rules = renderRuleBlocks(currentState.selectedRuleIds);
     const outputMode = renderOutputModeBlock(currentState.outputMode);
+    const condNeg = conditionNegatives(template, currentState.values);
+    const negative = currentState.includeNegative
+      ? condNeg.length
+        ? `${negativePrompt}, ${condNeg.join(", ")}`
+        : negativePrompt
+      : "";
     return compactSections([
       body,
       mood ? `선택한 분위기:\n${mood}` : "",
       rules ? `배치 및 보존 규칙:\n${rules}` : "",
       outputMode,
-      currentState.includeNegative ? negativePrompt : "",
+      negative,
     ]);
   }
 
@@ -825,6 +1104,57 @@
           `Style & ratio:\nPremium travel poster, cinematic travel branding, vibrant clean background, ultra clean composition, layered depth, soft realistic shadows, Instagram travel aesthetic. Vertical poster ratio ${v.ratio}.`,
           `Text accuracy:\nMain typography must read exactly "${v.city}". Bottom text must read exactly "TRAVEL LOG" and "${v.travelDate}". Avoid misspelled text, random extra words, watermark, distorted faces, and loss of identity.`,
         ]);
+      case "yacht_selfie":
+        return compactSections([
+          "Create a photorealistic luxury lifestyle portrait in a strict vertical 9:16 aspect ratio, using the uploaded photo as the primary reference for the subject's facial identity. Preserve the same recognizable face: facial structure, face shape, jawline, cheekbones, nose, lips, smile character, and brow. The expression may become a confident, relaxed, cool yacht-selfie look, but she must stay immediately recognizable. Skin may be subtly refined to a healthy 24-year-old adult tone while keeping realistic texture. Do not replace the face or over-beautify.",
+          hairClause(v.refHair, v.hairColor),
+          sunglassesClause(v.sunglasses),
+          `Outfit & pose:\nA ${v.topStyle}, with a delicate necklace and small round pendant. Candid selfie moment from a slight high angle, one arm implied extended holding the camera, body slightly leaning, confident gaze into the lens.`,
+          "Environment:\nBright sunny ocean daylight, soft natural highlights on skin and hair, vibrant blue-turquoise sea stretching to the horizon, clear blue sky with light clouds, a wooden yacht railing on the left. Luxury yacht vacation, breezy summer, cinematic but realistic. Shot on a 35mm prime lens at f/2.8, sharp focus on the face and upper body, realistic skin texture with subtle pores, analog film grain, no digital beauty filter.",
+          signatureClause(v.signature),
+        ]);
+      case "beach_resort":
+        return compactSections([
+          "A full-length fashion portrait of the woman from the uploaded photo on an energetic, playful outdoor beach resort shoot. Use the reference primarily for facial identity, likeness, and hairstyle. Make the subject and background feel captured together: match lighting direction, color temperature, exposure, depth of field, grain, and color grading, with realistic contact shadows and soft natural edge blending — one real photograph, not a composite.",
+          "Identity priority:\nPreserve the exact facial identity and recognizable likeness as the highest priority. Expression may become a joyful, candid, radiant laugh with the face fully visible and unobstructed. Keep a natural, anatomically realistic head-to-body proportion; the face must not look pasted onto a different body.",
+          hairClause(v.refHair, v.hairColor),
+          `Pose:\n${v.motion}, with dynamic mid-motion energy, the torso twisting slightly toward the lens for an elongated statuesque silhouette and a sculpted waistline.`,
+          `Fashion:\nA trendy, form-fitting ${v.swimwear}, creating a confident, glamorous resort-wear aesthetic with effortless daytime charm.`,
+          "Setting:\nBright sunlit beach, dark wet-sand shoreline scattered with tiny seashells, white foam waves, a vast turquoise ocean to the horizon, soft shallow depth of field. Straight-on eye-level, medium-full distance. Aspect ratio 2:3. Ultra-realistic fashion photography, high facial fidelity, realistic skin and hair detail, natural beach color grading.",
+          signatureClause(v.signature),
+        ]);
+      case "santorini_alley":
+        return compactSections([
+          "A photorealistic portrait of an elegant young Asian woman based on the uploaded photo, preserving the recognizable facial identity. Dewy skin with natural coral makeup, a soft gentle smile, making natural eye contact.",
+          hairClause(v.refHair, v.hairColor),
+          compactLine([
+            `Wardrobe:\nA ${v.dressColor} halter-neck tiered mini dress with lace trim, a minimal gold necklace, and a black leather shoulder bag.`,
+            outfitFromRefClause(v.outfitFromRef),
+          ]),
+          `Scenario:\n${v.scenario}.`,
+          "Setting:\nA picturesque Mediterranean (Santorini-style) alleyway — rough white stucco walls, vivid cobalt-blue wooden window frames, blooming pink bougainvillea, a cobblestone path. Midday clear sun with strong direct sunlight and soft bounce light. 50mm prime lens, shallow depth of field f/1.8, soft background blur with a distant pedestrian. Vivid color contrast, ultra-detailed skin and fabric texture, 8k, highly realistic, cinematic lighting.",
+        ]);
+      case "hydrangea_overhead":
+        return compactSections([
+          "Use the uploaded portrait photo as the primary identity reference; identity preservation is the highest priority and the person must remain immediately recognizable. Preserve exactly the facial structure and proportions, eye shape, nose, lips, face contour, jawline, forehead, and cheekbones. Natural enhancement only: healthy clear skin, natural texture, soft Korean-style makeup, natural peach-pink lips.",
+          `Composition:\n3:4 vertical portrait. An extra-large hydrangea cluster fills about 40-45% of the frame in a natural blend of pastel blue, lavender, lilac, blush pink, pale pink, ivory, and cream — at least three to five distinct natural colors, never a single-color look. Only about ${v.faceVisible} of the face is visible, with one cheek and part of the lower face hidden behind the flowers. She gazes upward toward the camera with a shy, elegant, slightly enchanting smile.`,
+          "True bird's-eye view:\nCamera positioned directly above the subject, near-vertical overhead viewpoint. The subject lifts her face upward toward the camera with natural facial foreshortening. NOT a high-angle portrait and NOT eye-level photography.",
+          `Hairstyle:\nA sophisticated Korean-inspired luxury bridal updo with soft refined texture, keeping ${hairColorPhrase(v.hairColor)}.`,
+          compactLine([
+            "Wardrobe:\nA luxurious flowing one-piece dress, premium couture-inspired, in soft harmony with the pastel hydrangea environment.",
+            outfitFromRefClause(v.outfitFromRef),
+          ]),
+          "Lighting & film:\nSoft sunlight from above and around the camera, elegant volumetric light rays through the petals, delicate luminous bloom, golden-hour glow, dreamy haze, fine film grain, airy romantic atmosphere. Background: clean high-key pastel (ivory, champagne, pearl cream) kept lighter than the dress. 80mm portrait lens, shallow depth of field, luxury fashion editorial quality.",
+          signatureClause(v.signature),
+        ]);
+      case "goddess_plaza":
+        return compactSections([
+          "Photorealistic vertical 3:4 lifestyle portrait of an adult Korean woman in her mid-20s, inspired by the uploaded reference and preserving the recognizable facial identity: fair glowing skin, round expressive eyes, glossy pink lips, subtle blush, refined K-idol aura.",
+          hairClause(v.refHair, v.hairColor),
+          "Pose:\nStanding in a sunny resort plaza, facing forward with the body angled to the right, one hand touching the hair and the other arm relaxed. A heavily fashion-edited hourglass figure with natural gravity and realistic clothing physics.",
+          `Wardrobe:\nA ${v.dressStyle}, with a silver pendant and a black chain purse.`,
+          "Background:\nPalm trees, yellow Mediterranean buildings with balconies, benches, bicycles, distant pedestrians, blue sky, and checkered pavement. Bright daylight with a front-left sun, defined shadows and realistic highlights. Sharp 35mm photo, shallow depth of field, detailed fabric texture, a calm confident summer mood, 8k. No text, no anime, no plastic skin.",
+        ]);
       default:
         return "";
     }
@@ -871,6 +1201,13 @@
       .join("\n\n");
   }
 
+  function compactLine(parts) {
+    return parts
+      .map((part) => String(part || "").trim())
+      .filter(Boolean)
+      .join(" ");
+  }
+
   function linesToBullets(text) {
     return String(text || "")
       .split("\n")
@@ -878,6 +1215,82 @@
       .filter(Boolean)
       .map((line) => `- ${line}`)
       .join("\n");
+  }
+
+  // ── 사진 조건 → 프롬프트 문구 변환 ──
+  function hairColorPhrase(hairColor) {
+    switch (hairColor) {
+      case "흑발":
+        return "jet-black hair color";
+      case "갈색":
+        return "brown hair color";
+      case "밝은 갈색":
+        return "light-brown hair color";
+      default:
+        return "the original hair color from the reference photo";
+    }
+  }
+
+  function hairTypePhrase(refHair) {
+    switch (refHair) {
+      case "긴 웨이브":
+        return "long wavy hair";
+      case "단발/숏컷":
+        return "short hair (bob or pixie cut) matching the reference fringe";
+      case "묶은 머리/업두":
+        return "neatly tied-up hair / updo";
+      default:
+        return "long straight hair";
+    }
+  }
+
+  function hairClause(refHair, hairColor) {
+    return `Hairstyle: preserve the subject's hairstyle as ${hairTypePhrase(refHair)}, keeping ${hairColorPhrase(hairColor)}. Keep it consistent with the reference identity and do not transform it into a different hairstyle.`;
+  }
+
+  function sunglassesClause(sunglasses) {
+    switch (sunglasses) {
+      case "반사 선글라스 착용":
+        return "Eyewear: she wears tasteful reflective mirrored sunglasses with subtle lens reflections; the recognizable facial structure, face shape, and hairstyle must remain clear.";
+      case "살짝 내린 선글라스":
+        return "Eyewear: she wears reflective sunglasses slightly lowered down the nose so the eyes and identity stay clearly visible.";
+      default:
+        return "Eyewear: no sunglasses. The face and eyes are clearly visible and completely unobstructed.";
+    }
+  }
+
+  function signatureClause(signature) {
+    const text = String(signature || "").trim();
+    if (!text) return "";
+    return `Signature: add a small, subtle, elegant cursive handwritten signature overlay reading "${text}" in a bottom corner. Keep it small, refined, clearly readable, and not dominant.`;
+  }
+
+  function outfitFromRefClause(flag) {
+    return flag
+      ? "Use the clothing colors from the reference photo as the primary palette for the outfit design."
+      : "";
+  }
+
+  function conditionNegatives(template, values) {
+    const ids = template.photoConditionIds || [];
+    const negatives = [];
+    if (ids.includes("refHair")) {
+      if (values.refHair === "단발/숏컷") {
+        negatives.push("long hair", "long dark hair", "ponytail", "wavy long hair");
+      } else if (values.refHair === "묶은 머리/업두") {
+        negatives.push("loose hanging hair", "messy untied hair");
+      } else {
+        negatives.push("short hair", "bob cut", "pixie cut");
+      }
+    }
+    if (ids.includes("sunglasses")) {
+      if (values.sunglasses === "없음(맨얼굴)") {
+        negatives.push("sunglasses", "sunglasses covering face");
+      } else {
+        negatives.push("sunglasses hiding the entire face", "sunglasses erasing identity");
+      }
+    }
+    return negatives;
   }
 
   function labelForRole(role) {
@@ -945,15 +1358,18 @@
 
   els.variableForm.addEventListener("input", updateField);
   els.variableForm.addEventListener("change", updateField);
+  els.photoConditionForm.addEventListener("input", updateField);
+  els.photoConditionForm.addEventListener("change", updateField);
 
   function updateField(event) {
     const input = event.target.closest("[data-field-id]");
     if (!input) return;
+    const value = input.type === "checkbox" ? input.checked : input.value;
     setState({
       ...state,
       values: {
         ...state.values,
-        [input.dataset.fieldId]: input.value,
+        [input.dataset.fieldId]: value,
       },
     });
   }

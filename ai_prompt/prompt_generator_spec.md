@@ -82,19 +82,38 @@ type TemplateId =
   | "travel_poster"
   | "cardboard_toddler"
   | "miniature"
-  | "travel_typography";
+  | "travel_typography"
+  // 인물 화보(정체성 보존) — 사진 조건/가이드 신구조 적용
+  | "yacht_selfie"
+  | "beach_resort"
+  | "santorini_alley"
+  | "hydrangea_overhead"
+  | "goddess_plaza";
 
 type Template = {
   id: TemplateId;
   name: string;
   description: string;
   category: "photo-edit" | "illustration" | "product" | "poster";
-  variables: VariableDefinition[];
+  variables: VariableDefinition[];     // app.js의 fields
+  photoConditionIds?: string[];         // 참조하는 공통 사진 조건 (PhotoCondition.id)
+  photoGuide?: PhotoGuide;              // 입력 사진 가이드 카드
   defaultMoodIds: string[];
   recommendedRuleIds: string[];
   defaultNegativeIds: string[];
   render: (state: GeneratorState) => string;
 };
+
+// 입력 사진 가이드: 어떤 사진을 넣어야 하는지 안내 (UI 카드)
+type PhotoGuide = {
+  shot: string;        // 권장 샷 (예: "상반신 셀피 앵글, 얼굴 정면")
+  must: string[];      // 필수 조건 뱃지
+  nice: string[];      // 권장 조건 뱃지
+};
+
+// 공통 사진 조건: 입력 사진의 특성을 고르면 프롬프트 본문/네거티브가 바뀐다.
+type PhotoCondition = VariableDefinition; // select | checkbox | text. app.js의 photoConditions[]
+
 ```
 
 ### 5.2 VariableDefinition
@@ -490,6 +509,36 @@ const travelTypographyVariables: VariableDefinition[] = [
 // recommendedRuleIds: ["preserve_identity"]
 // 핵심: 도시명을 거대 typography photo-mask로, chibi 6종이 letters 위/주변 탐험. 하단 "TRAVEL LOG" + 날짜
 ```
+
+### 6.6 인물 화보 템플릿 (사진 조건/가이드)
+
+정체성 보존 인물 화보 5종. 모두 `defaultRuleIds: ["preserve_identity"]`, `photoGuide` 보유, `photoConditionIds`로 공통 사진 조건을 참조한다.
+
+| id | 고유 변수(fields) | photoConditionIds | 비율 |
+|----|------------------|-------------------|------|
+| `yacht_selfie` | topStyle | refHair, hairColor, sunglasses, signature | 9:16 |
+| `beach_resort` | swimwear, motion | refHair, hairColor, signature | 2:3 |
+| `santorini_alley` | scenario, dressColor | refHair, hairColor, outfitFromRef | 3:2 |
+| `hydrangea_overhead` | faceVisible | hairColor, outfitFromRef, signature | 3:4 |
+| `goddess_plaza` | dressStyle | refHair, hairColor | 3:4 |
+
+#### 공통 사진 조건 카탈로그 (`photoConditions[]`)
+
+| id | type | 옵션/기본값 | 프롬프트 영향 |
+|----|------|------------|---------------|
+| `refHair` | select | 긴 생머리(기본)/긴 웨이브/단발·숏컷/묶은 머리·업두 | `hairClause` 본문 + 반대 헤어 네거티브 |
+| `hairColor` | select | 원본 그대로(기본)/흑발/갈색/밝은 갈색 | `hairColorPhrase` 색 문구 |
+| `sunglasses` | select | 없음·맨얼굴(기본)/반사 선글라스/살짝 내린 선글라스 | `sunglassesClause` 본문 + 네거티브 토글 |
+| `outfitFromRef` | checkbox | false | true일 때 "의상색을 레퍼런스에서" 문장 |
+| `signature` | text | "" | 비어있지 않을 때만 서명 오버레이 문장 |
+
+#### 조건 → 프롬프트 매핑 (순수 함수)
+
+- `hairClause(refHair, hairColor)` → 헤어 유지 문장. `hairTypePhrase` + `hairColorPhrase` 조합.
+- `sunglassesClause(sunglasses)` → 착용/맨얼굴 문장.
+- `signatureClause(signature)` → trim 후 비면 `""`, 아니면 서명 오버레이.
+- `outfitFromRefClause(flag)` → flag면 의상색 반영 문장, 아니면 `""`.
+- `conditionNegatives(template, values)` → 활성 조건 기반 네거티브 조각 배열. 단발·숏컷→`long hair…`, 긴머리→`short hair…`; 맨얼굴→`sunglasses…`, 착용→`sunglasses hiding…`. `renderPrompt`가 공통 네거티브 뒤에 `, ` 로 합친다.
 
 ## 7. Prompt Rendering
 
