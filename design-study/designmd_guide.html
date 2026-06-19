@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>design.md — AI 디자인 슬롭 줄이는 법</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* ── CSS Custom Properties (HeroUI-inspired theming) ── */
+    :root {
+      --bg:          #FAFAF8;
+      --bg-2:        #F4F4F1;
+      --surface:     #FFFFFF;
+      --border:      #E8E8E4;
+      --border-2:    #D4D4CF;
+      --ink:         #1C1C1A;
+      --ink-2:       #3D3D3A;
+      --ink-3:       #6B6B66;
+      --ink-4:       #A8A8A3;
+      --accent:      #C4522A;     /* terracotta — single accent */
+      --accent-bg:   #FEF3ED;
+      --accent-bdr:  #F9C3AD;
+      --success:     #1A7F5A;
+      --success-bg:  #F0FDF4;
+      --warn:        #92400E;
+      --warn-bg:     #FFFBEB;
+      --code-bg:     #F1F1EE;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* ── Top Bar ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 48px;
+      z-index: 90;
+    }
+    .topbar-brand {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .topbar-meta {
+      font-size: 12px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 28px 60px;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-bdr);
+      color: var(--accent);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      max-width: 760px;
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--accent);
+    }
+    .hero-desc {
+      font-size: 17px;
+      color: var(--ink-3);
+      max-width: 620px;
+      line-height: 1.75;
+      margin-bottom: 36px;
+    }
+    .hero-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-2);
+    }
+
+    /* ── Section ── */
+    .section {
+      padding: 56px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      max-width: 80px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .section-desc {
+      font-size: 15px;
+      color: var(--ink-3);
+      max-width: 620px;
+      margin-bottom: 36px;
+      line-height: 1.7;
+    }
+
+    /* ── Cards (compound-style, no nesting) ── */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { border-color: var(--border-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+    .card__header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card__icon { font-size: 22px; margin-bottom: 8px; }
+    .card__title { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .card__body { padding: 16px 20px; }
+    .card__body p { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+    .card__footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .card__tag {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--ink-4);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ── Diagram ── */
+    .diagram-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      margin-top: 8px;
+    }
+    .diagram-wrap svg { width: 100%; height: auto; display: block; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    td { border: 1px solid var(--border); padding: 12px 16px; font-size: 14px; color: var(--ink-2); vertical-align: top; }
+    tr:hover td { background: var(--bg); }
+
+    /* ── Callouts ── */
+    .callout {
+      border-left: 3px solid;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .callout.info { border-color: #60a5fa; background: #eff6ff; color: #1e40af; }
+    .callout.tip { border-color: var(--success); background: var(--success-bg); color: #064e3b; }
+    .callout.warn { border-color: #f59e0b; background: var(--warn-bg); color: var(--warn); }
+    .callout.accent { border-color: var(--accent); background: var(--accent-bg); color: #7c2d12; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+    /* ── Code block ── */
+    .code-wrap {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+    .code-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-2);
+    }
+    .code-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .code-lang { font-size: 11px; font-family: var(--font-mono); color: var(--ink-4); margin-left: auto; }
+    pre.code-body {
+      padding: 18px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink-2);
+    }
+
+    /* ── Step list ── */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--surface);
+      margin-top: 2px;
+    }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body { font-size: 14px; color: var(--ink-3); line-height: 1.65; }
+
+    /* ── Tag / Badge inline ── */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.orange { background: var(--accent-bg); color: var(--accent); }
+    .tag.gray { background: var(--bg-2); color: var(--ink-3); border: 1px solid var(--border); }
+
+    /* ── Link cards ── */
+    .links { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    .link-card {
+      display: block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      text-decoration: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .link-card:hover { border-color: var(--accent-bdr); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .link-card__name { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .link-card__url { font-size: 12px; font-family: var(--font-mono); color: var(--accent); margin-bottom: 8px; word-break: break-all; }
+    .link-card__desc { font-size: 13px; color: var(--ink-3); line-height: 1.6; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--ink-4);
+    }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .hero, .section { padding-left: 16px; padding-right: 16px; }
+      footer { padding: 20px 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">design.md 가이드</span>
+  <span class="topbar-meta">2026-06-19</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page-wrap">
+    <div class="hero-eyebrow">🎨 Design Study</div>
+    <h1>AI가 만든 티 안 나게,<br><em>design.md로 디자인 잡기</em></h1>
+    <p class="hero-desc">
+      "누가 봐도 AI가 만든 것 같다(Slop)" — 매번 같은 그라디언트, 둥근 카드, 천편일률 산세리프.
+      design.md는 색·타이포·간격·금지사항을 미리 적어둔 마크다운 한 장으로 이 문제를 줄입니다.
+      마음에 드는 시안의 design.md를 받아 "이대로 적용해줘"라고 시키면 끝.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🔖 design.md 한 장으로 디자인 통일</span>
+      <span class="chip">📌 PPT·강의안·웹 제작</span>
+      <span class="chip">⚡ Claude Code / Claude.ai</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: 개요 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">01 개요</div>
+    <h2 class="section-title">design.md가 뭔가요?</h2>
+    <p class="section-desc">
+      AI 코딩 도구(Claude·Cursor·Kiro·Windsurf 등)가 읽는 표준 마크다운 디자인 지침 파일입니다.
+      "디자인을 어떻게 잡아야 할지"를 사람이 한 번 정의해두면, AI가 매번 그 규칙대로 만들어줍니다.
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🌀</div>
+          <div class="card__title">왜 AI 디자인은 매번 비슷할까</div>
+        </div>
+        <div class="card__body">
+          <p>LLM은 프롬프트마다 독립적으로 판단합니다. 저장소에 참고 기준이 없으면 컴포넌트마다 다른 결정이 나오고, "안전한 평균값"으로 수렴해 다 닮아 보입니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">Problem</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">📄</div>
+          <div class="card__title">한 장의 명세로 고정</div>
+        </div>
+        <div class="card__body">
+          <p>색 팔레트(hex), 폰트·자간, 그리드·간격, 형태·그림자·모션, 그리고 "하지 말 것"까지 적어둡니다. AI가 기본값으로 회귀하지 못하게 막는 게 핵심입니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">Solution</span></div>
+      </div>
+      <div class="card">
+        <div class="card__header">
+          <div class="card__icon">🎯</div>
+          <div class="card__title">의도가 담긴 결과물</div>
+        </div>
+        <div class="card__body">
+          <p>시안을 직접 고르므로 "이런 느낌으로"라는 의도가 반영됩니다. 양산형 Slop 대신, 일관되고 수정 가능한 산출물이 나옵니다.</p>
+        </div>
+        <div class="card__footer"><span class="card__tag">Result</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: 파일 구조 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">02 구조</div>
+    <h2 class="section-title">design.md(디자인 팩)는 무엇으로 이루어지나</h2>
+    <p class="section-desc">
+      design-diversity 저장소 기준으로, 하나의 디자인 팩은 아래 파일들로 구성됩니다.
+      이 중 <strong>prompt.md</strong>가 AI에게 그대로 복붙하는 핵심 지시문입니다.
+    </p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 240" role="img" aria-label="디자인 팩 파일 구조">
+        <!-- parent -->
+        <rect x="270" y="24" width="220" height="44" rx="8" fill="#1C1C1A"/>
+        <text x="380" y="51" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="600" fill="#FAFAF8">design-packs/{slug}/</text>
+
+        <!-- connectors -->
+        <line x1="380" y1="68" x2="380" y2="96" stroke="#D4D4CF" stroke-width="1.5"/>
+        <line x1="104" y1="96" x2="656" y2="96" stroke="#D4D4CF" stroke-width="1.5"/>
+        <line x1="104" y1="96" x2="104" y2="120" stroke="#D4D4CF" stroke-width="1.5"/>
+        <line x1="288" y1="96" x2="288" y2="120" stroke="#D4D4CF" stroke-width="1.5"/>
+        <line x1="472" y1="96" x2="472" y2="120" stroke="#D4D4CF" stroke-width="1.5"/>
+        <line x1="656" y1="96" x2="656" y2="120" stroke="#D4D4CF" stroke-width="1.5"/>
+
+        <!-- card 1: prompt.md (accent) -->
+        <rect x="20" y="120" width="168" height="92" rx="8" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="104" y="146" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="600" fill="#C4522A">prompt.md</text>
+        <text x="104" y="170" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#7c2d12">AI에 복붙할</text>
+        <text x="104" y="187" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#7c2d12">디자인 지시문 ★</text>
+
+        <!-- card 2: tokens.json -->
+        <rect x="204" y="120" width="168" height="92" rx="8" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="288" y="146" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="600" fill="#1C1C1A">tokens.json</text>
+        <text x="288" y="170" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#6B6B66">머신리더블</text>
+        <text x="288" y="187" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#6B6B66">디자인 토큰</text>
+
+        <!-- card 3: preview.png -->
+        <rect x="388" y="120" width="168" height="92" rx="8" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="472" y="146" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="600" fill="#1C1C1A">preview.png</text>
+        <text x="472" y="170" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#6B6B66">샘플 렌더</text>
+        <text x="472" y="187" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#6B6B66">미리보기</text>
+
+        <!-- card 4: meta.yaml -->
+        <rect x="572" y="120" width="168" height="92" rx="8" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="656" y="146" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="600" fill="#1C1C1A">meta.yaml</text>
+        <text x="656" y="170" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#6B6B66">출처·라이선스</text>
+        <text x="656" y="187" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#6B6B66">메타데이터</text>
+      </svg>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">prompt.md에는 무엇이 적혀 있나</div>
+      디자인 정체성 · 색 팔레트(hex) · 타이포(폰트·크기·굵기·자간) · 레이아웃/그리드(최대폭·브레이크포인트·갭) ·
+      형태/질감(반지름·보더·그림자·모션), 그리고 <strong>"하지 말 것" 섹션</strong>(순흑 배경·발광 보더·다색 그라디언트 등 AI 기본값 차단).
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-bar">
+        <div class="code-dot" style="background:#ef4444;"></div>
+        <div class="code-dot" style="background:#f59e0b;"></div>
+        <div class="code-dot" style="background:#22c55e;"></div>
+        <span class="code-lang">prompt.md (예: web-velvet-dark-boutique)</span>
+      </div>
+      <pre class="code-body">색:    #1a1216(와인-차콜 배경), #ece4e0(오프화이트), #c79a52(골드 강조)
+타이포: Cormorant(세리프) + Inter(산세리프)
+레이아웃: 벤토 그리드, 12열, 타일 비대칭 배치
+모션:  300ms cubic-bezier, 절제된 전환
+금지:  순흑 배경 / 발광 보더 / 다색 그라디언트 / 균등 크기 타일</pre>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: 워크플로우 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">03 워크플로우</div>
+    <h2 class="section-title">실제로 어떻게 쓰나</h2>
+    <p class="section-desc">
+      시안을 고르고 → 그 design.md를 AI에 건네고 → "이대로 만들어줘"라고 하면 됩니다.
+      많은 사용자가 이렇게 만든 결과물을 초안으로 삼아 Canva에서 최종만 다듬습니다.
+    </p>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 760 150" role="img" aria-label="design.md 사용 흐름">
+        <defs>
+          <marker id="arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#C4522A"/>
+          </marker>
+        </defs>
+
+        <!-- box 1 -->
+        <rect x="0" y="40" width="160" height="80" rx="9" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="80" y="74" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#1C1C1A">① 시안 탐색</text>
+        <text x="80" y="94" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#6B6B66">designmd.app 등</text>
+
+        <!-- box 2 -->
+        <rect x="200" y="40" width="160" height="80" rx="9" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="280" y="74" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#1C1C1A">② prompt.md 복사</text>
+        <text x="280" y="94" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#6B6B66">또는 슬러그 지정</text>
+
+        <!-- box 3 -->
+        <rect x="400" y="40" width="160" height="80" rx="9" fill="#FFFFFF" stroke="#E8E8E4" stroke-width="1.5"/>
+        <text x="480" y="74" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#1C1C1A">③ AI에 전달</text>
+        <text x="480" y="94" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#6B6B66">+ 원본 자료 함께</text>
+
+        <!-- box 4 -->
+        <rect x="600" y="40" width="160" height="80" rx="9" fill="#FEF3ED" stroke="#F9C3AD" stroke-width="1.5"/>
+        <text x="680" y="74" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#C4522A">④ 생성</text>
+        <text x="680" y="94" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#7c2d12">.pptx / HTML</text>
+
+        <!-- arrows -->
+        <line x1="160" y1="80" x2="198" y2="80" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="360" y1="80" x2="398" y2="80" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="560" y1="80" x2="598" y2="80" stroke="#C4522A" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <text x="380" y="142" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#A8A8A3">→ 초안 완성 후 Canva 등에서 최종 다듬기 (선택)</text>
+      </svg>
+    </div>
+
+    <div class="callout accent">
+      <div class="callout-title">PPT 만들 때 핵심 한 줄</div>
+      "<strong>편집 가능한 네이티브 .pptx</strong>로 만들어줘"라고 명시하세요. 그래야 PNG 풀블리드(이미지 한 장)가 아니라
+      파워포인트에서 텍스트·수치·도형을 직접 고칠 수 있는 객체로 생성됩니다.
+    </div>
+
+    <h3 style="font-family:var(--font-display);font-size:18px;font-weight:700;margin:32px 0 4px;">방법 A — Claude Code (design-pick 스킬)</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">스킬 설치</div>
+          <div class="step-body">저장소를 받아 design-pick 스킬을 복사합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">bash</span>
+            </div>
+            <pre class="code-body"># 전역 설치
+cp -r skills/design-pick ~/.claude/skills/
+
+# 프로젝트별 설치
+cp -r skills/design-pick YOUR_PROJECT/.claude/skills/</pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">느낌 또는 슬러그로 요청</div>
+          <div class="step-body">"고급스러운 다크 톤으로 발표자료 만들어줘" → 스킬이 어울리는 팩 2~3개 추천.
+          또는 <code>/design-pick web-velvet-dark-boutique</code>처럼 슬러그를 직접 지정하면 그 팩의 명세를 그대로 적용합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">생성</div>
+          <div class="step-body">PPT는 편집 가능한 네이티브 .pptx, 웹은 HTML/CSS로 만들어집니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display);font-size:18px;font-weight:700;margin:32px 0 4px;">방법 B — Claude.ai 채팅 (스킬 없이)</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">prompt.md 전문 복사</div>
+          <div class="step-body">카탈로그에서 마음에 드는 팩의 prompt.md 전체를 복사합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">원본 자료와 함께 붙여넣기</div>
+          <div class="step-body">기획서·강의안 스크립트 등 원본 콘텐츠와 prompt.md를 함께 채팅에 붙여넣고 요청합니다.</div>
+          <div class="code-wrap" style="margin-top:12px;">
+            <div class="code-bar">
+              <div class="code-dot" style="background:#ef4444;"></div>
+              <div class="code-dot" style="background:#f59e0b;"></div>
+              <div class="code-dot" style="background:#22c55e;"></div>
+              <span class="code-lang">prompt</span>
+            </div>
+            <pre class="code-body">위 디자인 명세 그대로,
+편집 가능한 네이티브 .pptx로 발표자료를 만들어줘
+(또는 HTML/CSS 웹으로)</pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">다운로드 → 최종 다듬기</div>
+          <div class="step-body">생성된 .pptx/HTML을 받아 PowerPoint나 Canva에서 최종만 손봅니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: AI Slop 비교 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">04 Slop</div>
+    <h2 class="section-title">"AI Slop"과 design.md의 완화 방식</h2>
+    <p class="section-desc">
+      Slop은 AI로 대량 생산된 저품질 콘텐츠를 가리키는 말로, Merriam-Webster가 선정한 2025 올해의 단어이기도 합니다.
+      design.md는 디자인 영역에서 이 "양산·천편일률" 문제를 아래처럼 줄여줍니다.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>측면</th>
+            <th>Slop 문제</th>
+            <th>design.md의 완화</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>시각 천편일률</strong></td>
+            <td><span class="tag gray">매번 같은 그라디언트·둥근 카드</span></td>
+            <td>서로 다른 팩 다수로 선택지 다양화</td>
+          </tr>
+          <tr>
+            <td><strong>기본값 회귀</strong></td>
+            <td><span class="tag gray">"안전한 평균"으로 수렴</span></td>
+            <td>"하지 말 것" 섹션으로 회피점 차단</td>
+          </tr>
+          <tr>
+            <td><strong>검증 부재</strong></td>
+            <td><span class="tag gray">기준 없는 양산</span></td>
+            <td>색 hex·간격 단위·폰트 크기로 검증 가능</td>
+          </tr>
+          <tr>
+            <td><strong>편집 불가</strong></td>
+            <td><span class="tag gray">PNG 풀블리드 → 수정 못 함</span></td>
+            <td><span class="tag green">네이티브 객체 강제 → 편집 가능</span></td>
+          </tr>
+          <tr>
+            <td><strong>맥락 무시</strong></td>
+            <td><span class="tag gray">의도 없는 결과</span></td>
+            <td>팩 선택으로 의도를 명시</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">균형 잡기</div>
+      목표는 "Slop이 너무 심하지 않게, 그러나 너무 어렵지도 않게". design.md는 디자인 전문 지식 없이도
+      일관된 기준을 적용하게 해주는 중간 지점입니다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: 리소스 -->
+<section class="section">
+  <div class="page-wrap">
+    <div class="section-label">05 리소스</div>
+    <h2 class="section-title">어디서 design.md를 구하나</h2>
+    <p class="section-desc">아래에서 시안을 탐색하고 design.md를 받아올 수 있습니다.</p>
+
+    <div class="links">
+      <a class="link-card" href="https://designmd.app/" target="_blank" rel="noopener">
+        <div class="link-card__name">designmd.app ↗</div>
+        <div class="link-card__url">designmd.app</div>
+        <div class="link-card__desc">미리 만들어진 design.md 라이브러리. 미니멀·스팀펑크·아르누보 등 다양한 미학 스타일 카탈로그와 도구별 설정 가이드 제공.</div>
+      </a>
+      <a class="link-card" href="https://designmd.ai/" target="_blank" rel="noopener">
+        <div class="link-card__name">designmd.ai ↗</div>
+        <div class="link-card__url">designmd.ai</div>
+        <div class="link-card__desc">design.md를 공유·검색하는 허브. SaaS·대시보드·미니멀·접근성 등 태그로 필터링, 트렌드/추천 섹션 제공.</div>
+      </a>
+      <a class="link-card" href="https://github.com/epoko77-ai/design-diversity" target="_blank" rel="noopener">
+        <div class="link-card__name">epoko77-ai/design-diversity ↗</div>
+        <div class="link-card__url">github.com/epoko77-ai/design-diversity</div>
+        <div class="link-card__desc">design-pick 스킬 + 디자인 팩 원본(prompt.md·tokens.json·preview.png·meta.yaml) + 카탈로그 사이트. MIT 라이선스.</div>
+      </a>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-title">내 PPT가 있다면</div>
+      쓰던 PPT를 템플릿화(=나만의 design.md로 정리)해두면, 다음부터는 "내 템플릿 적용해서 만들어줘"라고만 하면 됩니다.
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">참고 — 확인되지 않은 점</div>
+      designmd.app과 designmd.ai의 관계, "Google의 오픈 포맷"이라는 표현의 공식 출처, 사이트별 팩 개수 차이는
+      공개 자료에서 명확히 확인되지 않았습니다. 링크에서 직접 확인하시길 권합니다.
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>design.md — AI 디자인 슬롭 줄이는 법</span>
+  <span>2026-06-19 · Design Study</span>
+</footer>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="BMMWLQ6" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
