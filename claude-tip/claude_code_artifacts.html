@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Claude Code Artifacts — 세션 기반 공유 페이지</title>
+<link rel="stylesheet" href="/templates/assets/common.css" />
+<style>
+  :root {
+    --accent: #4f46e5;
+    --accent-soft: #eef0fe;
+  }
+  [data-theme="dark"] {
+    --accent: #8a85ff;
+    --accent-soft: color-mix(in oklab, #8a85ff 18%, #18181a);
+  }
+  body { font-family: var(--font-sans); }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 0;
+    min-height: 100vh;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .toc-wrap { position: relative !important; height: auto !important; border-right: 0 !important; border-bottom: 1px solid var(--line); } }
+
+  .toc-wrap {
+    position: sticky;
+    top: 48px;
+    height: calc(100vh - 48px);
+    overflow-y: auto;
+    border-right: 1px solid var(--line);
+    padding: 28px 22px 28px 28px;
+    background: var(--bg);
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 22px;
+  }
+  .brand-mark {
+    width: 24px; height: 24px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .brand-name { font-size: 14px; font-weight: 600; }
+  .brand-sub { font-size: 11px; color: var(--ink-3); font-family: var(--font-mono); letter-spacing: .04em; }
+
+  .toc-search {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--ink-3);
+    font-size: 13px;
+    margin-bottom: 22px;
+    background: var(--bg-elev);
+  }
+  .toc-search kbd {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    background: var(--bg-sub);
+    padding: 1px 5px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+  }
+
+  .toc h4 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ink-3);
+    margin: 22px 0 8px;
+    font-weight: 600;
+  }
+  .toc ul { list-style: none; padding: 0; margin: 0; }
+  .toc li { margin: 0; }
+  .toc a {
+    display: block;
+    padding: 5px 10px;
+    color: var(--ink-2);
+    font-size: 13.5px;
+    border-radius: 5px;
+    border-left: 2px solid transparent;
+    line-height: 1.4;
+  }
+  .toc a:hover { background: var(--bg-sub); text-decoration: none; }
+  .toc a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: var(--accent-soft);
+    font-weight: 600;
+  }
+  .toc .toc-l3 { padding-left: 22px; font-size: 12.5px; color: var(--ink-3); }
+
+  .content {
+    padding: 56px clamp(24px, 6vw, 80px) 120px;
+    max-width: 860px;
+  }
+
+  .doc-header { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+  .doc-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    margin-bottom: 8px;
+  }
+  .doc-eyebrow::before {
+    content: ""; width: 8px; height: 8px; border-radius: 999px; background: var(--accent);
+  }
+  .doc-title { font-size: clamp(30px, 4vw, 44px); margin: 0 0 10px; letter-spacing: -.02em; line-height: 1.15; font-weight: 700; }
+  .doc-deck { color: var(--ink-2); font-size: 18px; margin: 0; line-height: 1.5; max-width: 660px; }
+  .doc-meta {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    margin-top: 18px;
+    font-size: 13px; color: var(--ink-3);
+    font-family: var(--font-mono);
+  }
+  .doc-meta strong { color: var(--ink-2); font-weight: 500; }
+
+  h2.section { font-size: 26px; margin: 60px 0 16px; letter-spacing: -.01em; scroll-margin-top: 64px; font-weight: 700; }
+  h3.subsection { font-size: 18px; margin: 36px 0 10px; letter-spacing: -.005em; scroll-margin-top: 64px; font-weight: 600; }
+  section { scroll-margin-top: 64px; }
+  p { color: var(--ink-2); font-size: 15px; line-height: 1.7; }
+
+  .step {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 16px;
+    margin: 22px 0;
+  }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    font-family: var(--font-mono);
+    margin-top: 2px;
+  }
+  .step h4 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+  .step p { margin: 4px 0; color: var(--ink-2); font-size: 15px; line-height: 1.6; }
+
+  .callout {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    background: var(--bg-elev);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 14.5px;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+  .callout-tag { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; display: block; font-family: var(--font-mono); }
+  .callout.warn { border-left-color: #d97706; }
+  .callout.warn .callout-tag { color: #d97706; }
+  .callout.tip { border-left-color: #0d9488; }
+  .callout.tip .callout-tag { color: #0d9488; }
+
+  .kbd-row { display: inline-flex; gap: 4px; align-items: center; }
+  .kbd { font-family: var(--font-mono); font-size: 11px; padding: 2px 6px; border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 4px; background: var(--bg-elev); color: var(--ink-2); }
+
+  .use-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 24px 0; }
+  .use-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px;
+    background: var(--bg-elev);
+  }
+  .use-card .uc-ic { font-size: 22px; }
+  .use-card h4 { margin: 10px 0 6px; font-size: 15.5px; font-weight: 700; }
+  .use-card p { margin: 0; font-size: 13.5px; color: var(--ink-3); line-height: 1.55; }
+
+  figure { margin: 24px 0; }
+  figure svg { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-elev); }
+  figcaption { font-size: 12px; color: var(--ink-3); margin-top: 6px; font-family: var(--font-mono); }
+
+  .pager {
+    display: flex; justify-content: space-between; gap: 14px; margin-top: 60px;
+    padding-top: 24px; border-top: 1px solid var(--line);
+  }
+  .pager a {
+    flex: 1;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    background: var(--bg-elev);
+  }
+  .pager a:hover { border-color: var(--accent); text-decoration: none; }
+  .pager .label { font-size: 11px; color: var(--ink-3); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .08em; }
+  .pager .title { font-weight: 600; margin-top: 4px; }
+  .pager .next { text-align: right; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <aside class="toc-wrap">
+    <div class="brand">
+      <span class="brand-mark">/</span>
+      <div>
+        <div class="brand-name">Claude Tip</div>
+        <div class="brand-sub">artifacts · how-to</div>
+      </div>
+    </div>
+
+    <div class="toc-search" onclick="window.CC && window.CC.openSearch()">
+      🔍 검색…
+      <kbd>⌘K</kbd>
+    </div>
+
+    <nav class="toc">
+      <h4>이해하기</h4>
+      <ul>
+        <li><a href="#overview" class="active">Artifacts란</a></li>
+        <li><a href="#how-it-works">실시간 갱신 원리</a></li>
+        <li><a href="#usecases">활용 유형</a></li>
+      </ul>
+      <h4>시작하기</h4>
+      <ul>
+        <li><a href="#prereq">사전 조건</a></li>
+        <li><a href="#create">생성하기</a></li>
+        <li><a href="#update" class="toc-l3">업데이트</a></li>
+        <li><a href="#share" class="toc-l3">공유하기</a></li>
+      </ul>
+      <h4>실전 · 운영</h4>
+      <ul>
+        <li><a href="#limits">기술 제약</a></li>
+        <li><a href="#cost">토큰 비용 절감</a></li>
+        <li><a href="#governance">조직 정책·보안</a></li>
+        <li><a href="#disable">비활성화</a></li>
+      </ul>
+      <h4>참고</h4>
+      <ul>
+        <li><a href="#glossary">용어 사전</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="content" data-search-root>
+
+    <header class="doc-header">
+      <div class="doc-eyebrow">New in Claude Code · 2026</div>
+      <h1 class="doc-title">Claude Code Artifacts</h1>
+      <p class="doc-deck">세션이 만든 결과물을 라이브 인터랙티브 웹 페이지로 발행하고, 조직 내부 비공개 링크로 공유한다. 세션이 계속 일하면 페이지는 그 자리에서 새로고침된다.</p>
+      <div class="doc-meta">
+        <span><strong>플랜</strong> · Team / Enterprise (beta)</span>
+        <span><strong>난이도</strong> · 입문</span>
+        <span><strong>업데이트</strong> · 2026.06.19</span>
+        <span><strong>출처</strong> · claude.com/blog</span>
+      </div>
+    </header>
+
+    <section id="overview">
+      <h2 class="section">Artifacts란</h2>
+      <p>
+        <strong>Artifacts</strong>는 Claude Code 세션의 작업 결과를 단일 자체 포함(self-contained) HTML 페이지로 변환하여,
+        조직 내부의 <strong>비공개 URL</strong>에서 공유할 수 있게 하는 기능입니다.
+        터미널 텍스트로는 전달하기 어려운, 시각적·상호작용적 결과물에 적합합니다.
+      </p>
+
+      <div class="cc-tldr">
+        <h3>TL;DR</h3>
+        <p>
+          ① 세션 중 "이걸 artifact로 만들어줘" 요청 → ② Claude가 HTML/MD를 작성하고 발행 권한을 물음 →
+          ③ <strong>Yes</strong> 하면 비공개 URL 발행 + 브라우저 자동 오픈 → ④ <strong>Share</strong>로 조직 동료에게 공유 →
+          ⑤ 세션이 작업을 이어가면 같은 URL의 페이지가 실시간으로 갱신됩니다.
+        </p>
+      </div>
+
+      <ul class="cc-checklist">
+        <li><span>세션의 <strong>전체 컨텍스트</strong>(코드베이스·커넥터·대화 내역)를 활용해 페이지를 구성</span></li>
+        <li><span>기본은 <strong>작성자 본인만</strong> 조회 가능 — 공유 전까지 비공개</span></li>
+        <li><span>공유는 <strong>조직 경계 안</strong>에서만 — 외부 공개 옵션 없음</span></li>
+        <li><span>뷰어는 <strong>조회 전용</strong> — 수정은 작성자(세션)만 가능</span></li>
+      </ul>
+    </section>
+
+    <section id="how-it-works">
+      <h2 class="section">실시간 갱신 원리</h2>
+      <p>
+        세션이 artifact 파일을 편집하고 같은 URL에 재발행하면, <strong>열려 있는 페이지가 그 자리에서 즉시 새로고침</strong>됩니다.
+        장시간 실행되는 작업에도 단일 링크만 공유하면 되고, 동료는 항상 최신 버전을 봅니다.
+        각 발행은 새로운 <strong>버전</strong>이 되며, 페이지 헤더의 Share 컨트롤에서 어떤 버전을 보여줄지 선택할 수 있습니다.
+      </p>
+
+      <figure>
+        <svg viewBox="0 0 760 250" role="img" aria-label="Artifacts 실시간 갱신 흐름">
+          <defs>
+            <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+              <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#4f46e5"/>
+            </marker>
+          </defs>
+          <!-- 세션 박스 -->
+          <rect x="30" y="95" width="170" height="60" rx="10" fill="#eef0fe" stroke="#4f46e5" stroke-width="1.5"/>
+          <text x="115" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#312e81">Claude Code</text>
+          <text x="115" y="140" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="#4f46e5">세션이 작업 중</text>
+
+          <!-- 발행 화살표 -->
+          <line x1="200" y1="125" x2="305" y2="125" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#arr)"/>
+          <text x="252" y="115" text-anchor="middle" font-family="monospace" font-size="10.5" fill="#6b7280">publish</text>
+
+          <!-- 비공개 URL 박스 -->
+          <rect x="310" y="95" width="170" height="60" rx="10" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="395" y="120" text-anchor="middle" font-family="monospace" font-size="12.5" font-weight="700" fill="#1f2937">claude.ai/code</text>
+          <text x="395" y="140" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="#64748b">단일 비공개 URL</text>
+
+          <!-- 공유 화살표 -->
+          <line x1="480" y1="125" x2="585" y2="125" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#arr)"/>
+          <text x="532" y="115" text-anchor="middle" font-family="monospace" font-size="10.5" fill="#6b7280">share</text>
+
+          <!-- 동료 박스 -->
+          <rect x="590" y="95" width="150" height="60" rx="10" fill="#ecfdf5" stroke="#0d9488" stroke-width="1.5"/>
+          <text x="665" y="120" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="700" fill="#0f766e">조직 동료</text>
+          <text x="665" y="140" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="#0d9488">조회 전용</text>
+
+          <!-- 재발행 루프 -->
+          <path d="M115,95 C115,40 395,40 395,90" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+          <text x="255" y="35" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">세션이 다시 일하면 → 같은 URL이 그 자리에서 새로고침 (새 버전)</text>
+
+          <!-- 갱신 표시 -->
+          <path d="M395,160 C395,205 665,205 665,160" fill="none" stroke="#0d9488" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+          <text x="530" y="225" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#0d9488">동료가 열어둔 페이지도 자동 갱신</text>
+        </svg>
+        <figcaption>FIG.1 · 세션 → 발행 → 공유 → 실시간 재발행 루프</figcaption>
+      </figure>
+
+      <div class="callout tip">
+        <span class="callout-tag">Tip · 버전 공유</span>
+        "Always share latest version" 토글을 켜면 항상 최신 버전이 자동 공유됩니다. 특정 버전만 고정해 공유하는 것도 가능합니다.
+      </div>
+    </section>
+
+    <section id="usecases">
+      <h2 class="section">활용 유형</h2>
+      <p>공식 문서가 제시하는 대표 패턴입니다. 각 카드의 한 줄 프롬프트로 바로 요청할 수 있습니다.</p>
+
+      <div class="use-grid">
+        <div class="use-card">
+          <div class="uc-ic">🔍</div>
+          <h4>PR 워크스루</h4>
+          <p>diff를 인라인 주석과 함께 렌더링하고, 심각도별로 색상 구분. <em>"Make an artifact that walks through this PR…"</em></p>
+        </div>
+        <div class="use-card">
+          <div class="uc-ic">🎛️</div>
+          <h4>인터랙티브 대시보드</h4>
+          <p>슬라이더·토글로 값을 실시간 조정. 이징 커브·duration을 움직이며 애니메이션을 라이브로 확인.</p>
+        </div>
+        <div class="use-card">
+          <div class="uc-ic">✅</div>
+          <h4>진행 상황 체크리스트</h4>
+          <p>마이그레이션 계획을 체크리스트로. 작업이 끝나면 항목이 자동 체크되고, 건너뛴 항목엔 메모.</p>
+        </div>
+        <div class="use-card">
+          <div class="uc-ic">🗂️</div>
+          <h4>트리아주 보드</h4>
+          <p>오픈 이슈를 드래그 카드로. Now / Next / Later / Cut 컬럼을 오가며 상태 관리.</p>
+        </div>
+        <div class="use-card">
+          <div class="uc-ic">📊</div>
+          <h4>장애·배포 분석</h4>
+          <p>지난주 배포 실패를 서비스별 대시보드로. 조사하는 동안 데이터가 계속 갱신.</p>
+        </div>
+        <div class="use-card">
+          <div class="uc-ic">🧩</div>
+          <h4>옵션 비교</h4>
+          <p>설정 패널의 4가지 레이아웃을 밀도·그룹핑을 달리해 그리드로. 각 옵션 아래 한 줄 트레이드오프.</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="callout-tag">활용 가능한 데이터 소스</span>
+        소스 코드·import 그래프, 연결된 모니터링/인프라 도구(MCP), 컴포넌트 라이브러리·디자인 시스템,
+        Terraform 정의, 병합된 PR·Git 히스토리 등 — 추가 인프라 설정 없이 세션이 접근한 컨텍스트를 그대로 활용합니다.
+      </div>
+    </section>
+
+    <section id="prereq">
+      <h2 class="section">사전 조건</h2>
+      <p>Artifacts는 일부 플랜에서 베타로 제공되며, 인증·모델 제공자에 제약이 있습니다.</p>
+      <table class="cc-table">
+        <thead><tr><th>항목</th><th>요구사항</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td>플랜</td><td>Team(기본 활성) / Enterprise(관리자 활성)</td><td>Free 불가</td></tr>
+          <tr><td>인증</td><td><code class="cc-inline-code">/login</code>으로 claude.ai 로그인</td><td>API 키·게이트웨이 토큰·클라우드 자격증명 불가</td></tr>
+          <tr><td>모델 제공자</td><td>Anthropic API</td><td>Bedrock / Vertex AI / Foundry 불가</td></tr>
+          <tr><td>표면(Surface)</td><td>Claude Code CLI · Desktop v1.13576.0+</td><td>Agent SDK·GitHub Action·MCP 컨텍스트 기본 비활성</td></tr>
+          <tr><td>조직 정책</td><td>CMEK / HIPAA / ZDR 미활성</td><td>활성 시 발행 불가</td></tr>
+        </tbody>
+      </table>
+      <div class="callout warn">
+        <span class="callout-tag">주의 · 인증 방식</span>
+        API 키나 클라우드 자격증명으로 인증한 세션에서는 artifact를 발행할 수 없습니다. <code class="cc-inline-code">/login</code>으로 claude.ai 계정에 로그인되어 있어야 합니다.
+      </div>
+    </section>
+
+    <section id="create">
+      <h2 class="section">생성하기</h2>
+      <p>결과가 페이지에 적합하면 Claude가 자동으로 발행을 제안하기도 하고, 직접 명시적으로 요청할 수도 있습니다.</p>
+
+      <div class="cc-code"><pre>Make an artifact that walks through this PR with the diff annotated inline.</pre></div>
+
+      <div class="step">
+        <span class="step-num">1</span>
+        <div>
+          <h4>Claude가 파일을 작성한다</h4>
+          <p>프로젝트에 <code class="cc-inline-code">.html</code> 또는 <code class="cc-inline-code">.md</code> 파일을 만듭니다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">2</span>
+        <div>
+          <h4>발행 권한을 묻는다</h4>
+          <p><em>Claude wants to publish "Deploy failures by service" (deploy-failures.html) to a private page on claude.ai</em> — <strong>Yes</strong>를 선택하면 발행됩니다. (기존 artifact 재발행 시엔 다시 묻지 않음)</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <div>
+          <h4>URL 출력 + 브라우저 자동 오픈</h4>
+          <p>발행되면 비공개 URL이 터미널에 인쇄되고 브라우저가 열립니다. 자동 오픈을 끄려면 <code class="cc-inline-code">CLAUDE_CODE_ARTIFACT_AUTO_OPEN=0</code>.</p>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-tag">단축키</span>
+        터미널에서 <span class="kbd-row"><span class="kbd">Ctrl</span><span class="kbd">]</span></span> 을 누르면 가장 최근 artifact를 다시 엽니다.
+      </div>
+
+      <h3 class="subsection" id="update">업데이트</h3>
+      <p>수정도 자연어로 요청합니다. 원본 파일을 편집해 같은 URL에 재발행하므로, 열린 페이지는 즉시 갱신됩니다.</p>
+      <div class="cc-code"><pre>Add a per-region breakdown below the summary chart and republish.</pre></div>
+      <p>다른 세션에서 URL을 직접 지정해 갱신할 수도 있습니다.</p>
+      <div class="cc-code"><pre>Update https://claude.ai/code/artifact/5fbea6f3-... with today's numbers.</pre></div>
+
+      <h3 class="subsection" id="share">공유하기</h3>
+      <div class="step">
+        <span class="step-num">1</span>
+        <div><h4>브라우저에서 artifact를 연다</h4></div>
+      </div>
+      <div class="step">
+        <span class="step-num">2</span>
+        <div><h4>페이지 헤더의 Share 컨트롤 클릭</h4><p>조직의 특정 인물 또는 전체 인원을 선택합니다.</p></div>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <div><h4>Copy link으로 링크 복사</h4><p>뷰어는 claude.ai에 조직 회원으로 로그인되어 있어야 봅니다. 모든 artifact는 <code class="cc-inline-code">claude.ai/code/artifacts</code> 갤러리에서도 확인됩니다.</p></div>
+      </div>
+    </section>
+
+    <section id="limits">
+      <h2 class="section">기술 제약</h2>
+      <p>Artifact 페이지는 보안을 위해 강한 샌드박스(CSP) 안에서 렌더링됩니다. 설계 시 아래 제약을 고려해야 합니다.</p>
+
+      <figure>
+        <svg viewBox="0 0 760 230" role="img" aria-label="Artifact 샌드박스 제약">
+          <!-- 샌드박스 경계 -->
+          <rect x="30" y="30" width="500" height="170" rx="12" fill="#fff" stroke="#4f46e5" stroke-width="1.6" stroke-dasharray="6 5"/>
+          <text x="50" y="55" font-family="monospace" font-size="12" font-weight="700" fill="#4f46e5">SANDBOX · *.claudeusercontent.com</text>
+
+          <!-- 허용 -->
+          <rect x="50" y="72" width="215" height="48" rx="8" fill="#ecfdf5" stroke="#0d9488" stroke-width="1.3"/>
+          <text x="62" y="92" font-family="sans-serif" font-size="12" font-weight="700" fill="#0f766e">✓ 허용</text>
+          <text x="62" y="110" font-family="sans-serif" font-size="11" fill="#0d9488">인라인 CSS · JS · data URI 이미지</text>
+
+          <rect x="50" y="130" width="215" height="48" rx="8" fill="#ecfdf5" stroke="#0d9488" stroke-width="1.3"/>
+          <text x="62" y="150" font-family="sans-serif" font-size="12" font-weight="700" fill="#0f766e">✓ 허용</text>
+          <text x="62" y="168" font-family="sans-serif" font-size="11" fill="#0d9488">SVG·HTML/CSS 다이어그램, 앵커 링크</text>
+
+          <!-- 차단 -->
+          <rect x="295" y="72" width="215" height="48" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.3"/>
+          <text x="307" y="92" font-family="sans-serif" font-size="12" font-weight="700" fill="#b91c1c">✕ 차단</text>
+          <text x="307" y="110" font-family="sans-serif" font-size="11" fill="#dc2626">외부 fetch/XHR/WS·외부 스크립트·폰트</text>
+
+          <rect x="295" y="130" width="215" height="48" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.3"/>
+          <text x="307" y="150" font-family="sans-serif" font-size="12" font-weight="700" fill="#b91c1c">✕ 차단</text>
+          <text x="307" y="168" font-family="sans-serif" font-size="11" fill="#dc2626">백엔드·상태 저장·뷰 시점 API 호출</text>
+
+          <!-- 사양 박스 -->
+          <rect x="560" y="30" width="170" height="170" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+          <text x="645" y="55" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#475569">SPEC</text>
+          <line x1="578" y1="66" x2="712" y2="66" stroke="#cbd5e1" stroke-width="1"/>
+          <text x="578" y="92" font-family="sans-serif" font-size="11.5" fill="#334155">형식 · .html / .htm / .md</text>
+          <text x="578" y="118" font-family="sans-serif" font-size="11.5" fill="#334155">구성 · 단일 페이지</text>
+          <text x="578" y="144" font-family="sans-serif" font-size="11.5" fill="#334155">최대 크기 · 16 MiB</text>
+          <text x="578" y="170" font-family="sans-serif" font-size="11.5" fill="#334155">.md → styled HTML</text>
+        </svg>
+        <figcaption>FIG.2 · 샌드박스 허용/차단 항목과 페이지 사양</figcaption>
+      </figure>
+
+      <table class="cc-table">
+        <thead><tr><th>제약</th><th>의미</th></tr></thead>
+        <tbody>
+          <tr><td>외부 요청 차단</td><td>다른 호스트의 스크립트·스타일·폰트·이미지·fetch/XHR/WebSocket 불가 → 모두 인라인 또는 data URI</td></tr>
+          <tr><td>백엔드 없음</td><td>폼 입력 저장, 뷰어 인증, 조회 시점 API 호출 불가</td></tr>
+          <tr><td>단일 페이지</td><td>상대 링크 미작동 → 섹션 이동은 페이지 내 앵커 사용</td></tr>
+          <tr><td>파일 형식</td><td><code class="cc-inline-code">.html</code> / <code class="cc-inline-code">.htm</code> / <code class="cc-inline-code">.md</code> (Markdown은 styled HTML로 렌더)</td></tr>
+          <tr><td>렌더링 크기</td><td>최대 16 MiB (대형 임베디드 이미지가 주원인)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="cost">
+      <h2 class="section">토큰 비용 절감</h2>
+      <p>
+        스타일링된 페이지는 일반 터미널 텍스트보다 출력 토큰을 더 많이 씁니다(인라인 CSS·JS, 특히 이미지).
+        Artifact 생성은 일반 응답과 동일하게 출력 토큰을 소모하므로, 다음을 권장합니다.
+      </p>
+      <ul class="cc-checklist">
+        <li><span>래스터 이미지 대신 <strong>SVG·HTML/CSS로 다이어그램</strong>을 그린다</span></li>
+        <li><span>필요 없는 상호작용은 제거한다</span></li>
+        <li><span>대규모 데이터셋은 전체 인라인 대신 <strong>요약</strong>한다</span></li>
+      </ul>
+    </section>
+
+    <section id="governance">
+      <h2 class="section">조직 정책·보안</h2>
+      <table class="cc-table">
+        <thead><tr><th>항목</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td>저장 위치</td><td>Anthropic 운영 인프라에 저장, 발행 조직의 인증 회원에게만 표시</td></tr>
+          <tr><td>네트워크</td><td>뷰어는 샌드박스 오리진 <code class="cc-inline-code">*.claudeusercontent.com</code> 접근 필요 — 아웃바운드 제한 시 화이트리스트</td></tr>
+          <tr><td>감사 로그</td><td>발행·공유·삭제가 <code class="cc-inline-code">claude_artifact_*</code> 이벤트로 기록</td></tr>
+          <tr><td>보존 정책</td><td>Admin settings &gt; Data &amp; privacy controls에서 비공개/공유별로 설정</td></tr>
+          <tr><td>Compliance API</td><td>Enterprise는 artifact 조회·버전 조회·삭제 API 제공</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        <span class="callout-tag">디자인 시스템 적용</span>
+        CLAUDE.md나 theme 파일에 색상·타이포·간격을 적어두면 artifact가 프로젝트 디자인을 따릅니다.
+        우선순위는 <strong>① 프롬프트의 명시적 요청 → ② 프로젝트 디자인 시스템 → ③ Claude 기본 디자인 스킬</strong> 순입니다.
+      </div>
+    </section>
+
+    <section id="disable">
+      <h2 class="section">비활성화</h2>
+      <p>개인 세션에서 artifact 발행을 끄는 세 가지 방법입니다.</p>
+      <table class="cc-table">
+        <thead><tr><th>방법</th><th>설정</th></tr></thead>
+        <tbody>
+          <tr><td>Settings 파일</td><td><code class="cc-inline-code">"disableArtifact": true</code></td></tr>
+          <tr><td>환경 변수</td><td><code class="cc-inline-code">CLAUDE_CODE_DISABLE_ARTIFACT=1</code></td></tr>
+          <tr><td>Permission 규칙</td><td><code class="cc-inline-code">permissions.deny</code>에 <code class="cc-inline-code">Artifact</code> 추가</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="glossary">
+      <h2 class="section">용어 사전</h2>
+      <dl class="cc-glossary">
+        <dt>Artifact <small>아티팩트</small></dt>
+        <dd>세션 결과를 담은 단일 자체 포함 HTML/MD 페이지. 조직 내부 비공개 URL로 공유된다.</dd>
+        <dt>버전 <small>version</small></dt>
+        <dd>매 발행마다 생성되는 스냅샷. Share 컨트롤에서 뷰어에게 보여줄 버전을 고를 수 있다.</dd>
+        <dt>샌드박스 <small>sandbox</small></dt>
+        <dd>외부 네트워크·백엔드를 차단하는 격리 실행 환경. 오리진은 <code class="cc-inline-code">*.claudeusercontent.com</code>.</dd>
+        <dt>Surface <small>표면</small></dt>
+        <dd>artifact를 발행할 수 있는 실행 환경. CLI·Desktop은 지원, Agent SDK·GitHub Action 등은 기본 비활성.</dd>
+      </dl>
+    </section>
+
+    <nav class="pager">
+      <a href="/claude-tip/"><div class="label">← 목록</div><div class="title">Claude Tip</div></a>
+      <a href="https://claude.com/blog/artifacts-in-claude-code" class="next" target="_blank" rel="noopener"><div class="label">공식 블로그 →</div><div class="title">Artifacts in Claude Code</div></a>
+    </nav>
+
+  </main>
+</div>
+
+<script>
+  // active TOC highlighting
+  (function() {
+    const links = Array.from(document.querySelectorAll(".toc a")).filter(a => a.getAttribute("href").startsWith("#"));
+    const sections = links.map(a => document.querySelector(a.getAttribute("href"))).filter(Boolean);
+    function onScroll() {
+      let active = sections[0];
+      const y = window.scrollY + 120;
+      for (const s of sections) { if (s.offsetTop <= y) active = s; }
+      if (!active) return;
+      links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + active.id));
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+<script src="/templates/assets/common.js"></script>
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="F7VM4DD" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
