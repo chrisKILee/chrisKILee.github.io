@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>머신 간 Claude 스킬 동기화</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── RawBlock Design System ── */
+    :root {
+      --black:#000000; --white:#FFFFFF; --link:#0000FF; --sunken:#F0F0F0;
+      --success:#008000; --warning:#FFA500; --error:#FF0000; --disabled:#CCCCCC;
+      --bd-thin:1px; --bd-thick:3px; --bd-heavy:5px;
+      --sp-1:4px; --sp-2:8px; --sp-3:16px; --sp-4:24px; --sp-5:40px; --sp-6:64px; --sp-7:80px; --sp-8:120px;
+      --font-head:'Archivo Black', system-ui, sans-serif;
+      --font-body:'Work Sans', system-ui, sans-serif;
+      --font-mono:'Space Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; border-radius:0; }
+    html { scroll-behavior:smooth; }
+    body { background:var(--white); color:var(--black); font-family:var(--font-body); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased; }
+    a { color:var(--link); text-decoration:underline; }
+    .wrap { max-width:1100px; margin:0 auto; padding:0 var(--sp-4); }
+
+    .topbar { background:var(--white); border-bottom:var(--bd-heavy) solid var(--black); padding:var(--sp-3) var(--sp-4); display:flex; align-items:center; justify-content:space-between; position:sticky; top:48px; z-index:90; }
+    .topbar-brand { font-family:var(--font-head); font-size:18px; text-transform:uppercase; letter-spacing:1px; color:var(--black); }
+    .topbar-meta { font-family:var(--font-mono); font-size:13px; color:var(--black); }
+
+    .hero { background:var(--black); color:var(--white); padding:var(--sp-8) var(--sp-4) var(--sp-7); }
+    .eyebrow { display:inline-block; border:var(--bd-thick) solid var(--white); color:var(--white); padding:var(--sp-1) var(--sp-3); font-family:var(--font-mono); font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:var(--sp-5); }
+    .hero h1 { font-family:var(--font-head); font-size:clamp(2.5rem,8vw,4rem); line-height:1.0; letter-spacing:-0.01em; text-transform:uppercase; max-width:900px; margin-bottom:var(--sp-4); }
+    .hero h1 em { font-style:normal; color:var(--white); -webkit-text-stroke:2px var(--white); -webkit-text-fill-color:var(--black); }
+    .hero-desc { font-size:18px; line-height:1.6; max-width:660px; margin-bottom:var(--sp-5); color:var(--white); }
+    .hero-chips { display:flex; gap:var(--sp-2); flex-wrap:wrap; }
+    .chip-inv { border:var(--bd-thick) solid var(--white); color:var(--white); padding:var(--sp-2) var(--sp-3); font-family:var(--font-mono); font-size:13px; text-transform:uppercase; letter-spacing:1px; }
+
+    .section { padding:var(--sp-7) var(--sp-4); border-bottom:var(--bd-heavy) solid var(--black); }
+    .section-label { font-family:var(--font-mono); font-size:13px; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:var(--sp-2); }
+    .section-title { font-family:var(--font-head); font-size:clamp(1.75rem,4vw,3rem); line-height:1.05; text-transform:uppercase; margin-bottom:var(--sp-3); }
+    .section-desc { font-size:16px; max-width:680px; margin-bottom:var(--sp-5); }
+    .section-desc strong { background:var(--black); color:var(--white); padding:1px 6px; }
+
+    .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:var(--sp-4); }
+    .card { background:var(--white); border:var(--bd-thick) solid var(--black); padding:var(--sp-4); transition:background .15s ease-out, color .15s ease-out; }
+    .card:hover { background:var(--black); color:var(--white); }
+    .card-elevated { border-width:var(--bd-heavy); }
+    .card__title { font-family:var(--font-head); font-size:18px; text-transform:uppercase; line-height:1.1; margin-bottom:var(--sp-2); }
+    .card__body p { font-size:14px; line-height:1.6; }
+    .card__tag { display:inline-block; margin-top:var(--sp-3); font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:1px; border-top:var(--bd-thin) solid currentColor; padding-top:var(--sp-2); }
+
+    .table-wrap { overflow-x:auto; margin-top:var(--sp-4); border:var(--bd-thick) solid var(--black); }
+    table { width:100%; border-collapse:collapse; }
+    th { background:var(--black); color:var(--white); padding:var(--sp-3); text-align:left; font-family:var(--font-mono); font-size:13px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+    td { border-top:var(--bd-thick) solid var(--black); padding:var(--sp-3); font-size:15px; vertical-align:top; }
+    td + td, th + th { border-left:var(--bd-thick) solid var(--black); }
+    tr:hover td { background:var(--sunken); }
+
+    .chip { display:inline-block; border:2px solid var(--black); padding:2px 10px; font-family:var(--font-mono); font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; background:var(--white); }
+    .chip.ok { color:var(--success); border-color:var(--success); }
+    .chip.warn { color:var(--warning); border-color:var(--warning); }
+    .chip.err { color:var(--error); border-color:var(--error); }
+
+    .callout { border:var(--bd-thick) solid var(--black); border-left-width:var(--bd-heavy); padding:var(--sp-3) var(--sp-4); margin:var(--sp-4) 0; font-size:15px; line-height:1.6; }
+    .callout.ok { border-color:var(--success); }
+    .callout.warn { border-color:var(--warning); }
+    .callout.err { border-color:var(--error); }
+    .callout-title { font-family:var(--font-head); font-size:14px; text-transform:uppercase; letter-spacing:1px; margin-bottom:var(--sp-1); }
+    code.inl { font-family:var(--font-mono); font-size:13px; background:var(--sunken); padding:1px 6px; border:1px solid var(--disabled); }
+
+    .code-wrap { border:var(--bd-thick) solid var(--black); margin:var(--sp-4) 0; }
+    .code-bar { display:flex; align-items:center; justify-content:space-between; background:var(--black); color:var(--white); padding:var(--sp-2) var(--sp-3); }
+    .code-lang { font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:1px; }
+    pre.code-body { background:var(--sunken); padding:var(--sp-4); font-family:var(--font-mono); font-size:14px; line-height:1.6; overflow-x:auto; white-space:pre; color:var(--black); }
+
+    .steps { display:flex; flex-direction:column; gap:0; border-top:var(--bd-thick) solid var(--black); }
+    .step { display:flex; gap:var(--sp-4); padding:var(--sp-4) 0; border-bottom:var(--bd-thick) solid var(--black); }
+    .step-num { flex-shrink:0; width:44px; height:44px; background:var(--black); color:var(--white); display:flex; align-items:center; justify-content:center; font-family:var(--font-head); font-size:20px; }
+    .step-title { font-family:var(--font-head); font-size:18px; text-transform:uppercase; margin-bottom:var(--sp-1); }
+    .step-body { font-size:15px; line-height:1.6; }
+
+    figure { margin:var(--sp-4) 0; border:var(--bd-thick) solid var(--black); background:var(--white); }
+    figure svg { width:100%; height:auto; display:block; }
+    figcaption { font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:1px; padding:var(--sp-2) var(--sp-3); border-top:var(--bd-thick) solid var(--black); }
+
+    footer { padding:var(--sp-5) var(--sp-4); background:var(--black); color:var(--white); display:flex; justify-content:space-between; align-items:center; gap:var(--sp-3); flex-wrap:wrap; font-family:var(--font-mono); font-size:13px; text-transform:uppercase; letter-spacing:1px; }
+    footer a { color:var(--white); }
+
+    @media (max-width:640px) { .hero { padding:var(--sp-6) var(--sp-4) var(--sp-5); } .section { padding:var(--sp-5) var(--sp-4); } }
+    @media (prefers-reduced-motion:reduce) { * { transition:none !important; scroll-behavior:auto !important; } }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">SKILL SYNC</span>
+  <span class="topbar-meta">2026-06-20</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap">
+    <div class="eyebrow">CLAUDE CODE · DOTFILES · GIT</div>
+    <h1>한 <em>레포</em> + 한 <em>심링크</em></h1>
+    <p class="hero-desc">머신마다 따로 노는 Claude Code 스킬과 규칙을, git 레포 하나와 심볼릭 링크 하나로 함께 버전 관리한다. 두 번째 머신에서는 clone하고 심링크만 다시 걸면 끝. 단, 양쪽에서 같은 스킬을 고치면 함정이 하나 있다.</p>
+    <div class="hero-chips">
+      <span class="chip-inv">git repo</span>
+      <span class="chip-inv">symlink</span>
+      <span class="chip-inv">merge -s ours</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: 개념 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">01 — 개념</div>
+    <h2 class="section-title">표준 경로는 그대로, git은 실파일을 추적</h2>
+    <p class="section-desc"><code class="inl">~/.claude/skills</code>를 git 레포로 만들고, 전역 <code class="inl">~/.claude/CLAUDE.md</code>를 그 레포로 옮긴 뒤 <strong>심링크로 원래 자리에 되돌린다</strong>. Claude는 여전히 표준 경로를 읽고, git은 심링크 뒤의 진짜 파일을 추적한다. 그래서 규칙과 스킬이 한 버전으로 묶인다.</p>
+
+    <figure>
+      <svg viewBox="0 0 760 200" role="img" aria-label="CLAUDE.md 심링크가 skills 레포를 가리키고 레포는 GitHub와 push/pull">
+        <defs>
+          <marker id="ad" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L7,3.2 L0,6.4 Z" fill="#000"/></marker>
+          <marker id="ab1" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L7,3.2 L0,6.4 Z" fill="#0000FF"/></marker>
+          <marker id="ab2" markerWidth="9" markerHeight="9" refX="2" refY="3.2" orient="auto"><path d="M7,0 L0,3.2 L7,6.4 Z" fill="#0000FF"/></marker>
+        </defs>
+        <!-- box1 CLAUDE.md (점선) -->
+        <rect x="20" y="58" width="210" height="80" fill="none" stroke="#000" stroke-width="3" stroke-dasharray="7 5"/>
+        <text x="125" y="92" text-anchor="middle" font-family="monospace" font-size="15" font-weight="700" fill="#000">~/.claude/</text>
+        <text x="125" y="112" text-anchor="middle" font-family="monospace" font-size="15" font-weight="700" fill="#000">CLAUDE.md</text>
+        <text x="125" y="150" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#000">symlink</text>
+        <!-- points to -->
+        <text x="300" y="84" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#000">points to</text>
+        <line x1="230" y1="98" x2="368" y2="98" stroke="#000" stroke-width="3" stroke-dasharray="6 4" marker-end="url(#ad)"/>
+        <!-- box2 skills repo -->
+        <rect x="372" y="58" width="210" height="80" fill="none" stroke="#000" stroke-width="5"/>
+        <text x="477" y="103" text-anchor="middle" font-family="monospace" font-size="15" font-weight="700" fill="#000">~/.claude/skills/</text>
+        <text x="477" y="150" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#000">git repo</text>
+        <!-- push/pull -->
+        <text x="640" y="84" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#0000FF">push / pull</text>
+        <line x1="586" y1="98" x2="694" y2="98" stroke="#0000FF" stroke-width="3" marker-start="url(#ab2)" marker-end="url(#ab1)"/>
+        <!-- box3 GitHub -->
+        <rect x="640" y="58" width="100" height="80" fill="#000"/>
+        <text x="690" y="100" text-anchor="middle" font-family="monospace" font-size="14" font-weight="700" fill="#fff">GitHub</text>
+        <text x="690" y="150" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#000">claude-skills</text>
+      </svg>
+      <figcaption>FIG.01 — 심링크는 표준 경로를 유지하고, git은 그 뒤의 실파일을 GitHub와 동기화</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- SECTION 2: 셋업 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">02 — 셋업</div>
+    <h2 class="section-title">레포로 만들고 심링크로 되돌린다</h2>
+    <p class="section-desc">처음 한 번만 설정하면 된다. 이후 두 번째 머신은 clone + 심링크가 전부다.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">skills를 git 레포로 만들고 push</div>
+          <div class="step-body"><code class="inl">~/.claude/skills</code>를 git 레포로 초기화해 GitHub로 올린다.</div>
+          <div class="code-wrap">
+            <div class="code-bar"><span class="code-lang">bash</span><span class="code-lang">$</span></div>
+            <pre class="code-body">cd ~/.claude/skills
+git init && git add -A && git commit -m "skills"
+git remote add origin git@github.com:you/claude-skills.git
+git push -u origin main</pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">CLAUDE.md를 레포로 옮기고 심링크</div>
+          <div class="step-body">전역 규칙 파일을 레포 안으로 옮긴 뒤, 원래 자리에 심링크를 건다.</div>
+          <div class="code-wrap">
+            <div class="code-bar"><span class="code-lang">bash</span><span class="code-lang">$</span></div>
+            <pre class="code-body">mv ~/.claude/CLAUDE.md ~/.claude/skills/CLAUDE.md
+ln -s ~/.claude/skills/CLAUDE.md ~/.claude/CLAUDE.md</pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">두 번째 머신: clone + 심링크</div>
+          <div class="step-body">새 머신에서는 레포를 clone하고 심링크만 다시 걸면 끝난다.</div>
+          <div class="code-wrap">
+            <div class="code-bar"><span class="code-lang">bash</span><span class="code-lang">$</span></div>
+            <pre class="code-body">git clone git@github.com:you/claude-skills.git ~/.claude/skills
+ln -s ~/.claude/skills/CLAUDE.md ~/.claude/CLAUDE.md</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">심링크 주의</div>
+      네이티브 Windows는 심링크에 별도 권한이 필요하다(WSL2는 정상 동작). 머신마다 경로가 다르면 상대 경로 심링크를 쓰거나, clone 후 심링크를 다시 생성하는 절차를 둔다. 그래서 일부는 이를 "nightmare symlink"라 부른다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: 함정 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">03 — 함정</div>
+    <h2 class="section-title">아무도 경고 안 해주는 그것</h2>
+    <p class="section-desc">두 머신에서 <strong>같은 스킬을 각각 고치면</strong>, push는 거부되고 pull은 충돌을 던진다. 두 히스토리가 갈라졌고, git은 어느 쪽이 이겨야 하는지 스스로 판단하지 않는다.</p>
+
+    <figure>
+      <svg viewBox="0 0 760 210" role="img" aria-label="공통 base에서 두 머신 히스토리가 갈라져 충돌">
+        <defs>
+          <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L7,3.2 L0,6.4 Z" fill="#000"/></marker>
+        </defs>
+        <!-- base -->
+        <circle cx="380" cy="46" r="14" fill="#000"/>
+        <text x="380" y="28" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#000">origin/main (base)</text>
+        <!-- 분기 라인 -->
+        <line x1="368" y1="56" x2="220" y2="118" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+        <line x1="392" y1="56" x2="540" y2="118" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+        <!-- machine A -->
+        <rect x="120" y="126" width="190" height="56" fill="none" stroke="#000" stroke-width="3"/>
+        <text x="215" y="150" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#000">MACHINE A</text>
+        <text x="215" y="170" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#000">skill.md 편집 → commit</text>
+        <!-- machine B -->
+        <rect x="450" y="126" width="190" height="56" fill="none" stroke="#000" stroke-width="3"/>
+        <text x="545" y="150" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#000">MACHINE B</text>
+        <text x="545" y="170" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#000">같은 파일 편집 → commit</text>
+        <!-- 충돌 표시 중앙 -->
+        <text x="380" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#FF0000">✕ diverged</text>
+        <text x="380" y="150" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#FF0000">push rejected</text>
+        <text x="380" y="170" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#FF0000">pull conflict</text>
+      </svg>
+      <figcaption>FIG.02 — 공통 base에서 두 머신이 갈라지면 git은 승자를 추측하지 않는다</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- SECTION 4: 해결 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">04 — 해결</div>
+    <h2 class="section-title">한 머신을 '진실의 원천'으로</h2>
+    <p class="section-desc">진실의 원천으로 삼을 머신을 하나 고른다. 그 머신에서 아래를 실행하면, 그 머신의 내용을 유지한 채 다른 머신의 히스토리를 접어 넣고(유실 없음), 원격이 이 머신과 일치하게 된다.</p>
+
+    <div class="code-wrap">
+      <div class="code-bar"><span class="code-lang">bash · source-of-truth 머신</span><span class="code-lang">$</span></div>
+      <pre class="code-body">git merge -s ours origin/main
+git push</pre>
+    </div>
+
+    <div class="callout err">
+      <div class="callout-title">단 하나의 함정</div>
+      <code class="inl">-s ours</code> 전략은 다른 머신의 <strong style="background:none;color:inherit;padding:0">충돌하는 편집을 결과에서 버린다</strong>. 그 편집은 히스토리에는 남지만 대체(superseded)된다. "이 머신이 이긴다"를 정말로 의도할 때만 쓴다.
+    </div>
+    <div class="callout">
+      <div class="callout-title">왜 -s ours 인가</div>
+      <code class="inl">git merge -s ours</code>는 결과 트리를 현재 머신 그대로 두면서, origin/main을 머지 커밋의 부모로 기록한다. 그래서 git이 더는 "갈라졌다"고 보지 않아 push가 통과한다. (참고: 충돌난 부분만 우리 쪽으로 해결하고 나머지는 가져오고 싶다면 <code class="inl">-X ours</code>는 다른 동작이다.)
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: 대안 비교 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">05 — 대안</div>
+    <h2 class="section-title">스레드가 제안한 다른 길들</h2>
+    <p class="section-desc">git+심링크가 유일한 답은 아니다. 댓글에서 나온 대안들을 정리했다. 자동화 수준과 에이전트 범용성에서 갈린다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>방식</th><th>요지</th><th>자동화</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td><strong>git + symlink</strong></td><td>레포 하나 + 심링크 하나로 규칙·스킬 버전 관리</td><td><span class="chip warn">수동</span></td><td>충돌 시 <code class="inl">-s ours</code>. Windows·경로 주의</td></tr>
+          <tr><td><strong>skills.sh</strong></td><td><code class="inl">npx skills add owner/repo</code>로 스킬 설치. Agent Skills 오픈 표준</td><td><span class="chip warn">수동</span></td><td>Claude 외 다수 에이전트 지원. 자체 동기화 기능은 아님</td></tr>
+          <tr><td><strong>skillless</strong></td><td>skills.sh 위 레이어. CSV 프리셋으로 묶음 설치·심링크 자동화</td><td><span class="chip warn">반자동</span></td><td><code class="inl">npx skillless pack &lt;category&gt;</code>. 여러 에이전트·전역/로컬</td></tr>
+          <tr><td><strong>Syncthing</strong></td><td>P2P 파일 실시간 동기화로 skills 폴더를 미러링</td><td><span class="chip ok">자동</span></td><td>외부 도구 의존·동시 편집 충돌 관리 필요</td></tr>
+          <tr><td><strong>AI에게 위임</strong></td><td>"내 GitHub 스킬 레포 가서 동기화하고 읽어" 라고 에이전트에 지시</td><td><span class="chip warn">대화형</span></td><td>원작자 방식. Codex·Claude 혼용</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">출처 메모</div>
+      이 페이지는 X(@wenchang_yue) 스레드와 댓글, 그리고 <a href="https://www.skills.sh/" target="_blank" rel="noopener">skills.sh</a>·<a href="https://github.com/5kahoisaac/skillless" target="_blank" rel="noopener">skillless</a> 공식 자료를 기반으로 정리했다. 명령어·전략은 git 공식 문서와 교차 확인했으나, 환경(OS·경로·권한)에 따라 동작이 달라질 수 있으니 실제 적용 전 테스트 레포에서 검증하길 권한다.
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: 정리 -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-label">06 — 정리</div>
+    <h2 class="section-title">규칙은 하나, 충돌은 의도적으로</h2>
+    <div class="cards">
+      <div class="card card-elevated">
+        <div class="card__title">단일 원천</div>
+        <div class="card__body"><p>레포 하나를 공유 베이스로 두고, 모든 머신이 거기서만 당겨 쓴다.</p></div>
+        <span class="card__tag">one repo</span>
+      </div>
+      <div class="card card-elevated">
+        <div class="card__title">의도된 승자</div>
+        <div class="card__body"><p>충돌은 git이 아니라 사람이 정한다. <code class="inl">-s ours</code>는 "이 머신이 이긴다"는 선언이다.</p></div>
+        <span class="card__tag">-s ours</span>
+      </div>
+      <div class="card card-elevated">
+        <div class="card__title">필요하면 도구로</div>
+        <div class="card__body"><p>심링크가 부담이면 skillless·Syncthing 같은 레이어로 자동화한다.</p></div>
+        <span class="card__tag">skillless</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>머신 간 Claude 스킬 동기화</span>
+  <span>#ClaudeCode #Dotfiles #Git · 2026-06-20</span>
+</footer>
+
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="AUMF674" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
