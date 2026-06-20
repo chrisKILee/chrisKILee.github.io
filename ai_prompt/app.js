@@ -789,6 +789,20 @@
     render();
   }
 
+  // 입력 중(텍스트/IME)에는 폼 DOM을 다시 그리지 않고 미리보기만 갱신한다.
+  // 전체 render()는 innerHTML을 재구성해 input을 파괴 → 포커스 손실·한글 조합 끊김을 유발한다.
+  function updateValuesPreviewOnly(nextState) {
+    state = nextState;
+    persist();
+    renderPreviewOnly();
+  }
+
+  function renderPreviewOnly() {
+    const prompt = renderPrompt(state);
+    els.promptPreview.value = prompt;
+    els.charCount.textContent = prompt.length.toLocaleString("ko-KR");
+  }
+
   function render() {
     const template = getTemplate(state.selectedTemplateId);
     els.activeTemplateName.textContent = template.name;
@@ -803,9 +817,7 @@
     renderMessages();
     renderOutputMode();
     els.includeNegative.checked = state.includeNegative;
-    const prompt = renderPrompt(state);
-    els.promptPreview.value = prompt;
-    els.charCount.textContent = prompt.length.toLocaleString("ko-KR");
+    renderPreviewOnly();
   }
 
   function renderTemplates() {
@@ -1365,7 +1377,7 @@
     const input = event.target.closest("[data-field-id]");
     if (!input) return;
     const value = input.type === "checkbox" ? input.checked : input.value;
-    setState({
+    updateValuesPreviewOnly({
       ...state,
       values: {
         ...state.values,
@@ -1406,7 +1418,7 @@
         [field]: input.type === "checkbox" ? input.checked : input.value,
       };
     });
-    setState({ ...state, messages });
+    updateValuesPreviewOnly({ ...state, messages });
   }
 
   function handleMessageAction(event) {
