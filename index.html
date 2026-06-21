@@ -530,6 +530,45 @@
     .star-btn:hover { color: #f59e0b; background: #fef9c3; }
     .star-btn.is-active { color: #f59e0b; }
     .star-btn.is-active:hover { color: #b45309; background: #fef9c3; }
+
+    /* ===== RECENT (최근 10일) ===== */
+    .directory-section { scroll-margin-top: 76px; }
+    .recent-section {
+      padding: 8px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .recent-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .recent-header h3 {
+      font-size: 0.85rem; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .recent-sub {
+      font-size: 0.75rem; background: #dcfce7; color: #15803d;
+      border-radius: 20px; padding: 1px 8px; font-weight: 700;
+    }
+    .recent-list { display: flex; flex-direction: column; gap: 2px; }
+    .recent-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 10px; border-radius: 8px;
+      text-decoration: none; color: var(--text);
+      transition: background 0.12s;
+    }
+    .recent-item:hover { background: #f9fafb; }
+    .recent-date {
+      font-size: 0.78rem; font-variant-numeric: tabular-nums;
+      color: var(--text-muted); flex-shrink: 0; width: 42px; font-weight: 600;
+    }
+    .recent-title {
+      font-size: 0.9rem; font-weight: 500; flex: 1; min-width: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .recent-cat {
+      font-size: 0.68rem; color: #6366f1;
+      background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 8px; padding: 2px 8px; flex-shrink: 0;
+    }
+    @media (max-width: 768px) { .recent-cat { display: none; } }
   </style>
 </head>
 
@@ -588,6 +627,17 @@
           <span class="favorites-count" id="favCount">0</span>
         </div>
         <div class="file-grid" id="favGrid"></div>
+      </div>
+    </div>
+
+    <!-- RECENT (최근 10일) -->
+    <div id="recentSection" style="display:none">
+      <div class="recent-section">
+        <div class="recent-header">
+          <h3>🆕 최근 글</h3>
+          <span class="recent-sub">최근 10일 · <span id="recentCount">0</span></span>
+        </div>
+        <div class="recent-list" id="recentList"></div>
       </div>
     </div>
 
@@ -1019,6 +1069,44 @@
         .join('');
     }
 
+    // =============================================
+    // RECENT (최근 10일)
+    // =============================================
+    function renderRecent() {
+      const section = document.getElementById('recentSection');
+      const list = document.getElementById('recentList');
+      const countEl = document.getElementById('recentCount');
+      if (!section || !list) return;
+
+      if (!siteConfig.files) { section.style.display = 'none'; return; }
+
+      const cutoff = Date.now() - 10 * 86400000; // 10일
+      const recent = Object.entries(siteConfig.files)
+        .filter(([, f]) => f.createdAt && new Date(f.createdAt).getTime() >= cutoff)
+        .filter(([, f]) => isAdmin || f.visible)
+        .sort((a, b) => new Date(b[1].createdAt) - new Date(a[1].createdAt));
+
+      if (recent.length === 0) { section.style.display = 'none'; return; }
+
+      section.style.display = '';
+      if (countEl) countEl.textContent = recent.length;
+
+      list.innerHTML = recent.map(([, f]) => {
+        const folder = siteConfig.folders && siteConfig.folders[f.categoryHash];
+        const linkUrl = computeFilePath(f, folder);
+        const cat = (folder && folder.displayName) || '미분류';
+        const title = f.displayName || f.filename.replace(/\.[^/.]+$/, '');
+        const d = new Date(f.createdAt);
+        const dateStr = `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+        return `
+          <a class="recent-item" href="${linkUrl}">
+            <span class="recent-date">${dateStr}</span>
+            <span class="recent-title">${esc(title)}</span>
+            <span class="recent-cat">${esc(cat)}</span>
+          </a>`;
+      }).join('');
+    }
+
     function exportConfig() {
       const json = JSON.stringify(siteConfig, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
@@ -1107,6 +1195,7 @@
       }
 
       renderFavorites();
+      renderRecent();
       updateStats();
       initSearch();
     }
@@ -2048,44 +2137,46 @@
           z-index: 200;
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 1px;
+          width: 184px;
           max-height: 80vh;
           overflow-y: auto;
-          scrollbar-width: none;
+          scrollbar-width: thin;
+          background: rgba(255,255,255,0.92);
+          backdrop-filter: blur(8px);
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 8px;
+          box-shadow: 0 8px 28px rgba(0,0,0,0.07);
         }
-        #floating-nav::-webkit-scrollbar { display: none; }
+        #floating-nav::-webkit-scrollbar { width: 5px; }
+        #floating-nav::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+        #floating-nav .fn-title {
+          font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.08em; color: #9ca3af;
+          padding: 2px 10px 6px;
+        }
         #floating-nav .fn-item {
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          background: #d1d5db;
+          display: block;
+          padding: 6px 10px;
+          border-radius: 7px;
+          font-size: 0.78rem;
+          line-height: 1.3;
+          color: #6b7280;
           cursor: pointer;
-          transition: all 0.2s;
-          position: relative;
-        }
-        #floating-nav .fn-item:hover {
-          background: #059669;
-          transform: scale(1.4);
-        }
-        #floating-nav .fn-item.active { background: #059669; }
-        #floating-nav .fn-item .fn-tooltip {
-          position: absolute;
-          right: 18px;
-          top: 50%;
-          transform: translateY(-50%);
-          background: #111;
-          color: #fff;
-          font-size: 11px;
-          font-family: 'Inter', sans-serif;
-          padding: 4px 8px;
-          border-radius: 4px;
           white-space: nowrap;
-          pointer-events: none;
-          opacity: 0;
-          transition: opacity 0.15s;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          border-left: 2px solid transparent;
+          transition: background 0.15s, color 0.15s, border-color 0.15s;
+          font-family: 'Inter', sans-serif;
         }
-        #floating-nav .fn-item:hover .fn-tooltip { opacity: 1; }
-        @media (max-width: 1200px) { #floating-nav { display: none; } }
+        #floating-nav .fn-item:hover { background: #f3f4f6; color: #111; }
+        #floating-nav .fn-item.active {
+          color: #059669; font-weight: 600;
+          border-left-color: #059669; background: rgba(5,150,105,0.06);
+        }
+        @media (max-width: 1240px) { #floating-nav { display: none; } }
       `;
       document.head.appendChild(style);
 
@@ -2099,18 +2190,19 @@
         const sections = document.querySelectorAll('.directory-section[data-dir-id]');
         if (!sections.length) return;
 
-        nav.innerHTML = '';
+        nav.innerHTML = '<div class="fn-title">카테고리</div>';
         sections.forEach(sec => {
           const nameEl = sec.querySelector('.dir-name');
           const label = nameEl ? nameEl.textContent.trim() : sec.dataset.dirId;
 
-          const dot = document.createElement('div');
-          dot.className = 'fn-item';
-          dot.innerHTML = `<span class="fn-tooltip">${label}</span>`;
-          dot.addEventListener('click', () => {
+          const item = document.createElement('div');
+          item.className = 'fn-item';
+          item.textContent = label;
+          item.title = label;
+          item.addEventListener('click', () => {
             sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
           });
-          nav.appendChild(dot);
+          nav.appendChild(item);
         });
 
         updateActive();
