@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 시대의 E2E 테스트 — 에이전틱 테스팅의 역할과 도구 변화</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:     #0E0E0B;
+      --ink-2:   #3A3A36;
+      --ink-3:   #6B6B64;
+      --ink-4:   #A8A8A0;
+      --paper:   #F7F7F4;
+      --paper-2: #EFEFEB;
+      --white:   #FFFFFF;
+      --rule:    #D8D8D0;
+      --accent:  #0E0E0B;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Masthead ── */
+    .masthead {
+      position: sticky;
+      top: 48px;
+      z-index: 50;
+      background: var(--paper);
+      border-bottom: 3px solid var(--ink);
+      padding: 20px 40px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .masthead-name {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .masthead-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-4);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── Lead / Hero ── */
+    .lead {
+      border-bottom: 1px solid var(--rule);
+      padding: 80px 40px 64px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .lead-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .lead-eyebrow::before { content: '//'; color: var(--ink-4); }
+    .lead h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.6rem, 6.5vw, 5rem);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      margin-bottom: 28px;
+      max-width: 920px;
+    }
+    .lead h1 em {
+      font-style: italic;
+      font-weight: 400;
+    }
+    .lead-deck {
+      font-size: 19px;
+      color: var(--ink-2);
+      max-width: 660px;
+      line-height: 1.65;
+      border-left: 3px solid var(--ink);
+      padding-left: 20px;
+      margin-bottom: 40px;
+    }
+    .lead-byline {
+      font-size: 13px;
+      color: var(--ink-4);
+      font-family: var(--font-mono);
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .lead-byline span::before { content: '— '; }
+
+    /* ── body ── */
+    .page-body {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    .doc-section {
+      padding: 56px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .doc-section:last-child { border-bottom: none; }
+
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-4);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
+    .section-lead {
+      font-size: 16px;
+      color: var(--ink-3);
+      max-width: 660px;
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+    .prose { font-size: 15px; color: var(--ink-2); max-width: 700px; line-height: 1.78; }
+    .prose + .prose { margin-top: 18px; }
+    .prose strong { color: var(--ink); font-weight: 700; }
+
+    /* ── Two-column rule layout ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+    .col-item {
+      padding: 28px;
+      border: 1px solid var(--rule);
+    }
+    .col-item + .col-item { border-left: none; }
+    @media (max-width: 680px) { .col-item + .col-item { border-left: 1px solid var(--rule); border-top: none; } }
+    .col-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 10px;
+      font-family: var(--font-mono);
+    }
+    .col-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
+    .col-body { font-size: 14px; color: var(--ink-3); line-height: 1.7; }
+
+    /* ── Pull quote ── */
+    .pullquote {
+      border-top: 3px solid var(--ink);
+      border-bottom: 1px solid var(--rule);
+      padding: 32px 0;
+      margin: 40px 0;
+    }
+    .pullquote p {
+      font-family: var(--font-display);
+      font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.4;
+      color: var(--ink);
+    }
+    .pullquote cite {
+      display: block;
+      margin-top: 12px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      color: var(--ink-4);
+      font-style: normal;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      border-bottom: 2px solid var(--ink);
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      font-family: var(--font-mono);
+    }
+    td { border-bottom: 1px solid var(--rule); padding: 14px 16px; font-size: 14px; color: var(--ink-2); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--paper-2); }
+    td.good { color: var(--ink); font-weight: 700; }
+
+    /* ── Code ── */
+    pre.code {
+      background: var(--ink);
+      color: #E8E8E0;
+      border-radius: 4px;
+      padding: 20px 24px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      margin: 20px 0;
+    }
+    code.inline {
+      background: var(--paper-2);
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ink-2);
+    }
+
+    /* ── Fact strip ── */
+    .facts { display: flex; gap: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+    .fact { flex: 1; padding: 24px 28px; border-right: 1px solid var(--rule); }
+    .fact:last-child { border-right: none; }
+    .fact-num {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .fact-label { font-size: 13px; color: var(--ink-4); font-family: var(--font-mono); line-height: 1.5; }
+
+    /* ── Figure ── */
+    figure { margin: 32px 0 8px; }
+    figure svg { width: 100%; height: auto; display: block; background: var(--white); border: 1px solid var(--rule); border-radius: 4px; }
+    figcaption { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 10px; }
+
+    /* ── Callout ── */
+    .callout {
+      border-left: 3px solid var(--ink);
+      background: var(--paper-2);
+      padding: 20px 24px;
+      margin: 28px 0;
+      font-size: 14px;
+      color: var(--ink-2);
+      line-height: 1.7;
+    }
+    .callout b { color: var(--ink); }
+
+    /* ── List ── */
+    ul.tick { list-style: none; margin: 18px 0; }
+    ul.tick li { position: relative; padding-left: 26px; margin-bottom: 12px; font-size: 15px; color: var(--ink-2); line-height: 1.65; }
+    ul.tick li::before { content: '→'; position: absolute; left: 0; color: var(--ink); font-family: var(--font-mono); }
+    ul.tick li strong { color: var(--ink); }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 3px solid var(--ink);
+      padding: 28px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--ink-4);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    footer a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--rule); }
+
+    @media (max-width: 640px) {
+      .masthead, .lead, footer { padding-left: 16px; padding-right: 16px; }
+      .page-body { padding: 0 16px; }
+      .facts { flex-direction: column; }
+      .fact { border-right: none; border-bottom: 1px solid var(--rule); }
+      .fact:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <span class="masthead-name">AI 시대의 E2E 테스트 · 에이전틱 테스팅</span>
+  <span class="masthead-meta">2026-06-23 &nbsp;·&nbsp; AI · TESTING</span>
+</header>
+
+<!-- LEAD -->
+<div class="lead">
+  <div class="lead-eyebrow">Slack Engineering · 200+ 실험 분석</div>
+  <h1>AI 시대의 E2E 테스트<br><em>에이전트는 어디에 들어맞는가</em></h1>
+  <p class="lead-deck">
+    "결정론적 테스트를 에이전트가 대체할 수 있는가?" Slack 엔지니어링이 200건 이상의
+    자동화 실행으로 신뢰성·속도·비용을 측정했다. 결론은 대체가 아니라 <strong>역할 분담</strong>이다.
+    이 글은 그 데이터와 함께 "지금 가장 합리적인 테스트 전략"을 정리한다.
+  </p>
+  <div class="lead-byline">
+    <span>작성일: 2026-06-23</span>
+    <span>원문: slack.engineering</span>
+    <span>경유: GeekNews(news.hada.io)</span>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- FACT STRIP -->
+  <div class="facts" style="margin: 40px 0;">
+    <div class="fact"><div class="fact-num">200+</div><div class="fact-label">에이전트 워크플로 실행 횟수</div></div>
+    <div class="fact"><div class="fact-num">0%</div><div class="fact-label">Playwright MCP 단순 흐름 실패율</div></div>
+    <div class="fact"><div class="fact-num">~80%</div><div class="fact-label">실행 간 경로가 달라진 비율</div></div>
+    <div class="fact"><div class="fact-num">$15–30</div><div class="fact-label">에이전틱 실행 1회당 비용</div></div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <section class="doc-section">
+    <div class="section-num">01 — 패러다임의 차이</div>
+    <h2 class="section-heading">"경로를 강제"하던 테스트에서 "목표를 검증"하는 테스트로</h2>
+    <p class="section-lead">
+      전통적 E2E는 클릭·입력의 정확한 순서를 스크립트로 고정한다. 에이전틱 테스팅은
+      목표만 주고, 에이전트가 화면을 관찰·추론하며 스스로 경로를 찾는다. 같은 결과에
+      도달하는 길이 여러 개라는 점이 핵심 차이다.
+    </p>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">결정론적 E2E</div>
+        <div class="col-title">정해진 여정을 강제</div>
+        <div class="col-body">
+          <code class="inline">click → type → click → assert</code> 순서를 사전에 스크립트로 박는다.
+          빠르고 저렴하며 재현 가능하지만, UI가 바뀌면 깨지고 "다른 경로의 성공"은 보지 못한다.
+        </div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">에이전틱 테스팅</div>
+        <div class="col-title">목표 달성 가능성을 검증</div>
+        <div class="col-body">
+          <code class="inline">goal → 관찰·추론 → 행동 → 결과 검증</code>. 사람이 쓰듯 다양한 경로로
+          목표에 도달한다. 유연하지만 느리고($15–30/회) 비결정적이라 CI 반복엔 부적합하다.
+        </div>
+      </div>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 720 360" role="img" aria-label="결정론적 E2E와 에이전틱 테스팅의 실행 흐름 비교">
+        <!-- divider -->
+        <line x1="360" y1="20" x2="360" y2="340" stroke="#D8D8D0" stroke-width="1" stroke-dasharray="4 4"/>
+        <!-- headers -->
+        <text x="190" y="40" text-anchor="middle" font-family="'Playfair Display',serif" font-size="17" font-weight="700" fill="#0E0E0B">결정론적 E2E</text>
+        <text x="530" y="40" text-anchor="middle" font-family="'Playfair Display',serif" font-size="17" font-weight="700" fill="#0E0E0B">에이전틱 테스팅</text>
+
+        <!-- LEFT lane boxes -->
+        <rect x="70" y="62" width="240" height="36" fill="#F7F7F4" stroke="#0E0E0B" stroke-width="1.5"/>
+        <text x="190" y="84" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#0E0E0B">① 목표: 스레드에 댓글 작성</text>
+        <line x1="190" y1="98" x2="190" y2="116" stroke="#6B6B64" stroke-width="1.5" marker-end="url(#ar)"/>
+
+        <rect x="70" y="118" width="240" height="36" fill="#FFFFFF" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="190" y="140" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#3A3A36">② 고정 스크립트 그대로 실행</text>
+        <line x1="190" y1="154" x2="190" y2="172" stroke="#6B6B64" stroke-width="1.5" marker-end="url(#ar)"/>
+
+        <rect x="70" y="174" width="240" height="36" fill="#FFFFFF" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="190" y="196" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#3A3A36">③ click→type→click (단일 경로)</text>
+        <line x1="190" y1="210" x2="190" y2="228" stroke="#6B6B64" stroke-width="1.5" marker-end="url(#ar)"/>
+
+        <rect x="70" y="230" width="240" height="36" fill="#FFFFFF" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="190" y="252" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#3A3A36">④ assert 로 결과 검증</text>
+
+        <text x="190" y="300" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#6B6B64">경로 100% 동일 · 빠름 · 저비용</text>
+
+        <!-- RIGHT lane boxes -->
+        <rect x="410" y="62" width="240" height="36" fill="#0E0E0B" stroke="#0E0E0B" stroke-width="1.5"/>
+        <text x="530" y="84" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#F7F7F4">① 목표: 스레드에 댓글 작성</text>
+        <line x1="530" y1="98" x2="530" y2="116" stroke="#6B6B64" stroke-width="1.5" marker-end="url(#ar)"/>
+
+        <rect x="410" y="118" width="240" height="36" fill="#FFFFFF" stroke="#0E0E0B" stroke-width="1.2"/>
+        <text x="530" y="140" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#0E0E0B">② 화면 관찰 · 추론</text>
+        <line x1="530" y1="154" x2="530" y2="172" stroke="#6B6B64" stroke-width="1.5" marker-end="url(#ar)"/>
+
+        <rect x="410" y="174" width="240" height="36" fill="#FFFFFF" stroke="#0E0E0B" stroke-width="1.2"/>
+        <text x="530" y="196" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#0E0E0B">③ 경로 자율 선택 (≈80% 변형)</text>
+        <line x1="530" y1="210" x2="530" y2="228" stroke="#6B6B64" stroke-width="1.5" marker-end="url(#ar)"/>
+
+        <rect x="410" y="230" width="240" height="36" fill="#FFFFFF" stroke="#0E0E0B" stroke-width="1.2"/>
+        <text x="530" y="252" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#0E0E0B">④ 목표 달성 여부 검증</text>
+
+        <text x="530" y="300" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#6B6B64">경로 가변 · 느림 · 고비용 · 탐색형</text>
+
+        <defs>
+          <marker id="ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#6B6B64"/>
+          </marker>
+        </defs>
+      </svg>
+      <figcaption>그림 1 — 같은 목표, 다른 실행 모델. 왼쪽은 경로를 고정하고 오른쪽은 결과를 검증한다.</figcaption>
+    </figure>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section class="doc-section">
+    <div class="section-num">02 — 실험 설계</div>
+    <h2 class="section-heading">Slack은 무엇을, 어떻게 측정했나</h2>
+    <p class="section-lead">
+      200건 이상의 자동화 실행을 3가지 실행 모델 × 5가지 구성(각 20회 반복)으로 돌려
+      신뢰성·실행시간·비용을 정량 비교했다. 실행은 비대화형 Claude Code(<code class="inline">claude -p</code>)로 수행.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>실행 모델</th><th>구동 방식</th><th>사용 모델</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="good">Playwright MCP</td><td>구조화된 브라우저 프리미티브를 도구 호출로 통합</td><td>Claude Sonnet 4.5</td></tr>
+          <tr><td class="good">Playwright CLI</td><td>에이전트와 브라우저 사이에 CLI 레이어 추가</td><td>Claude Sonnet 4.5</td></tr>
+          <tr><td class="good">Generated Tests</td><td>에이전트가 Playwright 테스트 코드를 생성 후 실행</td><td>Claude Opus 4.6</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ul class="tick">
+      <li><strong>대상 시나리오</strong> — Thread Reply(단순, ≈15–20단계) vs Search Discovery(중복잡도, ≈25–30단계)</li>
+      <li><strong>입력 형식</strong> — 자연어(NL)와 구조화된 YAML을 비교</li>
+      <li><strong>경로 측정</strong> — action signature를 정규화해 도구 호출·UI 동작 순서를 비교</li>
+    </ul>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section class="doc-section">
+    <div class="section-num">03 — 데이터</div>
+    <h2 class="section-heading">신뢰성 · 속도 · 비용, 숫자로 보기</h2>
+    <p class="section-lead">
+      가장 또렷한 결론: 신뢰성과 비용은 모델보다 <strong>실행 환경(인프라)</strong>이 좌우한다.
+      MCP는 단순 흐름에서 0% 실패, 복잡한 흐름에서도 12% 이내로 가장 안정적이었다.
+    </p>
+
+    <h3 style="font-family:var(--font-display);font-size:18px;margin:8px 0 4px;">신뢰성 — 실패율(낮을수록 좋음)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>접근 방식</th><th>Thread Reply (단순)</th><th>Search Discovery (복잡)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="good">Playwright MCP</td><td>0%</td><td>~12%</td></tr>
+          <tr><td class="good">Playwright CLI</td><td>~12%</td><td>~20%</td></tr>
+          <tr><td class="good">Generated Tests</td><td>~8%</td><td>~48%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-family:var(--font-display);font-size:18px;margin:32px 0 4px;">속도 · 비용</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>접근 방식</th><th>평균 실행시간</th><th>턴 수</th><th>토큰(복잡 흐름)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="good">Generated Tests</td><td>~3분</td><td>~70</td><td>~7M</td></tr>
+          <tr><td class="good">Playwright MCP</td><td>~5–8분</td><td>~40–60</td><td>~3.5–3.8M</td></tr>
+          <tr><td class="good">Playwright CLI</td><td>~9–11분</td><td>~85</td><td>~6M</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="prose" style="margin-top:14px;color:var(--ink-3);">
+      생성 테스트는 코드 생성(1회) + 실행(5회)을 포함한 수치다. 순수 실행만 보면 Thread Reply 32초,
+      Search Discovery 45초로 가장 빠르다. 반면 에이전트 실행은 회당 <strong>$15–30</strong>이 든다.
+    </p>
+
+    <div class="pullquote">
+      <p>"신뢰성·속도·비용은 모델뿐 아니라 실행 환경이 얼마나 안정적이고 잘 설계됐는지에 달려 있다."</p>
+      <cite>Slack Engineering</cite>
+    </div>
+
+    <p class="prose">
+      CLI가 불안정했던 이유는 에이전트와 브라우저 사이의 <strong>추가 레이어</strong> 때문이다 —
+      인증 처리, 네비게이션 타이밍, 세션 불안정, 순차 실행 제약. MCP는 브라우저 프리미티브를
+      도구 호출에 긴밀히 통합해 이 마찰을 줄였다.
+    </p>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section class="doc-section">
+    <div class="section-num">04 — 비용의 정체</div>
+    <h2 class="section-heading">왜 회당 $15–30이나 드는가</h2>
+    <p class="section-lead">
+      비용은 모델의 <em>출력</em>이 아니라, 매 턴 컨텍스트가 얼마나 빨리 쌓이고 에이전트가 몇 턴을 도는지가 결정한다.
+      Stateless API라 매 턴마다 지금까지의 내용을 통째로 다시 보낸다.
+    </p>
+
+    <div class="callout">
+      <b>비용의 대부분은 "이미 본 내용의 재전송"이다.</b> 턴마다 새로 추가되는 정보는 극히 일부고,
+      전체 시스템 프롬프트 · 누적 대화 이력 · 브라우저 스냅샷이 반복 전송되면서 토큰이 불어난다.
+    </div>
+
+    <ul class="tick">
+      <li><strong>전체 시스템 프롬프트 재전송</strong> — 매 턴 동일 프롬프트가 다시 청구된다</li>
+      <li><strong>대화 이력 누적</strong> — stateless API 특성상 히스토리가 매번 재전송</li>
+      <li><strong>브라우저 스냅샷 누적</strong> — MCP/CLI는 화면 상태가 컨텍스트로 쌓임</li>
+      <li><strong>에러·어설션 추적</strong> — 생성 테스트는 실패 추적이 토큰을 늘림</li>
+    </ul>
+
+    <p class="prose">
+      따라서 비용 최적화의 핵심은 출력 단축이 아니라 <strong>컨텍스트 관리</strong>다 —
+      prompt caching, context compaction, 스냅샷 빈도 축소가 직접적인 절감 수단이 된다.
+    </p>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section class="doc-section">
+    <div class="section-num">05 — 위치</div>
+    <h2 class="section-heading">테스트 피라미드에서 에이전트의 자리</h2>
+    <p class="section-lead">
+      에이전틱 테스팅은 기존 계층을 대체하지 않는다. 피라미드 맨 위에 새 층으로 얹혀
+      탐색 · 디버깅 · 복잡한 동작 검증을 맡는다. 아래 단단한 결정론 계층이 CI를 떠받친다.
+    </p>
+
+    <figure>
+      <svg viewBox="0 0 720 380" role="img" aria-label="테스트 피라미드에서 에이전틱 테스팅의 위치">
+        <!-- Layer 4 top: Agentic -->
+        <polygon points="360,34 432,108 288,108" fill="#0E0E0B"/>
+        <text x="360" y="92" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#F7F7F4">Agentic</text>
+        <!-- Layer 3: E2E -->
+        <polygon points="288,108 432,108 504,182 216,182" fill="#3A3A36"/>
+        <text x="360" y="152" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#F7F7F4">E2E Tests</text>
+        <!-- Layer 2: Integration -->
+        <polygon points="216,182 504,182 576,256 144,256" fill="#6B6B64"/>
+        <text x="360" y="226" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">Integration Tests</text>
+        <!-- Layer 1 bottom: Unit -->
+        <polygon points="144,256 576,256 648,330 72,330" fill="#A8A8A0"/>
+        <text x="360" y="300" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" font-weight="700" fill="#0E0E0B">Unit Tests</text>
+
+        <!-- annotations right -->
+        <line x1="432" y1="71" x2="640" y2="71" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="640" y="60" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="11" fill="#0E0E0B">탐색 · 디버깅 · 버그 재현</text>
+        <text x="640" y="84" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">느림 · 고비용 · 저빈도</text>
+
+        <!-- annotations left -->
+        <line x1="144" y1="293" x2="80" y2="293" stroke="#D8D8D0" stroke-width="1"/>
+        <text x="80" y="283" text-anchor="start" font-family="'JetBrains Mono',monospace" font-size="11" fill="#0E0E0B">빠름 · 저비용 · 고빈도</text>
+        <text x="80" y="307" text-anchor="start" font-family="'JetBrains Mono',monospace" font-size="10" fill="#A8A8A0">CI의 안정적 토대</text>
+
+        <text x="360" y="360" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#6B6B64">아래로 갈수록 빠르고 저렴 · 위로 갈수록 유연하고 탐색적</text>
+      </svg>
+      <figcaption>그림 2 — 에이전틱 테스팅은 피라미드 최상단의 보완 계층이다.</figcaption>
+    </figure>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section class="doc-section">
+    <div class="section-num">06 — 가장 합리적인 방법</div>
+    <h2 class="section-heading">하이브리드: 결정론적 토대 + 에이전틱 탐색</h2>
+    <p class="section-lead">
+      결론은 명확하다. 둘 중 하나를 고르는 게 아니라 <strong>역할을 나눈다.</strong>
+      결정론적 테스트로 CI를 빠르고 싸게 지키고, 에이전틱 테스팅은 위층에서 사람이 손대기 어려운
+      탐색·디버깅을 맡긴다.
+    </p>
+
+    <div class="two-col">
+      <div class="col-item">
+        <div class="col-label">CI / 회귀 — 결정론적</div>
+        <div class="col-title">기본 안전망</div>
+        <div class="col-body">
+          단순·반복 흐름은 생성/스크립트 테스트로(≈3분, 저비용). 매 PR·매 머지마다 빠르게 돌린다.
+          Thread Reply 같은 단순 흐름의 실패율은 8% 수준으로 충분히 실용적.
+        </div>
+      </div>
+      <div class="col-item">
+        <div class="col-label">탐색 / 디버깅 — 에이전틱</div>
+        <div class="col-title">타깃 투입</div>
+        <div class="col-body">
+          복잡한 UI 동작 탐색, flaky 워크플로 디버깅, 프로덕션 버그 재현에 한해 투입.
+          인프라는 <strong>CLI보다 MCP</strong>를 우선(신뢰성·속도 우위).
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <b>실무 지침.</b> 에이전트 기반 테스트는 현재 고빈도 CI보다 <b>표적 디버깅·탐색 테스트</b>에 더 적합하다.
+      비용이 부담되면 prompt caching · context compaction · 스냅샷 빈도 축소부터 적용한다.
+    </div>
+
+    <pre class="code"># 권장 운영 모델 (요약)
+CI 단계        →  결정론적 E2E (생성/스크립트)   # 빠름·저비용·매번 실행
+릴리스 전 점검  →  에이전틱(MCP) 핵심 시나리오 탐색  # 회귀 스크립트가 못 잡는 경로
+버그 재현/조사  →  에이전틱(MCP) 1회성 실행        # flaky·프로덕션 이슈 추적</pre>
+  </section>
+
+  <!-- SECTION 7 -->
+  <section class="doc-section">
+    <div class="section-num">07 — 도구 변화 & 전망</div>
+    <h2 class="section-heading">툴체인은 어디로 가는가</h2>
+    <p class="prose">
+      이번 실험이 보여준 도구 지형의 변화는 분명하다. <strong>Playwright</strong>는 여전히 실행 기반이지만,
+      그 위에 <strong>MCP(Model Context Protocol)</strong>가 에이전트–브라우저를 잇는 표준 인터페이스로 부상했다.
+      "어떤 모델을 쓰느냐"보다 "브라우저 제어를 어떻게 도구화하느냐"가 신뢰성을 가른다.
+    </p>
+    <ul class="tick">
+      <li><strong>실행 계층</strong> — Playwright(결정론) + Playwright MCP(에이전트) 병행이 현재 가장 안정적</li>
+      <li><strong>비용 곡선</strong> — 모델 효율·prompt caching 개선으로 점진 하락 여지. 지금은 저빈도 사용이 합리적</li>
+      <li><strong>미탐색 영역</strong> — 멀티세션 · 크로스 워크스페이스 워크플로, 병렬화·프롬프트 최적화</li>
+    </ul>
+
+    <div class="pullquote">
+      <p>"미래의 가장 효과적인 테스트 전략은 둘을 결합한다. 결정론적 테스트가 CI의 안정적 토대를 제공하고, 에이전틱 테스팅이 피라미드 최상단에서 탐색·디버깅·복잡한 동작 검증의 층을 더한다."</p>
+      <cite>Slack Engineering — 결론</cite>
+    </div>
+
+    <p class="prose" style="color:var(--ink-3);">
+      원문: <a href="https://slack.engineering/agentic-testing-where-agents-fit-in-the-e2e-testing-stack/" style="color:var(--ink-2);">slack.engineering/agentic-testing-where-agents-fit-in-the-e2e-testing-stack</a>
+      · 경유: <a href="https://news.hada.io/topic?id=30744" style="color:var(--ink-2);">GeekNews</a>
+    </p>
+  </section>
+
+</div><!-- /page-body -->
+
+<!-- FOOTER -->
+<footer>
+  <span>AI 시대의 E2E 테스트 · 에이전틱 테스팅</span>
+  <span>2026-06-23 · AI STUDY</span>
+</footer>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="FW8PFLB" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
