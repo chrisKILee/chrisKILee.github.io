@@ -384,12 +384,31 @@
 Reveal.initialize({
   hash:true, slideNumber:'c/t', transition:'slide',
   width:1280, height:720, margin:0.04, center:false,
-  controls:true, progress:true, keyboard:true,
+  controls:true, progress:true,
+  keyboard:false,   // reveal 내장 키보드 대신 아래에서 직접 처리(임베드/포커스 이슈 회피)
 });
-// iframe 뷰어(카테고리 페이지)에 임베드될 때도 방향키가 동작하도록 포커스 확보
-window.addEventListener('load', () => window.focus());
-document.addEventListener('mouseenter', () => window.focus());
-document.addEventListener('click', () => window.focus());
+
+// 방향키를 window 캡처 단계에서 직접 받아 Reveal API로 전달
+function deckNav(e){
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  switch(e.key){
+    case 'ArrowRight': case 'PageDown': case ' ': Reveal.next(); break;
+    case 'ArrowLeft':  case 'PageUp':  Reveal.prev(); break;
+    case 'ArrowDown': Reveal.down(); break;
+    case 'ArrowUp':   Reveal.up();   break;
+    case 'Home': Reveal.slide(0); break;
+    case 'End':  Reveal.slide(Number.MAX_SAFE_INTEGER); break;
+    default: return;
+  }
+  e.preventDefault();
+}
+window.addEventListener('keydown', deckNav, true);
+
+// iframe 뷰어/직접 접근(주소창 포커스) 양쪽에서 키 입력이 페이지로 오도록 포커스 확보
+const grabFocus = () => { try{ window.focus(); }catch(_){} };
+window.addEventListener('load', grabFocus);
+['pointerdown','mousemove','click','touchstart'].forEach(ev =>
+  document.addEventListener(ev, grabFocus, {passive:true}));
 </script>
 </body>
 </html>
