@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>후쿠오카 3박4일 여행 플래너</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f7fb; --card:#ffffff; --ink:#17202e; --sub:#5a6473; --line:#e4e9f2; --soft:#eef2f8;
+  --blue:#2563eb; --red:#e0533d; --orange:#f59e0b; --green:#16a34a; --navy:#1e3a8a;
+  --shadow:0 8px 30px rgba(24,40,80,.08);
+}
+[data-theme="dark"]{
+  --bg:#0f1419; --card:#161d27; --ink:#e6ebf2; --sub:#98a3b3; --line:#26303d; --soft:#1b232f;
+  --blue:#4d84ff; --red:#ff7a63; --orange:#ffb84d; --green:#37c76b; --navy:#93b4ff;
+  --shadow:0 8px 30px rgba(0,0,0,.35);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink);word-break:keep-all;line-height:1.7;transition:background .3s,color .3s}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+a{color:inherit}
+section{padding:56px 0;scroll-margin-top:104px}
+.sec-title{font-size:clamp(1.3rem,3.4vw,1.7rem);font-weight:900;color:var(--navy);border-left:5px solid var(--red);padding-left:14px;margin-bottom:8px}
+.sec-desc{color:var(--sub);font-size:15px;margin-bottom:28px;padding-left:19px}
+
+/* anchor nav */
+.anav{position:sticky;top:48px;z-index:50;background:var(--card);border-bottom:1px solid var(--line);box-shadow:0 2px 10px rgba(24,40,80,.05)}
+.anav .wrap{display:flex;gap:6px;overflow-x:auto;padding:10px 20px;align-items:center}
+.anav a{white-space:nowrap;font-size:13.5px;font-weight:700;color:var(--sub);padding:7px 13px;border-radius:20px;text-decoration:none;transition:.2s}
+.anav a:hover{background:var(--soft);color:var(--blue)}
+.theme-btn{margin-left:auto;flex-shrink:0;background:var(--soft);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer;color:var(--ink);font-weight:700}
+
+/* hero */
+.hero{background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 55%,#0891b2 100%);color:#fff;padding:64px 0 56px;text-align:center;position:relative;overflow:hidden}
+[data-theme="dark"] .hero{background:linear-gradient(135deg,#10213f 0%,#173a6b 55%,#0b4a58 100%)}
+.hero h1{font-size:clamp(2rem,6vw,3.4rem);font-weight:900;letter-spacing:-1px;line-height:1.15}
+.hero .subt{font-size:clamp(1rem,2.6vw,1.25rem);opacity:.92;margin-top:14px;font-weight:500}
+.hero .stats{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:28px 0 26px}
+.hero .stat{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:12px 20px;min-width:96px}
+.hero .stat b{display:block;font-size:1.7rem;font-weight:900;line-height:1}
+.hero .stat span{font-size:12.5px;opacity:.9}
+.hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-block;padding:13px 26px;border-radius:30px;font-weight:800;font-size:15px;text-decoration:none;transition:transform .2s,box-shadow .2s;cursor:pointer;border:none}
+.btn-primary{background:#fff;color:var(--blue)}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.5)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.2)}
+
+/* concept day cards */
+.days{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+.day{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow);border-top:5px solid var(--acc)}
+.day .tag{display:inline-block;font-size:12px;font-weight:800;color:#fff;background:var(--acc);border-radius:20px;padding:3px 12px}
+.day .emoji{font-size:2rem;margin:10px 0 4px}
+.day h3{font-size:17px;font-weight:900;color:var(--navy)}
+.day p{font-size:13.5px;color:var(--sub);margin-top:8px;line-height:1.6}
+
+/* map */
+.mapbox{border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);height:380px}
+.mapbox iframe{width:100%;height:100%;border:0;filter:none}
+[data-theme="dark"] .mapbox iframe{filter:invert(.9) hue-rotate(180deg)}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.legend span{font-size:12.5px;font-weight:700;color:var(--sub);background:var(--soft);border:1px solid var(--line);border-radius:20px;padding:5px 12px}
+.maplinks{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:16px}
+.maplinks a{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px;font-size:13px;font-weight:700;text-decoration:none;display:flex;justify-content:space-between;align-items:center;transition:.2s}
+.maplinks a:hover{border-color:var(--blue);color:var(--blue)}
+.maplinks a .go{color:var(--blue);font-size:12px}
+
+/* tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.tab{background:var(--soft);border:1px solid var(--line);border-radius:22px;padding:8px 16px;font-size:13.5px;font-weight:700;color:var(--sub);cursor:pointer;transition:.2s}
+.tab.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* timeline */
+.tl-ctrl{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin-bottom:20px;box-shadow:var(--shadow)}
+.tl-ctrl label{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tl-ctrl input[type=time]{font-family:inherit;font-size:15px;font-weight:800;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--soft);color:var(--ink)}
+.tl-ctrl .note{font-size:12px;color:var(--sub);margin-top:8px}
+.tline{position:relative;padding-left:26px}
+.tline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tl-item{position:relative;margin-bottom:16px}
+.tl-item::before{content:"";position:absolute;left:-22px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--acc,var(--blue));border:2px solid var(--card)}
+.tl-item .t{font-weight:900;color:var(--acc,var(--blue));font-size:14px}
+.tl-item .place{font-weight:800;font-size:15px;margin:2px 0}
+.tl-item .d{font-size:13px;color:var(--sub)}
+
+/* food/hotel cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.fcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);text-decoration:none;display:block;transition:transform .2s,border-color .2s}
+.fcard:hover{transform:translateY(-3px);border-color:var(--acc,var(--orange))}
+.fcard .cat{font-size:11.5px;font-weight:800;color:#fff;background:var(--acc,var(--orange));border-radius:16px;padding:3px 10px}
+.fcard h4{font-size:16px;font-weight:900;margin:10px 0 4px;color:var(--navy)}
+.fcard p{font-size:13px;color:var(--sub);line-height:1.55}
+.fcard .go{margin-top:10px;font-size:12.5px;font-weight:800;color:var(--blue)}
+.hidden{display:none}
+
+/* chart */
+.chart{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:200px;margin:14px 0 6px}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}
+.bar .col{width:100%;background:linear-gradient(180deg,var(--blue),#0891b2);border-radius:6px 6px 0 0;min-height:6px;transition:height .6s cubic-bezier(.16,1,.3,1)}
+.bar.peak .col{background:linear-gradient(180deg,var(--red),var(--orange))}
+.bar small{font-size:11px;color:var(--sub);font-weight:700}
+.bar .v{font-size:10.5px;color:var(--sub)}
+
+/* cost table */
+.ctable{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--line)}
+.ctable th,.ctable td{padding:13px 16px;font-size:14px;text-align:left;border-bottom:1px solid var(--line)}
+.ctable th{background:var(--navy);color:#fff;font-weight:800;font-size:13.5px}
+.ctable td.num{text-align:right;font-weight:800;color:var(--ink)}
+.ctable tr:last-child td{border-bottom:none;background:var(--soft);font-weight:900}
+
+/* tips */
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.tip{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);display:flex;gap:14px}
+.tip .ic{font-size:1.8rem;flex-shrink:0}
+.tip h4{font-size:15.5px;font-weight:900;color:var(--navy);margin-bottom:5px}
+.tip p{font-size:13.5px;color:var(--sub);line-height:1.6}
+
+/* callout */
+.warn{background:var(--soft);border-left:4px solid var(--orange);border-radius:8px;padding:11px 16px;font-size:13px;color:var(--sub);margin-top:14px}
+
+/* footer */
+.foot{background:var(--navy);color:#fff;padding:44px 0 40px;text-align:center;margin-top:20px}
+[data-theme="dark"] .foot{background:#0b1220}
+.foot h3{font-size:1.3rem;font-weight:900}
+.foot p{font-size:13px;opacity:.85;margin-top:10px;line-height:1.7}
+.foot .up{display:inline-block;margin-top:18px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);border-radius:24px;padding:9px 20px;font-size:13px;font-weight:700;text-decoration:none;color:#fff}
+</style>
+</head>
+<body id="top">
+
+<!-- anchor nav -->
+<nav class="anav">
+  <div class="wrap">
+    <a href="#map">🗺️ 지도</a>
+    <a href="#plan">📅 일정</a>
+    <a href="#food">🍽️ 맛집</a>
+    <a href="#stay">🏨 숙소</a>
+    <a href="#flight">✈️ 항공권</a>
+    <a href="#cost">💰 경비</a>
+    <a href="#tips">💡 꿀팁</a>
+    <button class="theme-btn" id="themeBtn">🌙 다크</button>
+  </div>
+</nav>
+
+<!-- hero -->
+<header class="hero">
+  <div class="wrap">
+    <h1>🌊 후쿠오카 3박 4일</h1>
+    <p class="subt">돈코츠 한 그릇으로 여름을 식히는 도시</p>
+    <div class="stats">
+      <div class="stat"><b>4</b><span>일정 DAY</span></div>
+      <div class="stat"><b>12+</b><span>관광 스팟</span></div>
+      <div class="stat"><b>16</b><span>맛집</span></div>
+      <div class="stat"><b>6</b><span>숙소</span></div>
+      <div class="stat"><b>4</b><span>권역</span></div>
+    </div>
+    <div class="cta">
+      <a href="#plan" class="btn btn-primary">📅 일정 보기</a>
+      <a href="#map" class="btn btn-ghost">🗺️ 지도 보기</a>
+    </div>
+  </div>
+</header>
+
+<!-- concept -->
+<section id="concept">
+  <div class="wrap">
+    <h2 class="sec-title">✨ 이 여행의 컨셉</h2>
+    <p class="sec-desc">시내 미식 → 바다·공원 힐링 → 신사·온천 근교까지, 권역별 동선을 최적화한 루트</p>
+    <div class="days">
+      <div class="day" style="--acc:var(--red)">
+        <span class="tag">DAY 1</span><div class="emoji">🏮</div>
+        <h3>하카타 · 캐널시티 · 나카스</h3>
+        <p>공항 도착 후 바로 시내 진입. 캐널시티에서 쇼핑하고 저녁엔 나카스 야타이(포장마차)로 입문.</p>
+      </div>
+      <div class="day" style="--acc:var(--green)">
+        <span class="tag">DAY 2</span><div class="emoji">🌳</div>
+        <h3>텐진 · 오호리 · 모모치</h3>
+        <p>텐진 쇼핑 → 오호리 공원 산책 → 모모치 해변에서 후쿠오카 타워 야경까지.</p>
+      </div>
+      <div class="day" style="--acc:var(--blue)">
+        <span class="tag">DAY 3</span><div class="emoji">⛩️</div>
+        <h3>다자이후 · 라라포트</h3>
+        <p>학문의 신 다자이후 텐만구 참배 → 거대 건담이 있는 라라포트 후쿠오카.</p>
+      </div>
+      <div class="day" style="--acc:var(--orange)">
+        <span class="tag">DAY 4</span><div class="emoji">♨️</div>
+        <h3>유후인 or 벳푸</h3>
+        <p>동화 같은 유후인 마을, 또는 벳푸 지옥온천. 귀국 전 진짜 큐슈 감성 한 스푼.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- map -->
+<section id="map">
+  <div class="wrap">
+    <h2 class="sec-title">🗺️ 인터랙티브 여행 지도</h2>
+    <p class="sec-desc">권역별 동선을 한눈에. 각 스팟의 <b>구글맵 →</b> 링크는 장소명/주소로 연결됩니다.</p>
+    <div class="mapbox">
+      <iframe loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        src="https://www.google.com/maps?q=Fukuoka,+Japan&z=11&output=embed" title="후쿠오카 지도"></iframe>
+    </div>
+    <div class="legend">
+      <span style="color:var(--red)">🏮 DAY1 하카타권</span>
+      <span style="color:var(--green)">🌳 DAY2 텐진·모모치권</span>
+      <span style="color:var(--blue)">⛩️ DAY3 다자이후권</span>
+      <span style="color:var(--orange)">♨️ DAY4 근교(유후인·벳푸)</span>
+      <span>🍽️ 맛집 · 🏨 숙소</span>
+    </div>
+    <div class="maplinks">
+      <a href="https://www.google.com/maps/search/캐널시티+하카타" target="_blank" rel="noopener">캐널시티 하카타 <span class="go">구글맵 →</span></a>
+      <a href="https://www.google.com/maps/search/나카스+야타이" target="_blank" rel="noopener">나카스 야타이 <span class="go">구글맵 →</span></a>
+      <a href="https://www.google.com/maps/search/오호리+공원" target="_blank" rel="noopener">오호리 공원 <span class="go">구글맵 →</span></a>
+      <a href="https://www.google.com/maps/search/후쿠오카+타워+모모치" target="_blank" rel="noopener">후쿠오카 타워 <span class="go">구글맵 →</span></a>
+      <a href="https://www.google.com/maps/search/다자이후+텐만구" target="_blank" rel="noopener">다자이후 텐만구 <span class="go">구글맵 →</span></a>
+      <a href="https://www.google.com/maps/search/라라포트+후쿠오카" target="_blank" rel="noopener">라라포트(건담) <span class="go">구글맵 →</span></a>
+      <a href="https://www.google.com/maps/search/유후인+긴린코" target="_blank" rel="noopener">유후인 긴린코 <span class="go">구글맵 →</span></a>
+      <a href="https://www.google.com/maps/search/벳푸+지옥온천" target="_blank" rel="noopener">벳푸 지옥온천 <span class="go">구글맵 →</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- plan / timeline -->
+<section id="plan">
+  <div class="wrap">
+    <h2 class="sec-title">📅 날짜별 타임라인</h2>
+    <p class="sec-desc">⏰ 시작 시간을 바꾸면 그날 일정이 자동으로 다시 계산돼요.</p>
+    <div class="tl-ctrl">
+      <label>이 날 <b id="dayName">DAY 1</b> 시작 시간
+        <input type="time" id="startTime" value="13:00">
+      </label>
+      <div class="note">⚠️ 각 장소의 마감/영업시간은 구글맵·공식 사이트 확인을 권장합니다. (아래는 예상 소요시간 기준 계산)</div>
+    </div>
+    <div class="tabs" id="planTabs">
+      <div class="tab on" data-day="0">DAY 1 🏮</div>
+      <div class="tab" data-day="1">DAY 2 🌳</div>
+      <div class="tab" data-day="2">DAY 3 ⛩️</div>
+      <div class="tab" data-day="3">DAY 4 ♨️</div>
+    </div>
+    <div class="tline" id="tline"></div>
+  </div>
+</section>
+
+<!-- food -->
+<section id="food">
+  <div class="wrap">
+    <h2 class="sec-title">🍽️ 후쿠오카 미식 지도</h2>
+    <p class="sec-desc">카드를 탭하면 해당 키워드의 <b>구글맵 장소 페이지</b>가 새 탭으로 열립니다.</p>
+    <div class="tabs" id="foodTabs">
+      <div class="tab on" data-f="all">전체</div>
+      <div class="tab" data-f="yatai">🍢 야타이/현지</div>
+      <div class="tab" data-f="ramen">🍜 돈코츠/면</div>
+      <div class="tab" data-f="sea">🍣 모츠나베/해산물</div>
+      <div class="tab" data-f="dessert">🍡 디저트/간식</div>
+    </div>
+    <div class="grid" id="foodGrid"></div>
+  </div>
+</section>
+
+<!-- stay -->
+<section id="stay">
+  <div class="wrap">
+    <h2 class="sec-title">🏨 숙소 추천</h2>
+    <p class="sec-desc">하카타·텐진·나카스 중심 · 카드를 탭하면 <b>구글맵</b>이 새 탭으로 열립니다.</p>
+    <div class="tabs" id="stayTabs">
+      <div class="tab on" data-s="rating">⭐ 지역 가이드(고평점 밀집)</div>
+      <div class="tab" data-s="budget">💰 가성비 관점</div>
+    </div>
+    <div class="grid" id="stayGrid"></div>
+  </div>
+</section>
+
+<!-- flight -->
+<section id="flight">
+  <div class="wrap">
+    <h2 class="sec-title">✈️ 항공권 흐름 (인천 ICN ↔ 후쿠오카 FUK)</h2>
+    <p class="sec-desc">월별 상대적 가격 흐름(성수기/비수기) 참고 예시입니다.</p>
+    <div class="chart">
+      <div class="bars" id="flightBars"></div>
+      <div class="warn">⚠️ 실제가 아닌 <b>계절 흐름 참고용 예시</b>입니다. 실시간 확정가는 스카이스캐너 등에서 확인하세요. (여름 7~8월·연말은 성수기)</div>
+    </div>
+  </div>
+</section>
+
+<!-- cost -->
+<section id="cost">
+  <div class="wrap">
+    <h2 class="sec-title">💰 예상 경비 (1인 · 3박4일)</h2>
+    <p class="sec-desc">항목별 예산 범위 — 시즌/환율/옵션에 따라 달라집니다.</p>
+    <table class="ctable">
+      <thead><tr><th>항목</th><th>내용</th><th style="text-align:right">예산 범위</th></tr></thead>
+      <tbody>
+        <tr><td>✈️ 항공권</td><td>인천-후쿠오카 왕복(LCC 기준)</td><td class="num">15~35만원</td></tr>
+        <tr><td>🏨 숙박</td><td>하카타/텐진 3성급 3박</td><td class="num">18~40만원</td></tr>
+        <tr><td>🍜 식비</td><td>야타이·라멘·모츠나베 등</td><td class="num">12~25만원</td></tr>
+        <tr><td>🚇 교통</td><td>시티패스·근교 버스/기차</td><td class="num">4~9만원</td></tr>
+        <tr><td>⛩️ 입장/체험</td><td>타워·온천·다자이후 등</td><td class="num">3~8만원</td></tr>
+        <tr><td>🛍️ 쇼핑/기타</td><td>기념품·명란·잡화</td><td class="num">5~20만원</td></tr>
+        <tr><td>합계</td><td>1인 기준 총 예산</td><td class="num">57~137만원</td></tr>
+      </tbody>
+    </table>
+    <div class="warn">⚠️ 참고치이며 실제 비용은 항공 프로모션·환율·숙소 등급·근교 선택(유후인/벳푸)에 따라 크게 달라집니다.</div>
+  </div>
+</section>
+
+<!-- tips -->
+<section id="tips">
+  <div class="wrap">
+    <h2 class="sec-title">💡 여행 꿀팁 8</h2>
+    <p class="sec-desc">이동·미식·날씨·결제·에티켓까지 실전 팁</p>
+    <div class="tips">
+      <div class="tip"><div class="ic">🚇</div><div><h4>시티패스 활용</h4><p>지하철·니시테츠 버스 1일권은 텐진·하카타·모모치를 자주 오가는 날에 가성비가 좋습니다. 이동이 적은 날은 낱개 구매가 유리.</p></div></div>
+      <div class="tip"><div class="ic">♨️</div><div><h4>근교(유후인/벳푸) 교통</h4><p>고속버스 왕복권 또는 북부 큐슈 버스패스 사전 예약을 추천. 여름엔 유후인 이른 시간대가 상대적으로 시원하고 한산합니다.</p></div></div>
+      <div class="tip"><div class="ic">⏰</div><div><h4>혼잡 시간 회피</h4><p>나카스 야타이는 저녁 피크(18~20시)를 피해 오픈런 또는 21시 이후가 여유롭습니다. 다자이후는 오픈 직후가 사진 명당.</p></div></div>
+      <div class="tip"><div class="ic">🍜</div><div><h4>돈코츠 라멘 즐기기</h4><p>인기 라멘집은 점심·저녁 피크에 대기가 깁니다. 면 굳기는 '카타멘'부터 도전하고, 면 추가('카에다마')로 국물까지 알차게.</p></div></div>
+      <div class="tip"><div class="ic">☀️</div><div><h4>여름 날씨·복장</h4><p>7~8월은 덥고 습합니다. 통풍 좋은 린넨/면 옷·모자·양산, 차가운 물병을 챙기고 실내 냉방 대비 얇은 겉옷도 유용.</p></div></div>
+      <div class="tip"><div class="ic">💳</div><div><h4>결제 꿀팁</h4><p>교통카드(SUGOCA 등) + 해외결제 체크카드 조합이 편합니다. 야타이·소규모 가게는 현금 위주이니 소액 엔화를 넉넉히 준비.</p></div></div>
+      <div class="tip"><div class="ic">🙇</div><div><h4>에티켓</h4><p>야타이는 1인 1메뉴 주문이 매너, 자리를 오래 차지하지 않기. 온천에선 수건을 탕에 담그지 않고, 문신 관련 이용 규정은 사전 확인.</p></div></div>
+      <div class="tip"><div class="ic">🛍️</div><div><h4>쇼핑·면세 팁</h4><p>일정 금액 이상 면세가 가능합니다. 캐널시티·라라포트·텐진에서 한 번에 해결하고, 명란(멘타이코)은 공항 면세점이 간편.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- footer -->
+<footer class="foot">
+  <div class="wrap">
+    <h3>🌊⛩️🍜 후쿠오카 3박 4일 여행 플래너</h3>
+    <p>권역별 동선 최적화 · 동적 타임라인 · 다크모드 · 단일 파일<br>
+    데이터는 일반 여행 정보 참고용이며 항공권·가격은 시장 변동에 따라 달라질 수 있습니다.</p>
+    <a href="#top" class="up">↑ 맨 위로</a>
+  </div>
+</footer>
+
+<script>
+// theme toggle
+const tb=document.getElementById('themeBtn');
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);tb.textContent=t==='dark'?'☀️ 라이트':'🌙 다크';localStorage.setItem('fk_theme',t);}
+applyTheme(localStorage.getItem('fk_theme')|| (matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
+tb.onclick=()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+
+// ---- timeline data (place, 소요분, 이동분, 설명) ----
+const PLANS=[
+ {name:"DAY 1 🏮",acc:"var(--red)",start:"13:00",items:[
+   ["후쿠오카공항 도착·입국",60,20,"공항→하카타 지하철 약 5분, 짐 정리"],
+   ["하카타역/호텔 체크인",40,15,"짐 맡기고 가볍게 출발"],
+   ["캐널시티 하카타",120,15,"쇼핑·분수쇼·라멘 스타디움"],
+   ["텐진 산책",90,15,"번화가 구경·저녁 준비"],
+   ["나카스 야타이",90,0,"포장마차 입문(라멘·꼬치·오뎅)"],
+ ]},
+ {name:"DAY 2 🌳",acc:"var(--green)",start:"09:00",items:[
+   ["텐진 쇼핑",120,15,"다이마루·파르코·지하상가"],
+   ["오호리 공원",80,10,"호수 산책·스타벅스"],
+   ["후쿠오카 성터(마이즈루)",50,25,"역사 산책"],
+   ["모모치 해변",70,10,"바다·포토존"],
+   ["후쿠오카 타워 야경",70,0,"전망대 일몰·야경"],
+ ]},
+ {name:"DAY 3 ⛩️",acc:"var(--blue)",start:"09:00",items:[
+   ["다자이후 텐만구",120,40,"학문의 신 참배·우메가에모찌"],
+   ["다자이후 스타벅스·거리",50,45,"쿠마 켄고 설계 매장"],
+   ["라라포트 후쿠오카",150,20,"실물크기 건담·쇼핑"],
+   ["텐진 저녁·귀가",90,0,"모츠나베 또는 야키토리"],
+ ]},
+ {name:"DAY 4 ♨️",acc:"var(--orange)",start:"08:30",items:[
+   ["근교行 버스/기차",120,10,"유후인 또는 벳푸行"],
+   ["유후인 유노츠보 거리·긴린코",150,20,"온천 마을·호수(또는 벳푸 지옥온천)"],
+   ["점심·족욕·기념품",80,120,"큐슈 감성 마무리"],
+   ["공항 이동·귀국",90,0,"면세·탑승"],
+ ]},
+];
+let curDay=0;
+function pad(n){return String(n).padStart(2,'0');}
+function addMin(hhmm,m){let[h,mm]=hhmm.split(':').map(Number);let t=h*60+mm+m;t=((t%1440)+1440)%1440;return pad(Math.floor(t/60))+':'+pad(t%60);}
+function renderTL(){
+ const p=PLANS[curDay];const box=document.getElementById('tline');
+ let t=document.getElementById('startTime').value||p.start;box.innerHTML='';
+ p.items.forEach(([place,stay,move,desc])=>{
+   const el=document.createElement('div');el.className='tl-item';el.style.setProperty('--acc',p.acc);
+   const end=addMin(t,stay);
+   el.innerHTML=`<div class="t">${t} – ${end}</div><div class="place">${place}</div><div class="d">${desc}${move?` · 이동 ~${move}분`:''}</div>`;
+   box.appendChild(el);t=addMin(end,move);
+ });
+}
+document.getElementById('planTabs').addEventListener('click',e=>{
+ const t=e.target.closest('.tab');if(!t)return;
+ document.querySelectorAll('#planTabs .tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
+ curDay=+t.dataset.day;document.getElementById('startTime').value=PLANS[curDay].start;
+ document.getElementById('dayName').textContent=PLANS[curDay].name;renderTL();
+});
+document.getElementById('startTime').addEventListener('input',renderTL);
+renderTL();
+
+// ---- food ----
+const FOOD=[
+ ["야타이(포장마차) 거리","yatai","나카스 강변의 대표 야타이. 라멘·꼬치·오뎅을 노천에서.","나카스 야타이"],
+ ["텐진 야타이","yatai","시내 접근성 좋은 포장마차. 첫 야타이 입문에 무난.","텐진 야타이"],
+ ["돈코츠 라멘 (하카타식)","ramen","진한 돼지뼈 육수 + 가는 면. 후쿠오카의 상징 한 그릇.","하카타 돈코츠 라멘"],
+ ["라멘 스타디움","ramen","캐널시티 내 여러 라멘 브랜드를 한 곳에서 비교.","라멘 스타디움 캐널시티"],
+ ["모츠나베 전문점","sea","곱창전골. 진한 국물에 부추·마늘 듬뿍, 여름 보양.","하카타 모츠나베"],
+ ["해산물/스시","sea","현지 활어·스시. 나가하마 어시장 인근 추천.","나가하마 스시"],
+ ["멘타이코(명란) 요리","sea","후쿠오카 명물 명란. 밥·파스타·계란말이까지.","멘타이코 후쿠오카"],
+ ["우메가에모찌","dessert","다자이후 명물 구운 찹쌀떡. 참배길 간식.","우메가에모찌 다자이후"],
+ ["디저트 카페(텐진)","dessert","빙수·파르페 등 여름 디저트. 냉방 휴식 겸용.","텐진 디저트 카페"],
+ ["잇센요쇼쿠·간식","dessert","길거리·역내 간식으로 이동 중 요기.","후쿠오카 간식"],
+ ["야키토리(꼬치구이)","yatai","저녁 술안주로 인기. 야타이·이자카야 모두.","후쿠오카 야키토리"],
+ ["우동/소바","ramen","하카타 우동은 부드러운 면발이 특징.","하카타 우동"],
+];
+function renderFood(f){
+ const g=document.getElementById('foodGrid');g.innerHTML='';
+ FOOD.filter(x=>f==='all'||x[1]===f).forEach(([name,cat,desc,q])=>{
+   const catColor={yatai:'var(--red)',ramen:'var(--orange)',sea:'var(--blue)',dessert:'var(--green)'}[cat];
+   const catLabel={yatai:'🍢 야타이',ramen:'🍜 면',sea:'🍣 해산물',dessert:'🍡 디저트'}[cat];
+   const a=document.createElement('a');a.className='fcard';a.style.setProperty('--acc',catColor);
+   a.href='https://www.google.com/maps/search/'+encodeURIComponent(q+' 후쿠오카');a.target='_blank';a.rel='noopener';
+   a.innerHTML=`<span class="cat">${catLabel}</span><h4>${name}</h4><p>${desc}</p><div class="go">구글맵에서 보기 →</div>`;
+   g.appendChild(a);
+ });
+}
+document.getElementById('foodTabs').addEventListener('click',e=>{
+ const t=e.target.closest('.tab');if(!t)return;
+ document.querySelectorAll('#foodTabs .tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');renderFood(t.dataset.f);
+});
+renderFood('all');
+
+// ---- stay ----
+const STAY={
+ rating:[
+   ["하카타역 주변","교통 허브. 공항·근교 이동 최적, 밤늦게 도착/이른 출발에 유리.","하카타역 호텔"],
+   ["텐진 중심","쇼핑·맛집 밀집. 야간 활동·도보 관광에 최적.","텐진 호텔"],
+   ["나카스·캐널시티 인근","야타이·번화가 접근성. 야경·나이트라이프 선호 시.","나카스 호텔"],
+ ],
+ budget:[
+   ["하카타 비즈니스호텔","역세권 3성급·게스트하우스. 조식 포함 상품이 가성비.","하카타 비즈니스호텔"],
+   ["텐진 캡슐/게스트하우스","1인 여행·짧은 숙박에 저렴. 위치 대비 만족도 높음.","텐진 게스트하우스"],
+   ["공항 인근/외곽","가격 저렴하나 이동 시간 고려. 렌터카·이른 비행 시 고려.","후쿠오카 공항 인근 호텔"],
+ ],
+};
+function renderStay(s){
+ const g=document.getElementById('stayGrid');g.innerHTML='';
+ STAY[s].forEach(([name,desc,q])=>{
+   const a=document.createElement('a');a.className='fcard';a.style.setProperty('--acc','var(--blue)');
+   a.href='https://www.google.com/maps/search/'+encodeURIComponent(q);a.target='_blank';a.rel='noopener';
+   a.innerHTML=`<span class="cat" style="background:var(--navy)">🏨 지역</span><h4>${name}</h4><p>${desc}</p><div class="go">구글맵에서 보기 →</div>`;
+   g.appendChild(a);
+ });
+}
+document.getElementById('stayTabs').addEventListener('click',e=>{
+ const t=e.target.closest('.tab');if(!t)return;
+ document.querySelectorAll('#stayTabs .tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');renderStay(t.dataset.s);
+});
+renderStay('rating');
+
+// ---- flight bars (relative illustrative) ----
+const MONTHS=[["1월",42],["2월",40],["3월",52],["4월",58],["5월",55],["6월",50],["7월",78],["8월",85],["9월",48],["10월",56],["11월",50],["12월",70]];
+const peak=[6,7,11];
+const barbox=document.getElementById('flightBars');const mx=Math.max(...MONTHS.map(m=>m[1]));
+MONTHS.forEach(([m,v],i)=>{
+ const b=document.createElement('div');b.className='bar'+(peak.includes(i)?' peak':'');
+ b.innerHTML=`<span class="v">${v}</span><div class="col" style="height:0"></div><small>${m}</small>`;
+ barbox.appendChild(b);
+ requestAnimationFrame(()=>{setTimeout(()=>{b.querySelector('.col').style.height=(v/mx*100)+'%';},60*i);});
+});
+</script>
+
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="8E4GS8C" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
