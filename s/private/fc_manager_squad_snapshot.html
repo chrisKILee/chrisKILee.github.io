@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FC온라인 감독모드 스쿼드 스냅샷 — 네덜란드·독일</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:         #FAFAF8;
+      --bg-2:       #F4F4F1;
+      --surface:    #FFFFFF;
+      --border:     #E8E8E4;
+      --border-2:   #D4D4CF;
+      --ink:        #1C1C1A;
+      --ink-2:      #3D3D3A;
+      --ink-3:      #6B6B66;
+      --ink-4:      #A8A8A3;
+      --accent:     #C4522A;
+      --accent-bg:  #FEF3ED;
+      --accent-bdr: #F9C3AD;
+      --ned:        #E35205;
+      --ned-bg:     #FFF1E8;
+      --ger:        #CC0000;
+      --ger-bg:     #FFF0F0;
+      --font-h:     'Fraunces', Georgia, serif;
+      --font-b:     'Inter', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-b);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      padding-top: 48px;
+    }
+
+    .page-wrap { max-width: 1100px; margin: 0 auto; padding: 0 28px 80px; }
+
+    .hero { background: var(--surface); border-bottom: 1px solid var(--border); padding: 52px 28px 36px; margin-bottom: 32px; }
+    .hero-inner { max-width: 1100px; margin: 0 auto; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-bg); border: 1px solid var(--accent-bdr);
+      color: var(--accent); border-radius: 99px;
+      padding: 5px 14px; font-size: 12px; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-family: var(--font-h); font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 900; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 14px;
+    }
+    .hero p { color: var(--ink-3); font-size: 15px; max-width: 700px; }
+    .hero-note {
+      margin-top: 18px; background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 16px; font-size: 13px; color: var(--ink-3);
+    }
+
+    /* Country tabs */
+    .tab-bar { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 24px; position: sticky; top: 48px; background: var(--bg); z-index: 40; }
+    .tab-btn { padding: 11px 22px; font-size: 15px; font-weight: 700; border: none; background: none; cursor: pointer; color: var(--ink-3); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 0.15s, border-color 0.15s; font-family: var(--font-b); }
+    .tab-btn:hover { color: var(--ink); }
+    .tab-btn.active-ned { color: var(--ned); border-bottom-color: var(--ned); }
+    .tab-btn.active-ger { color: var(--ger); border-bottom-color: var(--ger); }
+    .country-pane { display: none; }
+    .country-pane.active { display: block; }
+
+    /* Date tabs */
+    .date-tab-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .date-btn {
+      padding: 7px 16px; font-size: 13.5px; font-weight: 600; border-radius: 99px;
+      border: 1px solid var(--border-2); background: var(--surface); color: var(--ink-3);
+      cursor: pointer; font-family: var(--font-b); transition: all 0.15s;
+    }
+    .date-btn:hover { border-color: var(--ink-4); color: var(--ink); }
+    .date-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+    /* Meta bar */
+    .meta-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+    .meta-item {
+      flex: 1 1 140px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px; text-align: center;
+    }
+    .meta-num { display: block; font-family: var(--font-h); font-size: 22px; font-weight: 700; color: var(--ink); }
+    .meta-label { display: block; font-size: 12px; color: var(--ink-3); margin-top: 4px; }
+
+    .sub-title { font-family: var(--font-h); font-size: clamp(1.2rem, 2.4vw, 1.6rem); font-weight: 700; letter-spacing: -0.01em; margin: 36px 0 14px; }
+    .svg-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; max-width: 720px; margin: 0 auto; }
+    .svg-wrap svg { width: 100%; height: auto; display: block; }
+    .svg-caption { text-align: center; font-size: 12.5px; color: var(--ink-3); margin-top: 10px; max-width: 720px; margin-left: auto; margin-right: auto; }
+
+    /* Position rows */
+    .row-label { font-size: 12.5px; font-weight: 700; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.04em; margin: 20px 0 10px; }
+    .pos-row { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-bottom: 4px; }
+    .pos-box {
+      flex: 1 1 250px; max-width: 320px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+    }
+    .pos-box-head {
+      font-family: var(--font-h); font-weight: 700; font-size: 16px; color: var(--accent);
+      margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    .pos-list { list-style: none; }
+    .pos-list li { padding: 7px 0; border-bottom: 1px solid var(--bg-2); }
+    .pos-list li:last-child { border-bottom: none; }
+    .pos-rank-row { display: flex; align-items: center; gap: 8px; }
+    .pos-rank {
+      flex: 0 0 20px; height: 20px; border-radius: 50%; background: var(--accent-bg);
+      color: var(--accent); font-size: 11px; font-weight: 700; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .pos-player { font-weight: 600; font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pos-sub-row { display: flex; justify-content: space-between; gap: 8px; margin-top: 2px; padding-left: 28px; font-size: 12px; color: var(--ink-3); }
+    .pos-season { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pos-stat { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+
+    @media (max-width: 640px) {
+      .page-wrap { padding: 0 16px 60px; }
+      .hero { padding: 40px 16px 28px; }
+      .tab-btn { padding: 10px 14px; font-size: 14px; }
+      .pos-box { flex: 1 1 100%; max-width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="hero-eyebrow">⚽ FC온라인 감독모드</span>
+      <h1>구단주 스쿼드 스냅샷</h1>
+      <p>fc-info.com 감독모드 구단주 랭킹(팀컬러별) 중 감독등급 챔피언스급 상위 100명의 구단가치·스쿼드 11명을 수집해, 포지션별 최다 기용 카드 Top5와 베스트11 추천을 정리했다.</p>
+      <div class="hero-note">집계 기준: <strong>선수명+시즌</strong>을 하나의 카드로 취급(강화등급은 집계 키에서 제외, 카드별 강화평균만 부기). 베스트11은 전역 기준 동일 선수 중복 배정 없이 1위를 배정하고, 해당 포지션 차순위 카드를 2위로 표시한다.</div>
+    </div>
+  </div>
+
+  <div class="page-wrap">
+    <div class="tab-bar">
+      <button class="tab-btn active-ned" onclick="switchCountry('네덜란드', this)">🇳🇱 네덜란드</button>
+      <button class="tab-btn" onclick="switchCountry('독일', this)">🇩🇪 독일</button>
+    </div>
+
+    <div id="pane-네덜란드" class="country-pane active">
+      <div class="date-tab-bar" id="date-tabs-네덜란드"></div>
+      <div id="date-content-네덜란드"></div>
+    </div>
+
+    <div id="pane-독일" class="country-pane">
+      <div class="date-tab-bar" id="date-tabs-독일"></div>
+      <div id="date-content-독일"></div>
+    </div>
+  </div>
+
+  <script type="application/json" id="fc-data">
+{"네덜란드": {"2026-07-10": {"meta": {"collected": 100, "avgUpgrade": 9.81, "sample": 1100}, "formation": "4-1-2-3", "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1000\" height=\"700\" viewBox=\"0 0 1000 700\" font-family=\"Malgun Gothic, Apple SD Gothic Neo, Noto Sans KR, sans-serif\">\n<rect x=\"20\" y=\"20\" width=\"960\" height=\"660\" rx=\"14\" fill=\"#2e7d32\" stroke=\"#ffffff\" stroke-width=\"3\"/>\n<line x1=\"20\" y1=\"363.2\" x2=\"980\" y2=\"363.2\" stroke=\"#ffffff\" stroke-width=\"2\" opacity=\"0.6\"/>\n<circle cx=\"500.0\" cy=\"363.2\" r=\"70\" fill=\"none\" stroke=\"#ffffff\" stroke-width=\"2\" opacity=\"0.6\"/>\n<rect x=\"340.0\" y=\"610\" width=\"320\" height=\"70\" fill=\"none\" stroke=\"#ffffff\" stroke-width=\"2\" opacity=\"0.6\"/>\n<rect x=\"150.0\" y=\"83.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"260.0\" y=\"103.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">LAM</text>\n<text x=\"260.0\" y=\"123.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 요한 크루이프(WB) 17회</text>\n<text x=\"260.0\" y=\"141.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 멤피스 데파이(PTG) 11회</text>\n<rect x=\"390.0\" y=\"83.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"500.0\" y=\"103.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">CAM</text>\n<text x=\"500.0\" y=\"123.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 마르코 반바스텐(WB) 18회</text>\n<text x=\"500.0\" y=\"141.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 루드 굴리트(WB) 16회</text>\n<rect x=\"630.0\" y=\"83.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"740.0\" y=\"103.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">RAM</text>\n<text x=\"740.0\" y=\"123.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 데니스 베르캄프(WS) 6회</text>\n<text x=\"740.0\" y=\"141.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 디르크 카위트(WG) 5회</text>\n<rect x=\"150.0\" y=\"263.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"260.0\" y=\"283.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">LCM</text>\n<text x=\"260.0\" y=\"303.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 R. 흐라벤베르흐(26TN) 22회</text>\n<text x=\"260.0\" y=\"321.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 퇸 코프메이너르스(LE) 17회</text>\n<rect x=\"390.0\" y=\"263.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"500.0\" y=\"283.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">CDM</text>\n<text x=\"500.0\" y=\"303.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 마르턴 더론(25DP) 58회</text>\n<text x=\"500.0\" y=\"321.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 프랑크 레이카르트(CH) 17회</text>\n<rect x=\"630.0\" y=\"263.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"740.0\" y=\"283.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">RCM</text>\n<text x=\"740.0\" y=\"303.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 조이 베이르만(26TOTS) 26회</text>\n<text x=\"740.0\" y=\"321.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 프랑크 레이카르트(CH) 17회</text>\n<rect x=\"30.0\" y=\"443.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"140.0\" y=\"463.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">LB</text>\n<text x=\"140.0\" y=\"483.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 J. 하토(25TOTS) 22회</text>\n<text x=\"140.0\" y=\"501.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 데일리 블린트(LE) 19회</text>\n<rect x=\"270.0\" y=\"443.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"380.0\" y=\"463.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">LCB</text>\n<text x=\"380.0\" y=\"483.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 미키 반더벤(26TN) 27회</text>\n<text x=\"380.0\" y=\"501.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 야프 스탐(WS) 11회</text>\n<rect x=\"510.0\" y=\"443.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"620.0\" y=\"463.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">RCB</text>\n<text x=\"620.0\" y=\"483.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 버질 반다이크(WS) 24회</text>\n<text x=\"620.0\" y=\"501.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 스테판 더브레이(WS) 8회</text>\n<rect x=\"750.0\" y=\"443.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"860.0\" y=\"463.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">RB</text>\n<text x=\"860.0\" y=\"483.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 덴젤 둠프리스(26TN) 28회</text>\n<text x=\"860.0\" y=\"501.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 위리엔 팀버(25DP) 9회</text>\n<rect x=\"390.0\" y=\"593.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"500.0\" y=\"613.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">GK</text>\n<text x=\"500.0\" y=\"633.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 팀 크룰(HG) 29회</text>\n<text x=\"500.0\" y=\"651.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 키얼 스헤르펀(25LIVE) 18회</text>\n</svg>", "positions": {"CAM": [{"rank": 1, "player": "마르코 반바스텐", "season": "Wonderboys", "avg": 9.9, "count": "18회"}, {"rank": 2, "player": "루드 굴리트", "season": "Wonderboys", "avg": 9.1, "count": "16회"}, {"rank": 3, "player": "루드 굴리트", "season": "Ballon d'Or", "avg": 9.8, "count": "11회"}, {"rank": 4, "player": "마르코 반바스텐", "season": "Continental Heroes", "avg": 10.6, "count": "9회"}, {"rank": 5, "player": "루드 굴리트", "season": "Continental Heroes", "avg": 9.4, "count": "8회"}], "CB": [{"rank": 1, "player": "미키 반더벤", "season": "26 Team Of The Nominated", "avg": 8.6, "count": "1회"}], "CDM": [{"rank": 1, "player": "마르턴 더론", "season": "25 Devoted Player", "avg": 9.9, "count": "58회"}, {"rank": 2, "player": "프랑크 레이카르트", "season": "Continental Heroes", "avg": 9.6, "count": "17회"}, {"rank": 3, "player": "마르턴 더론", "season": "2024 Energetic Player", "avg": 11.0, "count": "5회"}, {"rank": 4, "player": "R. 흐라벤베르흐", "season": "26 Team Of The Nominated", "avg": 8.4, "count": "4회"}, {"rank": 5, "player": "마르턴 더론", "season": "Legend Of Europa", "avg": 10.7, "count": "3회"}], "CF": [{"rank": 1, "player": "요한 크루이프", "season": "Wonderboys", "avg": 10.0, "count": "1회"}, {"rank": 2, "player": "로빈 반페르시", "season": "Footbal Association Champions", "avg": 11.0, "count": "1회"}], "CM": [{"rank": 1, "player": "로날트 쿠만", "season": "Continental Heroes", "avg": 10.6, "count": "1회"}], "GK": [{"rank": 1, "player": "팀 크룰", "season": "Home Grown", "avg": 9.4, "count": "29회"}, {"rank": 2, "player": "키얼 스헤르펀", "season": "25 LIVE", "avg": 12.8, "count": "18회"}, {"rank": 3, "player": "야스퍼르 실러선", "season": "Unsung Players", "avg": 10.2, "count": "6회"}, {"rank": 4, "player": "야스퍼르 실러선", "season": "Greatest Runner-Ups", "avg": 10.2, "count": "4회"}, {"rank": 5, "player": "팀 크룰", "season": "Best of World Cup", "avg": 13.0, "count": "4회"}], "LAM": [{"rank": 1, "player": "요한 크루이프", "season": "Wonderboys", "avg": 10.0, "count": "17회"}, {"rank": 2, "player": "멤피스 데파이", "season": "Path To Glory", "avg": 9.1, "count": "11회"}, {"rank": 3, "player": "요한 크루이프", "season": "Ballon d'Or", "avg": 10.1, "count": "9회"}, {"rank": 4, "player": "차비 시몬스", "season": "25 UEFA Champions League", "avg": 10.9, "count": "4회"}, {"rank": 5, "player": "데니스 베르캄프", "season": "Winning Streak", "avg": 9.6, "count": "3회"}], "LB": [{"rank": 1, "player": "J. 하토", "season": "25 Team Of The Season", "avg": 8.2, "count": "22회"}, {"rank": 2, "player": "데일리 블린트", "season": "Legend Of Europa", "avg": 9.2, "count": "19회"}, {"rank": 3, "player": "미키 반더벤", "season": "Path To Glory", "avg": 9.4, "count": "15회"}, {"rank": 4, "player": "토마스", "season": "25 K-League Best", "avg": 11.0, "count": "12회"}, {"rank": 5, "player": "데일리 블린트", "season": "Decade", "avg": 11.0, "count": "3회"}], "LCB": [{"rank": 1, "player": "미키 반더벤", "season": "26 Team Of The Nominated", "avg": 8.6, "count": "27회"}, {"rank": 2, "player": "야프 스탐", "season": "Winning Streak", "avg": 9.1, "count": "11회"}, {"rank": 3, "player": "버질 반다이크", "season": "Winning Streak", "avg": 9.3, "count": "10회"}, {"rank": 4, "player": "스테판 더브레이", "season": "Winning Streak", "avg": 10.9, "count": "10회"}, {"rank": 5, "player": "야프 스탐", "season": "25 Heroes", "avg": 10.5, "count": "9회"}], "LCM": [{"rank": 1, "player": "R. 흐라벤베르흐", "season": "26 Team Of The Nominated", "avg": 8.4, "count": "22회"}, {"rank": 2, "player": "퇸 코프메이너르스", "season": "Legend Of Europa", "avg": 10.0, "count": "17회"}, {"rank": 3, "player": "프랑크 레이카르트", "season": "Continental Heroes", "avg": 9.6, "count": "14회"}, {"rank": 4, "player": "조이 베이르만", "season": "26 Team Of The Season", "avg": 9.2, "count": "12회"}, {"rank": 5, "player": "도니 반더베이크", "season": "Legend Of Europa", "avg": 11.0, "count": "3회"}], "LM": [{"rank": 1, "player": "요한 크루이프", "season": "Wonderboys", "avg": 10.0, "count": "9회"}, {"rank": 2, "player": "요한 크루이프", "season": "Ballon d'Or", "avg": 10.1, "count": "5회"}, {"rank": 3, "player": "멤피스 데파이", "season": "Path To Glory", "avg": 9.1, "count": "2회"}, {"rank": 4, "player": "요한 크루이프", "season": "Champions of Europe", "avg": 10.5, "count": "2회"}, {"rank": 5, "player": "데니스 베르캄프", "season": "Legend Of Europa", "avg": 9.7, "count": "2회"}], "LWB": [{"rank": 1, "player": "B. 메이어", "season": "22 UEFA Champions League", "avg": 13.0, "count": "3회"}, {"rank": 2, "player": "데일리 블린트", "season": "Legend Of Europa", "avg": 9.2, "count": "2회"}, {"rank": 3, "player": "미키 반더벤", "season": "Path To Glory", "avg": 9.4, "count": "2회"}, {"rank": 4, "player": "토마스", "season": "25 K-League Best", "avg": 11.0, "count": "1회"}], "RAM": [{"rank": 1, "player": "요한 크루이프", "season": "Wonderboys", "avg": 10.0, "count": "10회"}, {"rank": 2, "player": "데니스 베르캄프", "season": "Winning Streak", "avg": 9.6, "count": "6회"}, {"rank": 3, "player": "요한 크루이프", "season": "Ballon d'Or", "avg": 10.1, "count": "6회"}, {"rank": 4, "player": "요한 크루이프", "season": "Champions of Europe", "avg": 10.5, "count": "5회"}, {"rank": 5, "player": "디르크 카위트", "season": "Warriors of Glory", "avg": 8.2, "count": "5회"}], "RB": [{"rank": 1, "player": "덴젤 둠프리스", "season": "26 Team Of The Nominated", "avg": 8.3, "count": "28회"}, {"rank": 2, "player": "덴젤 둠프리스", "season": "24 UEFA Champions League", "avg": 9.0, "count": "14회"}, {"rank": 3, "player": "위리엔 팀버", "season": "25 Devoted Player", "avg": 10.2, "count": "9회"}, {"rank": 4, "player": "케니 테테", "season": "Legend Of Europa", "avg": 9.4, "count": "8회"}, {"rank": 5, "player": "위리엔 팀버", "season": "25 UEFA Champions League", "avg": 11.0, "count": "6회"}], "RCB": [{"rank": 1, "player": "버질 반다이크", "season": "Winning Streak", "avg": 9.3, "count": "24회"}, {"rank": 2, "player": "버질 반다이크", "season": "25 UEFA Champions League", "avg": 9.5, "count": "12회"}, {"rank": 3, "player": "버질 반다이크", "season": "Dramatic Comebacks", "avg": 9.5, "count": "10회"}, {"rank": 4, "player": "스테판 더브레이", "season": "Winning Streak", "avg": 10.9, "count": "8회"}, {"rank": 5, "player": "버질 반다이크", "season": "26 Team Of The Nominated", "avg": 8.1, "count": "8회"}], "RCM": [{"rank": 1, "player": "조이 베이르만", "season": "26 Team Of The Season", "avg": 9.2, "count": "26회"}, {"rank": 2, "player": "프랑크 레이카르트", "season": "Continental Heroes", "avg": 9.6, "count": "17회"}, {"rank": 3, "player": "R. 흐라벤베르흐", "season": "26 Team Of The Nominated", "avg": 8.4, "count": "9회"}, {"rank": 4, "player": "프랑크 레이카르트", "season": "Champions of Europe", "avg": 10.4, "count": "6회"}, {"rank": 5, "player": "조르지뇨 베이날둠", "season": "Dramatic Comebacks", "avg": 10.8, "count": "5회"}], "RM": [{"rank": 1, "player": "차비 시몬스", "season": "25 UEFA Champions League", "avg": 10.9, "count": "4회"}, {"rank": 2, "player": "차비 시몬스", "season": "25 Team Of The Season", "avg": 9.4, "count": "3회"}, {"rank": 3, "player": "요한 크루이프", "season": "Wonderboys", "avg": 10.0, "count": "3회"}, {"rank": 4, "player": "멤피스 데파이", "season": "Path To Glory", "avg": 9.1, "count": "3회"}, {"rank": 5, "player": "차비 시몬스", "season": "25 Team Of The Nominated", "avg": 8.5, "count": "2회"}], "RWB": [{"rank": 1, "player": "덴젤 둠프리스", "season": "25 UEFA Champions League", "avg": 11.0, "count": "2회"}, {"rank": 2, "player": "덴젤 둠프리스", "season": "24 UEFA Champions League", "avg": 9.0, "count": "2회"}, {"rank": 3, "player": "덴젤 둠프리스", "season": "23 UEFA Champions League", "avg": 13.0, "count": "1회"}, {"rank": 4, "player": "덴젤 둠프리스", "season": "Greatest Runner-Ups", "avg": 11.0, "count": "1회"}, {"rank": 5, "player": "위리엔 팀버", "season": "25 Devoted Player", "avg": 10.2, "count": "1회"}], "ST": [{"rank": 1, "player": "마르코 반바스텐", "season": "Wonderboys", "avg": 9.9, "count": "1회"}, {"rank": 2, "player": "뤼트 반니스텔로이", "season": "Footbal Association Champions", "avg": 10.3, "count": "1회"}]}}}, "독일": {"2026-07-10": {"meta": {"collected": 100, "avgUpgrade": 9.98, "sample": 1100}, "formation": "4-1-2-3", "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1000\" height=\"700\" viewBox=\"0 0 1000 700\" font-family=\"Malgun Gothic, Apple SD Gothic Neo, Noto Sans KR, sans-serif\">\n<rect x=\"20\" y=\"20\" width=\"960\" height=\"660\" rx=\"14\" fill=\"#2e7d32\" stroke=\"#ffffff\" stroke-width=\"3\"/>\n<line x1=\"20\" y1=\"363.2\" x2=\"980\" y2=\"363.2\" stroke=\"#ffffff\" stroke-width=\"2\" opacity=\"0.6\"/>\n<circle cx=\"500.0\" cy=\"363.2\" r=\"70\" fill=\"none\" stroke=\"#ffffff\" stroke-width=\"2\" opacity=\"0.6\"/>\n<rect x=\"340.0\" y=\"610\" width=\"320\" height=\"70\" fill=\"none\" stroke=\"#ffffff\" stroke-width=\"2\" opacity=\"0.6\"/>\n<rect x=\"150.0\" y=\"83.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"260.0\" y=\"103.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">LAM</text>\n<text x=\"260.0\" y=\"123.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 케빈 샤데(25DP) 31회</text>\n<text x=\"260.0\" y=\"141.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 무시알라(WB) 4회</text>\n<rect x=\"390.0\" y=\"83.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"500.0\" y=\"103.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">CAM</text>\n<text x=\"500.0\" y=\"123.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 마르빈 두크슈(25DP) 37회</text>\n<text x=\"500.0\" y=\"141.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 카이 하베르츠(2024EP) 16회</text>\n<rect x=\"630.0\" y=\"83.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"740.0\" y=\"103.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">RAM</text>\n<text x=\"740.0\" y=\"123.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 리로이 사네(WS) 30회</text>\n<text x=\"740.0\" y=\"141.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 플로리안 비르츠(WB) 4회</text>\n<rect x=\"150.0\" y=\"263.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"260.0\" y=\"283.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">LCM</text>\n<text x=\"260.0\" y=\"303.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 레온 고레츠카(2024EP) 13회</text>\n<text x=\"260.0\" y=\"321.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 M. 아르놀트(25DP) 12회</text>\n<rect x=\"390.0\" y=\"263.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"500.0\" y=\"283.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">CDM</text>\n<text x=\"500.0\" y=\"303.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 안톤 슈타흐(25DP) 44회</text>\n<text x=\"500.0\" y=\"321.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 안젤로 슈틸러(25DP) 9회</text>\n<rect x=\"630.0\" y=\"263.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"740.0\" y=\"283.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">RCM</text>\n<text x=\"740.0\" y=\"303.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 파스칼 그로스(25DP) 16회</text>\n<text x=\"740.0\" y=\"321.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 요주아 키미히(26TN) 8회</text>\n<rect x=\"30.0\" y=\"443.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"140.0\" y=\"463.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">LB</text>\n<text x=\"140.0\" y=\"483.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 M. 미텔슈테트(25DP) 30회</text>\n<text x=\"140.0\" y=\"501.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 로빈 고젠스(25DP) 18회</text>\n<rect x=\"270.0\" y=\"443.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"380.0\" y=\"463.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">LCB</text>\n<text x=\"380.0\" y=\"483.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 N. 슐로터베크(26TN) 36회</text>\n<text x=\"380.0\" y=\"501.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 로빈 코흐(25DP) 9회</text>\n<rect x=\"510.0\" y=\"443.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"620.0\" y=\"463.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">RCB</text>\n<text x=\"620.0\" y=\"483.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 요나탄 타(26TN) 41회</text>\n<text x=\"620.0\" y=\"501.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 파트리크 마인카(25DP) 6회</text>\n<rect x=\"750.0\" y=\"443.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"860.0\" y=\"463.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">RB</text>\n<text x=\"860.0\" y=\"483.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 마리우스 볼프(WS) 26회</text>\n<text x=\"860.0\" y=\"501.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 베냐민 헨릭스(FAC) 16회</text>\n<rect x=\"390.0\" y=\"593.0\" width=\"220\" height=\"74\" rx=\"8\" fill=\"#ffffff\" stroke=\"#1b5e20\" stroke-width=\"2\"/>\n<text x=\"500.0\" y=\"613.0\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"bold\" fill=\"#1b5e20\">GK</text>\n<text x=\"500.0\" y=\"633.0\" text-anchor=\"middle\" font-size=\"12\" fill=\"#111111\">1위 올리버 칸(WS) 17회</text>\n<text x=\"500.0\" y=\"651.0\" text-anchor=\"middle\" font-size=\"10.5\" fill=\"#555555\">2위 M. 테어슈테겐(FAC) 10회</text>\n</svg>", "positions": {"CAM": [{"rank": 1, "player": "마르빈 두크슈", "season": "25 Devoted Player", "avg": 10.0, "count": "37회"}, {"rank": 2, "player": "카이 하베르츠", "season": "2024 Energetic Player", "avg": 10.3, "count": "16회"}, {"rank": 3, "player": "토마스 뮐러", "season": "Footbal Association Champions", "avg": 9.1, "count": "8회"}, {"rank": 4, "player": "카이 하베르츠", "season": "Champions of Europe", "avg": 10.8, "count": "5회"}, {"rank": 5, "player": "데니즈 운다브", "season": "26 Team Of The Season", "avg": 9.5, "count": "4회"}], "CDM": [{"rank": 1, "player": "안톤 슈타흐", "season": "25 Devoted Player", "avg": 9.8, "count": "44회"}, {"rank": 2, "player": "안톤 슈타흐", "season": "2024 Energetic Player", "avg": 10.7, "count": "15회"}, {"rank": 3, "player": "안젤로 슈틸러", "season": "25 Devoted Player", "avg": 10.9, "count": "9회"}, {"rank": 4, "player": "A. 파블로비치", "season": "25 UEFA Champions League", "avg": 8.9, "count": "5회"}, {"rank": 5, "player": "A. 파블로비치", "season": "26 Team Of The Season", "avg": 8.3, "count": "4회"}], "CM": [{"rank": 1, "player": "얀 쇠프너", "season": "25 Devoted Player", "avg": 10.8, "count": "1회"}, {"rank": 2, "player": "베켄바워", "season": "Wonderboys", "avg": 9.1, "count": "1회"}], "GK": [{"rank": 1, "player": "올리버 칸", "season": "Winning Streak", "avg": 10.5, "count": "17회"}, {"rank": 2, "player": "M. 테어슈테겐", "season": "Footbal Association Champions", "avg": 10.6, "count": "10회"}, {"rank": 3, "player": "M. 테어슈테겐", "season": "Champions of Europe", "avg": 9.9, "count": "9회"}, {"rank": 4, "player": "올리버 바우만", "season": "2024 Energetic Player", "avg": 10.8, "count": "8회"}, {"rank": 5, "player": "올리버 바우만", "season": "23 Hard Worker", "avg": 11.2, "count": "6회"}], "LAM": [{"rank": 1, "player": "케빈 샤데", "season": "25 Devoted Player", "avg": 10.4, "count": "31회"}, {"rank": 2, "player": "리로이 사네", "season": "Winning Streak", "avg": 9.5, "count": "8회"}, {"rank": 3, "player": "리로이 사네", "season": "Footbal Association Champions", "avg": 10.5, "count": "5회"}, {"rank": 4, "player": "무시알라", "season": "Wonderboys", "avg": 10.4, "count": "4회"}, {"rank": 5, "player": "울리 회네스", "season": "26 Heroes", "avg": 9.4, "count": "3회"}], "LB": [{"rank": 1, "player": "M. 미텔슈테트", "season": "25 Devoted Player", "avg": 10.6, "count": "30회"}, {"rank": 2, "player": "로빈 고젠스", "season": "25 Devoted Player", "avg": 9.7, "count": "18회"}, {"rank": 3, "player": "다비트 라움", "season": "2024 Energetic Player", "avg": 10.6, "count": "10회"}, {"rank": 4, "player": "다비트 라움", "season": "26 Team Of The Nominated", "avg": 8.7, "count": "10회"}, {"rank": 5, "player": "안젤로 슈틸러", "season": "25 Devoted Player", "avg": 10.9, "count": "9회"}], "LCB": [{"rank": 1, "player": "N. 슐로터베크", "season": "26 Team Of The Nominated", "avg": 8.5, "count": "36회"}, {"rank": 2, "player": "N. 슐로터베크", "season": "24 UEFA Champions League", "avg": 9.9, "count": "22회"}, {"rank": 3, "player": "N. 슐로터베크", "season": "26 Team Of The Season", "avg": 9.1, "count": "10회"}, {"rank": 4, "player": "로빈 코흐", "season": "25 Devoted Player", "avg": 10.5, "count": "9회"}, {"rank": 5, "player": "N. 슐로터베크", "season": "Greatest Runner-Ups", "avg": 10.2, "count": "4회"}], "LCM": [{"rank": 1, "player": "레온 고레츠카", "season": "2024 Energetic Player", "avg": 10.2, "count": "13회"}, {"rank": 2, "player": "M. 아르놀트", "season": "25 Devoted Player", "avg": 11.0, "count": "12회"}, {"rank": 3, "player": "안젤로 슈틸러", "season": "25 Devoted Player", "avg": 10.9, "count": "11회"}, {"rank": 4, "player": "요주아 키미히", "season": "26 Team Of The Nominated", "avg": 8.4, "count": "7회"}, {"rank": 5, "player": "베켄바워", "season": "Continental Heroes", "avg": 8.9, "count": "6회"}], "LDM": [{"rank": 1, "player": "안톤 슈타흐", "season": "25 Devoted Player", "avg": 9.8, "count": "1회"}], "LM": [{"rank": 1, "player": "리로이 사네", "season": "Winning Streak", "avg": 9.5, "count": "4회"}, {"rank": 2, "player": "케빈 샤데", "season": "25 Devoted Player", "avg": 10.4, "count": "3회"}, {"rank": 3, "player": "리로이 사네", "season": "Footbal Association Champions", "avg": 10.5, "count": "3회"}, {"rank": 4, "player": "무시알라", "season": "26 Team Of The Nominated", "avg": 9.5, "count": "2회"}, {"rank": 5, "player": "울리 회네스", "season": "26 Heroes", "avg": 9.4, "count": "2회"}], "RAM": [{"rank": 1, "player": "리로이 사네", "season": "Winning Streak", "avg": 9.5, "count": "30회"}, {"rank": 2, "player": "케빈 샤데", "season": "25 Devoted Player", "avg": 10.4, "count": "12회"}, {"rank": 3, "player": "플로리안 비르츠", "season": "Wonderboys", "avg": 11.0, "count": "4회"}, {"rank": 4, "player": "리로이 사네", "season": "25 UEFA Champions League", "avg": 11.0, "count": "4회"}, {"rank": 5, "player": "리로이 사네", "season": "Footbal Association Champions", "avg": 10.5, "count": "4회"}], "RB": [{"rank": 1, "player": "마리우스 볼프", "season": "Winning Streak", "avg": 10.4, "count": "26회"}, {"rank": 2, "player": "베냐민 헨릭스", "season": "Footbal Association Champions", "avg": 9.4, "count": "16회"}, {"rank": 3, "player": "미첼 바이저", "season": "25 Devoted Player", "avg": 10.7, "count": "9회"}, {"rank": 4, "player": "A. 크나우프", "season": "Legend Of Europa", "avg": 9.7, "count": "6회"}, {"rank": 5, "player": "베냐민 헨릭스", "season": "2024 Energetic Player", "avg": 10.7, "count": "6회"}], "RCB": [{"rank": 1, "player": "요나탄 타", "season": "26 Team Of The Nominated", "avg": 8.6, "count": "41회"}, {"rank": 2, "player": "요나탄 타", "season": "26 Team Of The Season", "avg": 8.4, "count": "13회"}, {"rank": 3, "player": "파트리크 마인카", "season": "25 Devoted Player", "avg": 10.7, "count": "6회"}, {"rank": 4, "player": "요나탄 타", "season": "Winning Streak", "avg": 9.2, "count": "6회"}, {"rank": 5, "player": "요나탄 타", "season": "Footbal Association Champions", "avg": 10.5, "count": "5회"}], "RCM": [{"rank": 1, "player": "파스칼 그로스", "season": "25 Devoted Player", "avg": 10.7, "count": "16회"}, {"rank": 2, "player": "레온 고레츠카", "season": "2024 Energetic Player", "avg": 10.2, "count": "8회"}, {"rank": 3, "player": "요주아 키미히", "season": "26 Team Of The Nominated", "avg": 8.4, "count": "8회"}, {"rank": 4, "player": "베켄바워", "season": "Footbal Association Champions", "avg": 10.4, "count": "7회"}, {"rank": 5, "player": "요주아 키미히", "season": "Winning Streak", "avg": 9.2, "count": "5회"}], "RDM": [{"rank": 1, "player": "레온 고레츠카", "season": "Footbal Association Champions", "avg": 10.3, "count": "1회"}], "RM": [{"rank": 1, "player": "리로이 사네", "season": "Winning Streak", "avg": 9.5, "count": "6회"}, {"rank": 2, "player": "리로이 사네", "season": "Footbal Association Champions", "avg": 10.5, "count": "4회"}, {"rank": 3, "player": "무시알라", "season": "Wonderboys", "avg": 10.4, "count": "3회"}, {"rank": 4, "player": "케빈 샤데", "season": "25 Devoted Player", "avg": 10.4, "count": "2회"}, {"rank": 5, "player": "울리 회네스", "season": "26 Heroes", "avg": 9.4, "count": "2회"}]}}}}
+  </script>
+
+  <script>
+    const DATA = JSON.parse(document.getElementById('fc-data').textContent);
+
+    const ROW_GROUPS = [
+      { label: '공격수 (ST · CF)', positions: ['ST', 'CF'] },
+      { label: '공격형 미드필더 (LAM · CAM · RAM)', positions: ['LAM', 'CAM', 'RAM'] },
+      { label: '측면 미드필더 (LM · RM)', positions: ['LM', 'RM'] },
+      { label: '중앙 미드필더 (LCM · CM · RCM)', positions: ['LCM', 'CM', 'RCM'] },
+      { label: '수비형 미드필더 (LDM · CDM · RDM)', positions: ['LDM', 'CDM', 'RDM'] },
+      { label: '윙백 (LWB · RWB)', positions: ['LWB', 'RWB'] },
+      { label: '풀백 (LB · RB)', positions: ['LB', 'RB'] },
+      { label: '센터백 (LCB · CB · RCB)', positions: ['LCB', 'CB', 'RCB'] },
+      { label: '골키퍼 (GK)', positions: ['GK'] },
+    ];
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function initCountry(country) {
+      const dates = Object.keys(DATA[country]).sort().reverse();
+      const tabBar = document.getElementById('date-tabs-' + country);
+      tabBar.innerHTML = dates.map((d, i) =>
+        `<button class="date-btn${i === 0 ? ' active' : ''}" onclick="selectDate('${country}','${d}', this)">${d}</button>`
+      ).join('');
+      selectDate(country, dates[0], tabBar.querySelector('.date-btn'));
+    }
+
+    function selectDate(country, date, btn) {
+      document.querySelectorAll('#date-tabs-' + country + ' .date-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderDateContent(country, date);
+    }
+
+    function renderDateContent(country, date) {
+      const d = DATA[country][date];
+      const container = document.getElementById('date-content-' + country);
+      const meta = d.meta;
+
+      let html = '';
+      html += `<div class="meta-bar">
+        <div class="meta-item"><span class="meta-num">${meta.collected ?? '-'}명</span><span class="meta-label">수집 인원</span></div>
+        <div class="meta-item"><span class="meta-num">${meta.avgUpgrade ?? '-'}</span><span class="meta-label">강화등급 평균</span></div>
+        <div class="meta-item"><span class="meta-num">${meta.sample ?? '-'}건</span><span class="meta-label">표본</span></div>
+        <div class="meta-item"><span class="meta-num">${esc(d.formation || '-')}</span><span class="meta-label">기준 포메이션</span></div>
+      </div>`;
+
+      html += `<h2 class="sub-title">베스트 11 추천</h2>`;
+      html += `<div class="svg-wrap">${d.svg || ''}</div>`;
+      html += `<p class="svg-caption">전역 기준 동일 선수가 두 포지션에 중복 배정되지 않도록 조정한 1위, 해당 포지션 차순위 카드를 2위로 표시. 데이터상 최다 채택 포메이션인 ${esc(d.formation || '-')} 기준.</p>`;
+
+      html += `<h2 class="sub-title">포지션별 최다 기용 카드 Top 5</h2>`;
+      for (const group of ROW_GROUPS) {
+        const present = group.positions.filter(p => d.positions[p] && d.positions[p].length);
+        if (!present.length) continue;
+        html += `<div class="row-label">${group.label}</div>`;
+        html += `<div class="pos-row">`;
+        for (const pos of present) {
+          html += `<div class="pos-box"><div class="pos-box-head">${esc(pos)}</div><ol class="pos-list">`;
+          for (const card of d.positions[pos]) {
+            html += `<li>
+              <div class="pos-rank-row"><span class="pos-rank">${card.rank}</span><span class="pos-player">${esc(card.player)}</span></div>
+              <div class="pos-sub-row"><span class="pos-season">${esc(card.season)}</span><span class="pos-stat">${card.avg.toFixed(1)} · ${esc(card.count)}</span></div>
+            </li>`;
+          }
+          html += `</ol></div>`;
+        }
+        html += `</div>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function switchCountry(country, btn) {
+      document.querySelectorAll('.country-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active-ned', 'active-ger'));
+      document.getElementById('pane-' + country).classList.add('active');
+      btn.classList.add(country === '네덜란드' ? 'active-ned' : 'active-ger');
+    }
+
+    initCountry('네덜란드');
+    initCountry('독일');
+  </script>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="6GXNS33" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
