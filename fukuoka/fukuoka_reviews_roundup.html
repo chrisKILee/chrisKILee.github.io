@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>후쿠오카 여행 후기 총정리 — 실제 후기 212건 기반</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #FFFFFF;
+      --gray:      #F7F7F7;
+      --border:    #EBEBEB;
+      --border-2:  #DDDDDD;
+      --ink:       #222222;
+      --ink-2:     #717171;
+      --ink-3:     #B0B0B0;
+      --rausch:    #FF385C;
+      --rausch-2:  #E31C5F;
+      --gold:      #B08900;
+      --font: 'Inter', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; padding-top: 48px; }
+    a { color: inherit; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 40px; }
+    @media (max-width: 640px) { .wrap { padding: 0 20px; } }
+
+    .masthead { position: sticky; top: 48px; z-index: 50; background: var(--bg); border-bottom: 1px solid var(--border); padding: 12px 40px; display: flex; align-items: center; gap: 10px; }
+    .masthead .logo { color: var(--rausch); font-weight: 800; font-size: 16px; }
+    .masthead-id { font-size: 14px; font-weight: 600; }
+    .masthead-meta { margin-left: auto; font-size: 12px; color: var(--ink-3); }
+    @media (max-width: 640px) { .masthead { padding: 12px 20px; } }
+
+    .hero { padding: 48px 0 28px; }
+    .badge { display: inline-block; font-size: 12px; font-weight: 600; color: var(--rausch); background: #FFF0F3; border-radius: 99px; padding: 5px 12px; margin-bottom: 18px; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 14px; }
+    .hero h1 em { font-style: normal; color: var(--rausch); }
+    .hero .lede { font-size: 17px; color: var(--ink-2); max-width: 680px; margin-bottom: 26px; }
+
+    .hero-stats { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 8px; }
+    .hstat b { display: block; font-size: 24px; font-weight: 800; }
+    .hstat span { font-size: 12px; color: var(--ink-3); }
+
+    .callout { margin: 28px 0 8px; background: var(--gray); border: 1px solid var(--border); border-radius: 14px; padding: 16px 20px; font-size: 13px; color: var(--ink-2); line-height: 1.7; }
+    .callout b { color: var(--ink); }
+
+    /* category overview grid */
+    .catgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 12px; margin: 28px 0; }
+    .catcard { border: 1px solid var(--border-2); border-radius: 14px; padding: 16px 18px; cursor: pointer; transition: border-color .15s, transform .15s; background: var(--bg); }
+    .catcard:hover { border-color: var(--rausch); transform: translateY(-2px); }
+    .catcard.on { border-color: var(--rausch); background: #FFF0F3; }
+    .catcard .clabel { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+    .catcard .cnum { font-size: 22px; font-weight: 800; }
+    .catcard .cnum span { font-size: 12px; font-weight: 500; color: var(--ink-3); }
+    .catcard .csrc { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
+
+    section { padding: 20px 0 36px; }
+    .sec-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+    .sec-desc { font-size: 13.5px; color: var(--ink-2); margin-bottom: 18px; }
+
+    /* pills */
+    .pills { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 20px; position: sticky; top: 97px; z-index: 40; background: rgba(255,255,255,.94); backdrop-filter: blur(8px); padding: 10px 0; }
+    .cpill { font-size: 13px; font-weight: 600; color: var(--ink-2); border: 1px solid var(--border-2); border-radius: 9999px; padding: 8px 16px; transition: border-color .2s, color .2s, background .2s; cursor: pointer; background: var(--bg); }
+    .cpill.on { border-color: var(--rausch); color: #fff; background: var(--rausch); }
+    .cpill:hover:not(.on) { border-color: var(--ink); color: var(--ink); }
+
+    .searchbox { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-2); border-radius: 9999px; padding: 8px 16px; max-width: 340px; margin-bottom: 20px; }
+    .searchbox input { border: none; outline: none; font-size: 13.5px; font-family: var(--font); width: 100%; }
+    .searchbox span { color: var(--ink-3); font-size: 13px; }
+
+    /* rank rows */
+    .ranklist { border-top: 1px solid var(--border); }
+    .rank-row { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .rank-num { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--gray); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12.5px; color: var(--ink-2); }
+    .rank-row.top .rank-num { background: var(--rausch); color: #fff; }
+    .rank-body { flex: 1; min-width: 0; }
+    .rank-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .rank-head h3 { font-size: 15.5px; font-weight: 700; letter-spacing: -0.01em; }
+    .rank-mentions { font-size: 12px; font-weight: 700; color: var(--rausch); white-space: nowrap; }
+    .rank-price { font-size: 13px; color: var(--ink-2); margin-top: 3px; }
+    .rank-price b { font-weight: 600; color: var(--ink); }
+    .rank-summary { font-size: 13.5px; color: var(--ink-2); margin-top: 6px; line-height: 1.65; }
+    .rank-sources { margin-top: 8px; }
+    .rank-sources summary { cursor: pointer; font-size: 12px; color: var(--ink-3); font-weight: 600; }
+    .rank-sources summary:hover { color: var(--ink); }
+    .rank-sources .srclist { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .rank-sources a { font-size: 11.5px; color: var(--ink-2); word-break: break-all; text-decoration: none; border-bottom: 1px dotted var(--border-2); padding-bottom: 1px; }
+    .rank-sources a:hover { color: var(--rausch); border-color: var(--rausch); }
+
+    .empty { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14px; }
+
+    footer { padding: 32px 40px; border-top: 1px solid var(--border); background: var(--gray); font-size: 12.5px; color: var(--ink-2); line-height: 1.7; }
+    footer .wrap { display: flex; flex-direction: column; gap: 10px; }
+    footer .fline { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 13px; font-weight: 600; color: var(--ink); }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+    @media (max-width: 640px) { footer { padding: 24px 20px; } }
+  </style>
+</head>
+<body>
+
+<div class="masthead">
+  <span class="logo">✦</span>
+  <span class="masthead-id">후쿠오카 여행 후기 총정리</span>
+  <span class="masthead-meta">2026.07 조사</span>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="badge">Fukuoka Review Roundup · 실제 후기 기반</span>
+    <h1>후쿠오카 여행 후기 <em>총정리</em></h1>
+    <p class="lede">네이버 블로그·브런치·티스토리·트립닷컴 등 한국어 여행 후기 <b>212건</b>을 검색·열람해 관광지·맛집·쇼핑·기타·일본 여행팁 5개 카테고리로 정리했습니다. 각 항목은 실제로 몇 개의 서로 다른 후기 글에서 언급됐는지 카운팅했고, 맛집·쇼핑은 상호명과 가격을 함께 표기했습니다.</p>
+    <div class="hero-stats">
+      <div class="hstat"><b>471</b><span>총 수집 항목</span></div>
+      <div class="hstat"><b>212</b><span>참고한 실제 후기 글</span></div>
+      <div class="hstat"><b>5</b><span>카테고리</span></div>
+      <div class="hstat"><b>최근 1년</b><span>이내 후기 우선</span></div>
+    </div>
+
+    <div class="callout">
+      <b>조사 방법</b>: 카테고리별로 다수의 검색어(관광지 8종·맛집 10종·쇼핑 8종·기타 6종·여행팁 6종, 총 38종)로 웹 검색을 수행하고, 검색어당 5~8개의 실제 후기 글을 열람해 언급된 장소·상호명·가격 정보를 추출했습니다. "언급 N곳"은 <b>서로 다른 출처 글</b>에서 해당 항목이 언급된 횟수이며(동일 출처 중복 집계 안 함), 같은 장소를 다르게 표기한 경우(오탈자·지점명 유무 등)는 하나로 합쳤습니다. 숙소 후기는 조사 대상에서 제외했습니다. 가격·시기 정보는 각 출처 글의 게시 시점 기준이라 변동될 수 있으니 방문 전 최신 정보로 재확인하세요.
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec-title">카테고리 개요</h2>
+    <p class="sec-desc">클릭하면 아래 목록이 해당 카테고리로 전환됩니다.</p>
+    <div class="catgrid" id="catGrid"></div>
+
+    <div class="pills" id="pills"></div>
+    <div class="searchbox"><span>🔍</span><input type="text" id="searchInput" placeholder="이름으로 검색..."></div>
+
+    <div id="listMeta" class="sec-desc"></div>
+    <div class="ranklist" id="rankList"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="fline">
+      <span>후쿠오카 여행 후기 총정리 · 2026.07</span>
+      <span>실제 후기 212건 기반, 방문 전 최신 정보 재확인 권장</span>
+    </div>
+    <div>
+      본 페이지는 43개 조사 에이전트가 네이버 블로그·브런치·티스토리·트립닷컴·트래블로그 등에서 찾은 실제 한국어 여행 후기 글을 열람해 만들었습니다. 창작·추정된 항목은 없으며, 모든 항목은 실제 후기 글에서 확인된 내용만 기록했습니다. "언급 N곳"은 인기도나 평점이 아니라 <b>이번 조사에서 발견된 서로 다른 출처 글 수</b>를 의미하므로, 조사 범위 밖의 후기까지 포함하면 실제 언급량은 더 많을 수 있습니다.
+    </div>
+  </div>
+</footer>
+
+<script src="/fukuoka/fukuoka_reviews_roundup_data.js"></script>
+<script>
+const CAT_ICON = { attractions:"🏯", food:"🍜", shopping:"🛍️", etc:"🚃", tips:"💡" };
+let curCat = REVIEW_STATS[0].key;
+let curQuery = "";
+
+function renderCatGrid(){
+  const el = document.getElementById("catGrid");
+  el.innerHTML = REVIEW_STATS.map(s => `
+    <div class="catcard ${s.key===curCat?'on':''}" data-cat="${s.key}">
+      <div class="clabel">${CAT_ICON[s.key]||""} ${s.label}</div>
+      <div class="cnum">${s.items}<span> 항목</span></div>
+      <div class="csrc">출처 ${s.sources}건</div>
+    </div>`).join("");
+  el.querySelectorAll(".catcard").forEach(c=>{
+    c.addEventListener("click", ()=>{ curCat = c.dataset.cat; curQuery=""; document.getElementById("searchInput").value=""; renderAll(); window.scrollTo({top: document.getElementById("pills").offsetTop - 110, behavior:"smooth"}); });
+  });
+}
+
+function renderPills(){
+  const el = document.getElementById("pills");
+  el.innerHTML = REVIEW_STATS.map(s => `<span class="cpill ${s.key===curCat?'on':''}" data-cat="${s.key}">${CAT_ICON[s.key]||""} ${s.label} ${s.items}</span>`).join("");
+  el.querySelectorAll(".cpill").forEach(p=>{
+    p.addEventListener("click", ()=>{ curCat = p.dataset.cat; renderAll(); });
+  });
+}
+
+function esc(str){
+  return (str||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function renderList(){
+  const stat = REVIEW_STATS.find(s=>s.key===curCat);
+  document.getElementById("listMeta").textContent = `${stat.label} — 총 ${stat.items}개 항목 · 출처 ${stat.sources}건 · 언급 많은 순 정렬`;
+
+  let items = REVIEW_DATA[curCat] || [];
+  if (curQuery) {
+    const q = curQuery.toLowerCase();
+    items = items.filter(it => (it.n||"").toLowerCase().includes(q) || (it.s||"").toLowerCase().includes(q));
+  }
+
+  const listEl = document.getElementById("rankList");
+  if (!items.length) {
+    listEl.innerHTML = `<div class="empty">검색 결과가 없습니다.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = items.map((it, i) => {
+    const rank = i + 1;
+    const sources = (it.u||[]).map(u => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("");
+    return `<div class="rank-row ${rank<=3?'top':''}">
+      <div class="rank-num">${rank}</div>
+      <div class="rank-body">
+        <div class="rank-head">
+          <h3>${esc(it.n)}</h3>
+          <span class="rank-mentions">언급 ${it.m}곳</span>
+        </div>
+        ${it.p ? `<div class="rank-price"><b>가격</b> ${esc(it.p)}</div>` : ""}
+        ${it.s ? `<div class="rank-summary">${esc(it.s)}</div>` : ""}
+        ${sources ? `<details class="rank-sources"><summary>출처 ${(it.u||[]).length}건 보기</summary><div class="srclist">${sources}</div></details>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderAll(){
+  renderCatGrid();
+  renderPills();
+  renderList();
+}
+
+document.getElementById("searchInput").addEventListener("input", (e)=>{
+  curQuery = e.target.value.trim();
+  renderList();
+});
+
+renderAll();
+</script>
+
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="DMNTG2V" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
