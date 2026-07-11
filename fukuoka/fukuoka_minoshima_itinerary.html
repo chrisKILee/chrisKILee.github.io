@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>후쿠오카 6일 동선 스케줄 — 미노시마 숙소 기준 (대중교통)</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F8FA; --surface:#FFFFFF; --border:#E5E7EB; --border-2:#D7DBE0;
+    --ink:#14161A; --ink-2:#3A3F47; --ink-3:#686F79; --ink-4:#9AA1AC;
+    --accent:#3366FF; --accent-bg:#EEF2FF; --accent-ink:#1F3FCC;
+    --teal:#0EA5A0; --teal-bg:#E7FBF9;
+    --amber:#D97706; --amber-bg:#FEF3C7;
+    --font-b:'Inter',system-ui,-apple-system,'Pretendard',sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;padding-top:48px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 20px 100px;}
+
+  .hero{background:var(--surface);border-bottom:1px solid var(--border);padding:44px 20px 32px;}
+  .hero-inner{max-width:920px;margin:0 auto;}
+  .eyebrow{display:inline-flex;align-items:center;gap:6px;background:var(--accent-bg);color:var(--accent-ink);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:700;letter-spacing:.03em;margin-bottom:16px;}
+  h1{font-size:clamp(1.6rem,4vw,2.3rem);font-weight:800;letter-spacing:-.02em;line-height:1.2;margin-bottom:10px;}
+  .hero p{color:var(--ink-3);font-size:14.5px;max-width:680px;line-height:1.7;}
+  .fact-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;}
+  .fact{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--ink-2);}
+  .fact b{display:block;font-size:14px;color:var(--ink);font-weight:700;margin-bottom:2px;}
+
+  .day-nav{display:flex;gap:6px;overflow-x:auto;position:sticky;top:48px;background:var(--bg);z-index:60;padding:14px 20px;border-bottom:1px solid var(--border);}
+  .day-nav-inner{display:flex;gap:6px;max-width:920px;margin:0 auto;width:100%;}
+  .day-btn{flex:0 0 auto;padding:9px 16px;border-radius:10px;border:1px solid var(--border-2);background:var(--surface);color:var(--ink-3);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;}
+  .day-btn:hover{border-color:var(--accent);color:var(--accent-ink);}
+  .day-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  .day-section{display:none;padding-top:28px;}
+  .day-section.active{display:block;}
+  .day-head{margin-bottom:20px;}
+  .day-head .d{font-family:var(--font-mono);font-size:12.5px;color:var(--accent-ink);font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .day-head h2{font-size:clamp(1.25rem,3vw,1.6rem);font-weight:800;letter-spacing:-.01em;margin-top:4px;}
+  .day-head .sub{color:var(--ink-3);font-size:13.5px;margin-top:6px;}
+
+  .timeline{position:relative;padding-left:26px;margin-bottom:22px;}
+  .timeline::before{content:'';position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--border-2);}
+  .t-item{position:relative;padding-bottom:20px;}
+  .t-item:last-child{padding-bottom:0;}
+  .t-item::before{content:'';position:absolute;left:-26px;top:4px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);box-shadow:0 0 0 2px var(--accent);}
+  .t-time{font-family:var(--font-mono);font-size:12.5px;font-weight:700;color:var(--accent-ink);margin-bottom:3px;}
+  .t-title{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+  .t-desc{font-size:13px;color:var(--ink-3);line-height:1.65;}
+  .transit-chip{display:inline-flex;align-items:center;gap:4px;background:var(--teal-bg);color:var(--teal);border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:700;margin-top:6px;margin-right:6px;}
+
+  .box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
+  .box h3{font-size:13.5px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .box ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
+  .box li{font-size:13px;color:var(--ink-2);line-height:1.6;padding-left:14px;position:relative;}
+  .box li::before{content:'·';position:absolute;left:0;color:var(--ink-4);font-weight:900;}
+  .box li b{color:var(--ink);font-weight:700;}
+
+  .callout{border-left:3px solid var(--amber);background:var(--amber-bg);border-radius:0 10px 10px 0;padding:12px 16px;font-size:13px;color:#7C4A03;line-height:1.65;margin-bottom:16px;}
+  .callout.info{border-left-color:var(--accent);background:var(--accent-bg);color:var(--accent-ink);}
+
+  footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--border);font-size:12px;color:var(--ink-4);}
+
+  @media (max-width:640px){
+    .wrap{padding:0 14px 80px;}
+    .hero{padding:32px 14px 24px;}
+    .day-nav{padding:12px 14px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <span class="eyebrow">✈️ 후쿠오카 2026.07.15–20</span>
+    <h1>미노시마 숙소 기준 6일 동선 스케줄</h1>
+    <p>부모+남아 2명(중3·초6), 대중교통 중심 이동. 항공 7C1403(09:45→11:15)·7C1404(12:15→13:45), 숙소는 미노시마(레지덴스호텔 하카타에키미나미, 3-4-12 Minoshima, Hakata-ku). 둘째날 유후인 버스투어는 KKday(상품 285658, 와쿠와쿠 4호선) 확정 예약 일정을 그대로 반영했다.</p>
+    <div class="fact-row">
+      <div class="fact"><b>7/15(수) 도착</b>7C1403 09:45→11:15</div>
+      <div class="fact"><b>7/20(월) 출발</b>7C1404 12:15→13:45</div>
+      <div class="fact"><b>숙소</b>미노시마, 하카타역 도보 약 19분권</div>
+      <div class="fact"><b>이동 원칙</b>도보·지하철·버스 우선, 택시는 상황 판단</div>
+    </div>
+  </div>
+</div>
+
+<div class="day-nav">
+  <div class="day-nav-inner" id="dayNav"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- DAY 1 -->
+  <section class="day-section" id="day-1">
+    <div class="day-head">
+      <div class="d">Day 1 · 7월 15일 (수)</div>
+      <h2>입국 · 환전·짐 정리 · 하카타 정착</h2>
+      <div class="sub">국제선터미널 도착 → 하카타역 → 미노시마 체크인</div>
+    </div>
+
+    <div class="callout info">국제선터미널엔 지하철역이 없다. <b>국제선↔국내선터미널 무료 셔틀버스(약 10분 간격)</b>로 국내선터미널로 이동한 뒤, 그곳 지하철 공항선을 탄다.</div>
+
+    <div class="timeline">
+      <div class="t-item">
+        <div class="t-time">11:15</div>
+        <div class="t-title">후쿠오카 국제선터미널 도착 · 입국심사</div>
+        <div class="t-desc">입국심사·수하물 수령까지 30분~1시간 여유. 주말보다 평일 도착이라 상대적으로 빠를 것으로 예상.</div>
+        <span class="transit-chip">🚌 무료 셔틀 (국제선→국내선, 약10분)</span>
+      </div>
+      <div class="t-item">
+        <div class="t-time">~12:20</div>
+        <div class="t-title">국내선터미널 → 하카타역</div>
+        <div class="t-desc">지하철 공항선(쿠코선) 탑승, 하카타역까지 약 5분·편도 260엔.</div>
+        <span class="transit-chip">🚇 지하철 공항선 5분</span>
+      </div>
+      <div class="t-item">
+        <div class="t-time">12:30</div>
+        <div class="t-title">환전·출금 — 트래블로그 & 세븐일레븐 뱅킹</div>
+        <div class="t-desc">하카타역 구내·주변 세븐일레븐 ATM에서 트래블로그 카드로 엔화 출금. 숙소 근처에도 <b>세븐일레븐 하카타 미노시마도리점</b>(24시간, 무료주차)이 있어 이후에도 이용 가능.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">12:40</div>
+        <div class="t-title">코인로커 확보</div>
+        <div class="t-desc">하카타역 구내 코인로커(JR·지하철 개찰구 안팎 다수)에 캐리어 보관 — 체크인(15시~) 전까지 가볍게 이동하기 위함. 숙소는 무인 프론트라 시간외 짐 보관이 어려움.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">12:50</div>
+        <div class="t-title">점심 — 하카타역 인근 라멘</div>
+        <div class="t-desc">이치란 본사총본점(나카스카와바타역 2번출구 도보1분) · 하카타 잇코샤(하카타역 서쪽출구 도보5분, 거품계 돈코츠) · 잇소우(하카타역권 3개 지점) 중 택1.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">14:00</div>
+        <div class="t-title">하카타 쇼핑 — 캐널시티·카와바타 상점가</div>
+        <div class="t-desc">캐널시티 하카타(하카타역 도보 8~10분, 무료 분수쇼·라멘스타디움) 또는 카와바타 상점가(130년 아케이드, 구시다신사~캐널시티 도보 연결).</div>
+        <span class="transit-chip">🚶 하카타역 도보 8~10분</span>
+      </div>
+      <div class="t-item">
+        <div class="t-time">14:40</div>
+        <div class="t-title">하카타역 → 미노시마 숙소</div>
+        <div class="t-desc">도보 약 19분(2번 출구 기준 약 1.2~1.6km)이 가장 확실한 대중교통 옵션. 니시테츠버스 노선도 있으나 정확한 승강장·번호는 현지 구글맵으로 재확인 권장.</div>
+        <span class="transit-chip">🚶 도보 약 19분</span>
+      </div>
+      <div class="t-item">
+        <div class="t-time">15:00</div>
+        <div class="t-title">미노시마 체크인</div>
+        <div class="t-desc">무인 프론트·태블릿 셀프 체크인. 짐 정리 후 30~45분 휴식.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">18:30</div>
+        <div class="t-title">저녁 — 미노시마 로컬 맛집</div>
+        <div class="t-desc"><b>카도야 쇼쿠도</b>(미노시마 최고참 대중식당, 카츠동 490엔) · <b>라멘 이나다</b>(미노시마 상점가, 규슈식 쇼유라멘) · <b>교자 츄보 토라지</b>(로컬 이자카야, 야키교자) 중 도보권으로 선택.</div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3>🛒 숙소 근처 장보기</h3>
+      <ul>
+        <li><b>사니 미노시마점</b> — 세이유 계열 대형 슈퍼, 24시간(일부 코너 제외)</li>
+        <li><b>자·다이코쿠텐 미노시마점</b> — 미노시마 상점가 지역밀착 슈퍼, 09:00~22:00</li>
+        <li><b>미스터맥스 셀렉트 미노시마점</b> — 종합 디스카운트 스토어(생활용품·간식·의약품)</li>
+        <li>편의점 3곳(로손·훼미리마트·세븐일레븐)이 모두 도보권, 세븐일레븐이 ATM 겸용</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day-section" id="day-2">
+    <div class="day-head">
+      <div class="d">Day 2 · 7월 16일 (목)</div>
+      <h2>유후인 · 히타 버스투어 (KKday 285658)</h2>
+      <div class="sub">확정 예약 상품 일정 그대로 — "레트로 감성 히타 유후인 버스투어 와쿠와쿠 4호선"</div>
+    </div>
+
+    <div class="callout">전 좌석 충전 USB 제공. 총 소요시간 약 10시간. 집합 장소(로손 오리엔탈호텔 후쿠오카)까지 미노시마에서 여유 있게 이동할 것 — 아침 시간대라 도보 19분+환승 여유를 감안해 최소 40분 전 출발 권장.</div>
+
+    <div class="timeline">
+      <div class="t-item">
+        <div class="t-time">07:50</div>
+        <div class="t-title">미노시마 숙소 출발</div>
+        <div class="t-desc">08:30 미팅 기준 역산. 하카타역 경유 도보 또는 니시테츠버스로 집합 장소 이동.</div>
+        <span class="transit-chip">🚶 도보 약 19분 + 도보 이동</span>
+      </div>
+      <div class="t-item">
+        <div class="t-time">08:30–08:40</div>
+        <div class="t-title">로손 오리엔탈호텔 후쿠오카 — 버스 미팅</div>
+        <div class="t-desc">투어 버스 집결·탑승.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">09:50–12:00</div>
+        <div class="t-title">히타 마메다마치 (약 2시간10분)</div>
+        <div class="t-desc">에도시대 '천령' 상인마을, 나마코벽 거리가 그대로 보존된 국가중요전통적건조물군보존지구. 구사노혼케(국가중요문화재) 등. ⚠️ 저녁 무렵 상점 대부분 문을 닫으니 오전 방문이 유리 — 이 투어 일정과 잘 맞는다.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">12:50–16:10</div>
+        <div class="t-title">유후인 (약 3시간20분, 자유중식)</div>
+        <div class="t-desc">긴린코 호수(둘레 약 400m, 여름엔 물안개 없음), 유노츠보 거리(금상 고로케·미르히 푸딩), 유후인 플로랄빌리지(영국 코츠월드풍 미니 테마파크, 무민·피터래빗·포켓몬숍). 점심은 유노츠보 거리 내에서 자유롭게.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">16:10–16:30</div>
+        <div class="t-title">쿠스 휴게소</div>
+        <div class="t-desc">화장실·간단 간식 휴게 (약 20분 체류).</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">18:10</div>
+        <div class="t-title">라라포트 쇼핑몰(중도하차 가능) & 하카타역 해산</div>
+        <div class="t-desc">라라포트는 3일차(7/19)에 별도로 방문할 예정이니, 이날은 <b>하카타역까지 그대로 이동</b>해 숙소 복귀 동선을 단순하게 유지.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">18:40</div>
+        <div class="t-title">하카타역 → 미노시마 숙소 복귀</div>
+        <div class="t-desc">도보 19분 또는 저녁 무렵 짐이 많으면 택시 판단.</div>
+        <span class="transit-chip">🚶 도보 약 19분</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day-section" id="day-3">
+    <div class="day-head">
+      <div class="d">Day 3 · 7월 17일 (금)</div>
+      <h2>텐진 관광·쇼핑</h2>
+      <div class="sub">규슈 최대 번화가 — 지하상가·백화점·서브컬처 쇼핑</div>
+    </div>
+
+    <div class="timeline">
+      <div class="t-item">
+        <div class="t-time">10:00</div>
+        <div class="t-title">미노시마 → 하카타역 → 텐진</div>
+        <div class="t-desc">하카타역까지 도보 19분, 이후 지하철 공항선(쿠코선)으로 텐진까지 약 5~6분.</div>
+        <span class="transit-chip">🚶 도보 19분</span>
+        <span class="transit-chip">🚇 지하철 5~6분</span>
+      </div>
+      <div class="t-item">
+        <div class="t-time">10:40</div>
+        <div class="t-title">텐진 지하상가 · 미나 텐진</div>
+        <div class="t-desc">텐진 지하상가(1976년 개장, 남북 약 590m·150여 점포, 규슈 최대). 미나 텐진(2023년 리뉴얼, 규슈 최대 유니클로+GU, 로프트·3COINS+plus).</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">12:30</div>
+        <div class="t-title">점심 — 효탄즈시</div>
+        <div class="t-desc">60년+ 전통 텐진 스시노포, 니시테츠 후쿠오카(텐진)역 앞 신텐카쿠빌딩 2F. 겐카이나다산 신선어종 니기리.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">14:00</div>
+        <div class="t-title">텐진 파르코 · 서브컬처 쇼핑</div>
+        <div class="t-desc">파르코 8층 '텐진 캐릭터파크'(리락쿠마·산리오·원피스 등). 인근 만다라케(중고 피규어)·포켓몬센터 등 게임/애니 굿즈샵 함께 묶기.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">16:30</div>
+        <div class="t-title">돈키호테 후쿠오카 텐진 본점</div>
+        <div class="t-desc">니시테츠 후쿠오카(텐진)역 도보4분, 독립건물형 지하1~지상5층, 24시간·면세대응. 오전 방문이 쾌적하나 이날은 오후 일정이라 혼잡 감안.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">18:30</div>
+        <div class="t-title">저녁 — 하카타 멘타이쥬 또는 키와미야</div>
+        <div class="t-desc">하카타 멘타이쥬(니시나카스, 명란 통째로 얹은 멘타이쥬) · 키와미야(파르코 B1F, 함박스테이크 — 남아 취향).</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">20:30</div>
+        <div class="t-title">텐진 → 미노시마 복귀</div>
+        <div class="t-desc">지하철 텐진→하카타역(약 5~6분) 후 도보 19분.</div>
+        <span class="transit-chip">🚇 지하철 5~6분 + 🚶 도보 19분</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day-section" id="day-4">
+    <div class="day-head">
+      <div class="d">Day 4 · 7월 18일 (토)</div>
+      <h2>모모치 해변 · 후쿠오카타워</h2>
+      <div class="sub">인공 해변·전망대 — 해수욕 가능 여부는 당일 시설 안내 확인</div>
+    </div>
+
+    <div class="callout">모모치 해변은 인공 조성 해변이라 일부 시기·구역만 유영이 가능할 수 있다. ⚠️ 해수욕 여부·수질 안내는 방문 당일 현장 게시물로 재확인할 것.</div>
+
+    <div class="timeline">
+      <div class="t-item">
+        <div class="t-time">09:30</div>
+        <div class="t-title">미노시마 → 모모치</div>
+        <div class="t-desc">하카타역까지 도보 19분 → 지하철 공항선으로 텐진 또는 니시진 방면 환승 → 버스로 모모치 접근. 정확한 환승 버스 번호는 현지 구글맵/지하철 안내로 최종 확인 권장.</div>
+        <span class="transit-chip">🚶+🚇+🚌 환승 이동</span>
+      </div>
+      <div class="t-item">
+        <div class="t-time">10:30</div>
+        <div class="t-title">모모치 해변</div>
+        <div class="t-desc">이국적 분위기의 인공 백사장, 비치스포츠 존. 낮엔 마리존이 한산·일부 폐쇄적이니 사진·산책 위주로.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">12:30</div>
+        <div class="t-title">점심 — 모모치 인근</div>
+        <div class="t-desc">패밀리레스토랑(조이풀·가스토 등, 에어컨·드링크바) 또는 후쿠오카타워 주변 식당가 활용.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">14:00</div>
+        <div class="t-title">후쿠오카타워 전망대</div>
+        <div class="t-desc">1989년 개장, 전면 하프미러 유리 '일본 최고 해변타워'. 전망실 123m서 하카타만 360도 조망. 대인(고교생↑) 1,000엔·초중생 500엔(09:30~22:00).</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">18:30</div>
+        <div class="t-title">해질녘 — 모모치 야경</div>
+        <div class="t-desc">일몰 직후가 가장 예쁜 시간대. 마리존 야간 조명과 함께 사진.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">19:30</div>
+        <div class="t-title">모모치 → 미노시마 복귀</div>
+        <div class="t-desc">버스+지하철 조합 또는 인원·짐 상황에 따라 택시 판단.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day-section" id="day-5">
+    <div class="day-head">
+      <div class="d">Day 5 · 7월 19일 (일)</div>
+      <h2>다자이후 텐만구 → 라라포트 → 하카타</h2>
+      <div class="sub">평지 역사 코스 + 건담파크 쇼핑 + 마지막 밤 하카타 식사</div>
+    </div>
+
+    <div class="timeline">
+      <div class="t-item">
+        <div class="t-time">09:00</div>
+        <div class="t-title">미노시마 → 니시테츠 텐진역</div>
+        <div class="t-desc">하카타역 도보 19분 → 지하철로 텐진 이동, 니시테츠 후쿠오카(텐진)역으로 도보 환승.</div>
+        <span class="transit-chip">🚶+🚇 텐진까지</span>
+      </div>
+      <div class="t-item">
+        <div class="t-time">09:40</div>
+        <div class="t-title">니시테츠 텐진 → 다자이후</div>
+        <div class="t-desc">니시테츠 다자이후선, 니시테츠 후쓰카이치역에서 환승. 총 소요 약 30~40분.</div>
+        <span class="transit-chip">🚃 니시테츠 전철 약 30~40분</span>
+      </div>
+      <div class="t-item">
+        <div class="t-time">10:30</div>
+        <div class="t-title">다자이후 텐만구</div>
+        <div class="t-desc">학문의 신 스가와라노 미치자네를 모신 일본 3대 텐만구, 919년 창건. 경사 거의 없는 평지 참배길. 2023년부터 본전 대개축 공사 중(임시 참배소 운영) — 방문 시 참고.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">11:30</div>
+        <div class="t-title">참배길 상점가 · 다자이후 스타벅스</div>
+        <div class="t-desc">명물 우메가에모치(매화떡). 쿠마 켄고 설계 다자이후 스타벅스(못 없이 각재를 X자로 엮은 구조, 2012 굿디자인상).</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">13:00</div>
+        <div class="t-title">점심 — 다자이후 참배길</div>
+        <div class="t-desc">상점가 내 식당가에서 가볍게.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">14:00</div>
+        <div class="t-title">다자이후 → 라라포트 후쿠오카</div>
+        <div class="t-desc">니시테츠선으로 하카타/텐진 방면 복귀 후 버스·열차 조합으로 라라포트 이동. 정확한 환승편은 현지 구글맵 확인 권장(대중교통 소요 약 1시간 내외 예상).</div>
+        <span class="transit-chip">🚃+🚌 환승 이동</span>
+      </div>
+      <div class="t-item">
+        <div class="t-time">15:30</div>
+        <div class="t-title">라라포트 후쿠오카 — 건담파크·VS PARK</div>
+        <div class="t-desc">4층 '건담파크 후쿠오카', 실물대 RX-93ff νガンダム(높이 24.8m, 서일본 최초). VS PARK WITH G(체감형 스포츠게임)·GUNDAM SIDE-F.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">18:00</div>
+        <div class="t-title">라라포트 → 하카타역</div>
+        <div class="t-desc">버스·열차 조합으로 복귀. 짐이 많으면 택시 판단.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">18:30</div>
+        <div class="t-title">저녁 — 마지막 밤, 모츠나베</div>
+        <div class="t-desc">하카타역 도보권 모츠나베 3곳 모두 도보 1~3분: <b>토모라쿠</b>(지쿠시출구 도보1분, 소꼬리·우설 육수) · <b>마에다야</b>(지쿠시출구 도보3분, 국산 와규곱창) · <b>이치후지</b>(하카타역 도보3분, 백미소 담백).</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">20:30</div>
+        <div class="t-title">하카타역 → 미노시마 복귀 · 짐 정리</div>
+        <div class="t-desc">내일 이른 정리를 위해 캐리어 패킹 마무리.</div>
+        <span class="transit-chip">🚶 도보 19분</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- DAY 6 -->
+  <section class="day-section" id="day-6">
+    <div class="day-head">
+      <div class="d">Day 6 · 7월 20일 (월)</div>
+      <h2>출국</h2>
+      <div class="sub">12:15 출발 — 근교·먼 일정 없이 가볍게</div>
+    </div>
+
+    <div class="callout">7C1404가 12:15 출발이므로 국제선 2시간 전(10:15 이전) 공항 도착이 목표. 시내 쇼핑은 넣지 않는다.</div>
+
+    <div class="timeline">
+      <div class="t-item">
+        <div class="t-time">08:00</div>
+        <div class="t-title">체크아웃 · 짐 최종 정리</div>
+        <div class="t-desc">숙소 무인 체크아웃 절차 확인.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">08:30</div>
+        <div class="t-title">미노시마 → 하카타역</div>
+        <div class="t-desc">도보 19분, 짐이 많으면 택시 판단.</div>
+        <span class="transit-chip">🚶 도보 19분</span>
+      </div>
+      <div class="t-item">
+        <div class="t-time">09:00</div>
+        <div class="t-title">하카타역 → 공항 국내선터미널 → 국제선터미널</div>
+        <div class="t-desc">지하철 공항선 약 5분 → 국내선-국제선 무료 셔틀버스 약 10분.</div>
+        <span class="transit-chip">🚇 지하철 5분 + 🚌 셔틀 10분</span>
+      </div>
+      <div class="t-item">
+        <div class="t-time">10:00</div>
+        <div class="t-title">국제선터미널 도착 · 탑승 수속</div>
+        <div class="t-desc">여유 있게 체크인·출국심사. 시간 남으면 터미널 내 간단 쇼핑.</div>
+      </div>
+      <div class="t-item">
+        <div class="t-time">12:15</div>
+        <div class="t-title">7C1404 후쿠오카 출발</div>
+        <div class="t-desc">13:45 인천 1터미널 도착.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    출처: 이 일정은 KMS <code>fukuoka.md</code>·<code>fukuoka-day-tours-comparison.md</code>·기존 발행 페이지(후쿠오카 여행 스케쥴 by codex, 여행 장소 전체 갤러리 79곳)의 기조사 데이터와 사용자 확정 항공·숙소·KKday 투어 일정을 결합해 구성했다.
+    지하철·버스 요금은 변동될 수 있어 방문 직전 공식 채널로 재확인 권장. 정확한 버스 노선 번호가 명시되지 않은 구간(모모치·라라포트 접근)은 현지 구글맵으로 최종 확인할 것.
+  </footer>
+
+</div>
+
+<script>
+  const DAYS = [
+    { id: 'day-1', label: 'Day 1 · 7/15' },
+    { id: 'day-2', label: 'Day 2 · 7/16' },
+    { id: 'day-3', label: 'Day 3 · 7/17' },
+    { id: 'day-4', label: 'Day 4 · 7/18' },
+    { id: 'day-5', label: 'Day 5 · 7/19' },
+    { id: 'day-6', label: 'Day 6 · 7/20' },
+  ];
+
+  const nav = document.getElementById('dayNav');
+  nav.innerHTML = DAYS.map((d, i) =>
+    `<button class="day-btn${i === 0 ? ' active' : ''}" data-target="${d.id}">${d.label}</button>`
+  ).join('');
+
+  function selectDay(id) {
+    document.querySelectorAll('.day-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.day-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelector(`.day-btn[data-target="${id}"]`).classList.add('active');
+  }
+
+  nav.addEventListener('click', (e) => {
+    const btn = e.target.closest('.day-btn');
+    if (btn) selectDay(btn.dataset.target);
+  });
+
+  selectDay('day-1');
+</script>
+
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="6SBAZ5C" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
