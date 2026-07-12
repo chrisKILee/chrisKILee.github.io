@@ -1,226 +1,82 @@
 # 작업 인계 문서
-> 갱신: 2026-06-15
+> 생성: 2026-07-12 13:30
 > 브랜치: master
-> 마지막 커밋: 73a7930 — docs(ai_prompt): 템플릿 추가 표준 절차 SPEC 가이드 작성
-> (다중 세션 혼재 — ai_prompt 템플릿·about·Dependabot·Dev Guide·블로그·AI Tech Feed)
+> 마지막 커밋: 6a438d3 — style: 쿠폰 링크를 카드형 link-card 컴포넌트로 재디자인
+> (working tree clean, push 완료)
 
 ## 새 세션 시작 방법
 ```
-HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — ai_prompt 템플릿/Dev Guide/블로그 후속.
+HANDOFF.md 읽고 "page.chrisnolja.dev 사이트 작업 이어서" — 후쿠오카 카테고리 후속 작업.
 ```
 
 ---
 
 ## 완료된 작업
 
-### 이번 세션 (2026-06-15) — ai_prompt 템플릿 2종·추가 가이드
+### 이번 세션(2026-07-11, /add-new-page -d) — 후쿠오카 여행 후기 총정리 페이지
 
-- [x] **`/ai_prompt/` 템플릿 2종 추가** — 커밋 `d6dc937` (6→8종)
-  - `miniature`(3D 미니어처 카드뉴스): text×3 + textarea(memos) + select(ratio). mood `korean_instagram`+`minimal_clean`, rule `korean_text_accuracy`
-  - `travel_typography`(트래블로그 타이포 포스터): 거대 도시명 typography photo-mask + chibi N종. **기존 `travel_poster`(콜라주)와 별개**. mood `editorial_travel`, rule `preserve_identity`
-  - 원본 소스: Obsidian `Personal/메모/Prompt.md`의 "미니어처"·"여행" 섹션
-  - 수정 지점: `app.js` `templates[]` + `renderTemplateBody()` switch 2곳. 실시간변경·복사는 공통 로직이라 자동 적용
-  - 검증: `node --check` + **v.참조↔fields 교차검증 통과**(undefined 0건). PRD(G/H)·SPEC(TemplateId·6.4/6.5) 동기화
-- [x] **템플릿 추가 표준 절차 SPEC 작성** — 커밋 `73a7930`
-  - `ai_prompt/prompt_generator_template_guide.md` — STEP 1~7, fields 3종, mood/rule 카탈로그, 검증 3종 스크립트, 함정 정리
-  - 메모리 `project_ai_prompt_templates.md` + MEMORY.md 포인터 → 다음 "템플릿 추가" 요청 시 자동 recall
-  - **앞으로 ai_prompt 템플릿 추가 시 이 가이드를 먼저 읽고 동일 패턴으로 작업**
+- [x] **`/fukuoka/fukuoka_reviews_roundup.html` 신규 추가** — 커밋 `0b43f31` (해시 `DMNTG2V`, 카테고리 `XDTGJDN` order 7)
+  - 요청: 관광지·맛집·쇼핑(꼭사야하는것)·기타(숙소제외)·일본여행팁 5개 카테고리, 1년 이내 한국어 실제 후기, 상호명·가격·언급횟수 포함, "에이전트를 많이 돌려서" 다량 수집
+  - **Workflow 오케스트레이션**: 카테고리별 검색어(관광지8·맛집10·쇼핑8·기타6·팁6=38종) → 38개 검색 에이전트(WebSearch+WebFetch) + 카테고리별 집계 에이전트 5개, `pipeline(카테고리, parallel(검색), 집계)` 구조
+  - **세션 제한 이슈**: 1차 실행 중 Claude 세션 한도(12:50pm 리셋)에 걸려 search:etc·search:tips 일부와 agg 5개 전체가 실패(`[null,null,null,null,null]`) → 리셋 시각 확인 후 `Workflow({scriptPath, resumeFromRunId})`로 재개, 성공한 29개는 캐시 재사용되고 실패분만 재실행되어 완주(총 43개 에이전트, 웹 검색·열람 tool_uses 1,375회, 서브에이전트 토큰 434만)
+  - **결과**: 471개 항목(관광지80·맛집109·쇼핑72·기타110·팁100), 고유 출처 212건. "언급 N곳"=서로 다른 출처 글 수(동일 출처 중복 카운트 안 함)로 정의
+  - **페이지 구조**: #40 airbnb-style 템플릿 커스텀(Rausch 레드 #FF385C, Inter) — 카테고리 필터 pill + 이름검색 + 랭킹 리스트(가격·요약·출처 `<details>` 토글). 데이터는 `/fukuoka/fukuoka_reviews_roundup_data.js`(~90KB)로 분리 — 기존 `fukuoka_spot_gallery.html`의 필터+카드 렌더링 JS 패턴을 참고해 작성
+  - **미달성 고지**: 사용자 목표(카테고리별 100개+)는 맛집·기타·여행팁 3개만 달성, 관광지(80)·쇼핑(72)은 미달 — **창작 없이 실제 검색으로 확인된 항목만 기록**했다고 사용자에게 명시적으로 보고함 (add-new-page skill의 "내용 절대 창작 금지" 원칙 준수)
 
-### 이전 세션 (2026-06-14) — about 재작성·Dependabot 0건
+### 병행 세션(다른 창, 2026-07-11~12) — 후쿠오카 미노시마 일정표 다수 개선
 
-- [x] **/about Medium 스타일 전면 재작성** — 커밋 `9f20a7b`, 톤개정 `f13aa30`, 도식수정 `44fe33c`
-  - 기존 Mediumish 데모 제거 → 본인 소개. 영/한 탭(영문 기본), 인라인 SVG 히어로(기술↔사람 브릿지)·Build×Run 도식·커리어 타임라인·People 책임맵·링크블록(CV·LinkedIn·GitHub·IG)
-  - **자료 정본**: `../chris_kms/private/iam/` (career-profile·linkedin-about·engineering-manager-role·education-certs) + cv.chrisnolja.dev
-  - **톤 피드백 반영**: "내가 다 이끄는 것처럼 보여 겸손하지 못함" → lead/driving/총괄 → support/help/거든다/함께/꿈꾼다. 사실(212명 96%·W3C 5명세·70명)은 유지, 표현만 겸손화
-  - 폰트 Merriweather/Georgia serif → **Pretendard**(jsDelivr `@import`), 본문 19→17px, max-width 740→680
-  - **함정1**: nano-banana 히어로 이미지 → `GOOGLE_API_KEY`는 Sheets/Drive용이라 generativelanguage **403 API_KEY_SERVICE_BLOCKED** → SVG로 대체
-  - **함정2(KO 탭 도식 안 보임)**: 카드 그라데이션이 영어 SVG `<defs>`에만 정의 → 탭 전환 시 영어 패널 `display:none` → `url(#id)` 참조 실패 → rect 투명. **해결**: KO SVG에 자체 `amBuildKo`/`amRunKo` defs. 교훈=토글 영역 인라인 SVG는 defs self-contained
-- [x] **Dependabot 보안 경고 44 → 0 전량 해소** — 커밋 `e053bed`·`21318c4`·`259a360`·`53ee55c`
-  - **핵심 통찰**: 44건 중 34건이 빌드 산출물 `_site/chris/js/package-lock.json`. `.gitignore`(46줄)에 있는데도 과거 커밋되어 198파일 추적 중 → `git rm -r --cached _site`로 untrack(GitHub Pages 원격 재빌드라 라이브 무영향, 리스크 0) → critical 2 + high 32 소멸
-  - 정적 사이트라 npm/gem이 방문자 브라우저에서 실행 안 됨 = 실제 위협 0. 전부 빌드/개발 도구
-  - `chris/js/package.json`(옛 CV 배포 헬퍼) 제거, `npm audit fix`로 picomatch 2.3.1→2.3.2
-  - **Gemfile.lock 5건**: `gem install --user-install bundler`(시스템 권한 회피) + **`github-pages` gem 핀** → kramdown 1.17→2.4·jekyll 3.8.3→3.10·addressable 2.5.2→2.9. `bundle config set --local path vendor/bundle` 격리
-  - 로컬 `jekyll build`는 `PAGES_REPO_NWO=chrisKILee/chrisKILee.github.io` 필요(jekyll-github-metadata)
+같은 기간 다른 Claude 창/세션에서 `fukuoka_minoshima_itinerary.html`(해시 `6SBAZ5C`)에 대해 아래 커밋들이 순차 반영됨 (이번 세션에서 수행한 작업 아님, 참고용):
 
-### 이번 세션 (2026-06-14) — AI Tech Feed·캐시버스팅
-
-- [x] **AI Tech Feed 4건 추가** (`/add-new-rssblog`, GeekNews 토픽) — `assets/js/ai-articles.js`. 커밋 `bdb3865`
-  - `usecase-007` GLM-5.2(Zhipu 1M 컨텍스트 오픈소스) / `usecase-008` AI 번역 한계
-  - `claude-011` 미 정부 Fable 5·Mythos 5 외국인 접근 차단 / `claude-012` WSJ Amazon CEO 촉발 단속
-  - **함정**: WebFetch 요약이 모델명 "Fable 5·Mythos 5"를 환각한 줄 의심 → WebSearch 교차검증(TechCrunch·WSJ·Reuters)으로 **실제 명칭(6/9 출시) 확인 후 채택**. 짧은 트윗 원문은 관련 보도 2~3개 조합해 보강
-- [x] **aifeed 캐시버스팅 적용** — 커밋 `9a5692d`(목록), `b33bd71`(상세)
-  - 증상: 카드 push 후 `/aifeed/`에 새 항목 미노출 → 클릭 시 상세에서 "claude-011 찾을 수 없습니다"
-  - 원인: `ai-articles.js` 로드하는 2곳이 **캐시버스팅 쿼리 없이** 로드 → 브라우저가 옛 JS 캐시. 데이터·배포는 처음부터 정상(curl 확인)
-  - 해결: `aifeed/index.html` + `ai-news/detail.html` 둘 다 `?v=20260614` 부착. `grep -rn ai-articles.js`로 참조처 2곳뿐임 전수 확인
-
-### 이번 세션 (2026-06-14) — Dev Guide·템플릿·블로그
-
-- [x] **Taste Skill / designlang 도구 소개** — `taste_skill.html`(heroui), `designlang.html`(#34 precision), Design study 카테고리
-  - 교훈: 입력 수치는 **GitHub API 실측 검증**. "Star 4.2k"=42k 오기→42,393 정정
-- [x] **add-new-page 템플릿 8종 생성** (`~/.claude/skills/add-new-page/templates/`)
-  - **함정**: TEMPLATES.md엔 #1~#40 정의됐으나 #33~#40 파일 부재였음. precision·notion·linear·stripe·spotify·apple·ibm·airbnb 생성
-  - ⚠️ `~/.claude` repo라 사이트와 별개 — **아직 push 안 함**(sync 필요). 갤러리 index.html은 #26까지만 등록
-- [x] **기존 tip 포스트 5종 보강** — git/jekyll/docker/short_cut/bash (`_posts/`), 설치+기본+advanced
-- [x] **Dev Guide 카테고리 `KHBBP3P` `/dev-guide/`** + 독립 HTML 3종 — claude_cli·codex_cli·fullstack_architecture (SVG 다이어그램). 커밋 `2f01b59`
-- [x] **블로그 포스트 3종** — `_posts/2026-06-1{4,3,2}-*.md`, featured, 각각 Dev Guide HTML로 링크. SVG 썸네일 3종(`img/`). 커밋 `443e611`
-- [x] **이슈 해결**: 신규 페이지 "안 보임" → ① site.json version bump(4.0→4.1) 캐시 무효화 ② 사용자 의도는 `/blog/`(Jekyll _posts)였음 → 블로그 포스트로 추가
-- [x] **블로그 스타일**: alertbar div 제거, `.article-post` 본문 1.2→1rem + table 윤곽선(`screen.css`)
-
-### 이전 세션 (2026-06-06 ~ 06-07)
-
-- [x] **Understand Anything 페이지 추가** `MXEVBVL` — `/ai-study/understand_anything.html`, heroui(골드)
-  - GitHub 화제 오픈소스(Lum1104/Understand-Anything) 소개. 8섹션 + SCAN/MAP/TEACH SVG + 카드뉴스 7장 갤러리
-  - **교훈**: 입력 "Star 52,519개"를 GitHub API로 검증 → 실측 **52,909개** 정정. Explore 조사 환각(웹사이트·버전) 의심분은 `api.github.com`으로 재확인 후 사실만 채택
-  - 슬래시 명령어 8종은 세션 로드된 `understand-anything:*` 플러그인 스킬과 대조해 확정 (추측 금지)
-  - 커밋 `712f02e`
-- [x] **cv.chrisnolja.dev 인증서 오류 진단** — 코드 변경 없는 트러블슈팅 (06-07)
-  - 증상: Chrome "잘못된 인증 정보" + HSTS 차단. 콘텐츠는 정상, **TLS 인증서만 `CN=*.github.io`**
-  - **근본 원인 = Cloudflare 구름색 차이**: page=🟠Proxied(CF 인증서로 가려짐) vs cv=⚪DNS only(GitHub 직결, cv용 인증서 미발급 `cert.state=None`)
-  - cv → CNAME → `chrisklee.github.io`(**옛 계정 chrisKlee**, 현 계정 chrisKILee 아님 → 내 토큰 pull만 가능)
-  - **해결책(사용자 조치 대기)**: 옵션A=cv 구름 🟠Proxied로(전제 SSL모드 Full) / 옵션B=옛 저장소 Pages custom domain remove→재입력해 인증서 재발급
-  - 판별법: IP대역(185.199=GH / 104·172=CF) + 인증서 CN + server 헤더 3종
-
-### 이전 세션 (2026-05-22)
-
-- [x] **cto_synergy.html 인원 수정** — R&D 직속 2명, 플랫폼개발팀 6명, R&D실 합계 8명
-- [x] **kpi_2026.html 신규 생성** `5SA5HVS` — `/c/work/`, company tier
-  - Google Sheets `_기술지원실 V3` (kpi-agent MCP로 접근, 일반 API 403)
-  - CT2(5%)/CT4(15%)/CT5(30%)/CT6(20%)/CT7(10%) + 정량 20%
-  - 인프라팀(파란 O) / 정보보호팀(빨간 O) 카드 구조
-  - 초기 다크 → 라이트 테마(Pretendard, white bg)로 재디자인
-- [x] **platform_vision_2026.html 신규 생성** `47U6WR7` — `/c/work/`, 마주보기 세션 발표 자료
-  - **주의**: Obsidian 마주보기 파일은 발언 스크립트 수준 — KPI CT코드 매핑 오류 있었음
-  - 실제 KPI 시트 데이터로 전면 정정 완료
-  - 섹션0 Ice-Breaking (Padlet 온도체크) / 섹션1~5 방향&비전 / 섹션6 포스트잇 활동
-  - 섹션4 "지금 집중하는 것들": 통합모니터링(Grafana Alloy)/GLPI ITAM/ISP전환/SECaaS
-
-### 이전 세션 (2026-05-21)
-- [x] **favicon 근본 해결** — `/favicon.ico` SVG 기반 멀티사이즈 ICO 재생성
-- [x] **사이트 전체 HTML favicon 태그 일괄 삽입** — curriculum 33개 포함 총 71개 파일
-
-### 이전 세션 (2026-05-12 ~ 05-13)
-- [x] **Claude Skills Guide 전면 리빌드**, **add-skill-to-doc SKILL.md 업데이트**
-- [x] **AI 코딩 시대의 신뢰와 검증** `38YY3QY`, **Agent View 멀티 세션 관리** `BRWVE22`
-
-### 이전 세션 (2026-05-11)
-- [x] **terroir_beta_release.html 링크 연결**, **Karpathy AI 개발 방법론** `Y2JWRZ6`
-- [x] **route_to_terroir.html 라이트 테마**, **Terroir Beta 세부 페이지 16개** 등
+- `07585db` Day1 공항 셔틀·환전·코인로커 실측 정보
+- `a589797` Day1 하카타 쇼핑 캐릭터 굿즈샵 7곳 표
+- `8a874cd` Day2·Day3 하카타/히타/유후인/텐진 참고 블로그 정보
+- `636250d` 이동수단 정밀화 + 교통카드 가이드 + 여행작가 비추천 의견
+- `bfc5e24` Day3 나카가와 리버크루즈(20:00, 니시나카스 6-6) 예약 확정
+- `c15f071` Day1·Day3 가챠·인형뽑기 스팟 추가
+- `23633dc` Day2 라라포트 중도하차 야간 건담쇼 옵션
+- `930f969` Day5 라라포트 삭제, 다자이후→하카타 직행 변경
+- `d604928` Day3 텐진지하상가→미나텐진→다이묘 도보 경로 반영
+- `0b1cbcb` 캐널시티 라멘스타디움 폐점 정보 정정(2026.4.17 리뉴얼 오픈, 정상영업 중)
+- `cd60ece` Day2 라라포트 복귀 동선 오하시역 경유로 변경
+- `7f2af5e` Day4 마크이즈 모모치 푸드코트·해수욕 가능구역 정보
+- `0abbd8f` 할인 쿠폰(Cucuoka) 링크 추가
+- `f22296e` 유튜브(살란다) 후쿠오카 총정리 기반 정보 보강
+- `6a438d3` 쿠폰 링크를 카드형 link-card 컴포넌트로 재디자인
 
 ---
+
+## 진행 중인 작업
+
+없음 (working tree clean, 마지막 커밋까지 전부 push 완료)
 
 ## 남은 작업 (우선순위 순)
 
-0. **[반복작업]** **ai_prompt 템플릿 추가** — 새 템플릿 요청 시 `ai_prompt/prompt_generator_template_guide.md` 먼저 읽고 STEP 1~7 따름. 원본은 Obsidian `Personal/메모/Prompt.md`
-0. **[신규]** **`~/.claude` skills sync** — add-new-page 신규 템플릿 8종(#33~#40) 아직 push 안 됨. `/sync-claude`로 동기화
-1. **[결정]** **Dev Guide 독립 HTML vs 블로그 포스트 중복** — 같은 콘텐츠가 `/dev-guide/*.html`(site.json)와 `_posts/2026-06-1*.md`(블로그) 두 곳. 현재 블로그→Dev Guide 링크로 병행. 일원화할지 결정
-2. **[선택]** `templates/index.html`(--preview 갤러리) #1~#40 번호 정합 정리 — 현재 montage(#26)까지만 등록, T1~T6·#33~#40 누락
-0. **[대기]** **cv.chrisnolja.dev 인증서** — Cloudflare에서 cv 레코드 🟠Proxied로 전환(SSL모드 Full 확인). 또는 옛 계정 chrisKlee 저장소 Pages 도메인 재발급. (06-07 진단 완료, 사용자 조치 대기)
-1. **[미완료]** `gemini_html/aiworker_policy_v1.4.html` 1205번 줄 — `수정` 배지 스팬 잔존, 삭제 필요
-2. **[신규]** **Beta Release Letter 페이지 생성** — `terroir_beta_release.html` 6번 카드 `disabled` → `<a>` 교체
-3. **[권장]** 여행지 지도 이미지 업데이트 — 모알보알·오키나와·미야코지마 핀 추가
-4. **[신규]** vntg_html PRD Phase 1 구현 — GCP + NestJS + Prisma 셋업
-5. **[권장]** `scripts/sync-tiers.js` 실제 실행 테스트
-6. **[확인 필요]** share 링크 생성 → GitHub 저장 → `/share/[token].html` 배포 확인
-7. **[나중에]** Cloudflare Access 설정 (유료 플랜 확인 후)
-8. **[완료]** ~~GitHub Dependabot 보안 경고 44개 검토~~ → **0건 해소 완료** (2026-06-14)
-9. **[선택]** `GEMINI_API_KEY`를 `~/.secrets`에 추가하면 nano-banana 래스터 이미지 생성 가능 (현재 `GOOGLE_API_KEY`는 generativelanguage 차단)
+1. **[보통]** `fukuoka_reviews_roundup.html`의 관광지(80개)·쇼핑(72개) 카테고리를 100개+로 늘리고 싶다면, 미실행 검색어(예: 지역별 세분화 쿼리)를 추가해 워크플로우 재실행 — 단, 실제 검색 확인분만 추가해야 함(창작 금지)
+2. **[나중에]** `fukuoka_reviews_roundup.html`과 기존 `fukuoka_spot_gallery.html`/`fukuoka_minoshima_itinerary.html` 간 콘텐츠 중복(예: 라멘 스타디움, 우메가에모치 등) 정리 여부 검토 — 현재는 서로 다른 목적(후기 집계 vs 장소백과 vs 실제 일정)이라 중복 허용 상태
 
----
+## 현재 작업 중인 파일
 
-## 현재 핵심 파일
-
-| 파일 | 상태 | 비고 |
-|------|------|------|
-| `index.html` | ✅ 최신 | 메인 포털 |
-| `about.md` | ✅ 최신 | Medium 스타일 본인 소개, EN/KO 탭, Pretendard, 인라인 SVG (2026-06-14) |
-| `Gemfile` / `Gemfile.lock` | ✅ 최신 | `github-pages` gem 핀(232), 패치 버전. `vendor/bundle` 격리(gitignore) |
-| `site.json` | ✅ 최신 | version 4.1, 폴더 32개+, 파일 294개+ |
-| `favicon.svg` / `favicon.ico` | ✅ 최신 | SVG 기반 멀티사이즈 ICO (2026-05-21) |
-| `_layouts/default.html` | ✅ 최신 | favicon.svg 적용 |
-| `c/work/kpi_2026.html` | ✅ 최신 | `5SA5HVS`, 라이트 테마, CT2~CT7 + 정량 |
-| `c/work/platform_vision_2026.html` | ✅ 최신 | `47U6WR7`, 마주보기 발표용, 섹션0~6 |
-| `c/work/cto_synergy.html` | ✅ 최신 | R&D 직속 2명, 플랫폼개발팀 6명 |
-| `c/terroir/terroir_beta_release.html` | ✅ 최신 | Beta Release Letter "준비 중" (disabled) |
-| `c/terroir/beta/index.html` | ✅ 최신 | `MB7MB67` |
-| `curriculum/` | ✅ 최신 | Grafana Alloy 커리큘럼 33개 |
-| `s/travel/map.png` | ⚠️ 구버전 | 모알보알·오키나와·미야코지마 핀 없음 |
-| `gemini_html/aiworker_policy_v1.4.html` | ⚠️ 수정 필요 | 1205번 줄 `수정` 배지 스팬 잔존 |
-
----
+없음
 
 ## 핵심 기술 결정사항
 
-### KPI 데이터 접근
-- Google Sheets API / 서비스 계정 → 403 → **kpi-agent MCP (`mcp__kpi-agent__read_raw`) 사용**
-- 시트명: `_기술지원실 V3`, gid: `1052340754`
-- Spreadsheet ID: `1FpD7SHoGLemFQjbOMcktiiSa3V93wqh0Ezm9D_k-s3A`
-
-### platform_vision_2026 제작 교훈
-- Obsidian 마주보기 파일 = 발언 스크립트 (추상적, KPI와 직접 연결 안 됨)
-- 발표 자료 콘텐츠는 반드시 KPI 시트 원본 데이터 기준으로 작성할 것
-- CT 코드는 시트의 실제 전략지표와 1:1 매핑 후 사용
-
-### favicon 표준 (완성)
-- 사이트 전체: `/favicon.svg` (P자, #F97316 오렌지)
-- `/favicon.ico` → cairosvg + struct 바이너리로 16/32/48px ICO 생성
-- 신규 페이지: `<link rel="icon" type="image/svg+xml" href="/favicon.svg">` 필수
-
-### Tier 시스템
-- `public → /slug/`, `company → /c/slug/`, `private → /s/slug/`
-
-### 로컬 Jekyll 빌드 환경 (2026-06-14 구축)
-- ruby 3.2.3 시스템 설치됨(`ruby-full`), bundler는 **사용자 영역**: `gem install --user-install bundler` (PATH: `$(ruby -e 'print Gem.user_dir')/bin`)
-- `bundle config set --local path vendor/bundle` → gem을 프로젝트 `vendor/bundle`에 격리(시스템 권한 회피, gitignore됨)
-- 빌드: `PAGES_REPO_NWO=chrisKILee/chrisKILee.github.io JEKYLL_ENV=production bundle exec jekyll build --destination /tmp/_site_test`
-- `Gemfile`은 `github-pages` gem을 핀 → 라이브(github.io)와 동일 버전으로 로컬 빌드. jekyll-archives만 별도(화이트리스트 밖, 라이브 무시)
-
-### Dependabot 정리 원칙 (2026-06-14)
-- 정적 GitHub Pages = npm/gem이 방문자 브라우저에서 실행 안 됨 → lockfile 경고는 실제 위협 0(빌드/개발 도구)
-- `_site`는 빌드 산출물 → 절대 커밋 금지(gitignore 46줄). 과거 커밋분은 `git rm -r --cached _site`로 정리 완료
-- 유지보수 시 `bundle update`/`npm update`는 vendor/bundle 격리 환경에서
-
-### about 페이지 구조 (2026-06-14)
-- `about.md`(Jekyll `layout: page`) 내 인라인 `<style>`+`<script>`로 EN/KO 탭 토글. 스코프 클래스 `.am`
-- 톤 원칙: People-first·협업·지원·꿈(겸손). 사실관계는 KMS `private/iam/` 정본 기준
-- **토글 영역 인라인 SVG는 그라데이션/필터 defs를 self-contained로** (다른 패널 `display:none` 시 `url(#id)` 참조 깨짐)
-
-### AI Tech Feed 캐시버스팅 (2026-06-14)
-- 실제 피드 URL은 `/aifeed/` (스킬 문서가 말하는 `index.html`/`ai-news/detail.html` 직접 경로 아님)
-- 카드 목록=`aifeed/index.html`, 상세=`ai-news/detail.html`, 데이터=`assets/js/ai-articles.js`
-- **두 파일 모두 `<script src="/assets/js/ai-articles.js?v=YYYYMMDD">`** — ai-articles.js 갱신 시 **두 곳의 `?v=` 날짜를 함께 올려야** 즉시 반영. 한쪽만 고치면 목록은 떠도 상세가 깨짐
-- 렌더링은 date 내림차순 + 페이지네이션 → 데이터만 맞으면 최신 항목이 1페이지 상단 노출
-
----
+- **Workflow 세션 제한 대응**: 워크플로우가 `session limit`으로 일부 실패하면 즉시 전체 재시도하지 말고, 실패 메시지의 리셋 시각을 확인한 뒤 `Workflow({scriptPath, resumeFromRunId})`로 재개할 것 — 성공한 agent() 호출은 (prompt, opts) 동일 시 캐시로 재사용되어 토큰·시간 낭비 없음
+- **대량 리서치 데이터는 JS 데이터 파일로 분리**: `fukuoka_reviews_roundup_data.js`처럼 카테고리별 배열(name/mentions/price/summary/sources)을 별도 `<script>` 파일로 분리하고 HTML은 렌더링 로직만 가짐 — 이 사이트의 `fukuoka_spot_gallery.html` 패턴과 동일 (유지보수·페이지 용량 분리 목적)
+- **"언급 N곳" 정의**: 인기도·평점이 아니라 "이번 조사에서 발견된 서로 다른 출처 글 수" — 조사 범위 밖 후기는 미포함이라는 한계를 footer에 명시
 
 ## 알려진 문제 / 주의사항
 
-- `gemini_html/aiworker_policy_v1.4.html` 1205번 줄: `수정` 배지 스팬 잔존
-- `site.json` version `4.1` — localStorage 캐시 version과 일치해야 오버라이드 적용 (site.json 변경 시 version bump 필수)
-- nano-banana 이미지 생성 불가 — `~/.secrets`의 `GOOGLE_API_KEY`는 Sheets/Drive 전용(generativelanguage 403). 별도 `GEMINI_API_KEY` 필요
-- 토글(탭/아코디언) 영역의 인라인 SVG는 그라데이션·필터 defs를 같은 SVG 안에 둘 것 — 다른 패널 `display:none` 시 `url(#id)` 참조가 깨져 도형이 투명해짐
-- 여행지 지도(`s/travel/map.png`)에 모알보알·오키나와·미야코지마 핀 없음
-- LazyWeb MCP 토큰(`lw_xxx`)은 공개 저장소 커밋 금지
-- `terroir_beta_release.html` Beta Release Letter 카드 — 파일 생성 후 disabled → `<a>` 교체 필요
-- 새 파일 수동 생성 시 `<link rel="icon" type="image/svg+xml" href="/favicon.svg">` 태그 필수
-- AI Tech Feed(`ai-articles.js`) 갱신 시 `aifeed/index.html` + `ai-news/detail.html`의 `?v=` 날짜 동시 갱신 필수 (안 하면 브라우저 캐시로 상세 404)
+- `fukuoka_reviews_roundup.html`의 관광지·쇼핑 카테고리는 사용자가 요청한 "100개+" 기준에 못 미침(80개·72개) — 추가 조사 없이 임의로 채우면 안 됨
+- 다른 창에서 `fukuoka_minoshima_itinerary.html`을 활발히 수정 중이므로, 이 파일을 만질 때는 최신 `git pull` 먼저 확인할 것
 
----
+## 환경 / DB 상태
 
-## 환경 / 배포 상태
-
-- 정적 GitHub Pages — 실행 서버 없음
-- 배포 URL: `https://page.chrisnolja.dev`
-- 최신 push 완료 (코드 HEAD 44fe33c, HANDOFF 5989607)
-- 테스트: `cd /home/chris/git/chrisKILee.github.io && npm test` (vitest 25/25 통과)
-- 로컬 Jekyll 빌드 가능 (ruby 3.2.3 + 사용자 bundler, `github-pages` gem 핀 — 위 "로컬 Jekyll 빌드 환경" 참조)
-- Dependabot 보안 경고 **0건** (44→0, 2026-06-14)
-- ⚠️ cv.chrisnolja.dev는 별도 호스팅(옛 계정 chrisKlee/chrisklee.github.io), 본 저장소와 무관
-
----
+- 실행 중인 서버: 없음 (정적 사이트, GitHub Pages 배포)
+- DB 마이그레이션: 불필요
+- 테스트 상태: 해당 없음 (node --check로 JS 문법만 검증)
 
 ## 관련 문서
 
-- 사이트 메뉴 구조: `site.json` (루트)
-- 공통 스크립트: `assets/js/site-logic.js`, `assets/js/page-header.js`, `assets/js/page-footer.js`
-- 페이지 추가 스킬: `/add-new-page` (32종 템플릿)
-- ADR 작성 스킬: `/write-adr`
+- 스킬: `~/.claude/skills/add-new-page/SKILL.md`, `TEMPLATES.md`
+- 사이트 메뉴 정의: `/home/chris/git/chrisKILee.github.io/site.json`
+- 참고 패턴: `/home/chris/git/chrisKILee.github.io/fukuoka/fukuoka_spot_gallery.html`(+`_data.js`) — 필터+카드 JS 렌더링 원본
