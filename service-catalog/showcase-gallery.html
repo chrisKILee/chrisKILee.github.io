@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VNTG / CATALOG — 서비스 카탈로그</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0b;
+    --surface:#141416;
+    --border:#262629;
+    --text:#fafafa;
+    --text-2:#a1a1aa;
+    --text-3:#52525b;
+    --font-sans:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',monospace;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    background-image:radial-gradient(circle at 50% -10%, rgba(255,255,255,0.05), transparent 55%);
+    color:var(--text);
+    font-family:var(--font-sans);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.45;
+  }
+  img,svg{display:block;max-width:100%;}
+  button{font:inherit;background:none;border:none;cursor:pointer;color:inherit;}
+  a{color:inherit;text-decoration:none;}
+  :focus-visible{outline:2px solid var(--text-2);outline-offset:3px;border-radius:4px;}
+
+  /* ---------- Topbar ---------- */
+  .topbar{position:sticky;top:0;z-index:40;background:rgba(10,10,11,0.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+  .topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:1280px;margin:0 auto;padding:18px 32px;}
+  .wordmark{font-family:var(--font-mono);font-weight:700;font-size:14px;letter-spacing:.04em;}
+  .wordmark .slash{color:var(--text-3);}
+  .tagline{flex:1;text-align:center;font-size:12.5px;color:var(--text-3);}
+  .btn-outline{font-family:var(--font-mono);font-size:12px;border:1px solid var(--border);color:var(--text-2);padding:8px 16px;border-radius:8px;white-space:nowrap;transition:all .2s ease;display:inline-block;}
+  .btn-outline:hover{border-color:var(--text-2);color:var(--text);background:rgba(255,255,255,0.05);}
+
+  /* ---------- Hero ---------- */
+  .hero{max-width:1280px;margin:0 auto;padding:72px 32px 40px;}
+  .hero h1{font-size:clamp(28px,4.6vw,44px);font-weight:800;line-height:1.25;letter-spacing:-0.02em;margin-bottom:16px;}
+  .hero-sub{font-size:15px;color:var(--text-2);max-width:640px;line-height:1.7;margin-bottom:40px;}
+  .filter-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:24px;}
+  .filter-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
+  .filter-tabs::-webkit-scrollbar{display:none;}
+  .tab{font-family:var(--font-mono);font-size:12px;color:var(--text-2);border:1px solid transparent;padding:7px 14px;border-radius:8px;white-space:nowrap;transition:all .2s ease;}
+  .tab:hover{color:var(--text);background:rgba(255,255,255,0.05);}
+  .tab.active{color:var(--bg);background:var(--text);}
+  .count-badge{font-family:var(--font-mono);font-size:12px;color:var(--text-3);letter-spacing:.04em;white-space:nowrap;}
+  .count-badge span{color:var(--text);font-weight:700;}
+
+  /* ---------- Section shells ---------- */
+  .section-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:16px;}
+  .featured{max-width:1280px;margin:0 auto;padding:8px 32px 24px;}
+  .catalog{max-width:1280px;margin:0 auto;padding:8px 32px 96px;}
+
+  /* ---------- Category tag / status ---------- */
+  .cat-tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:4px 9px;border-radius:6px;width:fit-content;}
+  .cat-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+  .status-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:11px;letter-spacing:.03em;white-space:nowrap;}
+  .status-badge .d{font-size:1.15em;line-height:1;}
+  .link-more{font-family:var(--font-mono);font-size:12px;color:var(--text-2);display:inline-flex;align-items:center;gap:4px;transition:color .2s ease, gap .2s ease;}
+  .link-more:hover{color:var(--text);gap:7px;}
+
+  /* ================= PREVIEW THUMBNAILS ================= */
+  .prev{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;
+    font-family:var(--font-mono);
+    color:var(--text);
+    padding:1.4em;gap:1em;
+    font-size:10px;
+    overflow:hidden;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.04);
+    transition:transform .35s ease, filter .35s ease;
+  }
+  .feat-preview .prev{font-size:12px;}
+  .modal-preview .prev{font-size:16px;}
+
+  .prev-dev{--accent:#6366f1;--accent-rgb:99,102,241;background:radial-gradient(circle at 12% -10%, rgba(99,102,241,0.28), transparent 55%), #0e0e10;}
+  .prev-obs{--accent:#10b981;--accent-rgb:16,185,129;background:radial-gradient(circle at 12% -10%, rgba(16,185,129,0.26), transparent 55%), #0e0e10;}
+  .prev-ai{--accent:#a855f7;--accent-rgb:168,85,247;background:radial-gradient(circle at 12% -10%, rgba(168,85,247,0.28), transparent 55%), #0e0e10;}
+  .prev-ops{--accent:#3b82f6;--accent-rgb:59,130,246;background:radial-gradient(circle at 12% -10%, rgba(59,130,246,0.26), transparent 55%), #0e0e10;}
+  .prev-sec{--accent:#f59e0b;--accent-rgb:245,158,11;background:radial-gradient(circle at 12% -10%, rgba(245,158,11,0.24), transparent 55%), #0e0e10;}
+
+  /* DEV — mini software catalog */
+  .dev-search{display:flex;align-items:center;gap:.6em;color:var(--text-3);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:999px;padding:.6em 1em;width:fit-content;font-size:1em;}
+  .dev-search svg{width:1em;height:1em;flex-shrink:0;}
+  .dev-tiles{flex:1;display:grid;grid-template-columns:repeat(2,1fr);gap:.8em;}
+  .dev-tiles .tile{background:rgba(var(--accent-rgb),0.09);border:1px solid rgba(var(--accent-rgb),0.24);border-radius:.8em;padding:.8em;display:flex;flex-direction:column;justify-content:center;gap:.55em;}
+  .tile-ic{width:.9em;height:.9em;border-radius:.28em;background:var(--accent);}
+  .tile-l{display:block;height:.4em;border-radius:.2em;background:rgba(var(--accent-rgb),0.55);}
+  .tile-l.dim{background:rgba(var(--accent-rgb),0.25);}
+
+  /* OBS — observability dashboard */
+  .obs-chart{flex:1;display:flex;align-items:flex-end;}
+  .obs-chart svg{width:100%;height:100%;}
+  .obs-row{display:flex;align-items:center;justify-content:space-between;}
+  .obs-dots{display:flex;gap:.5em;}
+  .obs-dots .dot{width:.6em;height:.6em;border-radius:50%;}
+  .obs-dots .dot.green{background:#10b981;}
+  .obs-dots .dot.amber{background:#f59e0b;}
+  .obs-num{font-size:1.05em;color:var(--text-2);letter-spacing:.02em;}
+
+  /* AI — chat + summary */
+  .ai-layout{flex:1;display:flex;gap:1em;}
+  .ai-chat{width:42%;display:flex;flex-direction:column;justify-content:center;gap:.6em;}
+  .bubble{font-family:var(--font-sans);font-size:1em;line-height:1.4;padding:.6em .9em;border-radius:1em;}
+  .bubble.user{align-self:flex-end;background:rgba(255,255,255,0.08);color:var(--text-2);border-bottom-right-radius:.25em;max-width:92%;}
+  .bubble.bot{align-self:flex-start;background:rgba(var(--accent-rgb),0.16);border:1px solid rgba(var(--accent-rgb),0.32);color:var(--text);border-bottom-left-radius:.25em;}
+  .ai-card{flex:1;display:flex;flex-direction:column;gap:.55em;background:rgba(var(--accent-rgb),0.08);border:1px solid rgba(var(--accent-rgb),0.26);border-radius:1em;padding:.9em;}
+  .ai-card-head{display:flex;align-items:center;justify-content:space-between;font-size:.9em;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);}
+  .ai-card-head .spark{color:var(--accent);font-size:1.15em;}
+  .ai-bullet{font-size:.92em;color:var(--text-2);display:flex;align-items:flex-start;gap:.5em;line-height:1.3;}
+  .ai-bullet::before{content:'';width:.4em;height:.4em;margin-top:.4em;border-radius:50%;background:var(--accent);flex-shrink:0;}
+
+  /* OPS — report screen */
+  .ops-kpis{display:flex;justify-content:space-between;gap:.8em;}
+  .ops-kpis .kpi{display:flex;flex-direction:column;gap:.2em;}
+  .kpi-n{font-size:1.6em;font-weight:700;color:var(--text);}
+  .kpi-l{font-size:.85em;color:var(--text-3);font-family:var(--font-sans);}
+  .ops-bars{flex:1;display:flex;align-items:flex-end;gap:.6em;padding-top:.4em;}
+  .ops-bars .bar{flex:1;min-height:.6em;border-radius:.3em .3em 0 0;background:linear-gradient(180deg, rgba(var(--accent-rgb),0.95), rgba(var(--accent-rgb),0.3));}
+
+  /* SEC — security console */
+  .sec-top{display:flex;align-items:center;gap:1.1em;}
+  .sec-shield{width:2.3em;height:2.3em;flex-shrink:0;}
+  .sec-grid{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:.4em;}
+  .sec-grid .cell{aspect-ratio:1;border-radius:.3em;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);}
+  .sec-grid .cell.amber{background:rgba(245,158,11,0.32);border-color:rgba(245,158,11,0.55);}
+  .sec-grid .cell.red{background:rgba(239,68,68,0.32);border-color:rgba(239,68,68,0.6);}
+  .sec-log{margin-top:auto;display:flex;flex-direction:column;gap:.3em;}
+  .log-line{font-size:.82em;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* ================= FEATURED CARDS ================= */
+  .featured-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(480px,1fr));gap:24px;}
+  .feat-card{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;}
+  .feat-card:hover{transform:translateY(-4px);box-shadow:0 24px 48px -16px rgba(0,0,0,0.55);border-color:rgba(255,255,255,0.18);}
+  .feat-preview{position:relative;width:52%;flex-shrink:0;aspect-ratio:16/10;border-right:1px solid var(--border);}
+  .feat-card:hover .feat-preview .prev{transform:scale(1.045);filter:brightness(1.1);}
+  .feat-body{flex:1;min-width:0;padding:24px;display:flex;flex-direction:column;gap:10px;}
+  .feat-top{display:flex;align-items:center;justify-content:space-between;}
+  .feat-body h3{font-size:20px;font-weight:700;letter-spacing:-0.01em;}
+  .feat-body p{flex:1;font-size:13.5px;color:var(--text-2);line-height:1.65;}
+  .feat-metrics{font-family:var(--font-mono);font-size:11.5px;color:var(--text-3);padding-top:10px;border-top:1px solid var(--border);}
+  .feat-body .link-more{align-self:flex-start;margin-top:2px;}
+
+  /* ================= GRID CARDS ================= */
+  .catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:24px;}
+  .card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;}
+  .card:hover{transform:translateY(-4px);box-shadow:0 18px 36px -14px rgba(0,0,0,0.5);border-color:rgba(255,255,255,0.18);}
+  .card-preview{position:relative;aspect-ratio:16/10;border-bottom:1px solid var(--border);}
+  .card:hover .card-preview .prev{transform:scale(1.045);filter:brightness(1.1);}
+  .card-body{flex:1;display:flex;flex-direction:column;gap:8px;padding:18px 18px 16px;}
+  .card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .card-head h4{font-size:15.5px;font-weight:700;letter-spacing:-0.01em;}
+  .card-desc{flex:1;font-size:12.5px;color:var(--text-2);line-height:1.55;}
+  .card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:12px;border-top:1px solid var(--border);}
+  .metric{font-family:var(--font-mono);font-size:10.5px;color:var(--text-3);}
+
+  .is-hidden{display:none !important;}
+
+  /* ================= MODAL ================= */
+  .modal-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,0.72);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  .modal-overlay.open{opacity:1;pointer-events:auto;}
+  .modal{position:relative;width:100%;max-width:760px;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--surface);border:1px solid var(--border);border-radius:20px;transform:translateY(16px) scale(.98);transition:transform .25s ease;}
+  .modal-overlay.open .modal{transform:translateY(0) scale(1);}
+  .modal-preview{position:relative;aspect-ratio:16/9;}
+  .modal-close{position:absolute;top:16px;right:16px;z-index:2;width:32px;height:32px;border-radius:50%;background:rgba(20,20,22,0.7);border:1px solid var(--border);color:var(--text-2);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s ease;}
+  .modal-close:hover{background:rgba(255,255,255,0.12);color:var(--text);}
+  .modal-content{padding:28px 32px 32px;display:flex;flex-direction:column;gap:12px;}
+  .modal-content h3{font-size:22px;font-weight:700;letter-spacing:-0.01em;}
+  .modal-content p{font-size:14px;color:var(--text-2);line-height:1.75;}
+  .modal-cta{align-self:flex-start;margin-top:6px;}
+
+  /* ---------- Footer ---------- */
+  .footer{border-top:1px solid var(--border);padding:32px;}
+  .footer-inner{max-width:1280px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:var(--font-mono);font-size:11px;color:var(--text-3);}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:900px){
+    .feat-card{flex-direction:column;}
+    .feat-preview{width:100%;border-right:none;border-bottom:1px solid var(--border);}
+  }
+  @media (max-width:640px){
+    .topbar-inner{padding:14px 16px;}
+    .tagline{display:none;}
+    .hero{padding:48px 16px 32px;}
+    .featured,.catalog{padding-left:16px;padding-right:16px;}
+    .filter-row{flex-direction:column;align-items:flex-start;gap:12px;}
+    .count-badge{align-self:flex-end;}
+    .featured-grid{grid-template-columns:1fr;}
+    .catalog-grid{grid-template-columns:1fr;}
+    .modal-content{padding:22px 20px 26px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="wordmark">VNTG<span class="slash"> / </span>CATALOG</div>
+    <div class="tagline">운영을 자동화하는 사내 서비스, 한 곳에서</div>
+    <a class="btn-outline" href="#contact" data-noop>문의 →</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>운영을 자동화하는<br>서비스 카탈로그</h1>
+    <p class="hero-sub">떼루아(Terroir)에서 자라 숙성(Élevage)을 거치듯, 우리는 서비스를 그렇게 키웁니다 — 발상부터 운영까지, 한 팀이 만든 15개의 서비스.</p>
+    <div class="filter-row">
+      <div class="filter-tabs" role="tablist" aria-label="카테고리 필터">
+        <button type="button" class="tab active" data-filter="all" role="tab" aria-selected="true">ALL</button>
+        <button type="button" class="tab" data-filter="dev" role="tab" aria-selected="false">개발 플랫폼</button>
+        <button type="button" class="tab" data-filter="obs" role="tab" aria-selected="false">관측·모니터링</button>
+        <button type="button" class="tab" data-filter="ai" role="tab" aria-selected="false">AI·자동화</button>
+        <button type="button" class="tab" data-filter="ops" role="tab" aria-selected="false">포털·운영보고</button>
+        <button type="button" class="tab" data-filter="sec" role="tab" aria-selected="false">정보보호</button>
+      </div>
+      <div class="count-badge"><span id="countNum">15</span> SERVICES</div>
+    </div>
+  </section>
+
+  <section class="featured" id="featuredSection">
+    <div class="section-eyebrow">FEATURED</div>
+    <div class="featured-grid" id="featuredGrid"></div>
+  </section>
+
+  <section class="catalog" id="catalogSection">
+    <div class="section-eyebrow">ALL SERVICES</div>
+    <div class="catalog-grid" id="catalogGrid"></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>VNTG R&amp;D KMS — 2026</span>
+    <span>MOCKUP DATA · 지표는 예시입니다</span>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="서비스 상세">
+    <button type="button" class="modal-close" id="modalClose" aria-label="닫기">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- Category / status metadata ---------------- */
+  var catMeta = {
+    dev:{label:'개발 플랫폼', code:'DEV', color:'#6366f1', rgb:'99,102,241'},
+    obs:{label:'관측·모니터링', code:'OBS', color:'#10b981', rgb:'16,185,129'},
+    ai: {label:'AI·자동화', code:'AI',  color:'#a855f7', rgb:'168,85,247'},
+    ops:{label:'포털·운영보고', code:'OPS', color:'#3b82f6', rgb:'59,130,246'},
+    sec:{label:'정보보호', code:'SEC', color:'#f59e0b', rgb:'245,158,11'}
+  };
+  var statusMeta = {
+    LIVE:{dot:'●', color:'#10b981', label:'LIVE'},
+    BETA:{dot:'◐', color:'#f59e0b', label:'BETA'},
+    WIP: {dot:'○', color:'#71717a', label:'WIP'}
+  };
+
+  /* ---------------- Service data (15) ---------------- */
+  var SERVICES = [
+    { id:'terroir', name:'Terroir', category:'dev', status:'LIVE', featured:true,
+      desc:'사내 개발자 플랫폼(IDP). 서비스 스캐폴딩·카탈로그·문서를 한 곳에서 셀프서비스.',
+      metric:'도입 8팀 · 스캐폴드 120+ · 온보딩 3일→4시간' },
+    { id:'garde', name:'Garde', category:'obs', status:'LIVE', featured:true,
+      desc:'LGTM(Loki·Grafana·Tempo·Mimir) 통합 관측. 로그·메트릭·트레이스를 한 화면에서 관제.',
+      metric:'수집노드 40+ · MTTR 45%↓' },
+    { id:'vinification', name:'Vinification', category:'dev', status:'WIP',
+      desc:'레거시 서비스를 화면 단위로 점진 재구축. 현대 스택으로 이관.',
+      metric:'완료 화면 340' },
+    { id:'elevage', name:'Élevage', category:'dev', status:'BETA',
+      desc:'시맨틱 검색 강화 엔진. 사내 지식 검색 정확도 향상.',
+      metric:'검색 Recall +38%' },
+    { id:'aive', name:'AIVE (AI Worker)', category:'ai', status:'LIVE',
+      desc:'사내 AI 활용 역량 인증 프로그램. 레벨 L1~L7, 과제 심사·수료.',
+      metric:'참여 60명 · 인증 32명',
+      chat:{q:'AI 활용 레벨은?', a:'L4 기준을 확인했어요 ✦'},
+      bullets:['L4 승인 완료','과제 제출 2건','다음 리뷰 7/28'] },
+    { id:'kms', name:'KMS', category:'ai', status:'LIVE',
+      desc:'RAG 친화 지식관리. 문서 자동 적재·검색·작성 지원.',
+      metric:'문서 71+',
+      chat:{q:'관련 문서 찾아줘', a:'유사 문서 5건을 찾았어요 ✦'},
+      bullets:['신규 문서 3건','검색 정확도 개선','승인 대기 1건'] },
+    { id:'gchat', name:'gchat 요약', category:'ai', status:'LIVE',
+      desc:"Google Chat 대화를 '누가·결정·작업' 축으로 구조화 요약.",
+      metric:'969메시지→21주제',
+      chat:{q:'어제 대화 요약해줘', a:'결정 3건을 정리했어요 ✦'},
+      bullets:['결정 사항 3건','작업 배정 5건','미확인 멘션 2건'] },
+    { id:'gcp-cost', name:'GCP 비용 리포트', category:'ops', status:'LIVE',
+      desc:'매일 GCP 비용을 자동 수집·시각화·게시. 수작업 0.',
+      metric:'100% 무인 자동',
+      kpis:[{n:'100%',l:'무인 자동'},{n:'매일',l:'갱신 주기'},{n:'0',l:'수작업'}] },
+    { id:'ops-report', name:'운영보고 서비스', category:'ops', status:'LIVE',
+      desc:'운영 현황·KPI를 자동 집계해 주간 보고서 생성.',
+      metric:'작성시간 90%↓',
+      kpis:[{n:'90%↓',l:'작성시간'},{n:'주간',l:'발행 주기'},{n:'자동',l:'KPI 집계'}] },
+    { id:'agora', name:'agora', category:'ops', status:'LIVE',
+      desc:'사내 콘텐츠 허브 포털. 릴리즈 노트·가이드·리포트 게시.',
+      metric:'게시 페이지 200+',
+      kpis:[{n:'200+',l:'게시 페이지'},{n:'멀티',l:'서비스 허브'},{n:'자동',l:'배포'}] },
+    { id:'secaas', name:'SECaaS', category:'sec', status:'WIP',
+      desc:'보안의 중앙집중 서비스화. 악성메일 훈련·취약점 진단.',
+      metric:'계열사 확산 중',
+      logs:['09:12 TRAIN 발송 완료','09:15 진단 스캔 중...','09:20 결과 리포트 생성'] },
+    { id:'dlp', name:'DLP', category:'sec', status:'LIVE',
+      desc:'정보유출방지. 전사 데이터 이동 통제·모니터링.',
+      metric:'전사 적용',
+      logs:['14:02 BLOCK USB 반출 시도','14:05 ALLOW 사내망 전송','14:11 WATCH 첨부파일 탐지'] },
+    { id:'nac', name:'NAC', category:'sec', status:'LIVE',
+      desc:'네트워크 접근통제. 비인가 단말 자동 차단.',
+      metric:'전사 적용',
+      logs:['08:31 DENY 비인가 단말 접속','08:33 ALLOW 등록 단말 인증','08:40 QUARANTINE 격리 완료'] },
+    { id:'itam', name:'ITAM', category:'sec', status:'WIP',
+      desc:'IT 자산 통합 관리 시스템화. 라이선스·단말 현황 가시화.',
+      metric:'자산 가시화',
+      logs:['SYNC 자산 목록 갱신','라이선스 만료 3건 감지','신규 단말 12대 등록'] },
+    { id:'edr', name:'EDR', category:'sec', status:'LIVE',
+      desc:'엔드포인트 위협 탐지·대응(EDR). 계열사 배포.',
+      metric:'그룹 배포',
+      logs:['DETECT 악성 프로세스 차단','SCAN 엔드포인트 240대 완료','RESPOND 격리 조치 실행'] }
+  ];
+
+  /* ---------------- Seeded RNG (deterministic per service) ---------------- */
+  function seedFromString(str){
+    var h = 2166136261;
+    for (var i = 0; i < str.length; i++){
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+  function mulberry32(seed){
+    var s = seed;
+    return function(){
+      s = (s + 0x6D2B79F5) | 0;
+      var t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function rngFor(key){ return mulberry32(seedFromString(key)); }
+
+  /* ---------------- Preview generators (5 category templates) ---------------- */
+  function previewDev(svc){
+    var rnd = rngFor(svc.id + '-dev');
+    var tiles = '';
+    for (var i = 0; i < 4; i++){
+      var w1 = Math.round(50 + rnd() * 35);
+      var w2 = Math.round(28 + rnd() * 30);
+      tiles += '<div class="tile"><span class="tile-ic"></span>' +
+        '<span class="tile-l" style="width:' + w1 + '%"></span>' +
+        '<span class="tile-l dim" style="width:' + w2 + '%"></span></div>';
+    }
+    return '<div class="prev prev-dev">' +
+      '<div class="dev-search">' +
+        '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.3" stroke="currentColor" stroke-width="1.3"/><line x1="9.8" y1="9.8" x2="13.5" y2="13.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>' +
+        '<span>search ' + svc.name.toLowerCase() + '...</span>' +
+      '</div>' +
+      '<div class="dev-tiles">' + tiles + '</div>' +
+    '</div>';
+  }
+
+  function previewObs(svc){
+    var rnd = rngFor(svc.id + '-obs');
+    var w = 200, h = 64, n = 8;
+    var pts = [];
+    for (var i = 0; i < n; i++){
+      var x = (i / (n - 1)) * w;
+      var y = h - (16 + rnd() * 40);
+      pts.push(x.toFixed(1) + ',' + y.toFixed(1));
+    }
+    var line = 'M' + pts.join(' L');
+    var area = line + ' L' + w + ',' + h + ' L0,' + h + ' Z';
+    var dots = '';
+    for (var j = 0; j < 7; j++){
+      dots += '<span class="dot ' + (rnd() > 0.82 ? 'amber' : 'green') + '"></span>';
+    }
+    var uid = 'obsGrad' + seedFromString(svc.id);
+    var num = svc.metric.split('·')[0].trim();
+    return '<div class="prev prev-obs">' +
+      '<div class="obs-chart">' +
+        '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true">' +
+          '<defs><linearGradient id="' + uid + '" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0%" stop-color="' + catMeta.obs.color + '" stop-opacity="0.4"/>' +
+            '<stop offset="100%" stop-color="' + catMeta.obs.color + '" stop-opacity="0"/>' +
+          '</linearGradient></defs>' +
+          '<path d="' + area + '" fill="url(#' + uid + ')"/>' +
+          '<path d="' + line + '" fill="none" stroke="' + catMeta.obs.color + '" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>' +
+        '</svg>' +
+      '</div>' +
+      '<div class="obs-row">' +
+        '<div class="obs-dots">' + dots + '</div>' +
+        '<span class="obs-num">' + num + '</span>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function previewAi(svc){
+    var chat = svc.chat || {q:'요약해줘', a:'핵심만 정리했어요 ✦'};
+    var bullets = svc.bullets || ['처리 완료 1건','검토 대기 2건','업데이트 1건'];
+    var bulletHtml = bullets.map(function(b){ return '<div class="ai-bullet">' + b + '</div>'; }).join('');
+    return '<div class="prev prev-ai">' +
+      '<div class="ai-layout">' +
+        '<div class="ai-chat">' +
+          '<div class="bubble user">' + chat.q + '</div>' +
+          '<div class="bubble bot">' + chat.a + '</div>' +
+        '</div>' +
+        '<div class="ai-card">' +
+          '<div class="ai-card-head"><span>요약</span><span class="spark">✦</span></div>' +
+          bulletHtml +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function previewOps(svc){
+    var rnd = rngFor(svc.id + '-ops');
+    var kpis = svc.kpis || [{n:'100%',l:'지표'},{n:'매일',l:'주기'},{n:'자동',l:'처리'}];
+    var kpiHtml = kpis.map(function(k){
+      return '<div class="kpi"><span class="kpi-n">' + k.n + '</span><span class="kpi-l">' + k.l + '</span></div>';
+    }).join('');
+    var bars = '';
+    for (var i = 0; i < 6; i++){
+      var height = Math.round(25 + rnd() * 70);
+      bars += '<span class="bar" style="height:' + height + '%"></span>';
+    }
+    return '<div class="prev prev-ops">' +
+      '<div class="ops-kpis">' + kpiHtml + '</div>' +
+      '<div class="ops-bars">' + bars + '</div>' +
+    '</div>';
+  }
+
+  function secIcon(type){
+    var c = 'var(--accent)';
+    if (type === 'lock'){
+      return '<svg class="sec-shield" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" stroke="' + c + '" stroke-width="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="' + c + '" stroke-width="1.5"/><circle cx="12" cy="16" r="1.4" fill="' + c + '"/></svg>';
+    }
+    if (type === 'radar'){
+      return '<svg class="sec-shield" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="' + c + '" stroke-width="1.3" opacity="0.5"/><circle cx="12" cy="12" r="5.5" stroke="' + c + '" stroke-width="1.3" opacity="0.7"/><circle cx="12" cy="12" r="1.6" fill="' + c + '"/><path d="M12 12 L19 7" stroke="' + c + '" stroke-width="1.3" stroke-linecap="round"/></svg>';
+    }
+    return '<svg class="sec-shield" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5 L19.5 5.5 V11 C19.5 16 16 19.8 12 21.5 C8 19.8 4.5 16 4.5 11 V5.5 Z" stroke="' + c + '" stroke-width="1.4" stroke-linejoin="round"/><path d="M8.2 12 L10.8 14.6 L15.8 9" stroke="' + c + '" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  function previewSec(svc){
+    var rnd = rngFor(svc.id + '-sec');
+    var cells = '';
+    for (var i = 0; i < 6; i++){
+      var r = rnd();
+      var cls = r > 0.85 ? 'red' : (r > 0.55 ? 'amber' : '');
+      cells += '<span class="cell ' + cls + '"></span>';
+    }
+    var logs = svc.logs || ['SCAN 완료','ALLOW 접근 허용','SYNC 갱신 완료'];
+    var logHtml = logs.map(function(l){ return '<div class="log-line">' + l + '</div>'; }).join('');
+    var iconType = ['shield','lock','radar'][seedFromString(svc.id) % 3];
+    return '<div class="prev prev-sec">' +
+      '<div class="sec-top">' +
+        secIcon(iconType) +
+        '<div class="sec-grid">' + cells + '</div>' +
+      '</div>' +
+      '<div class="sec-log">' + logHtml + '</div>' +
+    '</div>';
+  }
+
+  function generatePreview(svc){
+    switch (svc.category){
+      case 'dev': return previewDev(svc);
+      case 'obs': return previewObs(svc);
+      case 'ai':  return previewAi(svc);
+      case 'ops': return previewOps(svc);
+      case 'sec': return previewSec(svc);
+      default: return '';
+    }
+  }
+
+  /* ---------------- Card markup ---------------- */
+  function catTagHTML(cat){
+    var m = catMeta[cat];
+    return '<span class="cat-tag" style="color:' + m.color + ';background:rgba(' + m.rgb + ',0.12);border:1px solid rgba(' + m.rgb + ',0.32);">' + m.code + '</span>';
+  }
+  function statusHTML(status){
+    var m = statusMeta[status];
+    return '<span class="status-badge" style="color:' + m.color + ';"><span class="d">' + m.dot + '</span>' + m.label + '</span>';
+  }
+
+  function featCardHTML(svc){
+    return '<article class="feat-card" data-category="' + svc.category + '" data-id="' + svc.id + '">' +
+      '<div class="feat-preview">' + generatePreview(svc) + '</div>' +
+      '<div class="feat-body">' +
+        '<div class="feat-top">' + catTagHTML(svc.category) + statusHTML(svc.status) + '</div>' +
+        '<h3>' + svc.name + '</h3>' +
+        '<p>' + svc.desc + '</p>' +
+        '<div class="feat-metrics">' + svc.metric + '</div>' +
+        '<button type="button" class="link-more" data-open="' + svc.id + '">자세히 보기 →</button>' +
+      '</div>' +
+    '</article>';
+  }
+
+  function gridCardHTML(svc){
+    return '<article class="card" data-category="' + svc.category + '" data-id="' + svc.id + '">' +
+      '<div class="card-preview">' + generatePreview(svc) + '</div>' +
+      '<div class="card-body">' +
+        '<div class="card-head"><h4>' + svc.name + '</h4>' + statusHTML(svc.status) + '</div>' +
+        catTagHTML(svc.category) +
+        '<p class="card-desc">' + svc.desc + '</p>' +
+        '<div class="card-foot"><span class="metric">' + svc.metric + '</span>' +
+          '<button type="button" class="link-more" data-open="' + svc.id + '">자세히 →</button>' +
+        '</div>' +
+      '</div>' +
+    '</article>';
+  }
+
+  /* ---------------- Render ---------------- */
+  var featuredEl = document.getElementById('featuredGrid');
+  var gridEl = document.getElementById('catalogGrid');
+  var featuredSection = document.getElementById('featuredSection');
+  var catalogSection = document.getElementById('catalogSection');
+  var countNum = document.getElementById('countNum');
+
+  featuredEl.innerHTML = SERVICES.filter(function(s){ return s.featured; }).map(featCardHTML).join('');
+  gridEl.innerHTML = SERVICES.filter(function(s){ return !s.featured; }).map(gridCardHTML).join('');
+
+  /* ---------------- Filter ---------------- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+
+  function applyFilter(filter){
+    var cards = document.querySelectorAll('.feat-card, .card');
+    cards.forEach(function(card){
+      var match = filter === 'all' || card.getAttribute('data-category') === filter;
+      card.classList.toggle('is-hidden', !match);
+    });
+    var visibleTotal = document.querySelectorAll('.feat-card:not(.is-hidden), .card:not(.is-hidden)').length;
+    countNum.textContent = visibleTotal;
+    var featVisible = document.querySelectorAll('.feat-card:not(.is-hidden)').length;
+    var gridVisible = document.querySelectorAll('.card:not(.is-hidden)').length;
+    featuredSection.style.display = featVisible ? '' : 'none';
+    catalogSection.style.display = gridVisible ? '' : 'none';
+  }
+
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      applyFilter(tab.getAttribute('data-filter'));
+    });
+  });
+
+  applyFilter('all');
+
+  /* ---------------- Modal ---------------- */
+  var overlay = document.getElementById('modalOverlay');
+  var modalBody = document.getElementById('modalBody');
+  var modalCloseBtn = document.getElementById('modalClose');
+
+  function findService(id){
+    for (var i = 0; i < SERVICES.length; i++){
+      if (SERVICES[i].id === id) return SERVICES[i];
+    }
+    return null;
+  }
+
+  function openModal(id){
+    var svc = findService(id);
+    if (!svc) return;
+    modalBody.innerHTML =
+      '<div class="modal-preview">' + generatePreview(svc) + '</div>' +
+      '<div class="modal-content">' +
+        '<div class="feat-top">' + catTagHTML(svc.category) + statusHTML(svc.status) + '</div>' +
+        '<h3>' + svc.name + '</h3>' +
+        '<p>' + svc.desc + '</p>' +
+        '<div class="feat-metrics">' + svc.metric + '</div>' +
+        '<a class="btn-outline modal-cta" href="#" data-noop>바로가기 →</a>' +
+      '</div>';
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(){
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('click', function(e){
+    var noop = e.target.closest('[data-noop]');
+    if (noop){ e.preventDefault(); return; }
+
+    var opener = e.target.closest('[data-open]');
+    if (opener){
+      openModal(opener.getAttribute('data-open'));
+      return;
+    }
+    var card = e.target.closest('.card, .feat-card');
+    if (card){
+      openModal(card.getAttribute('data-id'));
+    }
+  });
+
+  overlay.addEventListener('click', function(e){
+    if (e.target === overlay) closeModal();
+  });
+  modalCloseBtn.addEventListener('click', closeModal);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeModal();
+  });
+
+})();
+</script>
+</body>
+</html>

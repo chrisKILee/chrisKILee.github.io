@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VNTG 서비스 카탈로그 — 마켓플레이스</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0a0d;
+    --card-bg:#161318;
+    --card-bg-hover:#1c181f;
+    --border:rgba(255,255,255,.08);
+    --border-hover:rgba(201,168,106,.35);
+    --text:#ededed;
+    --text-secondary:#a1a1aa;
+    --burgundy:#7b2d3b;
+    --burgundy-light:#9b3b4d;
+    --gold:#c9a86a;
+    --grad-brand:linear-gradient(135deg,#7b2d3b,#c9a86a);
+    --grad-dev:linear-gradient(135deg,#4f46e5,#7c3aed);
+    --grad-obs:linear-gradient(135deg,#059669,#0d9488);
+    --grad-sec:linear-gradient(135deg,#dc2626,#ea580c);
+    --grad-ai:linear-gradient(135deg,#7c3aed,#db2777);
+    --grad-ops:linear-gradient(135deg,#2563eb,#0891b2);
+    --c-dev:#8b7bf0;
+    --c-obs:#2dd4bf;
+    --c-sec:#fb923c;
+    --c-ai:#f472b6;
+    --c-ops:#38bdf8;
+    --status-live:#22c55e;
+    --status-beta:#eab308;
+    --status-wip:#8b8b93;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  body.no-scroll{overflow:hidden;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+  .container{max-width:1280px;margin:0 auto;padding:0 32px;}
+
+  /* ---------- Header ---------- */
+  .site-header{
+    border-bottom:1px solid var(--border);
+    background:radial-gradient(1200px 400px at 15% -20%, rgba(123,45,59,.35), transparent 60%),
+               radial-gradient(900px 300px at 90% -30%, rgba(201,168,106,.15), transparent 60%),
+               var(--bg);
+  }
+  .header-inner{
+    max-width:1280px;margin:0 auto;padding:36px 32px;
+    display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  }
+  .wordmark{display:flex;align-items:center;gap:16px;}
+  .wordmark-mark{
+    width:48px;height:48px;flex-shrink:0;border-radius:14px;
+    background:var(--grad-brand);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:20px;color:#0b0a0d;
+    box-shadow:0 8px 24px rgba(123,45,59,.4);
+  }
+  .wordmark h1{font-size:20px;font-weight:700;letter-spacing:-.02em;}
+  .wordmark .tagline{font-size:13px;color:var(--text-secondary);margin-top:4px;}
+  .btn-contact{
+    padding:11px 22px;border-radius:10px;
+    background:var(--grad-brand);
+    color:#0b0a0d;font-weight:700;font-size:14px;
+    transition:filter .2s ease, transform .2s ease;
+    white-space:nowrap;
+  }
+  .btn-contact:hover{filter:brightness(1.12);transform:translateY(-1px);}
+  .btn-contact:active{transform:translateY(0);}
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{
+    position:sticky;top:0;z-index:20;
+    background:rgba(11,10,13,.85);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+  }
+  .toolbar-inner{
+    max-width:1280px;margin:0 auto;padding:18px 32px 14px;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  }
+  .tabs{
+    display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    flex-shrink:0;
+    padding:9px 16px;border-radius:999px;border:1px solid var(--border);
+    background:transparent;color:var(--text-secondary);
+    font-size:13px;font-weight:600;
+    transition:all .2s ease;
+    white-space:nowrap;
+  }
+  .tab:hover{color:var(--text);border-color:rgba(255,255,255,.18);}
+  .tab.active{
+    background:var(--grad-brand);
+    border-color:transparent;
+    color:#0b0a0d;
+  }
+  .search-wrap{
+    position:relative;flex-shrink:0;width:260px;max-width:100%;
+  }
+  .search-wrap svg{
+    position:absolute;left:12px;top:50%;transform:translateY(-50%);
+    width:15px;height:15px;color:var(--text-secondary);pointer-events:none;
+  }
+  #searchInput{
+    width:100%;padding:9px 12px 9px 34px;border-radius:10px;
+    border:1px solid var(--border);background:#141216;color:var(--text);
+    font-size:13px;font-family:inherit;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  #searchInput::placeholder{color:#6b6b72;}
+  #searchInput:focus{outline:none;border-color:var(--gold);background:#17151a;}
+  .result-count{
+    max-width:1280px;margin:0 auto;padding:0 32px 14px;
+    font-size:12.5px;color:var(--text-secondary);
+  }
+
+  /* ---------- Grid / Cards ---------- */
+  main.container{padding-top:32px;padding-bottom:80px;}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:20px;
+  }
+  .card{
+    background:var(--card-bg);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:22px;
+    display:flex;flex-direction:column;
+    cursor:pointer;
+    transition:transform .22s ease, border-color .22s ease, background .22s ease, box-shadow .22s ease;
+  }
+  .card:hover, .card:focus-visible{
+    transform:translateY(-4px);
+    border-color:var(--border-hover);
+    background:var(--card-bg-hover);
+    box-shadow:0 20px 40px -12px rgba(0,0,0,.55), 0 0 0 1px rgba(201,168,106,.08);
+  }
+  .card:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  .card-icon{
+    width:48px;height:48px;border-radius:13px;
+    display:flex;align-items:center;justify-content:center;
+    position:relative;overflow:hidden;margin-bottom:16px;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+  .icon-deco{position:absolute;inset:0;width:100%;height:100%;opacity:.55;}
+  .icon-initials{position:relative;font-weight:800;font-size:14px;color:#fff;letter-spacing:.01em;}
+
+  .grad-dev{background:var(--grad-dev);}
+  .grad-obs{background:var(--grad-obs);}
+  .grad-sec{background:var(--grad-sec);}
+  .grad-ai{background:var(--grad-ai);}
+  .grad-ops{background:var(--grad-ops);}
+
+  .card-top{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;
+  }
+  .card-name{font-size:16px;font-weight:700;letter-spacing:-.01em;}
+
+  .status-badge{
+    display:inline-flex;align-items:center;gap:5px;flex-shrink:0;
+    font-size:11px;font-weight:600;color:var(--text-secondary);
+    padding:3px 8px 3px 6px;border-radius:999px;background:rgba(255,255,255,.05);
+    white-space:nowrap;
+  }
+  .status-badge .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .status-live .dot{background:var(--status-live);box-shadow:0 0 6px rgba(34,197,94,.7);}
+  .status-beta .dot{background:var(--status-beta);box-shadow:0 0 6px rgba(234,179,8,.7);}
+  .status-wip .dot{background:var(--status-wip);}
+
+  .cat-pill{
+    display:inline-flex;align-items:center;gap:6px;width:fit-content;
+    font-size:11.5px;font-weight:600;color:var(--text-secondary);
+    padding:4px 10px;border-radius:999px;
+    border:1px solid var(--border);background:rgba(255,255,255,.03);
+    margin-bottom:12px;
+  }
+  .cat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .dot-dev{background:var(--c-dev);}
+  .dot-obs{background:var(--c-obs);}
+  .dot-sec{background:var(--c-sec);}
+  .dot-ai{background:var(--c-ai);}
+  .dot-ops{background:var(--c-ops);}
+
+  .card-desc{
+    font-size:13.5px;color:var(--text-secondary);
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    min-height:38px;
+    margin-bottom:18px;
+  }
+
+  .card-footer{
+    margin-top:auto;padding-top:14px;border-top:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+  }
+  .card-footer .metric{
+    font-size:12px;color:var(--gold);font-weight:600;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .card-footer .more{
+    font-size:12px;color:var(--text-secondary);font-weight:600;flex-shrink:0;
+    transition:color .2s ease, transform .2s ease;
+  }
+  .card:hover .more{color:var(--text);transform:translateX(2px);}
+
+  .empty-state{
+    text-align:center;padding:80px 20px;color:var(--text-secondary);font-size:14px;
+  }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;z-index:100;
+    background:rgba(5,4,6,.78);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    opacity:0;visibility:hidden;
+    transition:opacity .25s ease, visibility .25s ease;
+  }
+  .modal-overlay.open{opacity:1;visibility:visible;}
+  .modal{
+    width:100%;max-width:560px;max-height:85vh;overflow-y:auto;
+    background:var(--card-bg);border:1px solid var(--border);border-radius:20px;
+    padding:34px;position:relative;
+    transform:translateY(16px) scale(.98);
+    transition:transform .25s ease;
+    box-shadow:0 24px 70px rgba(0,0,0,.55);
+  }
+  .modal-overlay.open .modal{transform:translateY(0) scale(1);}
+  .modal-close{
+    position:absolute;top:18px;right:18px;
+    width:34px;height:34px;border-radius:10px;border:1px solid var(--border);
+    background:rgba(255,255,255,.03);color:var(--text-secondary);
+    font-size:18px;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+    transition:color .2s ease, background .2s ease, border-color .2s ease;
+  }
+  .modal-close:hover{color:var(--text);background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);}
+  .modal-close:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  .modal-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px;padding-right:36px;}
+  .modal-icon{
+    width:56px;height:56px;border-radius:15px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:17px;color:#fff;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);
+  }
+  .modal-title-wrap h2{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;}
+  .modal-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+  .modal-desc{font-size:14.5px;color:var(--text-secondary);line-height:1.7;margin-bottom:24px;}
+
+  .modal-metrics{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;}
+  .metric-chip{
+    font-size:12.5px;font-weight:600;color:var(--gold);
+    padding:7px 13px;border-radius:10px;
+    background:rgba(201,168,106,.08);border:1px solid rgba(201,168,106,.25);
+  }
+
+  .modal-cta{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:100%;padding:13px;border-radius:11px;
+    background:var(--grad-brand);color:#0b0a0d;
+    font-weight:700;font-size:14px;
+    transition:filter .2s ease;
+  }
+  .modal-cta:hover{filter:brightness(1.12);}
+
+  /* ---------- Footer ---------- */
+  .site-footer{
+    border-top:1px solid var(--border);
+    padding:32px;text-align:center;
+    color:var(--text-secondary);font-size:12.5px;
+  }
+  .site-footer p{margin-bottom:6px;}
+  .site-footer .disclaimer{color:#6b6b72;font-size:11.5px;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:768px){
+    .header-inner{padding:28px 20px;}
+    .container{padding:0 20px;}
+    .toolbar-inner{padding:16px 20px 12px;flex-direction:column;align-items:stretch;}
+    .search-wrap{width:100%;}
+    .result-count{padding:0 20px 14px;}
+    .grid{grid-template-columns:1fr;}
+    .modal{padding:26px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="wordmark">
+      <div class="wordmark-mark" aria-hidden="true">V</div>
+      <div>
+        <h1>VNTG 서비스 카탈로그</h1>
+        <p class="tagline">토양(Terroir)에서 숙성(Élevage)까지 — 사내 서비스가 빚어지는 곳</p>
+      </div>
+    </div>
+    <a href="#" class="btn-contact">문의</a>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <div class="tabs" id="tabs" role="group" aria-label="카테고리 필터">
+      <button class="tab active" data-cat="all" type="button">전체</button>
+      <button class="tab" data-cat="dev" type="button">개발 플랫폼</button>
+      <button class="tab" data-cat="obs" type="button">관측·모니터링</button>
+      <button class="tab" data-cat="sec" type="button">정보보호</button>
+      <button class="tab" data-cat="ai" type="button">AI·자동화</button>
+      <button class="tab" data-cat="ops" type="button">포털·운영보고</button>
+    </div>
+    <div class="search-wrap">
+      <label for="searchInput" class="sr-only">서비스 검색</label>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="text" id="searchInput" placeholder="서비스명, 설명으로 검색" autocomplete="off">
+    </div>
+  </div>
+  <p class="result-count" id="resultCount">총 15개 서비스</p>
+</div>
+
+<main class="container">
+  <div class="grid" id="cardGrid"></div>
+  <p class="empty-state" id="emptyState" hidden>검색 결과가 없습니다. 다른 키워드로 시도해 보세요.</p>
+</main>
+
+<footer class="site-footer">
+  <p>VNTG R&amp;D KMS · 2026</p>
+  <p class="disclaimer">목업 데이터 — 지표는 예시입니다.</p>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" id="modalCloseBtn" type="button" aria-label="닫기">×</button>
+    <div class="modal-header">
+      <div class="modal-icon" id="modalIcon" aria-hidden="true"></div>
+      <div class="modal-title-wrap">
+        <h2 id="modalTitle"></h2>
+        <div class="modal-meta">
+          <span class="cat-pill" id="modalCatPill"></span>
+          <span class="status-badge" id="modalStatusBadge"></span>
+        </div>
+      </div>
+    </div>
+    <p class="modal-desc" id="modalDesc"></p>
+    <div class="modal-metrics" id="modalMetrics"></div>
+    <a href="#" class="modal-cta" id="modalCta">바로가기</a>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var CAT_LABELS = {
+    dev:'개발 플랫폼', obs:'관측·모니터링', sec:'정보보호', ai:'AI·자동화', ops:'포털·운영보고'
+  };
+  var STATUS_CLASS = { '운영중':'status-live', '베타':'status-beta', '진행중':'status-wip' };
+
+  var SERVICES = [
+    { id:'terroir', name:'Terroir', cat:'dev', status:'운영중', initials:'TR',
+      short:'사내 개발자 플랫폼(IDP). 스캐폴딩·카탈로그·문서를 셀프서비스로.',
+      long:'Backstage 기반 사내 개발자 플랫폼(IDP). 신규 서비스 스캐폴딩, 소프트웨어 카탈로그, 기술 문서(TechDocs)를 한 곳에서 셀프서비스로 제공해 온보딩과 표준화를 가속한다.',
+      metrics:['도입 8팀','스캐폴드 120+','온보딩 3일→4시간'] },
+    { id:'vinification', name:'Vinification', cat:'dev', status:'진행중', initials:'VN',
+      short:'레거시 서비스를 화면 단위로 점진 재구축.',
+      long:'레거시 서비스를 화면 단위로 점진적으로 현대 스택에 재구축·이관한다. 리스크를 낮추는 스트랭글러 패턴으로 단계적 전환.',
+      metrics:['완료 화면 340','진행 중'] },
+    { id:'elevage', name:'Élevage', cat:'dev', status:'베타', initials:'EL',
+      short:'시맨틱 검색 강화 엔진.',
+      long:'사내 지식 검색의 정확도를 높이는 시맨틱 강화 엔진. 임베딩 기반 검색으로 키워드 매칭의 한계를 보완한다.',
+      metrics:['검색 Recall +38%'] },
+    { id:'garde', name:'Garde', cat:'obs', status:'운영중', initials:'GA',
+      short:'LGTM 통합 관측 플랫폼.',
+      long:'Loki·Grafana·Tempo·Mimir(LGTM) 스택을 통합한 관측 플랫폼. 로그·메트릭·트레이스를 한 화면에서 관제해 장애 대응 속도를 높인다.',
+      metrics:['수집노드 40+','MTTR 45%↓'] },
+    { id:'aive', name:'AIVE (AI Worker)', cat:'ai', status:'운영중', initials:'AI',
+      short:'사내 AI 활용 역량 인증 프로그램.',
+      long:'임직원의 AI 활용 역량을 L1~L7 레벨로 인증하는 프로그램. 셀프 진단 → 학습 → 과제 수행·심사 → 인증의 여정을 제공한다.',
+      metrics:['참여 60명','인증 32명','L1~L7'] },
+    { id:'kms', name:'KMS', cat:'ai', status:'운영중', initials:'KM',
+      short:'RAG 친화 지식관리 시스템.',
+      long:'RAG(검색증강생성)에 친화적인 구조의 지식관리 시스템. 문서 자동 적재·표준화·검색·작성을 지원해 조직 지식을 자산화한다.',
+      metrics:['문서 71+','검색 자동화'] },
+    { id:'gchat-summary', name:'gchat 요약', cat:'ai', status:'운영중', initials:'GC',
+      short:'채팅 대화를 구조화 요약.',
+      long:'Google Chat 방/스레드 대화를 \'누가·결정·작업\' 축으로 구조화 요약하고 증분 업데이트로 KMS에 축적한다. 링크·이미지·첨부까지 분석.',
+      metrics:['969메시지→21주제'] },
+    { id:'gcp-cost-report', name:'GCP 비용 리포트', cat:'ops', status:'운영중', initials:'GB',
+      short:'GCP 비용 자동 리포트.',
+      long:'매일 발생하는 GCP 비용 리포트를 자동으로 수집·다크테마 변환·시각화하여 포털에 게시한다. 사람 개입 없는 완전 무인 파이프라인.',
+      metrics:['매일 자동','수작업 0'] },
+    { id:'ops-report', name:'운영보고 서비스', cat:'ops', status:'운영중', initials:'OR',
+      short:'운영 현황 주간 보고 자동화.',
+      long:'운영 현황과 KPI를 자동 집계해 주간 보고서를 생성한다. 반복 작성 업무를 없애고 일관된 포맷으로 가시성을 확보.',
+      metrics:['작성시간 90%↓'] },
+    { id:'agora', name:'agora', cat:'ops', status:'운영중', initials:'AG',
+      short:'사내 콘텐츠 허브 포털.',
+      long:'릴리즈 노트·가이드·비용 리포트 등 사내 콘텐츠를 한곳에 모으는 허브 포털(agora.vntgcorp.com). 정적 배포 파이프라인으로 손쉽게 게시.',
+      metrics:['게시 페이지 200+'] },
+    { id:'secaas', name:'SECaaS', cat:'sec', status:'진행중', initials:'SC',
+      short:'보안의 중앙집중 서비스화.',
+      long:'악성메일 모의훈련·취약점 진단 등 능동적 보안을 서비스로 중앙집중화한다. 계열사로 확산 중.',
+      metrics:['계열사 확산 중'] },
+    { id:'dlp', name:'DLP', cat:'sec', status:'운영중', initials:'DL',
+      short:'정보유출방지 통제.',
+      long:'전사 데이터 이동을 통제·모니터링하는 정보유출방지(DLP) 솔루션. 표준 운영 프로세스로 상시 운영.',
+      metrics:['전사 적용'] },
+    { id:'nac', name:'NAC', cat:'sec', status:'운영중', initials:'NA',
+      short:'네트워크 접근통제.',
+      long:'비인가 단말의 네트워크 접근을 자동 차단하는 접근통제(NAC). 전사 네트워크에 적용.',
+      metrics:['전사 적용'] },
+    { id:'itam', name:'ITAM', cat:'sec', status:'진행중', initials:'IT',
+      short:'IT 자산 통합관리.',
+      long:'라이선스·단말 등 IT 자산 현황을 통합 관리·가시화하는 시스템(ITAM). 자산 기반 보안·비용 최적화의 토대.',
+      metrics:['자산 가시화'] },
+    { id:'edr', name:'EDR', cat:'sec', status:'운영중', initials:'ED',
+      short:'엔드포인트 위협 탐지·대응.',
+      long:'엔드포인트의 위협을 탐지·대응(EDR)한다. 그룹 계열사에 배포·운영.',
+      metrics:['그룹 배포'] }
+  ];
+
+  var grid = document.getElementById('cardGrid');
+  var emptyState = document.getElementById('emptyState');
+  var resultCount = document.getElementById('resultCount');
+  var searchInput = document.getElementById('searchInput');
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+
+  var overlay = document.getElementById('modalOverlay');
+  var modalIcon = document.getElementById('modalIcon');
+  var modalTitle = document.getElementById('modalTitle');
+  var modalCatPill = document.getElementById('modalCatPill');
+  var modalStatusBadge = document.getElementById('modalStatusBadge');
+  var modalDesc = document.getElementById('modalDesc');
+  var modalMetrics = document.getElementById('modalMetrics');
+  var modalCloseBtn = document.getElementById('modalCloseBtn');
+
+  var activeCat = 'all';
+  var lastFocusedEl = null;
+
+  function iconDecoSvg(){
+    return '<svg class="icon-deco" viewBox="0 0 48 48" aria-hidden="true">' +
+      '<circle cx="24" cy="24" r="17" stroke="rgba(255,255,255,.35)" stroke-width="1.4" fill="none"/>' +
+      '<path d="M24 4v40M4 24h40" stroke="rgba(255,255,255,.14)" stroke-width="1"/>' +
+      '</svg>';
+  }
+
+  function createCardEl(item){
+    var el = document.createElement('article');
+    el.className = 'card';
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-haspopup', 'dialog');
+    el.setAttribute('aria-label', item.name + ' 자세히 보기');
+    el.innerHTML =
+      '<div class="card-icon grad-' + item.cat + '">' +
+        iconDecoSvg() +
+        '<span class="icon-initials">' + item.initials + '</span>' +
+      '</div>' +
+      '<div class="card-top">' +
+        '<h3 class="card-name">' + item.name + '</h3>' +
+        '<span class="status-badge ' + STATUS_CLASS[item.status] + '"><span class="dot"></span>' + item.status + '</span>' +
+      '</div>' +
+      '<span class="cat-pill"><span class="cat-dot dot-' + item.cat + '"></span>' + CAT_LABELS[item.cat] + '</span>' +
+      '<p class="card-desc">' + item.short + '</p>' +
+      '<div class="card-footer">' +
+        '<span class="metric">' + item.metrics[0] + '</span>' +
+        '<span class="more">자세히 →</span>' +
+      '</div>';
+
+    el.addEventListener('click', function(){ openModal(item, el); });
+    el.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        openModal(item, el);
+      }
+    });
+    return el;
+  }
+
+  function render(list){
+    grid.innerHTML = '';
+    if (list.length === 0){
+      emptyState.hidden = false;
+    } else {
+      emptyState.hidden = true;
+      list.forEach(function(item){ grid.appendChild(createCardEl(item)); });
+    }
+    resultCount.textContent = '총 ' + list.length + '개 서비스';
+  }
+
+  function applyFilter(){
+    var term = searchInput.value.trim().toLowerCase();
+    var filtered = SERVICES.filter(function(s){
+      var matchesCat = activeCat === 'all' || s.cat === activeCat;
+      var matchesSearch = !term ||
+        s.name.toLowerCase().indexOf(term) !== -1 ||
+        s.short.toLowerCase().indexOf(term) !== -1 ||
+        s.long.toLowerCase().indexOf(term) !== -1;
+      return matchesCat && matchesSearch;
+    });
+    render(filtered);
+  }
+
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      activeCat = tab.getAttribute('data-cat');
+      applyFilter();
+    });
+  });
+
+  searchInput.addEventListener('input', applyFilter);
+
+  function openModal(item, triggerEl){
+    lastFocusedEl = triggerEl || document.activeElement;
+
+    modalIcon.className = 'modal-icon grad-' + item.cat;
+    modalIcon.textContent = item.initials;
+    modalTitle.textContent = item.name;
+    modalCatPill.innerHTML = '<span class="cat-dot dot-' + item.cat + '"></span>' + CAT_LABELS[item.cat];
+    modalStatusBadge.className = 'status-badge ' + STATUS_CLASS[item.status];
+    modalStatusBadge.innerHTML = '<span class="dot"></span>' + item.status;
+    modalDesc.textContent = item.long;
+    modalMetrics.innerHTML = item.metrics.map(function(m){
+      return '<span class="metric-chip">' + m + '</span>';
+    }).join('');
+
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('no-scroll');
+    modalCloseBtn.focus();
+  }
+
+  function closeModal(){
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('no-scroll');
+    if (lastFocusedEl && typeof lastFocusedEl.focus === 'function'){
+      lastFocusedEl.focus();
+    }
+  }
+
+  modalCloseBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e){
+    if (e.target === overlay) closeModal();
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+  });
+
+  render(SERVICES);
+})();
+</script>
+
+</body>
+</html>
