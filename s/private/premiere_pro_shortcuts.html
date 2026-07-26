@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>프리미어 프로 단축키 정리 · 초보자 가이드</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #FDC800;
+      --color-secondary: #432DD7;
+      --color-surface: #FBFBF9;
+      --color-text: #1C293C;
+      --color-success: #16A34A;
+      --color-warning: #D97706;
+      --color-danger: #DC2626;
+      --color-border: #1C293C;
+      --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --shadow-brutal: 4px 4px 0px var(--color-border);
+      --shadow-brutal-lg: 6px 6px 0px var(--color-border);
+      --border-brutal: 2px solid var(--color-border);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-surface);
+      color: var(--color-text);
+      font-size: 16px;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .page-wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+    .section-pad { padding: 56px 0; }
+
+    /* ── Masthead (sticky under page-header.js 48px nav) ── */
+    .masthead {
+      position: sticky;
+      top: 48px;
+      z-index: 50;
+      background: var(--color-surface);
+      border-bottom: 3px solid var(--color-border);
+    }
+    .masthead-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap; padding: 12px 24px; max-width: 1120px; margin: 0 auto;
+    }
+    .masthead h1 { font-size: 18px; font-weight: 900; margin: 0; letter-spacing: -0.02em; }
+    .toc-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .toc-chips a {
+      font-size: 12px; font-weight: 700; text-decoration: none; color: var(--color-text);
+      padding: 3px 10px; border: 1.5px solid var(--color-border); background: #fff;
+      transition: all .12s;
+    }
+    .toc-chips a:hover { background: var(--color-primary); transform: translate(-1px,-1px); box-shadow: 2px 2px 0 var(--color-border); }
+
+    /* ── Neobrutalism core ── */
+    .brutal-card {
+      border: var(--border-brutal); box-shadow: var(--shadow-brutal);
+      background: #fff; transition: transform .1s, box-shadow .1s;
+    }
+    .brutal-card:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-brutal-lg); }
+    .brutal-badge {
+      border: 2px solid var(--color-border); font-size: 13px; font-weight: 700;
+      padding: 4px 12px; display: inline-block; box-shadow: 2px 2px 0 var(--color-border);
+    }
+    .brutal-badge-secondary { background: var(--color-secondary); color: #fff; }
+    .section-label {
+      font-size: 13px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--color-secondary);
+    }
+
+    /* ── Keyboard key cap ── */
+    .kbd {
+      font-family: var(--font-mono); font-size: 12.5px; font-weight: 700;
+      padding: 3px 9px; border: 2px solid var(--color-border);
+      box-shadow: 2px 2px 0 var(--color-border); background: #fff;
+      display: inline-block; white-space: nowrap; line-height: 1.4;
+    }
+    .kbd + .kbd { margin-left: 4px; }
+    .plus { font-weight: 900; margin: 0 2px; font-size: 12px; }
+
+    /* ── Table ── */
+    .brutal-table { width: 100%; border-collapse: collapse; }
+    .brutal-table th {
+      background: var(--color-text); color: #fff; padding: 11px 16px; text-align: left;
+      font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+      border: 2px solid var(--color-border);
+    }
+    .brutal-table td { padding: 10px 16px; font-size: 15px; border: 2px solid var(--color-border); background: #fff; vertical-align: middle; }
+    .brutal-table tr:nth-child(even) td { background: #f5f5f3; }
+    .brutal-table td.fn { font-weight: 600; }
+    .brutal-table td.na { color: var(--color-danger); font-family: var(--font-mono); font-size: 12px; font-weight: 700; }
+
+    /* ── TOP 10 rank card ── */
+    .rank-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+    .rank-card { border: var(--border-brutal); box-shadow: var(--shadow-brutal); background: #fff; padding: 18px 20px; transition: transform .1s, box-shadow .1s; }
+    .rank-card:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-brutal-lg); }
+    .rank-num {
+      width: 34px; height: 34px; background: var(--color-primary); border: 2px solid var(--color-border);
+      box-shadow: 2px 2px 0 var(--color-border); display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 16px; margin-bottom: 12px;
+    }
+    .rank-card h3 { font-size: 16px; font-weight: 800; margin: 0 0 10px; }
+
+    /* ── Workflow flow ── */
+    .flow { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; }
+    .flow-box {
+      flex: 1 1 150px; min-width: 140px; border: var(--border-brutal); box-shadow: var(--shadow-brutal);
+      padding: 16px 14px; text-align: center; background: #fff;
+    }
+    .flow-box.hl { background: var(--color-primary); }
+    .flow-box.hl2 { background: var(--color-secondary); color: #fff; }
+    .flow-box .fstep { font-family: var(--font-mono); font-size: 12px; font-weight: 700; opacity: .7; }
+    .flow-box .ftitle { font-size: 16px; font-weight: 900; margin: 4px 0 2px; }
+    .flow-box .fdesc { font-size: 12.5px; line-height: 1.5; }
+    .flow-arrow { display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; padding: 0 6px; color: var(--color-secondary); }
+
+    /* ── Tip cards ── */
+    .tip-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+    .tip-card { border: var(--border-brutal); box-shadow: var(--shadow-brutal); background: #fff; padding: 24px; transition: transform .1s, box-shadow .1s; }
+    .tip-card:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-brutal-lg); }
+    .tip-icon {
+      width: 44px; height: 44px; background: var(--color-primary); border: 2px solid var(--color-border);
+      box-shadow: 2px 2px 0 var(--color-border); display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 16px;
+    }
+    .tip-card h3 { font-size: 17px; font-weight: 800; margin: 0 0 10px; }
+    .tip-card p { font-size: 14.5px; line-height: 1.65; color: #3a4658; margin: 0 0 10px; }
+    .tip-card .path {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 700; background: var(--color-text);
+      color: var(--color-primary); padding: 8px 12px; display: block; border: 2px solid var(--color-border); margin-top: 8px;
+      white-space: pre-wrap; word-break: keep-all; line-height: 1.6;
+    }
+
+    /* ── Steps ── */
+    .step-num {
+      width: 40px; height: 40px; border: 2px solid var(--color-border); box-shadow: 2px 2px 0 var(--color-border);
+      background: var(--color-primary); display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 17px; flex-shrink: 0;
+    }
+
+    /* ── Callout ── */
+    .callout {
+      border: var(--border-brutal); box-shadow: var(--shadow-brutal); padding: 20px 24px; background: #fff;
+      border-left: 8px solid var(--color-warning);
+    }
+    .callout.info { border-left-color: var(--color-secondary); }
+    .callout h4 { margin: 0 0 8px; font-size: 15px; font-weight: 800; }
+    .callout p { margin: 0; font-size: 14px; line-height: 1.65; color: #3a4658; }
+
+    /* ── Folder tree ── */
+    .folder-vis {
+      font-family: var(--font-mono); font-size: 13px; line-height: 1.8; background: var(--color-text);
+      color: var(--color-primary); padding: 20px 22px; border: var(--border-brutal); box-shadow: var(--shadow-brutal);
+      overflow-x: auto; white-space: pre;
+    }
+    .folder-vis .cm { color: #93a4bd; }
+
+    .brutal-divider { border: none; border-top: 2px solid var(--color-border); margin: 0; }
+
+    h2.sec-title { font-size: 27px; font-weight: 900; margin: 8px 0 0; letter-spacing: -0.02em; }
+
+    @media (max-width: 640px) {
+      .flow-arrow { transform: rotate(90deg); padding: 6px 0; }
+      .flow { flex-direction: column; }
+      .flow-box { flex: 1 1 auto; }
+      .brutal-table { font-size: 13px; }
+      .brutal-table td, .brutal-table th { padding: 8px 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── MASTHEAD ── -->
+  <div class="masthead">
+    <div class="masthead-inner">
+      <h1>🎬 프리미어 프로 단축키 정리</h1>
+      <nav class="toc-chips">
+        <a href="#top10">TOP 10</a>
+        <a href="#playback">재생</a>
+        <a href="#editing">편집</a>
+        <a href="#tools">도구</a>
+        <a href="#file">파일</a>
+        <a href="#workflow">워크플로우</a>
+        <a href="#tips">편집 팁</a>
+        <a href="#custom">커스터마이징</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ── HERO ── -->
+  <section style="background: var(--color-primary); border-bottom: 2px solid var(--color-border);">
+    <div class="page-wrap" style="padding-top:64px; padding-bottom:64px;">
+      <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:48px; align-items:center;">
+        <div>
+          <span class="brutal-badge brutal-badge-secondary" style="margin-bottom:20px;">BEGINNER GUIDE · 초보자용</span>
+          <h1 style="font-size:clamp(34px,5vw,60px); font-weight:900; line-height:1.05; letter-spacing:-0.03em; margin:0 0 8px;">
+            프리미어 프로<br>단축키 정리
+          </h1>
+          <h2 style="font-size:clamp(22px,3.5vw,38px); font-weight:900; line-height:1.1; letter-spacing:-0.02em; margin:0 0 22px; color:var(--color-secondary);">
+            + 인트로·자막 편집 팁
+          </h2>
+          <p style="font-size:17px; line-height:1.7; max-width:520px; margin:0 0 28px;">
+            Adobe 공식 <strong>기본 프리셋(Default)</strong> 기준으로 자주 쓰는 단축키를 카테고리별로 정리했습니다.
+            Windows / macOS를 함께 표기했고, 인트로·자막·해상도 세팅 같은 초보자 필수 편집 팁도 담았습니다.
+          </p>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+            <a href="#top10" style="border:2px solid var(--color-border); box-shadow:3px 3px 0 var(--color-border); background:var(--color-secondary); color:#fff; font-weight:700; padding:10px 20px; text-decoration:none;">TOP 10부터 보기 →</a>
+            <a href="#tips" style="border:2px solid var(--color-border); box-shadow:3px 3px 0 var(--color-border); background:#fff; color:var(--color-text); font-weight:700; padding:10px 20px; text-decoration:none;">편집 팁 보기</a>
+            <span style="font-size:13px; font-family:var(--font-mono); opacity:.7;">2026-07-26</span>
+          </div>
+        </div>
+        <!-- Key showcase -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="brutal-card" style="padding:18px; text-align:center;">
+            <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--color-secondary); margin-bottom:8px;">자르기</div>
+            <div><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">K</span></div>
+          </div>
+          <div class="brutal-card" style="padding:18px; text-align:center;">
+            <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--color-secondary); margin-bottom:8px;">리플 삭제</div>
+            <div><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">Del</span></div>
+          </div>
+          <div class="brutal-card" style="padding:18px; text-align:center;">
+            <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--color-secondary); margin-bottom:8px;">전체 보기</div>
+            <div><span class="kbd">\</span></div>
+          </div>
+          <div class="brutal-card" style="padding:18px; text-align:center;">
+            <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--color-secondary); margin-bottom:8px;">내보내기</div>
+            <div><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">M</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── STATS ── -->
+  <section style="border-bottom:2px solid var(--color-border); background:#fff;">
+    <div class="page-wrap" style="padding:0;">
+      <div style="display:grid; grid-template-columns:repeat(4,1fr);">
+        <div style="padding:24px 28px; border-right:2px solid var(--color-border);">
+          <div style="font-size:clamp(1.8rem,4vw,2.3rem); font-weight:900; line-height:1; color:var(--color-secondary);">9</div>
+          <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-top:6px;">카테고리</div>
+        </div>
+        <div style="padding:24px 28px; border-right:2px solid var(--color-border);">
+          <div style="font-size:clamp(1.8rem,4vw,2.3rem); font-weight:900; line-height:1; color:var(--color-secondary);">50+</div>
+          <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-top:6px;">단축키</div>
+        </div>
+        <div style="padding:24px 28px; border-right:2px solid var(--color-border);">
+          <div style="font-size:clamp(1.8rem,4vw,2.3rem); font-weight:900; line-height:1; color:var(--color-secondary);">Win/Mac</div>
+          <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-top:6px;">동시 표기</div>
+        </div>
+        <div style="padding:24px 28px;">
+          <div style="font-size:clamp(1.8rem,4vw,2.3rem); font-weight:900; line-height:1; color:var(--color-secondary);">4</div>
+          <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-top:6px;">편집 팁</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TOP 10 ── -->
+  <section id="top10" class="section-pad">
+    <div class="page-wrap">
+      <div style="margin-bottom:28px;">
+        <span class="section-label">Must Know</span>
+        <h2 class="sec-title">초보자가 꼭 외울 TOP 10</h2>
+        <p style="font-size:15px; color:#3a4658; margin:10px 0 0; max-width:640px;">딱 이 10개만 손에 익혀도 편집 속도가 확 빨라집니다. 나머지는 필요할 때 아래 표에서 찾아 쓰세요.</p>
+      </div>
+      <div class="rank-grid">
+        <div class="rank-card"><div class="rank-num">1</div><h3>재생 / 정지</h3><div><span class="kbd">Space</span></div></div>
+        <div class="rank-card"><div class="rank-num">2</div><h3>셔틀 재생</h3><div><span class="kbd">J</span><span class="kbd">K</span><span class="kbd">L</span></div><p style="font-size:12.5px; color:#3a4658; margin:8px 0 0;">역방향 / 정지 / 정방향 (반복 시 가속)</p></div>
+        <div class="rank-card"><div class="rank-num">3</div><h3>In / Out 표시</h3><div><span class="kbd">I</span><span class="kbd">O</span></div></div>
+        <div class="rank-card"><div class="rank-num">4</div><h3>재생헤드에서 자르기</h3><div><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">K</span></div><p style="font-size:12.5px; color:#3a4658; margin:8px 0 0;">Mac: <span class="kbd" style="font-size:11px;">Cmd+K</span></p></div>
+        <div class="rank-card"><div class="rank-num">5</div><h3>리플 삭제</h3><div><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">Del</span></div><p style="font-size:12.5px; color:#3a4658; margin:8px 0 0;">빈 공간 자동으로 당겨짐</p></div>
+        <div class="rank-card"><div class="rank-num">6</div><h3>삽입 / 덮어쓰기</h3><div><span class="kbd">,</span><span class="kbd">.</span></div></div>
+        <div class="rank-card"><div class="rank-num">7</div><h3>저장</h3><div><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">S</span></div></div>
+        <div class="rank-card"><div class="rank-num">8</div><h3>실행취소</h3><div><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">Z</span></div></div>
+        <div class="rank-card"><div class="rank-num">9</div><h3>선택 / 면도날</h3><div><span class="kbd">V</span><span class="kbd">C</span></div></div>
+        <div class="rank-card"><div class="rank-num">10</div><h3>내보내기</h3><div><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">M</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="brutal-divider" />
+
+  <!-- ── PLAYBACK ── -->
+  <section id="playback" class="section-pad">
+    <div class="page-wrap">
+      <div style="margin-bottom:24px;"><span class="section-label">01 · Playback</span><h2 class="sec-title">재생 · 탐색</h2></div>
+      <div class="brutal-card" style="padding:0; overflow-x:auto;">
+        <table class="brutal-table">
+          <thead><tr><th style="width:46%;">기능</th><th>Windows</th><th>macOS</th></tr></thead>
+          <tbody>
+            <tr><td class="fn">재생 / 정지</td><td><span class="kbd">Space</span></td><td><span class="kbd">Space</span></td></tr>
+            <tr><td class="fn">역방향 셔틀 (반복 시 가속)</td><td><span class="kbd">J</span></td><td><span class="kbd">J</span></td></tr>
+            <tr><td class="fn">셔틀 정지</td><td><span class="kbd">K</span></td><td><span class="kbd">K</span></td></tr>
+            <tr><td class="fn">정방향 셔틀 (반복 시 가속)</td><td><span class="kbd">L</span></td><td><span class="kbd">L</span></td></tr>
+            <tr><td class="fn">1프레임 뒤 / 앞</td><td><span class="kbd">←</span> <span class="kbd">→</span></td><td><span class="kbd">←</span> <span class="kbd">→</span></td></tr>
+            <tr><td class="fn">5프레임 뒤 / 앞</td><td><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">←</span> / <span class="kbd">→</span></td><td><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">←</span> / <span class="kbd">→</span></td></tr>
+            <tr><td class="fn">이전 / 다음 편집점으로 이동</td><td><span class="kbd">↑</span> <span class="kbd">↓</span></td><td><span class="kbd">↑</span> <span class="kbd">↓</span></td></tr>
+            <tr><td class="fn">시퀀스 처음 / 끝으로</td><td><span class="kbd">Home</span> <span class="kbd">End</span></td><td><span class="kbd">Home</span> <span class="kbd">End</span></td></tr>
+            <tr><td class="fn">매치 프레임 (Match Frame)</td><td><span class="kbd">F</span></td><td><span class="kbd">F</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px; color:#6b7280; margin:12px 0 0;">※ "In/Out 지점으로 이동"은 기본 프리셋에 단축키가 <strong>미할당</strong>입니다. 필요하면 직접 지정하세요.</p>
+    </div>
+  </section>
+
+  <hr class="brutal-divider" />
+
+  <!-- ── EDITING ── -->
+  <section id="editing" class="section-pad">
+    <div class="page-wrap">
+      <div style="margin-bottom:24px;"><span class="section-label">02 · Editing</span><h2 class="sec-title">편집 · 자르기</h2></div>
+      <div class="brutal-card" style="padding:0; overflow-x:auto; margin-bottom:28px;">
+        <table class="brutal-table">
+          <thead><tr><th style="width:46%;">기능</th><th>Windows</th><th>macOS</th></tr></thead>
+          <tbody>
+            <tr><td class="fn">재생헤드에서 자르기 (Add Edit)</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">K</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">K</span></td></tr>
+            <tr><td class="fn">모든 트랙 자르기</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">K</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">K</span></td></tr>
+            <tr><td class="fn">리플 삭제 (갭 닫힘)</td><td><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">Del</span></td><td><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">Del</span></td></tr>
+            <tr><td class="fn">삭제 (Clear · 갭 남김)</td><td><span class="kbd">Del</span></td><td><span class="kbd">Del</span></td></tr>
+            <tr><td class="fn">리프트 (Lift · In~Out, 갭 남김)</td><td><span class="kbd">;</span></td><td><span class="kbd">;</span></td></tr>
+            <tr><td class="fn">추출 (Extract · In~Out, 갭 닫힘)</td><td><span class="kbd">'</span></td><td><span class="kbd">'</span></td></tr>
+            <tr><td class="fn">리플 트림 → 재생헤드 (앞 / 뒤)</td><td><span class="kbd">Q</span> <span class="kbd">W</span></td><td><span class="kbd">Q</span> <span class="kbd">W</span></td></tr>
+            <tr><td class="fn">편집점을 재생헤드까지 확장 (Extend)</td><td><span class="kbd">E</span></td><td><span class="kbd">E</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-bottom:16px;"><span class="section-label">03 · In / Out · 3점 편집</span></div>
+      <div class="brutal-card" style="padding:0; overflow-x:auto;">
+        <table class="brutal-table">
+          <thead><tr><th style="width:46%;">기능</th><th>Windows</th><th>macOS</th></tr></thead>
+          <tbody>
+            <tr><td class="fn">In 표시 (Mark In)</td><td><span class="kbd">I</span></td><td><span class="kbd">I</span></td></tr>
+            <tr><td class="fn">Out 표시 (Mark Out)</td><td><span class="kbd">O</span></td><td><span class="kbd">O</span></td></tr>
+            <tr><td class="fn">클립 표시 (Mark Clip)</td><td><span class="kbd">X</span></td><td><span class="kbd">X</span></td></tr>
+            <tr><td class="fn">In 지우기</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">I</span></td><td><span class="kbd">Opt</span><span class="plus">+</span><span class="kbd">I</span></td></tr>
+            <tr><td class="fn">Out 지우기</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">O</span></td><td><span class="kbd">Opt</span><span class="plus">+</span><span class="kbd">O</span></td></tr>
+            <tr><td class="fn">삽입 (Insert)</td><td><span class="kbd">,</span></td><td><span class="kbd">,</span></td></tr>
+            <tr><td class="fn">덮어쓰기 (Overwrite)</td><td><span class="kbd">.</span></td><td><span class="kbd">.</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout info" style="margin-top:20px;">
+        <h4>💡 초보자가 자주 헷갈리는 부분</h4>
+        <p><strong>삭제/리플 삭제</strong>는 <strong>선택한 클립</strong> 기준, <strong>리프트/추출</strong>은 타임라인의 <strong>In~Out 구간</strong> 기준으로 동작합니다. "갭(빈 공간)을 남기느냐 닫느냐"가 핵심 차이예요 — 갭 없이 깔끔하게 지우려면 <span class="kbd" style="font-size:11px;">Shift+Del</span>(리플 삭제)를 쓰세요.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="brutal-divider" />
+
+  <!-- ── TOOLS ── -->
+  <section id="tools" class="section-pad">
+    <div class="page-wrap">
+      <div style="margin-bottom:24px;"><span class="section-label">04 · Tools</span><h2 class="sec-title">도구 · 타임라인 · 마커</h2></div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px;">
+        <div class="brutal-card" style="padding:0; overflow-x:auto;">
+          <table class="brutal-table">
+            <thead><tr><th>도구</th><th>키</th></tr></thead>
+            <tbody>
+              <tr><td class="fn">선택 (Selection)</td><td><span class="kbd">V</span></td></tr>
+              <tr><td class="fn">트랙 선택 (정방향 / 역방향)</td><td><span class="kbd">A</span> / <span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">A</span></td></tr>
+              <tr><td class="fn">리플 편집 (Ripple)</td><td><span class="kbd">B</span></td></tr>
+              <tr><td class="fn">롤링 편집 (Rolling)</td><td><span class="kbd">N</span></td></tr>
+              <tr><td class="fn">속도 조정 (Rate Stretch)</td><td><span class="kbd">R</span></td></tr>
+              <tr><td class="fn">면도날 (Razor)</td><td><span class="kbd">C</span></td></tr>
+              <tr><td class="fn">밀어넣기 / 미끄러뜨리기</td><td><span class="kbd">Y</span> / <span class="kbd">U</span></td></tr>
+              <tr><td class="fn">펜 / 손 / 확대</td><td><span class="kbd">P</span> <span class="kbd">H</span> <span class="kbd">Z</span></td></tr>
+              <tr><td class="fn">문자 (Type)</td><td><span class="kbd">T</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div class="brutal-card" style="padding:0; overflow-x:auto; margin-bottom:20px;">
+            <table class="brutal-table">
+              <thead><tr><th>타임라인 보기</th><th>키</th></tr></thead>
+              <tbody>
+                <tr><td class="fn">확대 / 축소</td><td><span class="kbd">=</span> / <span class="kbd">-</span></td></tr>
+                <tr><td class="fn">시퀀스 전체 보기</td><td><span class="kbd">\</span></td></tr>
+                <tr><td class="fn">스냅 토글 (Snap)</td><td><span class="kbd">S</span></td></tr>
+                <tr><td class="fn">클립 링크 / 해제</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">L</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="brutal-card" style="padding:0; overflow-x:auto;">
+            <table class="brutal-table">
+              <thead><tr><th>마커 (Markers)</th><th>키</th></tr></thead>
+              <tbody>
+                <tr><td class="fn">마커 추가</td><td><span class="kbd">M</span></td></tr>
+                <tr><td class="fn">다음 마커로 이동</td><td><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">M</span></td></tr>
+                <tr><td class="fn">이전 마커로 이동</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">M</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="brutal-divider" />
+
+  <!-- ── FILE / TRANSITION / AUDIO ── -->
+  <section id="file" class="section-pad">
+    <div class="page-wrap">
+      <div style="margin-bottom:24px;"><span class="section-label">05 · File & Project</span><h2 class="sec-title">파일 · 전환 · 오디오</h2></div>
+      <div class="brutal-card" style="padding:0; overflow-x:auto;">
+        <table class="brutal-table">
+          <thead><tr><th style="width:46%;">기능</th><th>Windows</th><th>macOS</th></tr></thead>
+          <tbody>
+            <tr><td class="fn">새 시퀀스</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">N</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">N</span></td></tr>
+            <tr><td class="fn">새 빈 (Bin)</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">/</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">/</span></td></tr>
+            <tr><td class="fn">저장 / 다른 이름으로 저장</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">S</span> / <span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">S</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">S</span> / <span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">S</span></td></tr>
+            <tr><td class="fn">가져오기 (Import)</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">I</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">I</span></td></tr>
+            <tr><td class="fn">내보내기 (Export Media)</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">M</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">M</span></td></tr>
+            <tr><td class="fn">실행취소 / 재실행</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">Z</span> / <span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">Z</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">Z</span> / <span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">Z</span></td></tr>
+            <tr><td class="fn">복사 / 붙여넣기</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">C</span> / <span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">V</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">C</span> / <span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">V</span></td></tr>
+            <tr><td class="fn">특성 붙여넣기 (Paste Attributes)</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">Alt</span><span class="plus">+</span><span class="kbd">V</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">Opt</span><span class="plus">+</span><span class="kbd">V</span></td></tr>
+            <tr><td class="fn">모두 선택 / 선택 해제</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">A</span> / <span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">A</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">A</span> / <span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">A</span></td></tr>
+            <tr><td class="fn">기본 비디오 전환 적용</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">D</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">D</span></td></tr>
+            <tr><td class="fn">기본 오디오 전환 적용</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">D</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">D</span></td></tr>
+            <tr><td class="fn">기본 전환(영상+오디오) 동시 적용</td><td><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">D</span></td><td><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd">D</span></td></tr>
+            <tr><td class="fn">오디오 게인 (Audio Gain)</td><td><span class="kbd">G</span></td><td><span class="kbd">G</span></td></tr>
+            <tr><td class="fn">키보드 단축키 창 열기</td><td><span class="kbd">Ctrl</span><span class="plus">+</span><span class="kbd">Alt</span><span class="plus">+</span><span class="kbd">K</span></td><td><span class="kbd">Cmd</span><span class="plus">+</span><span class="kbd">Opt</span><span class="plus">+</span><span class="kbd">K</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <hr class="brutal-divider" />
+
+  <!-- ── WORKFLOW ── -->
+  <section id="workflow" class="section-pad">
+    <div class="page-wrap">
+      <div style="margin-bottom:28px;"><span class="section-label">Workflow</span><h2 class="sec-title">영상 편집 기본 흐름</h2>
+        <p style="font-size:15px; color:#3a4658; margin:10px 0 0; max-width:640px;">초보자는 이 순서만 지켜도 헤매지 않습니다. 각 단계에서 위 단축키를 활용하세요.</p>
+      </div>
+      <div class="flow">
+        <div class="flow-box hl"><div class="fstep">STEP 1</div><div class="ftitle">임포트</div><div class="fdesc">미디어 브라우저에서<br>영상·음원 가져오기</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box"><div class="fstep">STEP 2</div><div class="ftitle">컷편집</div><div class="fdesc">자르고(Ctrl+K)<br>배치·정리</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box hl2"><div class="fstep">STEP 3</div><div class="ftitle">자막·인트로</div><div class="fdesc">텍스트·MOGRT<br>자동 자막</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box"><div class="fstep">STEP 4</div><div class="ftitle">색보정·오디오</div><div class="fdesc">색감·볼륨<br>마무리</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box hl"><div class="fstep">STEP 5</div><div class="ftitle">내보내기</div><div class="fdesc">Ctrl+M<br>Export Media</div></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="brutal-divider" />
+
+  <!-- ── TIPS ── -->
+  <section id="tips" class="section-pad">
+    <div class="page-wrap">
+      <div style="margin-bottom:28px;"><span class="section-label">Editing Tips</span><h2 class="sec-title">초보자 필수 편집 팁</h2>
+        <p style="font-size:15px; color:#3a4658; margin:10px 0 0; max-width:640px;">인트로·자막·해상도·폴더 관리 — 단축키 다음으로 꼭 알아야 할 4가지입니다.</p>
+      </div>
+      <div class="tip-grid">
+
+        <div class="tip-card">
+          <div class="tip-icon">💬</div>
+          <h3>① 자막 — 자동 자막이 정답</h3>
+          <p>말한 내용을 자동으로 받아써 자막으로 만들어줍니다. 한국어 지원. 유튜브 편집이면 자막 작업의 90%가 여기서 끝납니다.</p>
+          <span class="path">창 &gt; 텍스트 &gt; 캡션
+→ 전사 시작(Transcribe)
+→ 캡션 만들기 → 스타일 적용</span>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-icon">✨</div>
+          <h3>② 인트로 · 로어써드</h3>
+          <p><strong>기본 그래픽 패널</strong>에 타이틀·하단 이름표 템플릿이 내장돼 있어 드래그만 하면 됩니다. 더 예쁜 건 <strong>.mogrt</strong> 템플릿(Mixkit 무료 등)을 받아 [+]로 등록해 재사용하세요.</p>
+          <span class="path">창 &gt; 기본 그래픽
+→ 찾아보기 탭에서 드래그
+→ [+]로 .mogrt 등록</span>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-icon">🖥️</div>
+          <h3>③ 해상도가 안 맞을 때</h3>
+          <p>영상이 잘리거나 검은 여백이 생기면 시퀀스 설정이 원본과 다른 것. 새로 시작이면 <strong>클립을 "새 항목"으로 드래그</strong>하면 자동으로 딱 맞는 시퀀스가 생깁니다.</p>
+          <span class="path">편집 중 수정: 클립 우클릭
+→ "프레임 크기로 설정"
+또는 시퀀스 &gt; 시퀀스 설정</span>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-icon">🎚️</div>
+          <h3>④ 조정 레이어 활용</h3>
+          <p>여러 클립에 같은 색보정·효과를 한 번에 주고 싶을 때. <strong>조정 레이어</strong>를 만들어 클립들 위 트랙에 올리면, 그 아래 모든 클립에 효과가 동시에 적용됩니다.</p>
+          <span class="path">프로젝트 패널 우클릭
+→ 새 항목 &gt; 조정 레이어
+→ 상위 트랙에 얹기</span>
+        </div>
+
+      </div>
+
+      <!-- 폴더 구조 -->
+      <div style="margin-top:36px;">
+        <h3 style="font-size:19px; font-weight:900; margin:0 0 8px;">📁 프로젝트 폴더는 이렇게 잡으세요</h3>
+        <p style="font-size:14.5px; color:#3a4658; margin:0 0 16px; max-width:680px;">영상·음원을 프로젝트 폴더 안에 넣어두면 다른 PC로 옮기거나 백업할 때 파일이 끊기지(오프라인 미디어) 않습니다.</p>
+        <div class="folder-vis">📁 내프로젝트_2026/
+├── 📁 01_footage      <span class="cm"># 촬영 영상 원본</span>
+├── 📁 02_audio        <span class="cm"># BGM · 효과음</span>
+├── 📁 03_images       <span class="cm"># 썸네일 · 로고 · png</span>
+├── 📁 04_project      <span class="cm"># 여기에 .prproj 저장</span>
+├── 📁 05_export       <span class="cm"># 완성본 내보내기</span>
+└── 📁 06_cache        <span class="cm"># 프리미어 캐시(스크래치)</span></div>
+        <p style="font-size:13px; color:#6b7280; margin:12px 0 0;">캐시 위치는 <strong>파일 &gt; 프로젝트 설정 &gt; 스크래치 디스크</strong>에서 <span class="kbd" style="font-size:11px;">06_cache</span>로 지정하면 C드라이브 용량을 아낄 수 있습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="brutal-divider" />
+
+  <!-- ── CUSTOMIZE ── -->
+  <section id="custom" class="section-pad">
+    <div class="page-wrap">
+      <div style="margin-bottom:28px;"><span class="section-label">Customize</span><h2 class="sec-title">단축키 내 손에 맞게 바꾸기</h2></div>
+      <div style="display:flex; flex-direction:column; gap:18px; max-width:820px;">
+        <div style="display:flex; gap:18px; align-items:flex-start;">
+          <div class="step-num">1</div>
+          <div class="brutal-card" style="flex:1; padding:20px 24px;">
+            <h3 style="font-size:16px; font-weight:800; margin:0 0 6px;">단축키 창 열기</h3>
+            <p style="font-size:14.5px; color:#3a4658; margin:0;">Windows: <strong>편집 &gt; 키보드 단축키</strong> (<span class="kbd" style="font-size:11px;">Ctrl+Alt+K</span>) · macOS: <strong>Premiere Pro &gt; 키보드 단축키</strong> (<span class="kbd" style="font-size:11px;">Cmd+Opt+K</span>)</p>
+          </div>
+        </div>
+        <div style="display:flex; gap:18px; align-items:flex-start;">
+          <div class="step-num" style="background:var(--color-secondary); color:#fff;">2</div>
+          <div class="brutal-card" style="flex:1; padding:20px 24px;">
+            <h3 style="font-size:16px; font-weight:800; margin:0 0 6px;">프리셋 선택 · 검색</h3>
+            <p style="font-size:14.5px; color:#3a4658; margin:0;">상단 프리셋에서 기본값 또는 Final Cut / Avid 스타일을 고르고, 검색창에 명령 이름을 입력해 원하는 기능을 찾습니다.</p>
+          </div>
+        </div>
+        <div style="display:flex; gap:18px; align-items:flex-start;">
+          <div class="step-num">3</div>
+          <div class="brutal-card" style="flex:1; padding:20px 24px;">
+            <h3 style="font-size:16px; font-weight:800; margin:0 0 6px;">키 지정 · 충돌 확인</h3>
+            <p style="font-size:14.5px; color:#3a4658; margin:0;">명령 옆 필드를 클릭하고 원하는 키를 실제로 누르면 지정됩니다. 이미 쓰는 키면 충돌 경고가 뜨니 그대로 덮어쓰거나 취소하세요.</p>
+          </div>
+        </div>
+        <div style="display:flex; gap:18px; align-items:flex-start;">
+          <div class="step-num" style="background:var(--color-secondary); color:#fff;">4</div>
+          <div class="brutal-card" style="flex:1; padding:20px 24px;">
+            <h3 style="font-size:16px; font-weight:800; margin:0 0 6px;">키보드 색상 의미</h3>
+            <p style="font-size:14.5px; color:#3a4658; margin:0;"><strong style="color:var(--color-secondary);">보라색</strong> = 앱 전역 단축키, <strong style="color:var(--color-success);">초록색</strong> = 특정 패널 전용, 보라+초록 = 두 성격이 겹치는 키. 내 세트는 프리셋으로 저장해 다른 PC로 옮길 수 있습니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:28px;">
+        <h4>⚠️ 정확도 · 버전 주의</h4>
+        <p>이 문서는 <strong>"Adobe Premiere Pro Default" 기본 프리셋</strong> 기준입니다. 버전 · OS · 키보드 언어에 따라 일부 키가 다를 수 있어요. 캡션 전용 단축키, 워크스페이스 전환, 마커 지우기(Mac) 등 일부는 공식 기본값으로 100% 확정하기 어려우니, 가장 확실한 방법은 <strong>앱 내 "키보드 단축키" 창의 검색 기능</strong>으로 현재 버전 기본값을 직접 확인하는 것입니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer style="background:var(--color-text); color:#fff; border-top:2px solid var(--color-border);">
+    <div class="page-wrap" style="padding-top:36px; padding-bottom:36px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          <div style="width:24px; height:24px; background:var(--color-primary); border:2px solid rgba(255,255,255,.3);"></div>
+          <span style="font-weight:900; font-size:15px;">프리미어 프로 단축키 정리</span>
+        </div>
+        <p style="font-size:13px; color:rgba(255,255,255,.5); margin:0;">Adobe Premiere Pro Default 프리셋 기준 · 초보자 가이드</p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <span class="brutal-badge" style="background:var(--color-primary); color:var(--color-text); border-color:rgba(255,255,255,.3); box-shadow:2px 2px 0 rgba(255,255,255,.2);">Windows</span>
+        <span class="brutal-badge" style="background:transparent; color:#fff; border-color:rgba(255,255,255,.3); box-shadow:2px 2px 0 rgba(255,255,255,.2);">macOS</span>
+        <span class="brutal-badge" style="background:var(--color-secondary); color:#fff; border-color:rgba(255,255,255,.3); box-shadow:2px 2px 0 rgba(255,255,255,.2);">2026-07-26</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="DJ7CPH4" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
