@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏝️ 국내여행</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #93C5FD 0%, #3B82F6 100%);
+            min-height: 100vh;
+            color: #1E3A8A;
+            transition: background 0.5s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #DBEAFE;
+            margin-top: 10px;
+        }
+
+        .search-box {
+            margin-bottom: 30px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 25px;
+            font-size: 1rem;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid white;
+            color: white;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .file-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .file-card:hover {
+            transform: scale(1.03);
+        }
+
+        .file-icon {
+            font-size: 2.5rem;
+            color: #3B82F6;
+            margin-bottom: 20px;
+        }
+
+        .file-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1E3A8A;
+            margin-bottom: 10px;
+        }
+
+        .file-meta {
+            font-size: 0.8rem;
+            color: #64748B;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .content-view {
+            animation: fadeIn 0.5s ease;
+            background: white;
+            min-height: 100vh;
+        }
+
+        iframe {
+            width: 100%;
+            border: none;
+            height: 100vh;
+            display: block;
+        }
+
+
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .new-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.62rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            animation: pulseBadge 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .cat-badge {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 8px;
+            letter-spacing: 0.03em;
+            background: rgba(99,102,241,0.12);
+            color: #818cf8;
+            border: 1px solid rgba(99,102,241,0.25);
+        }
+        @keyframes pulseBadge {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.75; transform: scale(0.95); }
+        }
+    </style>
+  <script src="/assets/js/page-header.js"></script>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+
+<body>
+    <div id="fileListView" class="container">
+        <div class="header">
+            <h1>🏝️ 국내여행</h1>
+            <p>Mastering Machine Learning & Neural Networks</p>
+        </div>
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search study notes...">
+        </div>
+        <div id="filesContainer" class="file-grid"></div>
+    </div>
+
+    <div id="fileContentView" class="content-view" style="display:none;">
+        <iframe id="contentFrame" style="width:100%;height:100vh;border:none;display:block;"></iframe>
+    </div>
+
+            <script>
+        const SECRET_LIST_HASH = 'a-ai-study-lock-99';
+        const CATEGORY_HASH = 'AQ4LZU9';
+        let filesData = []; // [{hash, filename, displayName}]
+
+        async function init() {
+            try {
+                const resp = await fetch(`/site.json?v=${Date.now()}`);
+                const site = await resp.json();
+                filesData = Object.entries(site.files || {})
+                    .filter(([, f]) => f.categoryHash === CATEGORY_HASH && f.visible !== false)
+                    .sort((a, b) => (a[1].order || 999) - (b[1].order || 999))
+                    .map(([hash, f]) => ({ hash, filename: f.filename, displayName: f.displayName, createdAt: f.createdAt, memo: f.memo }));
+                renderGrid(); toggleView('list');
+            } catch (e) { showStealth404(); }
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('filesContainer');
+            container.innerHTML = filesData.map(file => `
+                <div class="file-card" onclick="location.href='./${file.filename}'" style="position:relative">
+                    ${(file.createdAt && (Date.now()-new Date(file.createdAt))<604800000)?'<span class="new-badge">NEW</span>':''}
+                    <div class="file-icon"><i class="fas fa-leaf"></i></div>
+                    <div class="file-name">${file.displayName}</div>
+                    ${file.memo ? '<span class="cat-badge">' + file.memo + '</span>' : ''}
+                </div>`).join('');
+        }
+
+        function checkHash() {
+            const hash = decodeURIComponent(window.location.hash.substring(1));
+            if (!hash) return showStealth404();
+            if (hash === SECRET_LIST_HASH) toggleView('list');
+            else {
+                const file = filesData.find(f => f.hash === hash);
+                if (file) { toggleView('content'); loadContent(file); } else showStealth404();
+            }
+        }
+
+        function toggleView(view) {
+            document.getElementById('fileListView').style.display = view === 'list' ? 'block' : 'none';
+            document.getElementById('fileContentView').style.display = view === 'content' ? 'block' : 'none';
+        }
+
+        function loadContent(file) {
+            const iframe = document.getElementById('contentFrame');
+            iframe.src = `./${file.filename}?v=${Date.now()}`;
+        }
+
+        function showStealth404() { document.body.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100vh; color:#94a3b8; background:#f8fafc;"><h1>404 Not Found</h1></div>`; }
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+    <!-- Version: 2026-03-18 flat architecture v4.0 -->
+</body>
+
+</html>
