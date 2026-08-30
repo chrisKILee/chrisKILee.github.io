@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>하네스 · 루프 · 그래프 엔지니어링 — AI 에이전트 설계의 세 층위</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f6f2; --panel:#ffffff; --sidebar:#eceae2;
+    --ink:#1a1a1a; --ink-2:#4a4740; --ink-3:#7a756c;
+    --accent:#d97757; --accent-soft:#f3e2da; --accent-deep:#a84f32;
+    --border:#d9d5cc; --border-2:#e8e5dd;
+    --ok:#2f7d5d; --warn:#a8781f; --bad:#a8443a;
+    --code-bg:#211f1c;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; padding-top:48px; background:var(--paper); color:var(--ink);
+    font-family:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    font-size:16px; line-height:1.7; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
+
+  /* ── masthead ─────────────────────────────── */
+  .masthead{
+    position:sticky; top:48px; z-index:50; background:var(--paper);
+    border-bottom:1px solid var(--border); padding:26px 0 0;
+  }
+  .masthead .wrap{padding-bottom:0;}
+  .eyebrow{
+    font-size:13px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent-deep); font-weight:700; margin:0 0 8px;
+  }
+  h1.title{
+    font-family:'Fraunces',Georgia,serif; font-weight:700;
+    font-size:clamp(1.7rem,3.6vw,2.6rem); line-height:1.18; margin:0 0 10px;
+    letter-spacing:-.015em;
+  }
+  .subtitle{color:var(--ink-3); font-size:15px; margin:0 0 18px; max-width:62ch;}
+  .meta-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}
+  .pill{
+    font-size:12px; padding:4px 11px; border-radius:999px;
+    background:var(--sidebar); color:var(--ink-2); border:1px solid var(--border);
+  }
+  .pill.hot{background:var(--accent-soft);color:var(--accent-deep);border-color:#e6c8ba;font-weight:600;}
+
+  /* ── tabs ─────────────────────────────────── */
+  .tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    appearance:none;border:0;background:none;cursor:pointer;white-space:nowrap;
+    font-family:inherit;font-size:15px;font-weight:600;color:var(--ink-3);
+    padding:12px 16px;border-bottom:3px solid transparent;transition:color .2s ease-out;
+  }
+  .tab:hover{color:var(--ink);}
+  .tab[aria-selected="true"]{color:var(--accent-deep);border-bottom-color:var(--accent);}
+  .tab .num{font-family:'Fraunces',serif;font-size:12px;opacity:.6;margin-right:6px;}
+
+  /* ── panels ───────────────────────────────── */
+  .panel{display:none;padding:56px 0 96px;}
+  .panel.active{display:block;animation:fade .35s cubic-bezier(.16,1,.3,1);}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.panel.active{animation:none}}
+
+  section{margin:0 0 56px;}
+  h2{
+    font-family:'Fraunces',Georgia,serif;font-weight:600;
+    font-size:clamp(1.35rem,2.4vw,1.75rem);line-height:1.3;margin:0 0 6px;letter-spacing:-.01em;
+  }
+  h2 .h2num{color:var(--accent);font-size:.8em;margin-right:10px;}
+  h3{font-size:17px;font-weight:700;margin:32px 0 10px;}
+  h4{font-size:15px;font-weight:700;margin:22px 0 8px;color:var(--ink-2);}
+  .lede{color:var(--ink-3);font-size:15px;margin:0 0 24px;max-width:72ch;}
+  p{margin:0 0 14px;}
+  ul,ol{margin:0 0 16px;padding-left:22px;}
+  li{margin:0 0 7px;}
+  a{color:var(--accent-deep);text-underline-offset:3px;}
+  strong{font-weight:700;}
+  code{
+    font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;
+    font-size:.88em;background:var(--sidebar);padding:2px 6px;border-radius:4px;color:var(--accent-deep);
+  }
+
+  /* ── quote / callout ──────────────────────── */
+  blockquote.src{
+    margin:0 0 18px;padding:18px 22px;background:var(--panel);
+    border:1px solid var(--border-2);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;
+  }
+  blockquote.src p{margin:0 0 8px;font-size:15px;line-height:1.72;}
+  blockquote.src p:last-child{margin:0;}
+  blockquote.src cite{display:block;font-style:normal;font-size:12.5px;color:var(--ink-3);margin-top:10px;}
+  .callout{
+    padding:18px 22px;border-radius:12px;margin:0 0 20px;border:1px solid;
+    font-size:15px;line-height:1.7;
+  }
+  .callout .ct{font-weight:700;display:block;margin-bottom:6px;font-size:14px;letter-spacing:.02em;}
+  .callout.warn{background:#fdf6e6;border-color:#e8d9b0;color:#5c4715;}
+  .callout.info{background:#eef4f2;border-color:#c8ddd5;color:#1f4a3b;}
+  .callout.bad{background:#fbeeec;border-color:#eccbc5;color:#7d2f26;}
+  .callout p:last-child{margin:0;}
+
+  /* ── tables ───────────────────────────────── */
+  .tw{overflow-x:auto;margin:0 0 22px;border:1px solid var(--border);border-radius:12px;background:var(--panel);}
+  table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:560px;}
+  th,td{padding:12px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--border-2);}
+  th{background:var(--sidebar);font-weight:700;font-size:13.5px;white-space:nowrap;}
+  tr:last-child td{border-bottom:0;}
+  td strong{color:var(--accent-deep);}
+
+  /* ── cards ────────────────────────────────── */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:0 0 24px;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;}
+  .card .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .card h4{margin:0 0 8px;font-size:16px;color:var(--ink);}
+  .card p{font-size:14px;color:var(--ink-2);margin:0;line-height:1.65;}
+  .stat{font-family:'Fraunces',serif;font-size:30px;font-weight:700;color:var(--accent-deep);line-height:1.1;display:block;margin:0 0 4px;}
+
+  /* ── code ─────────────────────────────────── */
+  pre{
+    background:var(--code-bg);color:#e4e0d8;padding:18px 20px;border-radius:12px;
+    overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:13.5px;line-height:1.65;margin:0 0 20px;white-space:pre;border:1px solid #35312c;
+  }
+  pre code{background:none;color:inherit;padding:0;font-size:inherit;}
+  .codelabel{
+    display:inline-block;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--ink-3);font-weight:700;margin:0 0 6px;
+  }
+
+  /* ── figures ──────────────────────────────── */
+  figure{margin:0 0 24px;}
+  figure img{
+    display:block;width:100%;height:auto;border-radius:12px;border:1px solid var(--border);
+    background:var(--panel);cursor:zoom-in;
+  }
+  figcaption{font-size:13px;color:var(--ink-3);margin-top:9px;line-height:1.6;}
+  .figrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:0 0 24px;}
+  .figrow figure{margin:0;}
+  svg.diagram{display:block;width:100%;height:auto;background:var(--panel);
+    border:1px solid var(--border);border-radius:12px;cursor:zoom-in;}
+
+  /* ── source strip ─────────────────────────── */
+  .srclist{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px 22px;}
+  .srclist h4{margin-top:0;}
+  .srclist ul{margin:0;padding-left:20px;}
+  .srclist li{font-size:13.5px;margin-bottom:6px;word-break:break-all;}
+
+  /* ── lightbox ─────────────────────────────── */
+  #lb{
+    position:fixed;inset:0;background:rgba(20,18,16,.92);display:none;
+    align-items:center;justify-content:center;z-index:9999;padding:24px;cursor:zoom-out;
+  }
+  #lb.on{display:flex;}
+  #lb > *{max-width:min(1000px,94vw);max-height:92vh;width:auto;height:auto;border-radius:10px;background:#fff;}
+
+  footer.pagefoot{border-top:1px solid var(--border);padding:28px 0 56px;color:var(--ink-3);font-size:13.5px;}
+
+  @media(max-width:640px){
+    .wrap{padding:0 16px;}
+    .masthead{padding-top:18px;}
+    .tab{font-size:14px;padding:11px 11px;}
+    .panel{padding:40px 0 72px;}
+    section{margin-bottom:44px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">AI Agent Architecture · 2026</p>
+    <h1 class="title">하네스 · 루프 · 그래프 엔지니어링</h1>
+    <p class="subtitle">
+      2026년 상반기에 다섯 달 만에 연달아 등장한 세 용어를, 인스타그램 요약 5건과
+      Anthropic·LangChain·Microsoft·OpenAI 1차 문서로 각각 검증해 정리했습니다.
+    </p>
+    <div class="meta-row">
+      <span class="pill">2026-08-30 작성</span>
+      <span class="pill">1차 출처 직접 확인</span>
+      <span class="pill hot">Graph = 비공식 용어</span>
+      <span class="pill">인스타 소스 5건 · 이미지 28장</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="주제 탭">
+      <button class="tab" role="tab" aria-selected="true"  aria-controls="p1" id="t1"><span class="num">01</span>하네스</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="p2" id="t2"><span class="num">02</span>루프</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="p3" id="t3"><span class="num">03</span>그래프</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="p4" id="t4"><span class="num">04</span>비교 · 종합</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ══════════════════ TAB 1 — 하네스 ══════════════════ -->
+<div class="panel active" id="p1" role="tabpanel" aria-labelledby="t1">
+
+  <section>
+    <h2><span class="h2num">01</span>하네스 엔지니어링 — 모델 밖의 전부</h2>
+    <p class="lede">
+      하네스(harness)는 세 용어 중 <strong>Anthropic 공식 문서에 그 단어 그대로 등장하는</strong> 개념입니다.
+      다만 <code>harness engineering</code>이라는 합성어를 먼저 쓴 곳은 Anthropic이 아니라 OpenAI와 Thoughtworks입니다.
+    </p>
+
+    <blockquote class="src">
+      <p>“The agentic loop is powered by two components: <strong>models</strong> that reason and <strong>tools</strong> that act.
+      Claude Code serves as the <strong>agentic harness</strong> around Claude: it provides the
+      <strong>tools, context management, and execution environment</strong> that turn a language model into a capable coding agent.”</p>
+      <cite>Claude Code 공식 문서 — <a href="https://code.claude.com/docs/en/how-claude-code-works" target="_blank" rel="noopener">How Claude Code works</a></cite>
+    </blockquote>
+
+    <blockquote class="src">
+      <p>“An agent harness is the <strong>software scaffolding around a model: the loop, tools, context management, and guardrails</strong>
+      that turn raw intelligence into a working agent.”</p>
+      <cite>Anthropic 블로그 — Lance Martin, <a href="https://claude.com/blog/harnessing-claudes-intelligence" target="_blank" rel="noopener">Agent Harness Design</a> (2026-04-02)</cite>
+    </blockquote>
+
+    <figure>
+      <img class="lb" src="/assets/social/harness_loop_graph/amy_03.jpg" alt="하네스는 환경을 만듭니다 — 오케스트레이터 에이전트를 둘러싼 9개 구성요소 도식">
+      <figcaption>“하네스는 환경을 만듭니다” — 오케스트레이터 에이전트(계획·위임·검증) 아래 계획·저장소·컨텍스트·서브에이전트·메모리·스킬·샌드박스·승인·도구 9개 요소, 바닥에 LLM. <b>출처: @ai_me____ (에이미), Instagram 2026-08-11</b></figcaption>
+    </figure>
+
+    <div class="callout info">
+      <span class="ct">인스타 요약과 공식 문서가 일치하는 지점</span>
+      위 카드뉴스의 9개 요소는 Anthropic Agent SDK 문서의 Capabilities 표(Built-in tools / Hooks / Subagents / MCP /
+      Permissions / Sessions / Skills·commands·memory / Plugins)와 거의 그대로 대응합니다. 용어만 한글화됐을 뿐 창작된 항목이 아닙니다.
+    </div>
+  </section>
+
+  <section>
+    <h3>Anthropic이 하네스를 정의하는 두 가지 범위</h3>
+    <p>같은 회사 문서 안에서도 하네스의 범위가 <b>넓게</b>도, <b>좁게</b>도 정의됩니다. 인용할 때 어느 쪽인지 밝히는 편이 안전합니다.</p>
+    <div class="grid">
+      <div class="card">
+        <p class="k">넓은 정의</p>
+        <h4>스캐폴딩 전체</h4>
+        <p>루프 + 툴 + 컨텍스트 관리 + 가드레일. Claude Code 문서와 Agent Harness Design 블로그가 이 범위를 씁니다.</p>
+      </div>
+      <div class="card">
+        <p class="k">좁은 정의</p>
+        <h4>루프 + 툴 라우팅</h4>
+        <p>“the loop that calls Claude and routes Claude’s tool calls to the relevant infrastructure”. Managed agents 문서는 Session·Harness·Sandbox 3분할에서 하네스를 이렇게 좁힙니다.</p>
+      </div>
+      <div class="card">
+        <p class="k">외부 프레이밍</p>
+        <h4>Agent = Model + Harness</h4>
+        <p>Thoughtworks Birgitta Böckeler: 하네스 = “everything in an AI agent except the model itself”. Guides(사전 조종) vs Sensors(사후 관찰) 2축, 각각 Computational vs Inferential로 분화.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>구성 요소 — 공식 문서에 실제로 열거된 것</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Capability</th><th>What it does (원문)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Built-in tools</strong></td><td>Read, write, edit files, run commands, and search the web</td></tr>
+          <tr><td><strong>Hooks</strong></td><td>Run custom code at key points in the agent lifecycle</td></tr>
+          <tr><td><strong>Subagents</strong></td><td>Spawn specialized agents for focused subtasks</td></tr>
+          <tr><td><strong>MCP</strong></td><td>Connect external tools and data sources via the Model Context Protocol</td></tr>
+          <tr><td><strong>Permissions</strong></td><td>Control which tools run automatically, which need approval</td></tr>
+          <tr><td><strong>Sessions</strong></td><td>Maintain context across exchanges, resume or fork later</td></tr>
+          <tr><td><strong>Skills, commands, memory</strong></td><td>Load automatically from your project’s <code>.claude/</code> and from <code>~/.claude/</code></td></tr>
+          <tr><td><strong>Plugins</strong></td><td>Package skills, agents, hooks, and MCP servers</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:13px;color:var(--ink-3);margin-top:-10px;">
+      출처: <a href="https://code.claude.com/docs/en/agent-sdk/overview" target="_blank" rel="noopener">Agent SDK overview</a> Capabilities 표 원문.
+    </p>
+
+    <h4>컨텍스트 관리 — 하네스의 핵심 축</h4>
+    <p>
+      Anthropic은 <b>context engineering</b>을 “LLM 추론 중 최적의 토큰 집합을 큐레이팅·유지하는 전략의 총체”로 정의하고,
+      프롬프트 엔지니어링(지시문 작성법)과 명확히 구분합니다. 장기 태스크용으로 문서가 제시하는 기법은 네 가지입니다.
+    </p>
+    <ul>
+      <li><strong>Compaction</strong> — 오래된 메시지를 요약으로 대체</li>
+      <li><strong>Structured note-taking</strong> — 컨텍스트 밖 파일에 진행 상태 기록</li>
+      <li><strong>Sub-agent architectures</strong> — 서브에이전트가 보통 <b>1,000–2,000 토큰</b>의 요약만 반환</li>
+      <li><strong>Just-in-time context retrieval</strong> — 파일 경로·쿼리·링크 같은 가벼운 식별자만 유지하고 필요할 때 로드</li>
+    </ul>
+    <div class="callout warn">
+      <span class="ct">Context rot</span>
+      “As the number of tokens in the context window increases, the model’s ability to accurately recall information
+      from that context <b>decreases</b>.” — 컨텍스트를 많이 넣을수록 좋아지는 게 아니라는 것이 공식 입장입니다.
+      (<a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank" rel="noopener">Effective context engineering</a>)
+    </div>
+
+    <figure>
+      <img class="lb" src="/assets/social/harness_loop_graph/amy_04.jpg" alt="하네스 동작 흐름 — 컨텍스트 주입 → 모델 → 행동 → 관찰·검증 → 저장">
+      <figcaption>하네스 안에서 에이전트가 도는 순환: 컨텍스트 주입(프롬프트·메모리·스킬·대화) → 모델(추론→결정) → 행동(도구·MCP) → 관찰&amp;검증(스크린샷·테스트·로그) → 저장(파일시스템·git·진행 기록). <b>출처: @ai_me____ Instagram 2026-08-11</b></figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h3>가드레일은 프롬프트가 아니라 훅으로</h3>
+    <blockquote class="src">
+      <p>“An instruction like ‘never edit <code>.env</code>’ in CLAUDE.md or a skill is <strong>a request, not a guarantee</strong>.
+      A <code>PreToolUse</code> hook that blocks the edit is <strong>enforcement</strong>.”</p>
+      <cite>Claude Code — <a href="https://code.claude.com/docs/en/features-overview" target="_blank" rel="noopener">Extend Claude Code</a></cite>
+    </blockquote>
+    <p class="codelabel">settings.json — PostToolUse 훅 (공식 문서 예시)</p>
+<pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      { "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "/path/to/lint-check.sh" }] }
+    ]
+  }
+}</code></pre>
+    <p class="codelabel">.claude/agents/*.md — 서브에이전트 정의 (공식 문서 예시)</p>
+<pre><code>---
+name: code-improver
+description: Scans files and suggests improvements for readability, performance, and best practices. Use after writing or modifying code.
+tools: Read, Grep, Glob
+model: sonnet
+---
+
+You are a code improvement specialist. For each issue you find, explain
+the problem, show the current code, and provide an improved version.</code></pre>
+    <p style="font-size:13.5px;color:var(--ink-3);">
+      샌드박스는 프롬프트가 아니라 <b>OS가 경계를 강제</b>합니다 — macOS는 Seatbelt, Linux/WSL2는 별도 패키지.
+      <b>네이티브 Windows는 미지원</b>입니다. (<a href="https://code.claude.com/docs/en/sandboxing" target="_blank" rel="noopener">Sandboxing</a>)
+      훅에서 <b>하드 블록은 <code>exit 2</code>만 신뢰 가능</b>하며, exit 1은 대부분의 이벤트에서 non-blocking error로 처리됩니다.
+    </p>
+  </section>
+
+  <section>
+    <h3>Anthropic이 직접 만든 하네스 사례 2건과 그 비용</h3>
+    <div class="grid">
+      <div class="card">
+        <p class="k">2025-11-26 · Justin Young</p>
+        <h4>Effective harnesses for long-running agents</h4>
+        <p>Initializer 에이전트가 <code>init.sh</code>·<code>claude-progress.txt</code>·200개 이상 항목의 <code>feature_list.json</code>을 만들고, Coding 에이전트가 반복 기동. 문서 결론: <b>“compaction isn’t sufficient”</b> — 요약만으로는 부족해 구조화된 핸드오프 산출물이 필요했다.</p>
+      </div>
+      <div class="card">
+        <p class="k">2026-03-24 · Prithvi Rajasekaran</p>
+        <h4>Harness design for long-running apps</h4>
+        <p>Planner → Generator → Evaluator 3에이전트. 스프린트 시작 전 generator와 evaluator가 <b>“무엇이 done인가”를 협상</b>하는 sprint contract를 맺는다. Evaluator는 Playwright로 실행 중인 앱을 직접 테스트.</p>
+      </div>
+    </div>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>구성</th><th>소요 시간</th><th>비용</th></tr></thead>
+        <tbody>
+          <tr><td>단독 에이전트 (solo)</td><td>20분</td><td><strong>$9</strong></td></tr>
+          <tr><td>풀 하네스 (Opus 4.5)</td><td>6시간</td><td><strong>$200</strong></td></tr>
+          <tr><td>갱신 하네스 (Opus 4.6)</td><td>약 4시간</td><td><strong>$124</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <span class="ct">문서에 명시된 단서</span>
+      evaluator의 효용은 <b>태스크 난이도와 모델 능력의 상대 관계</b>에 달려 있어 <b>항상 비용이 정당화되지는 않습니다</b>.
+      하네스를 두껍게 쌓는 것이 언제나 이득이라는 뜻이 아닙니다.
+      (<a href="https://www.anthropic.com/engineering/harness-design-long-running-apps" target="_blank" rel="noopener">출처</a>)
+    </div>
+  </section>
+
+  <section>
+    <h3>가장 중요한 함정 — 하네스에는 유통기한이 있다</h3>
+    <blockquote class="src">
+      <p>“<strong>Every component in a harness encodes an assumption about what the model can’t do on its own</strong>,
+      and those assumptions are worth stress testing.”</p>
+      <cite>Anthropic Engineering — Harness design for long-running application development</cite>
+    </blockquote>
+    <p>
+      실제 사례가 문서에 있습니다. Sonnet 4.5는 컨텍스트 한계가 다가오면 작업을 조기 종료하는 경향
+      (<em>context anxiety</em>)이 있어 하네스에 context reset을 넣었는데, <b>Opus 4.5에서 그 현상이 사라져 reset이 그대로
+      “dead weight”가 됐습니다.</b> 그래서 Agent Harness Design의 세 패턴은 이렇게 요약됩니다.
+    </p>
+    <ol>
+      <li><strong>Lean on the model, not the harness</strong> — 모델이 이미 아는 것을 쓴다</li>
+      <li><strong>Strip your agent harness down</strong> — 주기적으로 <b>“무엇을 그만할 수 있는가”</b>를 묻는다</li>
+      <li><strong>Set boundaries carefully</strong> — 경계는 신중하게 설계한다</li>
+    </ol>
+  </section>
+</div>
+
+<!-- ══════════════════ TAB 2 — 루프 ══════════════════ -->
+<div class="panel" id="p2" role="tabpanel" aria-labelledby="t2">
+
+  <section>
+    <h2><span class="h2num">02</span>루프 엔지니어링 — 정지 조건의 설계</h2>
+    <p class="lede">
+      세 용어 중 <strong>Anthropic이 공식 채택한 유일한 “~ engineering”</strong>입니다.
+      Claude Code Agent SDK 문서가 이 이름의 블로그를 본문에서 직접 링크합니다.
+    </p>
+
+    <blockquote class="src">
+      <p>“For a practical guide to designing loops in Claude Code, from turn-based to goal-based and proactive loops,
+      see <strong>Loop engineering: getting started with loops</strong> on the blog.”</p>
+      <cite>Claude Code — <a href="https://code.claude.com/docs/en/agent-sdk/agent-loop" target="_blank" rel="noopener">How the agent loop works</a></cite>
+    </blockquote>
+
+    <p>
+      공식 블로그(<a href="https://claude.com/blog/getting-started-with-loops" target="_blank" rel="noopener">2026-06-30</a>)의 정의는 한 줄입니다 —
+      루프란 <b>“정지 조건이 충족될 때까지 작업 사이클을 반복하는 에이전트”</b>. 즉 루프 엔지니어링의 실체는
+      반복 그 자체가 아니라 <b>무엇을 ‘완료’로 볼 것인가를 설계하는 일</b>입니다.
+    </p>
+
+    <div class="figrow">
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/amy_05.jpg" alt="루프는 선이다 — 1~4단계를 거쳐 완료로 가는 직선 도식">
+        <figcaption>“루프는 선이다” — 이전 단계가 끝나야 다음 단계가 시작된다. <b>@ai_me____</b></figcaption>
+      </figure>
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/amy_06.jpg" alt="루프 작동 원리 — 목표 설정 → 작업 수행 → 충분한가? → 아니오면 재시도 / 예면 완료">
+        <figcaption>목표 설정 → 수행 → <b>“충분히 잘 되었나요?”</b> → 아니오면 재시도. <b>@ai_me____</b></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h3>공식 문서가 명시한 루프 5단계</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>단계</th><th>내용</th><th>방출 메시지</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1. Receive prompt</strong></td><td>프롬프트 + 시스템 프롬프트 + 툴 정의 + 대화 이력</td><td><code>SystemMessage(subtype:"init")</code></td></tr>
+          <tr><td><strong>2. Evaluate and respond</strong></td><td>텍스트 / 툴 호출 요청 / 둘 다</td><td><code>AssistantMessage</code></td></tr>
+          <tr><td><strong>3. Execute tools</strong></td><td>SDK가 툴 실행·결과 수집. <b>훅으로 가로채기·수정·차단 가능</b></td><td>—</td></tr>
+          <tr><td><strong>4. Repeat</strong></td><td>한 사이클 = 1 turn. <b>툴 호출이 없는 응답이 나올 때까지</b> 반복</td><td>—</td></tr>
+          <tr><td><strong>5. Return result</strong></td><td>최종 응답 + 토큰·비용·세션 ID</td><td><code>ResultMessage</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>정지·제어 수단 (공식)</h4>
+    <ul>
+      <li><code>max_turns</code> / <code>maxTurns</code> — 툴 사용 왕복 상한. 초과 시 <code>error_max_turns</code></li>
+      <li><code>max_budget_usd</code> — 비용 상한. <b>서브에이전트 지출도 총액에 포함</b>(v2.1.217+)</li>
+      <li><code>effort</code> — <code>low</code> / <code>medium</code> / <code>high</code> / <code>xhigh</code> / <code>max</code></li>
+      <li>종료 상태: <code>success</code>, <code>error_max_turns</code>, <code>error_max_budget_usd</code>, <code>error_during_execution</code>, <code>error_max_structured_output_retries</code></li>
+    </ul>
+
+    <p class="codelabel">Agent SDK — 루프 제어 (공식 문서 예시)</p>
+<pre><code>async for message in query(
+    prompt="Find and fix the bug causing test failures in the auth module",
+    options=ClaudeAgentOptions(
+        allowed_tools=["Read", "Edit", "Bash", "Glob", "Grep"],
+        setting_sources=["project"],
+        max_turns=30,       # Prevent runaway sessions
+        effort="high",
+    ),
+): ...</code></pre>
+  </section>
+
+  <section>
+    <h3>루프 4종 — 무엇이 시작시키고 무엇이 멈추는가</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>유형</th><th>시작 트리거</th><th>정지 조건</th><th>적합한 작업</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Turn-based</strong></td><td>사용자 프롬프트</td><td>Claude가 완료 판단</td><td>짧고 반복되지 않는 작업</td></tr>
+          <tr><td><strong>Goal-based</strong> <code>/goal</code></td><td>수동</td><td>목표 달성 또는 max turns</td><td>검증 가능한 종료 기준이 있는 작업</td></tr>
+          <tr><td><strong>Time-based</strong> <code>/loop</code> <code>/schedule</code></td><td>지정 인터벌</td><td>사용자 중단 또는 Claude 판단</td><td>반복 작업, 외부 시스템 연동</td></tr>
+          <tr><td><strong>Proactive</strong></td><td>이벤트/스케줄, 실시간 사람 개입 없음</td><td>—</td><td>버그 리포트, 이슈 트리아지, 마이그레이션, 의존성 업그레이드</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <img class="lb" src="/assets/social/harness_loop_graph/amy_09.jpg" alt="/loop 실사용 예시 — 목표와 멈추는 지점 두 가지만 정하면 된다">
+      <figcaption>인스타 카드뉴스가 든 실사용 예시. 공식 블로그의 예시도 형태가 같습니다 — <code>/goal get the homepage Lighthouse score to 90 or above, stop after 5 tries</code>, <code>/loop 5m check my PR, address review comments, and fix failing CI</code>. <b>@ai_me____</b></figcaption>
+    </figure>
+
+    <div class="callout info">
+      <span class="ct"><code>/goal</code>의 내부 구현 — 공식 문서 원문</span>
+      <p>“<code>/goal</code> is a wrapper around a <strong>session-scoped prompt-based Stop hook</strong>.”</p>
+      <p>매 턴이 끝나면 조건과 대화를 <b>small fast model</b>(Claude API 기본값 Haiku)에 보내
+      <b>Not yet met / Met / Impossible</b> 3판정을 받습니다. <b>평가자는 툴을 호출하지 않으므로</b>,
+      조건은 “Claude 자신의 출력으로 증명 가능한 것”으로 써야 합니다. 조건 최대 4,000자.</p>
+    </div>
+
+    <div class="callout warn">
+      <span class="ct">무한 루프 방지 장치 (문서 명시)</span>
+      <p>· <code>/goal</code>: 툴 사용 없이 여러 턴 연속 답만 하면 <b>루프를 멈추고 경고를 출력</b>합니다.</p>
+      <p>· Auto-compaction thrashing: 단일 파일·툴 출력이 너무 커서 요약 직후 컨텍스트가 다시 차면,
+      몇 번 시도 후 <b>auto-compact를 중단하고 에러를 표시</b>합니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h3>학술적 뿌리</h3>
+    <div class="grid">
+      <div class="card">
+        <p class="k">arXiv 2210.03629 · 2022-10</p>
+        <h4>ReAct</h4>
+        <p>reasoning trace와 action을 <b>interleaved</b>로 생성. ALFWorld·WebShop에서 imitation·RL 대비 절대 성공률
+        <b>+34%, +10%</b>. in-context 예시 1~2개만으로.</p>
+      </div>
+      <div class="card">
+        <p class="k">arXiv 2303.11366 · 2023-03</p>
+        <h4>Reflexion</h4>
+        <p>가중치 갱신이 아니라 <b>언어적 피드백</b>으로 강화. 자기 성찰 텍스트를 episodic memory buffer에 유지.
+        HumanEval <b>pass@1 91%</b>(당시 GPT-4 SOTA 80%).</p>
+      </div>
+    </div>
+    <p style="font-size:13.5px;color:var(--ink-3);">
+      Anthropic이 harness-design 문서에서 구현한 <b>generator / evaluator</b> 구조가 이 계열의 직접적인 산업 적용 사례입니다.
+    </p>
+  </section>
+
+  <section>
+    <h3>루프를 쓰지 말아야 할 때</h3>
+    <blockquote class="src">
+      <p>“When building applications with LLMs, we recommend <strong>finding the simplest solution possible, and only
+      increasing complexity when needed. This might mean not building agentic systems at all.</strong>”</p>
+      <p>“<strong>The autonomous nature of agents means higher costs, and the potential for compounding errors.</strong>”</p>
+      <cite>Anthropic — <a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Building effective agents</a></cite>
+    </blockquote>
+    <p>공식 블로그가 든 루프 운영 주의사항 5가지입니다.</p>
+    <ul>
+      <li><b>코드베이스를 깨끗하게 유지</b> — Claude는 기존 패턴을 그대로 따른다</li>
+      <li><b>코드 리뷰는 별도 에이전트에게</b> — 신선한 컨텍스트의 리뷰어가 메인 에이전트의 추론에 덜 편향된다</li>
+      <li><b>개별 이슈를 그때그때 고치지 말고 시스템에 인코딩</b>하라</li>
+      <li>프리미티브와 모델을 적정 선택 — 작은 작업에 다중 에이전트·루프는 불필요</li>
+      <li><b>큰 실행 전 파일럿</b> — dynamic workflows는 수백 개 에이전트를 스폰할 수 있다</li>
+    </ul>
+    <div class="callout bad">
+      <span class="ct">Compaction 손실 주의</span>
+      “Compaction replaces older messages with a summary, so <b>specific instructions from early in the conversation may not
+      be preserved.</b> Persistent rules belong in CLAUDE.md.” — 초기 프롬프트에 넣은 규칙은 압축과 함께 사라질 수 있습니다.
+    </div>
+  </section>
+</div>
+
+<!-- ══════════════════ TAB 3 — 그래프 ══════════════════ -->
+<div class="panel" id="p3" role="tabpanel" aria-labelledby="t3">
+
+  <section>
+    <h2><span class="h2num">03</span>그래프 엔지니어링 — 흐름을 코드에 맡기기</h2>
+
+    <div class="callout bad">
+      <span class="ct">먼저 짚을 것 — 이건 공식 용어가 아닙니다</span>
+      <p>조사 범위(anthropic.com · claude.com · code.claude.com) 어디에서도 <b>“graph engineering”이라는 표현을 찾지 못했습니다.</b>
+      LangGraph 공식 문서조차 이 명칭을 쓰지 않습니다(<code>Graph API</code>, <code>StateGraph</code>라고 부름).</p>
+      <p>LangGraph를 만든 LangChain은 자사 공식 블로그에서 이 용어를 이렇게 규정했습니다 —
+      <b>“the latest term to come out of X’s AI content factory”</b>. 다만 같은 글에서
+      “these terms exist and emerge for a reason: they do describe <b>real challenges and design decisions builders face</b>”라고 덧붙입니다.
+      (<a href="https://www.langchain.com/blog/3-years-of-graph-engineering-with-langgraph" target="_blank" rel="noopener">3 Years of Graph Engineering with LangGraph</a>, 2026-07-22)</p>
+    </div>
+
+    <p class="lede">
+      즉 <b>개념은 실재하되 이름이 비공식</b>입니다. Anthropic은 같은 것을 <code>workflow</code>,
+      <code>orchestrator-workers</code>, <code>dynamic workflows</code>라고 부릅니다.
+    </p>
+
+    <div class="figrow">
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/gym_01.jpg" alt="하네스, 루프에 이어 그래프 엔지니어링? 표지 이미지">
+        <figcaption>“하네스, 루프에 이어 그래프 엔지니어링?” <b>@gymcoding (짐코딩), Instagram 2026-08-14</b></figcaption>
+      </figure>
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/gym_03.jpg" alt="그래프는 일을 나눠 연결한다 — 노드와 엣지 손그림 도식">
+        <figcaption>각 작업 단계 = <b>노드</b>, 노드 사이 이동 경로 = <b>엣지</b>. 순차 진행하거나 여러 갈래로 동시에 펼쳐지고, 흩어진 결과를 다시 모으거나 조건에 따라 이전 단계로 되돌린다. <b>@gymcoding</b></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h3>LangGraph — 그래프 개념이 실제 API로 구현된 곳</h3>
+    <p>LangGraph는 3년 전 구축돼 월 <b>6,500만 회 이상</b> 다운로드되며, DAG가 아니라 <b>사이클을 지원</b>합니다(retry·validation·human input pause).</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>요소</th><th>공식 문서상 정의</th></tr></thead>
+        <tbody>
+          <tr><td><strong>StateGraph</strong></td><td>사용자 정의 State 객체로 파라미터화되는 주 그래프 클래스. 사용 전 컴파일 필요</td></tr>
+          <tr><td><strong>State + Reducer</strong></td><td>TypedDict/dataclass/Pydantic 스키마 + reducer 함수. <b>키마다 독립 reducer</b>, 미지정 시 덮어쓰기</td></tr>
+          <tr><td><strong>Node</strong></td><td>“Functions encoding agent logic. They receive state as input, perform computation, and return updated state”</td></tr>
+          <tr><td><strong>Conditional edge</strong></td><td><code>add_conditional_edges(node, routing_function)</code> — 라우팅 함수가 다음 노드를 고름</td></tr>
+          <tr><td><strong>Send API</strong></td><td>map-reduce용. 엣지나 state 변형을 미리 알 수 없을 때</td></tr>
+          <tr><td><strong>Command</strong></td><td>state 업데이트 + 제어 흐름을 하나의 반환값으로 결합</td></tr>
+          <tr><td><strong>Checkpointer</strong></td><td><b>단기·thread 범위 메모리</b> — 대화 연속성, human-in-the-loop, time travel, 장애 복구</td></tr>
+          <tr><td><strong>Store</strong></td><td><b>장기·cross-thread 메모리</b> — 사용자 선호, 사실, 공유 지식</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="codelabel">LangGraph 공식 문서 예시</p>
+<pre><code># 조건부 엣지 — 어디로 보낼지 함수가 결정
+graph.add_conditional_edges("node_a", routing_function, {True: "node_b", False: "node_c"})
+
+# Send — map-reduce (fan-out 대상을 런타임에 결정)
+from langgraph.types import Send
+def continue_to_jokes(state: OverallState):
+    return [Send("generate_joke", {"subject": s}) for s in state['subjects']]
+
+# Command — 상태 갱신과 라우팅을 한 번에
+def my_node(state: State) -&gt; Command[Literal["my_other_node"]]:
+    return Command(update={"foo": "bar"}, goto="my_other_node")</code></pre>
+
+    <blockquote class="src">
+      <p>“A generous interpretation would say that <strong>what’s changed is what you can put inside a node.</strong>
+      Early on, nodes were deterministic code or a single LLM call. Now that agents themselves are reliable enough
+      to trust with real work, <strong>a node can be a full agent run.</strong>”</p>
+      <cite>LangChain — Sydney Runkle &amp; Harrison Chase (2026-07-22)</cite>
+    </blockquote>
+  </section>
+
+  <section>
+    <h3>Anthropic의 대응물 — Dynamic workflows</h3>
+    <p>
+      Claude Code에도 같은 문제를 푸는 기능이 있습니다. 다만 <b>선언적 그래프가 아니라 명령형 JavaScript 스크립트</b>이며,
+      해당 문서에는 <b>“graph”·“DAG”·“node”·“edge”라는 단어가 한 번도 나오지 않습니다.</b>
+    </p>
+    <blockquote class="src">
+      <p>“A dynamic workflow is a <strong>JavaScript script that orchestrates many subagents at once.</strong>
+      Claude writes the script for the task you describe, and a runtime executes it in the background.”</p>
+      <cite>Claude Code — <a href="https://code.claude.com/docs/en/workflows" target="_blank" rel="noopener">Dynamic workflows</a></cite>
+    </blockquote>
+
+    <p class="codelabel">공식 문서 예시 스크립트</p>
+<pre><code>export const meta = {
+  name: 'audit-routes',
+  description: 'Audit every route handler for missing auth checks',
+}
+
+const found = await agent('List every .ts file under src/routes/.', {
+  schema: { type: 'object', required: ['files'],
+            properties: { files: { type: 'array', items: { type: 'string' } } } },
+})
+
+const audits = await pipeline(found.files, file =&gt;
+  agent(`Audit ${file} for missing authentication checks.`, { label: file }),
+)
+
+return audits.filter(Boolean)</code></pre>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>런타임 제약</th><th>문서가 밝힌 이유</th></tr></thead>
+        <tbody>
+          <tr><td>실행 중 사용자 입력 불가</td><td>스테이지별 승인이 필요하면 각 스테이지를 별도 워크플로로 분리</td></tr>
+          <tr><td>스크립트의 파일시스템·셸 직접 접근 불가</td><td>에이전트가 읽고 쓰고 실행. 스크립트는 <b>조율만</b></td></tr>
+          <tr><td>모듈 로딩 불가 (<code>import()</code> 포함 시 실행 전 실패)</td><td>스크립트 본문은 plain JavaScript</td></tr>
+          <tr><td><strong>동시 에이전트 최대 16개</strong></td><td>로컬 자원 사용 제한</td></tr>
+          <tr><td><strong><code>parallel()</code>/<code>pipeline()</code> 호출당 최대 4,096 항목</strong></td><td>조용한 상한은 작업 일부를 말없이 누락시키므로</td></tr>
+          <tr><td><strong>실행당 총 1,000 에이전트</strong></td><td>Prevents runaway loops</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info">
+      <span class="ct">결정성 강제</span>
+      “Claude Code makes <code>Date.now()</code>, <code>Math.random()</code>, and a no-argument <code>new Date()</code>
+      <b>throw</b> inside the script, so that a relaunched run repeats the same <code>agent()</code> calls.”
+      — 재실행이 같은 결과를 내도록 비결정성을 아예 막아 둡니다.
+    </div>
+    <div class="callout warn">
+      <span class="ct">실패 시 재실행 폭발</span>
+      fan-out 중간에 하나가 실패하면 <b>그 이후 시작된 이미 완료된 에이전트들까지 재실행</b>됩니다.
+      “If a script starts A, B, C, and D in that order and B fails, relaunching returns A from cache and runs B, C, and D again.”
+    </div>
+  </section>
+
+  <section>
+    <h3>다른 프레임워크는 어떻게 하나</h3>
+    <div class="grid">
+      <div class="card">
+        <p class="k">Microsoft</p>
+        <h4>AutoGen GraphFlow</h4>
+        <p>“a team that follows a <b>DiGraph</b> to control the execution flow between agents”. sequential·parallel·conditional·looping 지원, <code>DiGraphBuilder</code>로 구성. <b>단, 공식 문서에 experimental로 명시</b> — API·동작·기능이 바뀔 수 있습니다.</p>
+      </div>
+      <div class="card">
+        <p class="k">OpenAI</p>
+        <h4>Agents SDK — 그래프가 아님</h4>
+        <p>프리미티브는 Agents · <b>Handoffs</b> · Guardrails · Sessions. 노드/엣지 추상화를 제공하지 않는 <b>handoff 기반</b>입니다. Swarm의 “production-ready upgrade”라고 공식 서술.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>언제 그래프가 필요한가 — 그리고 언제 필요 없는가</h3>
+    <div class="figrow">
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/gym_05.jpg" alt="이럴 때 그래프가 필요해요 — 병렬 조사, 역할 분리, 실패분 되돌리기">
+        <figcaption>병렬 조사 · 역할 분리 · 실패한 작업만 되돌리기. <b>“병렬 실행과 분기와 합류가 없다면 굳이 그래프를 만들 필요는 없습니다.”</b> <b>@gymcoding</b></figcaption>
+      </figure>
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/gym_07.jpg" alt="역할을 많이 나눌수록 좋을까요 — 담당이 늘수록 실패 지점도 늘어난다">
+        <figcaption>“역할을 많이 맡긴다고 결과가 좋아지진 않습니다. 담당이 늘수록 지시와 전달, 실패 지점도 늘어납니다. <b>첫 그래프는 노드 3~5개로 시작</b>하세요.” <b>@gymcoding</b></figcaption>
+      </figure>
+    </div>
+
+    <div class="callout bad">
+      <span class="ct">Anthropic 멀티에이전트 문서의 수치 — 그래프는 공짜가 아니다</span>
+      <p>Opus 4(lead) + Sonnet 4(subagents) 멀티에이전트가 단일 Opus 4 대비 내부 평가에서 <b>90.2%</b> 우수.
+      그러나 토큰은 채팅 대비 에이전트가 <b>약 4배</b>, <b>멀티에이전트는 약 15배</b>입니다.
+      브라우징 태스크 성능 분산의 <b>80%</b>를 토큰 사용량이 설명합니다.</p>
+      <p><b>잘 맞지 않는 경우(문서 명시)</b>: “모든 에이전트가 같은 컨텍스트를 공유해야 하거나 에이전트 간 의존성이 많은 작업”,
+      그리고 <b>대부분의 코딩 작업</b>(병렬화 가능한 부분이 제한적).</p>
+    </div>
+
+    <figure>
+      <img class="lb" src="/assets/social/harness_loop_graph/gym_06.jpg" alt="경쟁사 조사로 본 그래프 예시 — 기획자·조사자·통합자·검사자">
+      <figcaption>실전 예시: <b>기획자</b>가 기준을 정하고 → <b>조사자</b>들이 동시에 자료를 모으고 → <b>통합자</b>가 하나의 보고서로 → <b>검사자</b>가 문제 있는 부분만 조사자에게 되돌린다. <b>@gymcoding</b></figcaption>
+    </figure>
+
+    <div class="figrow">
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/amy_10.jpg" alt="그래프는 네트워크다 — 기획자에서 작업자 4명으로 분기 후 통합자로 합류">
+        <figcaption>기획자 → 작업자 1~4 병렬 → 통합자 → 결과물. <b>@ai_me____</b></figcaption>
+      </figure>
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/amy_11.jpg" alt="경쟁사 5곳 병렬 리서치 그래프 예시">
+        <figcaption>경쟁사 5곳 병렬 조사 → 통합자 리포트 작성 → 검토(리포트 vs 브리프) → 포지셔닝 리포트. <b>@ai_me____</b></figcaption>
+      </figure>
+    </div>
+
+    <figure>
+      <img class="lb" src="/assets/social/harness_loop_graph/amy_12.jpg" alt="그래프 시작법 4단계">
+      <figcaption>그래프 시작법: ① 오래 걸리거나 재시도가 잦은 루프 찾기 ② 서로 기다릴 필요 없는 작업 구분하기 ③ 구조를 직접 손으로 그려보기 ④ 그림을 Claude에게 보여주고 그래프로 실행 요청하기. <b>@ai_me____</b></figcaption>
+    </figure>
+  </section>
+</div>
+
+<!-- ══════════════════ TAB 4 — 비교·종합 ══════════════════ -->
+<div class="panel" id="p4" role="tabpanel" aria-labelledby="t4">
+
+  <section>
+    <h2><span class="h2num">04</span>비교 · 종합</h2>
+    <p class="lede">
+      셋을 나란히 놓으면 “새 아키텍처인가, 새 어휘인가”라는 질문이 남습니다. 결론부터 말하면 <b>둘 다 조금씩</b>입니다.
+      실체는 오래된 문제인데, 이름은 최근 다섯 달 사이에 붙었습니다.
+    </p>
+
+    <h3>먼저 — 용어의 공식성 판정</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>용어</th><th>공식 표준인가</th><th>근거</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Harness</strong> (명사)</td>
+            <td>✅ <b>부분적으로 공식</b></td>
+            <td>Claude Code 문서가 Claude Code를 “agentic harness”라고 직접 지칭. 단 <code>harness engineering</code>이라는 합성어는 OpenAI·Thoughtworks 조어</td>
+          </tr>
+          <tr>
+            <td><strong>Loop engineering</strong></td>
+            <td>✅ <b>Anthropic 채택 (공식)</b></td>
+            <td>claude.com 공식 블로그 제목이 “Loop engineering”이고, Agent SDK 공식 문서가 이를 링크</td>
+          </tr>
+          <tr>
+            <td><strong>Graph engineering</strong></td>
+            <td>❌ <b>공식 용어 아님</b></td>
+            <td>Anthropic 문서·블로그에 없음. LangChain 공식 블로그가 “X의 AI 콘텐츠 공장에서 나온 최신 용어”로 규정</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <img class="lb" src="/assets/social/harness_loop_graph/genealogy_01.jpg" alt="AI 엔지니어링 계보 — 프롬프트 2022, 컨텍스트 2025, 하네스 2026.02, 루프 2026.06, 그래프 2026.07">
+      <figcaption>
+        <b>@ai.sadari (사다리 AI), Instagram 2026-07-28</b> — “5년 동안 이름이 5번 바뀌었다”.
+        <b>이 계보의 연도는 이번 조사에서 상당 부분 뒷받침됩니다</b>: OpenAI의 harness engineering 글이 2026-02-11,
+        Anthropic의 loop engineering 블로그가 2026-06-30, LangChain의 graph engineering 논평이 2026-07-22입니다.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img class="lb" src="/assets/social/harness_loop_graph/amy_02.jpg" alt="하네스, 루프, 그래프가 뭐냐면 — 세 용어의 한 줄 정의">
+      <figcaption>
+        세 용어의 한 줄 정의 — <b>하네스</b>는 AI에게 도구·권한·저장 공간처럼 일할 수 있는 환경을 만들어 주는 것,
+        <b>루프</b>는 목표를 한 번만 설정하면 끝나거나 막힐 때까지 스스로 반복하는 것,
+        <b>그래프</b>는 루프 여러 개를 동시에 돌려 하나로 모으는 것. <b>@ai_me____</b>
+        <br><br>
+        ⚠️ 이 슬라이드가 계기로 든 <b>“Claude Code를 만든 개발자가 ‘이제 프롬프트 대신 루프를 짠다’고 말했다”</b>는 서술은
+        널리 회자되지만, 이번 조사에서 <b>1차 출처를 확인하지 못했습니다.</b> 인용 시 주의하세요.
+      </figcaption>
+    </figure>
+
+    <blockquote class="src">
+      <p>“프롬프트·컨텍스트·하네스는 <b>‘에이전트 하나’ 문제의 서로 다른 층위</b>입니다. 반면 루프와 그래프는 훨씬 가깝습니다.
+      그래프는 결국 루프 하나로 부족해서 여러 개를 조율해야 할 때 생기는 것이니까요. … 이게 정말 새로운 아키텍처인지,
+      아니면 새로운 어휘일 뿐인지 — 생각해볼 만합니다.”</p>
+      <cite>@ai.sadari 게시물 본문 (원문 인용)</cite>
+    </blockquote>
+  </section>
+
+  <section>
+    <h3>포함 관계 — 공식 정의를 겹쳐서 도출</h3>
+    <p>
+      Anthropic의 하네스 정의가 “the <b>loop</b>, tools, context management, and guardrails”이므로
+      <b>루프는 하네스의 구성 요소</b>입니다. 그래프는 하네스 안에서 루프를 대신하는 <b>대안적 제어 구조</b>입니다.
+    </p>
+
+    <svg class="diagram lb" viewBox="0 0 720 336" role="img" aria-label="하네스 안에 루프와 그래프가 나란히 놓인 포함 관계 도식">
+      <rect x="1" y="1" width="718" height="334" fill="#ffffff"/>
+      <rect x="20" y="46" width="680" height="238" rx="16" fill="#f3e2da" stroke="#d97757" stroke-width="2"/>
+      <text x="40" y="76" font-family="Fraunces,Georgia,serif" font-size="19" font-weight="700" fill="#a84f32">HARNESS — 모델 밖의 전부</text>
+      <text x="40" y="97" font-family="Pretendard,sans-serif" font-size="12.5" fill="#7a756c">툴 · 컨텍스트 관리 · 권한 · 샌드박스 · 세션 · 관찰가능성</text>
+
+      <rect x="44" y="118" width="308" height="146" rx="12" fill="#ffffff" stroke="#d9d5cc"/>
+      <text x="66" y="149" font-family="Fraunces,Georgia,serif" font-size="17" font-weight="600" fill="#1a1a1a">LOOP</text>
+      <text x="66" y="174" font-family="Pretendard,sans-serif" font-size="13" fill="#4a4740">제어를 모델에 맡긴다</text>
+      <text x="66" y="197" font-family="Pretendard,sans-serif" font-size="12.5" fill="#7a756c">다음에 뭘 할지 Claude가 턴마다 결정</text>
+      <text x="66" y="219" font-family="Pretendard,sans-serif" font-size="12.5" fill="#7a756c">설계 대상 = 정지 조건</text>
+      <text x="66" y="245" font-family="ui-monospace,monospace" font-size="12" fill="#a84f32">/goal · /loop · Stop hook</text>
+
+      <rect x="368" y="118" width="308" height="146" rx="12" fill="#ffffff" stroke="#d9d5cc"/>
+      <text x="390" y="149" font-family="Fraunces,Georgia,serif" font-size="17" font-weight="600" fill="#1a1a1a">GRAPH</text>
+      <text x="390" y="174" font-family="Pretendard,sans-serif" font-size="13" fill="#4a4740">제어를 코드에 맡긴다</text>
+      <text x="390" y="197" font-family="Pretendard,sans-serif" font-size="12.5" fill="#7a756c">다음에 뭘 할지 스크립트가 결정</text>
+      <text x="390" y="219" font-family="Pretendard,sans-serif" font-size="12.5" fill="#7a756c">설계 대상 = 노드 · 엣지 · 상태</text>
+      <text x="390" y="245" font-family="ui-monospace,monospace" font-size="12" fill="#a84f32">StateGraph · dynamic workflows</text>
+
+      <text x="360" y="312" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="12.5" fill="#7a756c">
+        노드 하나 안에 루프가 통째로 들어갈 수 있다 — “a node can be a full agent run” (LangChain)
+      </text>
+    </svg>
+
+    <div class="figrow">
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/gym_02.jpg" alt="AI 시스템은 세 층으로 나뉘어요 — Graph, Loop, Harness 중첩 박스">
+        <figcaption>“환경을 만들고 피드백을 넣은 다음 그 위에 흐름을 짜는 순서로 기억하면 쉽습니다.” <b>@gymcoding</b></figcaption>
+      </figure>
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/amy_01.jpg" alt="하네스 vs 루프 vs 그래프 3계층 인포그래픽">
+        <figcaption>흐름(그래프) / 피드백(루프) / 환경(하네스) 3계층. <b>@ai_me____</b></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h3>결정적 기준 — “누가 다음에 실행될 것을 정하는가”</h3>
+    <p>
+      Claude Code 공식 문서의 비교표가 루프와 그래프의 경계를 가장 명확히 서술합니다.
+      이것이 <b>공식 문서에 실제로 적힌 유일한 경계선</b>입니다.
+    </p>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th></th><th>Subagents</th><th>Skills</th><th>Agent teams</th><th>Workflows</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>실체</strong></td><td>Claude가 스폰하는 워커</td><td>Claude가 따르는 지시</td><td>peer 세션을 감독하는 lead 에이전트</td><td><strong>런타임이 실행하는 스크립트</strong></td></tr>
+          <tr><td><strong>다음 실행 결정</strong></td><td>Claude, 턴마다</td><td>Claude, 프롬프트를 따라</td><td>lead 에이전트, 턴마다</td><td><strong>스크립트</strong></td></tr>
+          <tr><td><strong>중간 결과 위치</strong></td><td>Claude 컨텍스트</td><td>Claude 컨텍스트</td><td>공유 태스크 리스트</td><td><strong>스크립트 변수</strong></td></tr>
+          <tr><td><strong>재사용 단위</strong></td><td>워커 정의</td><td>지시문</td><td>팀 정의</td><td><strong>오케스트레이션 자체</strong></td></tr>
+          <tr><td><strong>규모</strong></td><td>턴당 몇 개</td><td>동일</td><td>장기 실행 peer 소수</td><td><strong>실행당 수십~수백</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <blockquote class="src">
+      <p>“<strong>A workflow moves the plan into code.</strong> With subagents, skills, and agent teams, Claude is the orchestrator…
+      A workflow script <strong>holds the loop, the branching, and the intermediate results itself</strong>, so Claude’s context
+      holds only the final answer.”</p>
+      <cite>Claude Code — <a href="https://code.claude.com/docs/en/workflows" target="_blank" rel="noopener">Dynamic workflows</a></cite>
+    </blockquote>
+
+    <svg class="diagram lb" viewBox="0 0 720 226" role="img" aria-label="제어권 스펙트럼 — 모델이 결정하는 쪽에서 코드가 결정하는 쪽으로">
+      <rect x="1" y="1" width="718" height="224" fill="#ffffff"/>
+      <text x="20" y="34" font-family="Fraunces,Georgia,serif" font-size="16" font-weight="600" fill="#1a1a1a">제어권 스펙트럼 — Claude Code 기능으로 본 배치</text>
+
+      <rect x="20"  y="58" width="126" height="72" rx="10" fill="#f3e2da" stroke="#d97757"/>
+      <text x="83"  y="90"  text-anchor="middle" font-family="Pretendard,sans-serif" font-size="13" font-weight="700" fill="#a84f32">Turn-based</text>
+      <text x="83"  y="111" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11.5" fill="#7a756c">기본 agentic loop</text>
+
+      <rect x="158" y="58" width="126" height="72" rx="10" fill="#f3e2da" stroke="#d97757"/>
+      <text x="221" y="90"  text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" font-weight="700" fill="#a84f32">/goal · /loop</text>
+      <text x="221" y="111" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11.5" fill="#7a756c">정지 조건이 제어</text>
+
+      <rect x="296" y="58" width="126" height="72" rx="10" fill="#eceae2" stroke="#d9d5cc"/>
+      <text x="359" y="90"  text-anchor="middle" font-family="Pretendard,sans-serif" font-size="13" font-weight="700" fill="#4a4740">Subagents</text>
+      <text x="359" y="111" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11.5" fill="#7a756c">Claude가 턴마다</text>
+
+      <rect x="434" y="58" width="126" height="72" rx="10" fill="#eceae2" stroke="#d9d5cc"/>
+      <text x="497" y="90"  text-anchor="middle" font-family="Pretendard,sans-serif" font-size="13" font-weight="700" fill="#4a4740">Agent teams</text>
+      <text x="497" y="111" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11.5" fill="#7a756c">lead가 턴마다</text>
+
+      <rect x="572" y="58" width="128" height="72" rx="10" fill="#e6eeeb" stroke="#2f7d5d"/>
+      <text x="636" y="83"  text-anchor="middle" font-family="Pretendard,sans-serif" font-size="13" font-weight="700" fill="#1f4a3b">Dynamic</text>
+      <text x="636" y="100" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="13" font-weight="700" fill="#1f4a3b">workflows</text>
+      <text x="636" y="119" text-anchor="middle" font-family="Pretendard,sans-serif" font-size="11.5" fill="#7a756c">스크립트가 결정</text>
+
+      <line x1="20" y1="162" x2="686" y2="162" stroke="#d9d5cc" stroke-width="2"/>
+      <polygon points="700,162 684,156 684,168" fill="#d9d5cc"/>
+      <text x="20"  y="192" font-family="Pretendard,sans-serif" font-size="13" font-weight="700" fill="#a84f32">← 모델이 결정 (LOOP)</text>
+      <text x="700" y="192" text-anchor="end" font-family="Pretendard,sans-serif" font-size="13" font-weight="700" fill="#1f4a3b">코드가 결정 (GRAPH) →</text>
+    </svg>
+
+    <div class="figrow">
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/gym_04.jpg" alt="루프 vs 그래프 — 루프는 몇 번 반복할지, 그래프는 어디로 보낼지">
+        <figcaption><b>“루프는 몇 번 반복할지, 그래프는 어디로 보낼지를 정합니다.”</b> 이 한 줄이 위 공식 표와 정확히 같은 이야기입니다. <b>@gymcoding</b></figcaption>
+      </figure>
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/gym_08.jpg" alt="셋을 같이 쓰면 이렇게 돌아가요">
+        <figcaption>“하네스가 파일·도구·권한·기억을 제공하고, 그래프가 순서·분기·합류를 결정하고, 루프가 검사에 실패한 결과를 수정 단계로 되돌린다.” <b>@gymcoding</b></figcaption>
+      </figure>
+    </div>
+
+    <figure>
+      <img class="lb" src="/assets/social/harness_loop_graph/reel_gaurav_01.jpg" alt="Harness vs Loop Engineering 영문 인포그래픽 — 하네스는 트랙, 루프는 드라이버">
+      <figcaption>
+        <b>@gauravgoyalai, Instagram 2026-08-27</b> — 영어권의 같은 프레이밍.
+        <b>Harness = 경주 트랙</b>(트랙·규칙·연료·안전·도구 제공), <b>Loop = 매 랩마다 나아지는 드라이버</b>.
+        루프 4단계는 ACT → EVALUATE → LEARN/CORRECT → ACT AGAIN.
+      </figcaption>
+    </figure>
+
+    <div class="figrow">
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/amy_07.jpg" alt="Loop Engineering & Graph Engineering 종합 인포그래픽 좌측">
+        <figcaption>Loop(관찰→분석→실행→학습→진화) 상세. <b>@ai_me____</b></figcaption>
+      </figure>
+      <figure>
+        <img class="lb" src="/assets/social/harness_loop_graph/amy_08.jpg" alt="Loop Engineering & Graph Engineering 종합 인포그래픽 우측">
+        <figcaption>Graph(노드·엣지·스키마·추론엔진·지식통합)와 도구 스택 비교. <b>@ai_me____</b></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h3>Anthropic 워크플로 패턴 5종은 어디에 속하나</h3>
+    <div class="callout warn">
+      <span class="ct">⚠️ 이 매핑은 공식 문서에 없습니다</span>
+      Anthropic은 이 5개 패턴을 harness/loop/graph로 분류한 적이 <b>없습니다</b>. 아래는 각 패턴의 공식 정의
+      (workflows = “predefined code paths” / agents = “dynamically direct their own processes”)를 근거로 한
+      <b>이 문서의 대응 정리</b>이며 공식 견해가 아닙니다.
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>패턴</th><th>Anthropic 정의 요약</th><th>대응</th></tr></thead>
+        <tbody>
+          <tr><td>Prompt chaining</td><td>순차 단계로 분해, 각 호출이 이전 출력을 처리</td><td><strong>Graph</strong> (선형 노드 체인)</td></tr>
+          <tr><td>Routing</td><td>입력을 분류해 특화된 후속 태스크로 보냄</td><td><strong>Graph</strong> (조건부 엣지)</td></tr>
+          <tr><td>Parallelization</td><td>sectioning + voting 2변형</td><td><strong>Graph</strong> (fan-out / fan-in)</td></tr>
+          <tr><td>Orchestrator-workers</td><td>중앙 LLM이 <b>동적으로</b> 분해해 worker에 위임</td><td><strong>Loop ↔ Graph 경계</strong></td></tr>
+          <tr><td>Evaluator-optimizer</td><td>한 LLM이 생성, 다른 LLM이 <b>루프 안에서</b> 평가</td><td><strong>Loop</strong> (Reflexion 계열)</td></tr>
+          <tr><td><em>(기반)</em> Augmented LLM</td><td>LLM + “retrieval, tools, and memory”</td><td><strong>Harness</strong>의 최소 형태</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:13.5px;color:var(--ink-3);">
+      참고로 LangGraph 공식 문서는 이 5개 패턴을 <b>그대로 자사 구현 예제로 옮겨</b> 두었습니다
+      (<a href="https://docs.langchain.com/oss/python/langgraph/workflows-agents" target="_blank" rel="noopener">Workflows and agents</a>) —
+      “Anthropic의 workflow 패턴은 그래프로 표현 가능하다”를 LangChain이 사실상 인정한 셈입니다.
+    </p>
+  </section>
+
+  <section>
+    <h3>보조 자료 — 하네스의 ‘지식·기억’ 층은 무엇으로 채우나</h3>
+    <p class="lede">
+      아래는 하네스·루프·그래프와는 <b>다른 축의 분류</b>입니다. 하네스 구성요소 중 <b>컨텍스트·메모리를 무엇으로 구현할지</b>를
+      다루므로, 하네스 설계 시 함께 결정해야 하는 선택지로 덧붙입니다.
+    </p>
+    <div class="figrow">
+      <figure><img class="lb" src="/assets/social/harness_loop_graph/ram_02.jpg" alt="RAG 아키텍처 도식">
+        <figcaption><b>RAG</b> — 쿼리 시점에 외부 인덱스에서 stateless하게 가져온다. 임베딩 → 벡터DB 검색 → Top-K 컨텍스트 → LLM.</figcaption></figure>
+      <figure><img class="lb" src="/assets/social/harness_loop_graph/ram_03.jpg" alt="CAG 아키텍처 도식">
+        <figcaption><b>CAG</b> — 문서 저장소 전체를 미리 로드해 GPU VRAM의 KV-Cache에 고정(frozen). 외부 조회 자체를 없앤다.</figcaption></figure>
+    </div>
+    <div class="figrow">
+      <figure><img class="lb" src="/assets/social/harness_loop_graph/ram_04.jpg" alt="MAG 아키텍처 도식">
+        <figcaption><b>MAG</b> — 추론 파이프라인 옆에 <b>쓰기 가능한 메모리 테이블</b>을 두고 multi-hop 실행 루프 동안 변하는 세션 상태를 추적. Read Memory → LLM → Write Memory → Agent Loop.</figcaption></figure>
+      <figure><img class="lb" src="/assets/social/harness_loop_graph/ram_05.jpg" alt="RAG CAG MAG 구조 비교표">
+        <figcaption>지식 출처 / 운영 상태 / 주 지연 요인 / 데이터 동기화 4축 비교.</figcaption></figure>
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>축</th><th>RAG</th><th>CAG</th><th>MAG</th></tr></thead>
+        <tbody>
+          <tr><td><strong>지식 출처</strong></td><td>External Index Space</td><td>Boundless Context Window</td><td>Inline Memory Matrices</td></tr>
+          <tr><td><strong>운영 상태</strong></td><td>Completely Stateless</td><td>Pre-baked / Frozen</td><td>Highly Stateful &amp; Mutating</td></tr>
+          <tr><td><strong>주 지연 요인</strong></td><td>Database Network I/O</td><td>Initial Prompt Processing</td><td>Memory Layer Controller Routing</td></tr>
+          <tr><td><strong>TTFT</strong></td><td>High (다단 파이프라인)</td><td><strong>≈ 0 ms</strong></td><td>Variable (워크로드 의존)</td></tr>
+          <tr><td><strong>배포 트리거</strong></td><td>데이터가 분 단위로 바뀌고 정확한 인용 추적이 필요</td><td>데이터가 대체로 정적이고 속도가 최우선</td><td>다단계 추론 에이전트가 변하는 상태를 추적해야 함</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:13.5px;color:var(--ink-3);">
+      출처: <b>@techwith.ram, Instagram 2026-08-11</b> (“RAG vs CAG vs MAG”).
+      <b>이 셋은 게시자의 정리이며 Anthropic·LangChain 공식 문서에서 교차 검증하지 않았습니다</b> — 하네스·루프·그래프와 달리
+      본 페이지의 1차 출처 검증 범위 밖입니다. <b>MAG</b>는 특히 학계·업계 표준 약어로 확립됐다고 보기 어려우니 인용에 주의하세요.
+    </p>
+    <div class="figrow">
+      <figure><img class="lb" src="/assets/social/harness_loop_graph/ram_06.jpg" alt="RAG CAG MAG 지연 프로파일 비교"><figcaption>지연 프로파일 — TTFT 관점의 타임라인 비교.</figcaption></figure>
+      <figure><img class="lb" src="/assets/social/harness_loop_graph/ram_10.jpg" alt="RAG CAG MAG 프로덕션 배포 트리거"><figcaption>프로덕션 배포 판단 조건.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h3>실무 판단 6원칙 — 모두 공식 문서 문장</h3>
+    <div class="grid">
+      <div class="card">
+        <p class="k">01</p><h4>먼저 만들지 마라</h4>
+        <p>“finding the simplest solution possible… <b>This might mean not building agentic systems at all.</b>”</p>
+      </div>
+      <div class="card">
+        <p class="k">02</p><h4>예측 가능하면 그래프, 아니면 루프</h4>
+        <p>workflow = “predefined code paths”. agent = “dynamically direct their own processes”. 단계 수를 예측할 수 없을 때만 에이전트.</p>
+      </div>
+      <div class="card">
+        <p class="k">03</p><h4>하네스의 모든 부품은 가정이다</h4>
+        <p>“Every component in a harness encodes an assumption about what the model can’t do on its own.” 모델이 좋아지면 그 가정은 만료된다.</p>
+      </div>
+      <div class="card">
+        <p class="k">04</p><h4>“무엇을 그만할 수 있는가”</h4>
+        <p>Agent Harness Design 패턴 2. Sonnet 4.5용 context reset이 Opus 4.5에서 dead weight가 된 실제 사례가 있다.</p>
+      </div>
+      <div class="card">
+        <p class="k">05</p><h4>멀티에이전트는 공짜가 아니다</h4>
+        <p><span class="stat">약 15×</span>채팅 대비 토큰. 컨텍스트 공유가 필요하거나 의존성이 많은 작업, <b>대부분의 코딩 작업</b>에는 부적합.</p>
+      </div>
+      <div class="card">
+        <p class="k">06</p><h4>가드레일은 훅·권한·샌드박스로</h4>
+        <p>“A real guardrail needs to be <b>deterministic</b>.” 프롬프트에 적은 금지는 요청이지 강제가 아니다.</p>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <span class="ct">그래서, 새 아키텍처인가 새 어휘인가</span>
+      <p><b>어휘 쪽에 가깝습니다.</b> 세 개념이 가리키는 문제 — 도구·권한·컨텍스트를 갖춰주는 일(하네스),
+      언제 멈출지 정하는 일(루프), 무엇을 병렬로 돌리고 어디서 합칠지 정하는 일(그래프) — 은 ReAct(2022)·Reflexion(2023)부터
+      LangGraph(3년 전 구축)까지 이미 있던 문제입니다.</p>
+      <p><b>다만 하나는 실제로 달라졌습니다.</b> LangChain의 표현대로 “노드 안에 넣을 수 있는 것”이 바뀌었습니다 —
+      예전엔 노드가 결정론적 코드나 LLM 호출 하나였다면, 지금은 <b>노드 하나가 온전한 에이전트 실행</b>일 수 있습니다.
+      이름이 셋으로 갈라진 건 그 변화에 붙은 라벨입니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h3>출처</h3>
+    <div class="srclist">
+      <h4>인스타그램 소스 (본문·이미지 전량 수집)</h4>
+      <ul>
+        <li>@ai.sadari — <a href="https://www.instagram.com/p/DbVGNvMpxPQ/" target="_blank" rel="noopener">AI 엔지니어링 계보</a> (2026-07-28)</li>
+        <li>@ai_me____ (에이미) — <a href="https://www.instagram.com/p/Db5E52nlKUp/" target="_blank" rel="noopener">하네스 vs 루프 vs 그래프</a> (2026-08-11, 13장)</li>
+        <li>@techwith.ram — <a href="https://www.instagram.com/p/Db7LAAAiU4Y/" target="_blank" rel="noopener">RAG vs CAG vs MAG</a> (2026-08-11, 10장)</li>
+        <li>@gymcoding (짐코딩) — <a href="https://www.instagram.com/p/DcA4atTE_W3/" target="_blank" rel="noopener">AI 에이전트, 이제 ‘그래프’로 설계합니다</a> (2026-08-14, 9장)</li>
+        <li>@gauravgoyalai — <a href="https://www.instagram.com/reel/Dcix9LMpXmj/" target="_blank" rel="noopener">Harness vs Loop Engineering</a> (2026-08-27)</li>
+      </ul>
+      <h4>Anthropic 공식 (1차 출처 · 직접 확인)</h4>
+      <ul>
+        <li><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Building effective agents</a></li>
+        <li><a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank" rel="noopener">Effective context engineering for AI agents</a></li>
+        <li><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener">How we built our multi-agent research system</a></li>
+        <li><a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank" rel="noopener">Effective harnesses for long-running agents</a> (2025-11-26)</li>
+        <li><a href="https://www.anthropic.com/engineering/harness-design-long-running-apps" target="_blank" rel="noopener">Harness design for long-running application development</a> (2026-03-24)</li>
+        <li><a href="https://www.anthropic.com/engineering/managed-agents" target="_blank" rel="noopener">Managed agents</a> (2026-04-08)</li>
+        <li><a href="https://claude.com/blog/harnessing-claudes-intelligence" target="_blank" rel="noopener">Agent Harness Design</a> (2026-04-02)</li>
+        <li><a href="https://claude.com/blog/getting-started-with-loops" target="_blank" rel="noopener">Loop engineering: Getting started with loops</a> (2026-06-30)</li>
+        <li><a href="https://claude.com/blog/steering-claude-code-skills-hooks-rules-subagents-and-more" target="_blank" rel="noopener">Steering Claude Code</a> (2026-06-18)</li>
+      </ul>
+      <h4>Claude Code / Agent SDK 문서</h4>
+      <ul>
+        <li><a href="https://code.claude.com/docs/en/how-claude-code-works" target="_blank" rel="noopener">How Claude Code works</a> · <a href="https://code.claude.com/docs/en/agent-sdk/overview" target="_blank" rel="noopener">Agent SDK overview</a> · <a href="https://code.claude.com/docs/en/agent-sdk/agent-loop" target="_blank" rel="noopener">How the agent loop works</a></li>
+        <li><a href="https://code.claude.com/docs/en/workflows" target="_blank" rel="noopener">Dynamic workflows</a> · <a href="https://code.claude.com/docs/en/goal" target="_blank" rel="noopener">Goal</a> · <a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">Hooks</a> · <a href="https://code.claude.com/docs/en/sub-agents" target="_blank" rel="noopener">Subagents</a></li>
+        <li><a href="https://code.claude.com/docs/en/features-overview" target="_blank" rel="noopener">Extend Claude Code</a> · <a href="https://code.claude.com/docs/en/sandboxing" target="_blank" rel="noopener">Sandboxing</a> · <a href="https://code.claude.com/docs/en/permissions" target="_blank" rel="noopener">Permissions</a></li>
+      </ul>
+      <h4>LangChain · Microsoft · OpenAI · 논문</h4>
+      <ul>
+        <li><a href="https://www.langchain.com/blog/3-years-of-graph-engineering-with-langgraph" target="_blank" rel="noopener">3 Years of Graph Engineering with LangGraph</a> (2026-07-22)</li>
+        <li><a href="https://docs.langchain.com/oss/python/langgraph/graph-api" target="_blank" rel="noopener">LangGraph Graph API</a> · <a href="https://docs.langchain.com/oss/python/langgraph/persistence" target="_blank" rel="noopener">Persistence</a> · <a href="https://docs.langchain.com/oss/python/langgraph/workflows-agents" target="_blank" rel="noopener">Workflows and agents</a></li>
+        <li><a href="https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/graph-flow.html" target="_blank" rel="noopener">AutoGen GraphFlow</a> (experimental)</li>
+        <li><a href="https://openai.github.io/openai-agents-python/" target="_blank" rel="noopener">OpenAI Agents SDK</a></li>
+        <li><a href="https://martinfowler.com/articles/harness-engineering.html" target="_blank" rel="noopener">Böckeler — Harness engineering for coding agent users</a> (2026-04-02, 2차 출처)</li>
+        <li><a href="https://arxiv.org/abs/2210.03629" target="_blank" rel="noopener">ReAct (arXiv:2210.03629)</a> · <a href="https://arxiv.org/abs/2303.11366" target="_blank" rel="noopener">Reflexion (arXiv:2303.11366)</a></li>
+      </ul>
+      <h4>확인하지 못해 본문에 쓰지 않은 것</h4>
+      <ul>
+        <li>OpenAI “Harness engineering” 원문 — <b>HTTP 403</b>으로 직접 확인 실패. 회자되는 수치(1,500 PR·100만 줄 등)는 <b>검증되지 않아 본문에 넣지 않았습니다</b>.</li>
+        <li>“Anthropic 시니어 엔지니어의 Graph Engineering 12페이지 PDF” — <b>어떤 공식 페이지로도 확인되지 않음</b>. 인용 금지.</li>
+        <li>Mitchell Hashimoto의 harness 조어 선점 / Addy Osmani의 loop engineering 체계화 / Boris Cherny 인용 — 모두 1차 출처 미확인.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="wrap">
+    2026-08-30 작성 · 인스타그램 게시물 5건(이미지 28장)의 본문·이미지를 전량 수집해 판독한 뒤,
+    각 주장을 Anthropic·LangChain·Microsoft·OpenAI 1차 문서와 대조했습니다.
+    이미지 저작권은 각 게시자에게 있으며, 출처를 각 이미지 캡션에 표기했습니다.
+  </div>
+</footer>
+
+<div id="lb" role="dialog" aria-modal="true" aria-label="이미지 확대 보기"></div>
+
+<script>
+(function(){
+  /* 탭 */
+  var tabs = document.querySelectorAll('.tab');
+  var panels = document.querySelectorAll('.panel');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.setAttribute('aria-selected','false'); });
+      panels.forEach(function(p){ p.classList.remove('active'); });
+      tab.setAttribute('aria-selected','true');
+      document.getElementById(tab.getAttribute('aria-controls')).classList.add('active');
+      window.scrollTo({top:0, behavior:'smooth'});
+      try { localStorage.setItem('hlg-tab', tab.id); } catch(e){}
+    });
+  });
+  try {
+    var saved = localStorage.getItem('hlg-tab');
+    if (saved) { var el = document.getElementById(saved); if (el) el.click(); }
+  } catch(e){}
+
+  /* 라이트박스 */
+  var lb = document.getElementById('lb');
+  document.querySelectorAll('.lb').forEach(function(el){
+    el.addEventListener('click', function(){
+      lb.innerHTML = '';
+      lb.appendChild(el.cloneNode(true));
+      lb.classList.add('on');
+      document.body.style.overflow = 'hidden';
+    });
+  });
+  function closeLb(){ lb.classList.remove('on'); lb.innerHTML=''; document.body.style.overflow=''; }
+  lb.addEventListener('click', closeLb);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeLb(); });
+})();
+</script>
+
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="EBDJ6VT" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
