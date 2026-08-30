@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RAG vs CAG vs MAG 비교 가이드 — 1차 출처로 검증한 지식 증강 아키텍처</title>
+<link rel="stylesheet" href="/templates/assets/common.css" />
+<style>
+  :root{
+    --accent:#7c3aed; --accent-soft:#f1ecfe;
+    --a-color:#d81b60;   /* RAG */
+    --b-color:#2e7d32;   /* CAG */
+    --c-color:#6a3ab2;   /* MAG */
+    --maxw:1180px;
+  }
+  [data-theme="dark"]{
+    --accent:#b39bff; --accent-soft:color-mix(in oklab,#b39bff 16%,#18181a);
+    --a-color:#ff7aa8; --b-color:#6cc47a; --c-color:#b39bff;
+  }
+  body{font-family:var(--font-sans); word-break:keep-all; overflow-wrap:break-word;}
+  p,li{text-wrap:pretty;}
+  h1,h2,h3,h4{text-wrap:balance;}
+  .nb{white-space:nowrap;}
+  .container{max-width:var(--maxw);margin:0 auto;padding:56px 28px 100px;}
+
+  /* hero */
+  .hero{text-align:center;margin-bottom:46px;}
+  .hero .eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
+  .hero h1{font-size:clamp(34px,5vw,60px);margin:0 0 16px;letter-spacing:-.025em;line-height:1.1;font-weight:800;}
+  .hero h1 .vs{display:inline-block;padding:0 .12em;color:var(--ink-3);font-style:italic;font-weight:400;}
+  .hero .deck{font-size:18px;color:var(--ink-2);max-width:680px;margin:0 auto;line-height:1.6;}
+  .hero .meta{font-family:var(--font-mono);font-size:12px;color:var(--ink-3);margin-top:18px;letter-spacing:.04em;}
+
+  .verdict{max-width:880px;margin:0 auto 56px;border:1px solid var(--accent);background:var(--accent-soft);border-radius:12px;padding:26px 30px;}
+  .verdict .label{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+  .verdict .winner{font-size:21px;font-weight:700;margin:0 0 12px;line-height:1.45;}
+  .verdict p{font-size:15px;color:var(--ink-2);margin:0 0 10px;line-height:1.65;}
+  .verdict p:last-child{margin:0;}
+
+  /* 3-way grid */
+  .vs-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:24px;}
+  @media(max-width:900px){.vs-grid{grid-template-columns:1fr;}}
+  .vs-col{padding:26px 24px;border-right:1px solid var(--line);}
+  .vs-col:last-child{border-right:0;}
+  @media(max-width:900px){.vs-col{border-right:0;border-bottom:1px solid var(--line);} .vs-col:last-child{border-bottom:0;}}
+  .vs-col.a{background:color-mix(in oklab,var(--a-color) 6%,var(--bg));}
+  .vs-col.b{background:color-mix(in oklab,var(--b-color) 6%,var(--bg));}
+  .vs-col.c{background:color-mix(in oklab,var(--c-color) 6%,var(--bg));}
+  .tool-mark{display:inline-flex;align-items:center;gap:9px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-family:var(--font-mono);margin-bottom:12px;}
+  .tool-mark .dot{width:10px;height:10px;border-radius:50%;}
+  .vs-col.a .tool-mark{color:var(--a-color);} .vs-col.a .tool-mark .dot{background:var(--a-color);}
+  .vs-col.b .tool-mark{color:var(--b-color);} .vs-col.b .tool-mark .dot{background:var(--b-color);}
+  .vs-col.c .tool-mark{color:var(--c-color);} .vs-col.c .tool-mark .dot{background:var(--c-color);}
+  .tool-name{font-size:26px;font-weight:800;margin:0 0 6px;letter-spacing:-.015em;}
+  .tool-tag{font-size:12.5px;color:var(--ink-3);margin:0 0 14px;font-family:var(--font-mono);line-height:1.5;}
+  .tool-deck{font-size:14.5px;color:var(--ink-2);line-height:1.65;margin:0 0 16px;}
+  .badge{display:inline-block;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;padding:3px 9px;border-radius:999px;margin-bottom:12px;}
+  .badge.ok{background:color-mix(in oklab,#2e7d32 18%,transparent);color:#2e7d32;}
+  .badge.mid{background:color-mix(in oklab,#a8781f 20%,transparent);color:#8a6216;}
+  .badge.low{background:color-mix(in oklab,#b3261e 16%,transparent);color:#b3261e;}
+  [data-theme="dark"] .badge.ok{color:#6cc47a;} [data-theme="dark"] .badge.mid{color:#e2b45c;} [data-theme="dark"] .badge.low{color:#ff8c80;}
+  .pc-list{list-style:none;padding:0;margin:14px 0 0;}
+  .pc-list li{padding:5px 0 5px 22px;font-size:14px;color:var(--ink-2);position:relative;line-height:1.55;}
+  .pc-list.up li::before{content:"+";color:var(--accent);position:absolute;left:0;font-weight:700;}
+  .pc-list.down li::before{content:"−";color:#b3261e;position:absolute;left:0;font-weight:700;}
+  [data-theme="dark"] .pc-list.down li::before{color:#ff8c80;}
+
+  h2.section{font-size:clamp(22px,3vw,28px);margin:72px 0 10px;letter-spacing:-.01em;font-weight:800;padding-bottom:10px;border-bottom:2px solid var(--ink);}
+  h2.section .n{font-family:var(--font-mono);font-size:.6em;color:var(--accent);margin-right:12px;}
+  .lede{font-size:16px;color:var(--ink-2);margin:0 0 26px;line-height:1.7;max-width:78ch;}
+  h3{font-size:18px;font-weight:700;margin:38px 0 10px;}
+  h4{font-size:15px;font-weight:700;margin:24px 0 8px;color:var(--ink-2);}
+  p{margin:0 0 14px;line-height:1.75;}
+  ul,ol{margin:0 0 16px;padding-left:22px;} li{margin:0 0 7px;line-height:1.7;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  code{font-family:var(--font-mono);font-size:.88em;background:var(--bg-sub);padding:2px 6px;border-radius:4px;}
+
+  .tw{overflow-x:auto;margin:0 0 24px;border:1px solid var(--line);border-radius:10px;}
+  table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:600px;background:var(--bg-elev);}
+  th,td{padding:12px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);}
+  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);border-bottom:1px solid var(--line-strong);font-weight:700;white-space:nowrap;}
+  th.col-a{color:var(--a-color);} th.col-b{color:var(--b-color);} th.col-c{color:var(--c-color);}
+  tr:last-child td{border-bottom:0;}
+  td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+  .win{font-weight:700;color:var(--accent);}
+  .lose{color:var(--ink-4);}
+
+  .callout{padding:20px 24px;border-radius:10px;margin:0 0 24px;border:1px solid;font-size:15px;line-height:1.7;}
+  .callout .ct{font-weight:800;display:block;margin-bottom:8px;font-size:14px;letter-spacing:.02em;}
+  .callout p:last-child{margin:0;}
+  .callout.warn{background:color-mix(in oklab,#a8781f 10%,var(--bg));border-color:color-mix(in oklab,#a8781f 35%,var(--bg));}
+  .callout.bad{background:color-mix(in oklab,#b3261e 8%,var(--bg));border-color:color-mix(in oklab,#b3261e 32%,var(--bg));}
+  .callout.info{background:color-mix(in oklab,var(--accent) 8%,var(--bg));border-color:color-mix(in oklab,var(--accent) 30%,var(--bg));}
+
+  blockquote.src{margin:0 0 20px;padding:18px 22px;background:var(--bg-elev);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;}
+  blockquote.src p{margin:0 0 8px;font-size:15px;} blockquote.src p:last-of-type{margin:0;}
+  blockquote.src cite{display:block;font-style:normal;font-size:12.5px;color:var(--ink-3);margin-top:12px;font-family:var(--font-mono);}
+
+  .scenarios{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:24px 0 40px;}
+  .sc-card{border:1px solid var(--line);border-radius:10px;padding:20px 22px;background:var(--bg-elev);}
+  .sc-card .sc-h{font-size:11px;font-family:var(--font-mono);color:var(--ink-3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+  .sc-card h4{margin:0 0 10px;font-size:16px;font-weight:700;}
+  .sc-card p{margin:0 0 14px;font-size:14px;color:var(--ink-2);line-height:1.6;}
+  .sc-card .sc-pick{font-family:var(--font-mono);font-size:12px;padding:6px 11px;border-radius:6px;display:inline-block;}
+  .sc-card.pick-a .sc-pick{background:color-mix(in oklab,var(--a-color) 16%,transparent);color:var(--a-color);}
+  .sc-card.pick-b .sc-pick{background:color-mix(in oklab,var(--b-color) 16%,transparent);color:var(--b-color);}
+  .sc-card.pick-c .sc-pick{background:color-mix(in oklab,var(--c-color) 16%,transparent);color:var(--c-color);}
+
+  figure{margin:0 0 26px;}
+  figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:var(--bg-elev);cursor:zoom-in;}
+  figcaption{font-size:13px;color:var(--ink-3);margin-top:10px;line-height:1.65;}
+  .figrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:0 0 26px;}
+  .figrow figure{margin:0;}
+  svg.diagram{display:block;width:100%;height:auto;background:var(--bg-elev);border:1px solid var(--line);border-radius:10px;cursor:zoom-in;margin-bottom:12px;}
+
+  .srcbox{background:var(--bg-elev);border:1px solid var(--line);border-radius:10px;padding:22px 24px;margin-bottom:20px;}
+  .srcbox h4{margin-top:0;} .srcbox ul{margin:0;padding-left:20px;}
+  .srcbox li{font-size:13.5px;margin-bottom:7px;word-break:break-all;}
+
+  #lb{position:fixed;inset:0;background:rgba(15,14,13,.93);display:none;align-items:center;justify-content:center;z-index:9999;padding:24px;cursor:zoom-out;}
+  #lb.on{display:flex;}
+  #lb>*{max-width:min(1000px,94vw);max-height:92vh;border-radius:8px;background:#fff;}
+
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+  @media(max-width:640px){.container{padding:36px 16px 72px;} h2.section{margin-top:52px;}}
+</style>
+</head>
+<body>
+
+<div class="container" data-search-root>
+
+  <header class="hero">
+    <div class="eyebrow">Knowledge Augmentation · 2026-08-30</div>
+    <h1>RAG <span class="vs">vs.</span> CAG <span class="vs">vs.</span> MAG</h1>
+    <p class="deck">
+      원 논문(arXiv)과 Anthropic·OpenAI·Google 공식 문서를 직접 읽고 정리했습니다.
+      결론부터 말하면 <strong>세 약어는 대등하지 않고, 실무 분기선은 약어가 아니라 지식베이스 크기</strong>입니다.
+    </p>
+    <div class="meta">근거: arXiv 원문 7편 + 벤더 공식 문서 10건 (2026-08-30 직접 확인) · 계기가 된 SNS 요약물은 08절에 참고로 수록</div>
+  </header>
+
+  <div class="verdict">
+    <div class="label">한 줄 결론</div>
+    <p class="winner">셋은 <strong>대등한 3대 패러다임이 아닙니다.</strong> RAG만 확립된 표준이고, CAG는 5쪽짜리 short paper의 신조어, MAG는 논문 <em>한 편의 제목</em>에만 등장한 약어입니다.</p>
+    <p>실무 분기선은 세 약어가 아니라 <strong>“지식베이스가 <span class="nb">200K 토큰</span>을 넘는가”</strong> 하나입니다 — 이건 Anthropic 공식 문서가 명시한 기준입니다. 넘지 않으면 통째로 컨텍스트에 넣고 prompt caching(=사실상 CAG), 넘으면 RAG. 세션을 넘는 사용자별 상태가 필요하면 그 위에 메모리 스토어를 얹습니다.</p>
+    <p>그리고 셋은 <strong>배타적 선택지가 아닙니다.</strong> CAG 논문 저자 본인이 결론에서 하이브리드를 권하고, Anthropic의 RAG 개선안(Contextual Retrieval)은 내부적으로 캐싱을 씁니다.</p>
+  </div>
+
+  <div class="callout info">
+    <span class="ct">이 페이지의 근거 순위</span>
+    <p>본문의 모든 정의·수치는 <strong>①&nbsp;원 논문(arXiv) → ②&nbsp;벤더 공식 문서 → ③&nbsp;프레임워크 공식 문서</strong> 순으로만 인용했습니다.
+    기술 블로그·유튜브·SNS 요약물은 <strong>근거로 쓰지 않았습니다.</strong></p>
+    <p>이 주제를 파게 된 계기는 인스타그램에 널리 공유된 카드뉴스였지만,
+    <strong>SNS 게시물은 신뢰도가 가장 낮은 축</strong>이라 근거가 아니라 <strong>검증 대상</strong>으로만 다룹니다.
+    해당 이미지는 <a href="#source-post">08절</a>에 참고 자료로 배치했고,
+    1차 출처와 어긋나는 두 지점은 <a href="#crosscheck">03절</a>에 따로 정리했습니다.</p>
+  </div>
+
+  <!-- ══════════ 1. 용어 확립도 ══════════ -->
+  <h2 class="section"><span class="n">01</span>먼저 — 세 약어는 같은 급이 아니다</h2>
+  <p class="lede">
+    비교표를 만들기 전에 확인해야 할 것은 “이 약어들이 실제로 통용되는가”입니다.
+    이 SNS 요약물은 셋을 나란히 놓지만, 1차 출처를 따라가면 무게가 전혀 다릅니다.
+  </p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>약어</th><th>판정</th><th>원 출처</th><th>근거</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong style="color:var(--a-color)">RAG</strong></td>
+          <td><span class="badge ok">확립된 표준</span></td>
+          <td class="num">arXiv:2005.11401<br>Lewis et al., 2020-05-22<br>NeurIPS 2020</td>
+          <td>논문이 약어를 직접 도입. LangChain·LlamaIndex·Google Cloud 공식 문서가 동일 용어 사용</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--b-color)">CAG</strong></td>
+          <td><span class="badge mid">논문은 있으나 미확립</span></td>
+          <td class="num">arXiv:2412.15605<br>Chan et al., 2024-12-20<br>WWW ’25 <strong>short paper (5쪽)</strong></td>
+          <td>abstract에서 “an alternative paradigm, cache-augmented generation (CAG)”로 약어 도입.
+              다만 <strong>어떤 벤더 공식 문서도 “CAG”를 쓰지 않음</strong></td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--c-color)">MAG</strong></td>
+          <td><span class="badge low">표준 용어 아님</span></td>
+          <td class="num">arXiv:2505.22101<br>MemOS, Li et al., 2025-05-28</td>
+          <td>약어가 <strong>제목에만</strong> 등장. 본문의 명시적 정의 문장은 확인되지 않음.
+              같은 그룹의 후속 확장판(arXiv:2507.03724)은 <strong>제목에서 MAG를 뺐음</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout bad">
+    <span class="ct">MAG에 대한 판정 — 자세히</span>
+    <p><strong>(a) 이 약어를 쓰는 1차 출처가 있는가</strong> → 있습니다. 창작은 아닙니다. 다만 <strong>실질적으로 논문 1편</strong>이 전부입니다.
+    저자들의 후속 확장판이 제목에서 약어를 뺀 것은, 저자 본인들도 이 약어를 밀지 않았다는 신호로 읽힙니다.</p>
+    <p><strong>(b) 학계는 같은 개념을 뭐라 부르는가</strong> → 압도적으로 <strong>agent memory / long-term memory for LLM agents</strong>입니다.
+    Mem0 논문 제목은 “Scalable Long-Term Memory”, MemGPT는 “LLMs as Operating Systems”이고,
+    LangGraph 공식 용어는 <code>long-term memory</code>·<code>BaseStore</code>, Anthropic 공식 용어는 <code>memory tool</code>입니다.
+    어느 쪽도 MAG를 쓰지 않습니다.</p>
+  </div>
+
+  <!-- ══════════ 2. 세 방식 프로필 ══════════ -->
+  <h2 class="section"><span class="n">02</span>세 방식이 실제로 하는 일</h2>
+  <p class="lede">
+    이름의 무게는 다르지만, 각 방식이 가리키는 <em>기술적 실체</em>는 셋 다 실재합니다.
+    지식을 모델에 넣는 위치가 각각 <strong>외부 인덱스 / 컨텍스트 KV 캐시 / 쓰기 가능한 메모리 스토어</strong>로 다릅니다.
+  </p>
+
+  <svg class="diagram lb" viewBox="0 0 760 300" role="img" aria-label="RAG·CAG·MAG의 데이터 경로 비교 도식">
+    <rect x="0" y="0" width="760" height="300" fill="none"/>
+    <text x="20" y="28" font-family="ui-monospace,monospace" font-size="12" fill="#8a8580" letter-spacing="1.5">지식이 모델에 도달하는 경로</text>
+
+    <!-- RAG -->
+    <rect x="10" y="46" width="220" height="34" rx="8" fill="#d81b60" opacity="0.14"/>
+    <text x="120" y="68" text-anchor="middle" font-family="ui-monospace,monospace" font-size="14" font-weight="700" fill="#d81b60">RAG</text>
+    <rect x="10" y="96" width="220" height="46" rx="8" fill="none" stroke="#d81b60" stroke-width="1.5"/>
+    <text x="120" y="113" text-anchor="middle" font-size="12.5" fill="#3c3a37">쿼리 → 임베딩 → 벡터DB</text>
+    <text x="120" y="131" text-anchor="middle" font-size="12.5" fill="#8a8580">Top-K 청크만 선별</text>
+    <line x1="120" y1="142" x2="120" y2="152" stroke="#d81b60" stroke-width="1.5"/>
+    <polygon points="120,156 116,148 124,148" fill="#d81b60"/>
+    <rect x="10" y="156" width="220" height="46" rx="8" fill="none" stroke="#d81b60" stroke-width="1.5"/>
+    <text x="120" y="173" text-anchor="middle" font-size="12.5" fill="#3c3a37">작은 컨텍스트로 LLM 호출</text>
+    <text x="120" y="191" text-anchor="middle" font-size="12.5" fill="#8a8580">매 쿼리마다 검색 왕복</text>
+    <line x1="120" y1="202" x2="120" y2="208" stroke="#d81b60" stroke-width="1.5"/>
+    <polygon points="120,212 116,204 124,204" fill="#d81b60"/>
+    <rect x="10" y="212" width="220" height="46" rx="8" fill="#d81b60" opacity="0.08"/>
+    <text x="120" y="230" text-anchor="middle" font-size="12.5" font-weight="600" fill="#d81b60">지식은 모델 밖에 산다</text>
+    <text x="120" y="248" text-anchor="middle" font-size="12" fill="#8a8580">규모 무제한 · 검색 품질에 종속</text>
+
+    <!-- CAG -->
+    <rect x="270" y="46" width="220" height="34" rx="8" fill="#2e7d32" opacity="0.14"/>
+    <text x="380" y="68" text-anchor="middle" font-family="ui-monospace,monospace" font-size="14" font-weight="700" fill="#2e7d32">CAG</text>
+    <rect x="270" y="96" width="220" height="46" rx="8" fill="none" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="380" y="113" text-anchor="middle" font-size="12.5" fill="#3c3a37">문서 전체를 사전 로드</text>
+    <text x="380" y="131" text-anchor="middle" font-size="12.5" fill="#8a8580">KV cache로 미리 계산</text>
+    <line x1="380" y1="142" x2="380" y2="152" stroke="#2e7d32" stroke-width="1.5"/>
+    <polygon points="380,156 376,148 384,148" fill="#2e7d32"/>
+    <rect x="270" y="156" width="220" height="46" rx="8" fill="none" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="380" y="173" text-anchor="middle" font-size="12.5" fill="#3c3a37">캐시 + 쿼리로 바로 생성</text>
+    <text x="380" y="191" text-anchor="middle" font-size="12.5" fill="#8a8580">검색 단계 자체가 없음</text>
+    <line x1="380" y1="202" x2="380" y2="208" stroke="#2e7d32" stroke-width="1.5"/>
+    <polygon points="380,212 376,204 384,204" fill="#2e7d32"/>
+    <rect x="270" y="212" width="220" height="46" rx="8" fill="#2e7d32" opacity="0.08"/>
+    <text x="380" y="230" text-anchor="middle" font-size="12.5" font-weight="600" fill="#2e7d32">지식은 컨텍스트 안에 산다</text>
+    <text x="380" y="248" text-anchor="middle" font-size="12" fill="#8a8580">컨텍스트 윈도우가 곧 상한</text>
+
+    <!-- MAG -->
+    <rect x="530" y="46" width="220" height="34" rx="8" fill="#6a3ab2" opacity="0.14"/>
+    <text x="640" y="68" text-anchor="middle" font-family="ui-monospace,monospace" font-size="14" font-weight="700" fill="#6a3ab2">MAG / 에이전트 메모리</text>
+    <rect x="530" y="96" width="220" height="46" rx="8" fill="none" stroke="#6a3ab2" stroke-width="1.5"/>
+    <text x="640" y="113" text-anchor="middle" font-size="12.5" fill="#3c3a37">메모리 스토어에서 상태 읽기</text>
+    <text x="640" y="131" text-anchor="middle" font-size="12.5" fill="#8a8580">세션·스레드를 넘어 유지</text>
+    <line x1="640" y1="142" x2="640" y2="152" stroke="#6a3ab2" stroke-width="1.5"/>
+    <polygon points="640,156 636,148 644,148" fill="#6a3ab2"/>
+    <rect x="530" y="156" width="220" height="46" rx="8" fill="none" stroke="#6a3ab2" stroke-width="1.5"/>
+    <text x="640" y="173" text-anchor="middle" font-size="12.5" fill="#3c3a37">추론 후 새 사실을 되쓰기</text>
+    <text x="640" y="191" text-anchor="middle" font-size="12.5" fill="#8a8580">읽기가 아니라 읽기·쓰기</text>
+    <line x1="640" y1="202" x2="640" y2="208" stroke="#6a3ab2" stroke-width="1.5"/>
+    <polygon points="640,212 636,204 644,204" fill="#6a3ab2"/>
+    <rect x="530" y="212" width="220" height="46" rx="8" fill="#6a3ab2" opacity="0.08"/>
+    <text x="640" y="230" text-anchor="middle" font-size="12.5" font-weight="600" fill="#6a3ab2">지식이 시간에 따라 변한다</text>
+    <text x="640" y="248" text-anchor="middle" font-size="12" fill="#8a8580">RAG·CAG와 배타적이지 않음</text>
+
+    <text x="380" y="284" text-anchor="middle" font-size="12.5" fill="#8a8580">RAG·CAG는 “읽기 전용 지식을 어디 둘까”, MAG는 “변하는 상태를 어떻게 남길까” — 축이 다르다</text>
+  </svg>
+
+  <section class="vs-grid">
+    <div class="vs-col a">
+      <div class="tool-mark"><span class="dot"></span> Retrieval</div>
+      <h3 class="tool-name">RAG</h3>
+      <p class="tool-tag">Retrieval-Augmented Generation<br>arXiv:2005.11401 · NeurIPS 2020</p>
+      <span class="badge ok">확립된 표준</span>
+      <p class="tool-deck">파라메트릭 메모리(모델 가중치)와 비파라메트릭 메모리(외부 dense 인덱스)를 결합. 원 논문 구성은 <strong>BART-large 400M + DPR</strong>, 코퍼스는 Wikipedia <strong>2,100만 문서</strong>를 100단어 청크로 색인.</p>
+      <ul class="pc-list up">
+        <li>규모 상한이 사실상 없음 — 외부 인덱스에 위임</li>
+        <li>데이터가 바뀌면 인덱스만 갱신하면 됨</li>
+        <li>출처 추적·인용이 구조적으로 가능</li>
+      </ul>
+      <ul class="pc-list down">
+        <li>검색 실패가 곧 답변 실패 — Anthropic 측정 baseline 실패율 <strong>5.7%</strong>(top-20)</li>
+        <li>매 쿼리에 임베딩·조회·랭킹 왕복이 붙음</li>
+      </ul>
+    </div>
+
+    <div class="vs-col b">
+      <div class="tool-mark"><span class="dot"></span> Cache</div>
+      <h3 class="tool-name">CAG</h3>
+      <p class="tool-tag">Cache-Augmented Generation<br>arXiv:2412.15605 · WWW ’25 short</p>
+      <span class="badge mid">신조어 · 벤더 미채택</span>
+      <p class="tool-deck">검색을 우회하고 <strong>관련 자료 전체를 컨텍스트에 사전 로드한 뒤 KV cache로 고정</strong>. 3단계 — 사전 로딩 → 캐시로 추론 → 붙은 토큰을 truncate해 캐시 리셋. 논문 실험은 Llama 3.1 8B.</p>
+      <ul class="pc-list up">
+        <li>매번 전체 문서를 넣는 방식(ICL) 대비 압도적으로 빠름</li>
+        <li>검색 단계가 없어 파이프라인이 단순</li>
+        <li>상용 API에서는 prompt caching으로 바로 구현됨</li>
+      </ul>
+      <ul class="pc-list down">
+        <li><strong>BM25 sparse RAG보다 느림</strong> — 논문 표에서 확인 (아래 04절)</li>
+        <li>지식이 커지면 “impractical”이라고 논문이 명시</li>
+      </ul>
+    </div>
+
+    <div class="vs-col c">
+      <div class="tool-mark"><span class="dot"></span> Memory</div>
+      <h3 class="tool-name">MAG</h3>
+      <p class="tool-tag">Memory-Augmented Generation<br>arXiv:2505.22101 (제목 약어)</p>
+      <span class="badge low">표준 용어 아님</span>
+      <p class="tool-deck">MemOS는 메모리를 <strong>parametric(가중치) · activation(KV-cache) · plaintext(문서·프롬프트)</strong> 3종으로 나누고, <code>MemCube</code>라는 표준 단위로 스케줄링·접근제어·라이프사이클을 통일하자고 제안합니다.</p>
+      <ul class="pc-list up">
+        <li>세션·스레드를 넘는 사용자별 상태 유지</li>
+        <li>Mem0 측정: full-context 대비 <strong>p95 지연 91%↓, 토큰 90%+ 절감</strong></li>
+        <li>상용 구현 존재 — Anthropic memory tool, LangGraph Store</li>
+      </ul>
+      <ul class="pc-list down">
+        <li>약어가 사실상 미통용 — 소통 시 “에이전트 메모리”가 안전</li>
+        <li>path traversal·파일 무한증식 등 운영 리스크가 문서에 명시됨</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ══════════ 3. 대조 ══════════ -->
+  <h2 class="section" id="crosscheck"><span class="n">03</span>1차 출처와 대조 — 어긋나는 두 지점</h2>
+  <p class="lede">
+    널리 공유되는 SNS 요약물(<a href="#source-post">08절</a>에 원본 수록)이 가장 강조한 메시지는
+    “CAG는 가장 빠르고 RAG를 대체한다”입니다. 그런데 CAG 논문의 실제 표를 열어보면
+    <strong>논문 자신의 수치와 반대</strong>입니다. SNS 요약물을 근거로 삼으면 안 되는 이유를 보여주는 사례라
+    따로 정리했습니다.
+  </p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th style="width:34%">SNS 요약물의 주장</th><th style="width:44%">1차 출처가 말하는 것</th><th>판정</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>CAG는 <strong>≈0 ms TTFT</strong>, 세 방식 중 <strong>Fastest</strong></td>
+          <td>CAG 논문 Table(HotPotQA, large 85k): <strong>CAG 2.2631초</strong> vs <strong>BM25 sparse RAG 0.6675초</strong>.
+              CAG가 압도하는 상대는 RAG가 아니라 <strong>매번 전체 문서를 넣는 ICL(92.08초)</strong>입니다.</td>
+          <td><span class="badge low">반대</span></td>
+        </tr>
+        <tr>
+          <td>CAG가 RAG를 <strong>대체</strong>하는 상위 방식</td>
+          <td>같은 논문 BERTScore, HotPotQA large: <strong>CAG 0.7407 &lt; sparse top-5 0.7535</strong>.
+              논문 결론도 “hybrid approaches that combine preloading with selective retrieval”를 권합니다.</td>
+          <td><span class="badge low">반대</span></td>
+        </tr>
+        <tr>
+          <td>MAG가 <strong>3대 패러다임의 하나</strong></td>
+          <td>arXiv:2505.22101 <strong>제목에만</strong> 등장하는 약어. 저자들의 후속 확장판은 제목에서 뺐습니다.</td>
+          <td><span class="badge low">근거 부족</span></td>
+        </tr>
+        <tr>
+          <td>RAG는 지연·복잡도가 높은 구식 방식</td>
+          <td>방향은 맞지만 정도가 과장. sparse(BM25) RAG의 검색 시간은 <strong>0.0008초</strong>로 무시할 수준입니다.
+              느린 것은 dense 검색(0.38~0.42초)입니다.</td>
+          <td><span class="badge mid">부분적</span></td>
+        </tr>
+        <tr>
+          <td>CAG 예시로 “Gemini 2.0 → 2M / Claude 3.5 → 200K”</td>
+          <td>게시 시점(2026-08) 기준으로 이미 지난 세대 모델을 인용하고 있습니다.
+              컨텍스트 상한은 모델 세대마다 바뀌므로 <strong>조회 시점을 명기해야</strong> 합니다.</td>
+          <td><span class="badge mid">시점 주의</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>CAG 논문 원 수치 — 생성 시간 (HotPotQA, Llama 3.1 8B, 초)</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>문서셋 크기</th><th class="col-a">Sparse RAG (검색/생성)</th><th class="col-a">Dense RAG (검색/생성)</th><th class="col-b">CAG (생성)</th><th>전체 문서 ICL</th></tr></thead>
+      <tbody>
+        <tr><td>Small (21k)</td><td class="num">0.0008 / 0.7406</td><td class="num">0.3803 / 2.6608</td><td class="num">0.8512</td><td class="num lose">9.3197</td></tr>
+        <tr><td>Medium (43k)</td><td class="num">0.0008 / 0.7148</td><td class="num">0.4171 / 2.6361</td><td class="num">1.4078</td><td class="num lose">26.3717</td></tr>
+        <tr><td>Large (85k)</td><td class="num win">0.0008 / 0.6667</td><td class="num">0.4100 / 2.6447</td><td class="num">2.2631</td><td class="num lose">92.0824</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:13.5px;color:var(--ink-3);margin-top:-12px;">
+    출처: <a href="https://arxiv.org/abs/2412.15605" target="_blank" rel="noopener">arXiv:2412.15605</a>.
+    <strong>CAG의 진짜 경쟁 상대는 RAG가 아니라 ICL</strong>입니다 — large 기준 92.08초 → 2.26초로 약 40배.
+    대부분의 요약 콘텐츠가 이 비교 대상을 생략합니다.
+  </p>
+
+  <h3>CAG 논문 원 수치 — BERTScore</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>데이터셋 / 크기</th><th class="col-a">Sparse Top-3</th><th class="col-a">Sparse Top-5</th><th class="col-a">Dense Top-10</th><th class="col-b">CAG</th></tr></thead>
+      <tbody>
+        <tr><td>HotPotQA Small</td><td class="num">0.7626</td><td class="num">0.7676</td><td class="num">0.7576</td><td class="num win">0.7951</td></tr>
+        <tr><td>HotPotQA Medium</td><td class="num">0.7546</td><td class="num">0.7633</td><td class="num">0.7308</td><td class="num win">0.7821</td></tr>
+        <tr><td>HotPotQA <strong>Large</strong></td><td class="num">0.7463</td><td class="num win">0.7535</td><td class="num">0.7374</td><td class="num lose">0.7407 ←</td></tr>
+        <tr><td>SQuAD Small</td><td class="num">0.7616</td><td class="num">0.7608</td><td class="num">0.7586</td><td class="num win">0.7695</td></tr>
+        <tr><td>SQuAD Medium</td><td class="num">0.7301</td><td class="num">0.7298</td><td class="num">0.7310</td><td class="num win">0.7383</td></tr>
+        <tr><td>SQuAD Large</td><td class="num">0.7634</td><td class="num">0.7658</td><td class="num">0.7590</td><td class="num win">0.7734</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn">
+    <span class="ct">이 표가 말하는 것</span>
+    CAG는 <strong>지식이 작을 때만</strong> 우세합니다. HotPotQA large(85k)에서 이미 sparse RAG에 역전당했고,
+    논문 본문도 <em>“This approach becomes impractical for significantly larger datasets”</em>라고 명시합니다.
+    적합 대상으로 논문이 든 예시는 “소규모 기업의 내부 지식베이스, FAQ, 콜센터”입니다.
+  </div>
+
+  <!-- ══════════ 4. CAG vs prompt caching ══════════ -->
+  <h2 class="section"><span class="n">04</span>CAG는 결국 prompt caching인가</h2>
+  <p class="lede">
+    실무자에게 가장 중요한 질문입니다. <strong>메커니즘은 같고, 캐시를 누가 소유하느냐가 다릅니다.</strong>
+    상용 API를 쓴다면 “CAG를 도입한다”는 곧 <strong>“지식베이스를 프롬프트 <span class="nb">prefix</span>에 넣고 <span class="nb">prompt caching</span>을 켠다”</strong>와 사실상 같습니다.
+  </p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th></th><th class="col-b">논문의 CAG</th><th>상용 prompt caching</th></tr></thead>
+      <tbody>
+        <tr><td><strong>캐시 대상</strong></td><td>KV cache (runtime parameters)</td><td>프롬프트 prefix의 처리 결과</td></tr>
+        <tr><td><strong>소유·저장</strong></td><td>자체 구현. 사용자가 디스크·메모리에 보관</td><td><strong>벤더 서버 측</strong>. TTL 만료, 사용자 제어 불가</td></tr>
+        <tr><td><strong>수명</strong></td><td>사용자가 정함 (영구 가능)</td><td>Anthropic 5분(기본)/1시간 · OpenAI 30m 등 · Gemini explicit 기본 1시간</td></tr>
+        <tr><td><strong>주장</strong></td><td>검색을 <em>대체</em>하는 패러다임</td><td>서빙 비용·지연 <em>최적화</em> (지식 아키텍처 주장 없음)</td></tr>
+        <tr><td><strong>적용 모델</strong></td><td>open-weight 자체 서빙 (Llama 3.1 8B 등)</td><td>closed API</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>상용 prompt caching 실제 스펙 <span style="font-size:13px;color:var(--ink-3);font-weight:400;">(2026-08-30 공식 문서 조회 기준)</span></h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th></th><th>Anthropic</th><th>OpenAI</th><th>Google Gemini</th></tr></thead>
+      <tbody>
+        <tr><td><strong>활성화</strong></td><td><code>cache_control</code> 명시 (opt-in)</td><td><strong>기본 활성</strong> (opt-in 아님)</td><td>implicit 기본 활성 + explicit 수동 관리</td></tr>
+        <tr><td><strong>최소 토큰</strong></td><td>모델별 512 / 1,024 / 2,048 / 4,096</td><td>1,024 (GPT-5.6+) / 2,048 (이전)</td><td>모델별 2,048 / 4,096</td></tr>
+        <tr><td><strong>읽기 할인</strong></td><td class="num">0.1× (base input 대비)</td><td class="num">0.1× (90% 절감)</td><td>모델별 절대 단가로 고시</td></tr>
+        <tr><td><strong>쓰기 비용</strong></td><td class="num">5분 1.25× / 1시간 2×</td><td>별도 쓰기 과금 없음</td><td>별도 쓰기 과금 없음</td></tr>
+        <tr><td><strong>저장 과금</strong></td><td>없음</td><td>없음</td><td><strong>있음</strong> — explicit은 시간당 저장 과금</td></tr>
+        <tr><td><strong>기타</strong></td><td>breakpoint 최대 4개. 캐시 히트 시 <strong>무료 갱신</strong>. TTL은 요청 시작 시점부터 계산</td><td>캐시는 개별 머신에 상주, 조직·리전 간 공유 안 됨</td><td>“모델은 캐시 토큰과 일반 입력 토큰을 구분하지 않는다”</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout bad">
+    <span class="ct">Gemini explicit caching 함정</span>
+    Anthropic·OpenAI에는 저장 과금이 없지만, <strong>Gemini explicit caching은 시간당 저장료가 붙습니다.</strong>
+    조회가 드문 대용량 캐시는 순손실입니다. 예: Gemini 2.5 Pro는 cached input 단가와 별개로
+    <strong>1M 토큰당 시간당 $4.50</strong>의 저장료가 발생합니다.
+  </div>
+
+  <!-- ══════════ 5. 롱컨텍스트 ══════════ -->
+  <h2 class="section"><span class="n">05</span>“롱컨텍스트 시대에 RAG는 죽었다”는 사실인가</h2>
+  <p class="lede">
+    아닙니다. <strong>“RAG는 끝났다”고 말한 1차 출처는 이번 조사에서 확인되지 않았습니다.</strong>
+    벤더 문서들의 실제 입장은 “죽었다”가 아니라 <strong>“임계값 이하에서는 쓰지 마라”</strong>입니다.
+  </p>
+
+  <blockquote class="src">
+    <p>“If your knowledge base is smaller than <strong>200,000 tokens</strong> (about 500 pages of material),
+    you can just include the entire knowledge base in the prompt.”</p>
+    <cite>Anthropic — <a href="https://www.anthropic.com/news/contextual-retrieval" target="_blank" rel="noopener">Introducing Contextual Retrieval</a></cite>
+  </blockquote>
+
+  <p>
+    주목할 것은 <strong>Anthropic이 실제로 한 일</strong>입니다. RAG를 버린 게 아니라 <strong>RAG를 개선</strong>했습니다
+    (Contextual Retrieval). 그리고 Google의 처방도 롱컨텍스트의 짝으로 RAG 제거가 아니라 <strong>context caching</strong>을 듭니다.
+    Google 문서는 needle-in-haystack이 “많은 경우 최대 99% 정확도”라면서도,
+    <em>“여러 개의 needle을 찾는 경우에는 같은 정확도가 나오지 않는다”</em>고 한계를 함께 명시합니다.
+  </p>
+
+  <svg class="diagram lb" viewBox="0 0 760 340" role="img" aria-label="지식 규모와 상태 요구에 따른 선택 기준 도식">
+    <rect x="0" y="0" width="760" height="340" fill="none"/>
+    <text x="20" y="30" font-family="ui-monospace,monospace" font-size="12" fill="#8a8580" letter-spacing="1.5">1차 출처가 실제로 제시한 분기선</text>
+
+    <line x1="20" y1="52" x2="740" y2="52" stroke="#d9d5cc" stroke-width="1"/>
+
+    <text x="20" y="78" font-size="14" font-weight="700" fill="#3c3a37">지식베이스 &lt; 200K 토큰 · 정적</text>
+    <text x="20" y="96" font-size="12.5" fill="#8a8580">약 500페이지 이하. 자주 바뀌지 않음</text>
+    <text x="470" y="78" font-size="14" font-weight="700" fill="#2e7d32">전체 컨텍스트 주입 + prompt caching</text>
+    <text x="470" y="96" font-size="12.5" fill="#8a8580">= 상용 API에서의 CAG</text>
+    <line x1="20" y1="114" x2="740" y2="114" stroke="#e8e5dd" stroke-width="1"/>
+
+    <text x="20" y="140" font-size="14" font-weight="700" fill="#3c3a37">지식베이스 &gt; 200K 토큰</text>
+    <text x="20" y="158" font-size="12.5" fill="#8a8580">또는 자주 바뀜 · 인용 추적 필요</text>
+    <text x="470" y="140" font-size="14" font-weight="700" fill="#d81b60">RAG (+ Contextual Retrieval)</text>
+    <text x="470" y="158" font-size="12.5" fill="#8a8580">150개 검색 → rerank → top-20</text>
+    <line x1="20" y1="176" x2="740" y2="176" stroke="#e8e5dd" stroke-width="1"/>
+
+    <text x="20" y="202" font-size="14" font-weight="700" fill="#3c3a37">저지연 lexical 매칭으로 충분</text>
+    <text x="20" y="220" font-size="12.5" fill="#8a8580">대량 코퍼스 · 키워드가 잘 맞는 도메인</text>
+    <text x="470" y="202" font-size="14" font-weight="700" fill="#d81b60">BM25 sparse RAG</text>
+    <text x="470" y="220" font-size="12.5" fill="#8a8580">검색 0.0008초 — CAG보다 빠름</text>
+    <line x1="20" y1="238" x2="740" y2="238" stroke="#e8e5dd" stroke-width="1"/>
+
+    <text x="20" y="264" font-size="14" font-weight="700" fill="#3c3a37">세션을 넘는 사용자별 상태 필요</text>
+    <text x="20" y="282" font-size="12.5" fill="#8a8580">멀티세션 에이전트 · 선호·이력 누적</text>
+    <text x="470" y="264" font-size="14" font-weight="700" fill="#6a3ab2">장기 메모리 스토어</text>
+    <text x="470" y="282" font-size="12.5" fill="#8a8580">memory tool · LangGraph Store · Mem0</text>
+    <line x1="20" y1="300" x2="740" y2="300" stroke="#d9d5cc" stroke-width="1"/>
+
+    <text x="380" y="326" text-anchor="middle" font-size="12.5" fill="#8a8580">네 줄은 배타적이지 않다 — 실제 시스템은 대개 둘 이상을 겹쳐 쓴다</text>
+  </svg>
+
+  <!-- ══════════ 6. 혼합 ══════════ -->
+  <h2 class="section"><span class="n">06</span>실제로는 섞어 쓴다</h2>
+  <p class="lede">1차 출처들이 명시적으로 혼합을 지시하거나, 이미 혼합 구조입니다.</p>
+  <ul>
+    <li><strong>RAG + caching</strong> — Anthropic Contextual Retrieval은 각 청크의 맥락을 생성할 때 prompt caching으로 원문 재처리 비용을 제거했고,
+        그 결과 비용이 <strong>문서 100만 토큰당 $1.02</strong>(Claude 3 Haiku 기준). RAG 파이프라인 <em>안에</em> 캐싱이 이미 들어 있습니다.</li>
+    <li><strong>CAG 논문 결론</strong> — “hybrid approaches that combine preloading with selective retrieval”.
+        제목(<em>Don’t Do RAG</em>)과 결론의 온도차가 큽니다.</li>
+    <li><strong>MemOS</strong> — 3종 메모리 중 activation memory가 곧 KV-cache(CAG의 재료), plaintext memory가 RAG의 재료입니다.
+        애초에 셋을 통합하는 프레임으로 제안됐습니다.</li>
+    <li><strong>Anthropic memory tool + context editing</strong> — 공식 문서가 함께 쓰라고 권장합니다:
+        “compaction keeps the active context small… and memory preserves the information that must survive summarization.”</li>
+  </ul>
+
+  <h3>상황별 선택</h3>
+  <div class="scenarios">
+    <div class="sc-card pick-b">
+      <div class="sc-h">Scenario 01</div>
+      <h4>사내 규정·FAQ 챗봇</h4>
+      <p>문서가 수십~수백 페이지고 분기에 한 번 바뀝니다. 질문은 하루 수천 건.</p>
+      <span class="sc-pick">→ 전체 주입 + prompt caching</span>
+    </div>
+    <div class="sc-card pick-a">
+      <div class="sc-h">Scenario 02</div>
+      <h4>법무·컴플라이언스 검색</h4>
+      <p>수백만 파일, 법령이 수시로 갱신, 답변마다 정확한 출처 인용이 필수.</p>
+      <span class="sc-pick">→ RAG + Contextual Retrieval</span>
+    </div>
+    <div class="sc-card pick-a">
+      <div class="sc-h">Scenario 03</div>
+      <h4>키워드가 잘 맞는 대량 로그 검색</h4>
+      <p>에러 코드·식별자처럼 lexical 매칭이 강한 도메인. 지연이 중요.</p>
+      <span class="sc-pick">→ BM25 sparse RAG</span>
+    </div>
+    <div class="sc-card pick-c">
+      <div class="sc-h">Scenario 04</div>
+      <h4>고객 계정 자동화 에이전트</h4>
+      <p>사용자별 이력·선호·티켓을 세션을 넘어 기억하고 갱신해야 합니다.</p>
+      <span class="sc-pick">→ 장기 메모리 스토어</span>
+    </div>
+    <div class="sc-card pick-b">
+      <div class="sc-h">Scenario 05</div>
+      <h4>단일 코드베이스 QA</h4>
+      <p>레포 전체를 넣고 깊이 이해시켜야 하고, 코드는 자주 바뀌지 않습니다.</p>
+      <span class="sc-pick">→ 전체 주입 + caching</span>
+    </div>
+    <div class="sc-card pick-c">
+      <div class="sc-h">Scenario 06</div>
+      <h4>장기 실행 코딩 에이전트</h4>
+      <p>수 시간짜리 작업. 컨텍스트가 압축돼도 진행 상태는 살아남아야 합니다.</p>
+      <span class="sc-pick">→ 메모리 + context editing</span>
+    </div>
+  </div>
+
+  <!-- ══════════ 7. 수치 ══════════ -->
+  <h2 class="section"><span class="n">07</span>참고 — 원 논문의 핵심 수치</h2>
+
+  <h3>RAG 원 논문 (arXiv:2005.11401) — Open-Domain QA Exact Match</h3>
+  <p style="font-size:14px;color:var(--ink-3);margin-top:-6px;">모델: BART-large 400M + DPR · 코퍼스: Wikipedia 21M 문서 × 100단어 청크</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Model</th><th>NQ</th><th>TQA (test / Wiki-test)</th><th>WQ</th><th>CT</th></tr></thead>
+      <tbody>
+        <tr><td>T5-11B</td><td class="num">34.5</td><td class="num">– / 50.1</td><td class="num">37.4</td><td class="num">–</td></tr>
+        <tr><td>T5-11B+SSM</td><td class="num">36.6</td><td class="num">– / 60.5</td><td class="num">44.7</td><td class="num">–</td></tr>
+        <tr><td>REALM</td><td class="num">40.4</td><td class="num">– / –</td><td class="num">40.7</td><td class="num">46.8</td></tr>
+        <tr><td>DPR</td><td class="num">41.5</td><td class="num">57.9 / –</td><td class="num">41.1</td><td class="num">50.6</td></tr>
+        <tr><td><strong>RAG-Token</strong></td><td class="num">44.1</td><td class="num">55.2 / 66.1</td><td class="num win">45.5</td><td class="num">50.0</td></tr>
+        <tr><td><strong>RAG-Sequence</strong></td><td class="num win">44.5</td><td class="num">56.8 / <span class="win">68.0</span></td><td class="num">45.2</td><td class="num win">52.2</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn">
+    <span class="ct">흔한 오독 주의</span>
+    TQA 열은 슬래시로 나뉜 <strong>두 개의 테스트셋</strong>(open-domain test / TriviaQA-Wiki test)입니다.
+    블로그에서 자주 보이는 <em>“RAG-Sequence는 WQ에서 68.0”</em>은 열이 밀린 오독입니다 — 정답은 <strong>WQ 45.2 / TQA-Wiki 68.0</strong>.
+  </div>
+
+  <h3>에이전트 메모리 — 측정된 효과</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>시스템</th><th>출처</th><th>측정값</th><th>비교 대상</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Mem0</strong></td><td class="num">arXiv:2504.19413</td>
+            <td>LLM-as-a-Judge <strong>+26%</strong> · p95 지연 <strong>91%↓</strong> · 토큰 비용 <strong>90%+ 절감</strong></td>
+            <td>OpenAI / full-context 방식</td></tr>
+        <tr><td><strong>LightMem</strong></td><td class="num">arXiv:2510.18866</td>
+            <td>QA 정확도 최대 <strong>+7.7% / +29.3%</strong> · 총 토큰 최대 <strong>38× / 20.9×</strong> 감소 · API 호출 최대 <strong>30× / 55.5×</strong> 감소</td>
+            <td>GPT · Qwen 백본 각각</td></tr>
+        <tr><td><strong>MemGPT</strong></td><td class="num">arXiv:2310.08560</td>
+            <td>OS의 계층적 메모리에서 착안한 “virtual context management” + interrupt 기반 제어 흐름</td>
+            <td>(개념 제안)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout info">
+    <span class="ct">운영 시 문서에 명시된 리스크 (Anthropic memory tool)</span>
+    <p>· <strong>Path traversal</strong> — <code>/memories/../../secrets.env</code> 같은 경로. “Your implementation must validate every path in every command.”</p>
+    <p>· 파일 크기 무한 증가 → 상한을 두고 추적할 것 · 오래 접근되지 않은 메모리 파일은 주기적으로 삭제할 것</p>
+    <p>· 민감정보 유출 — Claude가 보통 거부하지만 “For stronger guarantees, add validation”</p>
+    <p>메모리 도구는 <strong>클라이언트 측에서 동작</strong>합니다. Claude가 파일 조작을 요청하면 실행하는 것은 여러분의 애플리케이션입니다.</p>
+  </div>
+
+  <!-- ══════════ 8. 검증 대상 원본 (참고) ══════════ -->
+  <h2 class="section" id="source-post"><span class="n">08</span>참고 — 검증 대상이 된 SNS 요약물</h2>
+  <div class="callout warn">
+    <span class="ct">이 절은 근거가 아니라 자료입니다</span>
+    아래 이미지는 <strong>SNS 게시물</strong>이며, 이 페이지에서 <strong>어떤 주장의 근거로도 사용하지 않았습니다.</strong>
+    본문의 정의·수치는 전부 01~07절의 1차 출처에서 왔습니다.
+    이 절을 남겨두는 이유는 ①&nbsp;03절 대조표가 무엇을 검증했는지 독자가 직접 확인할 수 있게 하고,
+    ②&nbsp;도식 자체는 개념을 빠르게 잡는 데 쓸모가 있기 때문입니다.
+    <strong>인용하거나 재공유할 때는 이 이미지가 아니라 09절의 1차 출처를 쓰세요.</strong>
+  </div>
+  <p class="lede">
+    게시자의 구성은 대체로 짜임새 있고 도식도 좋습니다 —
+    03절에서 반박한 것은 <strong>두 개의 구체적 주장</strong>이지 전체 구성이 아닙니다.
+    (작성자 인물 사진 표지 1장은 내용이 없어 제외했습니다.)
+  </p>
+
+  <div class="figrow">
+    <figure><img class="lb" src="/assets/social/rag_cag_mag/slide_02.jpg" alt="RAG 아키텍처 도식 — 쿼리 임베딩에서 벡터DB 검색, Top-K 컨텍스트를 거쳐 LLM으로">
+      <figcaption><strong>01. RAG</strong> — “쿼리 시점에 외부 인덱스에서 stateless하게 가져온다”. 6단계: User Query → Embedding Model → Vector DB Search → Context Payload(Top-K) → LLM Engine → Generated Response</figcaption></figure>
+    <figure><img class="lb" src="/assets/social/rag_cag_mag/slide_03.jpg" alt="CAG 아키텍처 도식 — 문서 저장소를 GPU VRAM KV-Cache에 사전 로드">
+      <figcaption><strong>02. CAG</strong> — “실시간 외부 조회를 완전히 우회. 문서 저장소 전체를 LLM 확장 컨텍스트 KV-Cache에 사전 로드·고정(frozen)”</figcaption></figure>
+  </div>
+  <div class="figrow">
+    <figure><img class="lb" src="/assets/social/rag_cag_mag/slide_04.jpg" alt="MAG 아키텍처 도식 — 메모리 테이블 읽기·쓰기와 에이전트 루프">
+      <figcaption><strong>03. MAG</strong> — “추론 파이프라인 옆에 쓰기 가능한 메모리 테이블을 두고 multi-hop 실행 루프 동안 변하는 세션 상태를 추적”. Read Memory → LLM Inference → Write Memory → Agent Loop</figcaption></figure>
+    <figure><img class="lb" src="/assets/social/rag_cag_mag/slide_05.jpg" alt="RAG CAG MAG 구조 패러다임 비교표">
+      <figcaption><strong>04. 구조 비교</strong> — 지식 출처 / 운영 상태 / 주 지연 요인 / 데이터 동기화 4축</figcaption></figure>
+  </div>
+  <div class="figrow">
+    <figure><img class="lb" src="/assets/social/rag_cag_mag/slide_06.jpg" alt="지연 프로파일 비교 — TTFT 타임라인">
+      <figcaption><strong>05. 지연 프로파일</strong> — CAG를 “≈0 ms TTFT, Fastest”로, RAG를 “High, Moderate”로 표기. <strong>이 주장이 다음 절의 검증 대상입니다.</strong></figcaption></figure>
+    <figure><img class="lb" src="/assets/social/rag_cag_mag/slide_07.jpg" alt="스케일과 컨텍스트 토폴로지 한계">
+      <figcaption><strong>06. 스케일·토폴로지</strong> — RAG는 “near-infinite data pools”, CAG는 “hardware limits에 엄격히 bound”, MAG는 “동적 메모리 관리로 스케일”</figcaption></figure>
+  </div>
+  <div class="figrow">
+    <figure><img class="lb" src="/assets/social/rag_cag_mag/slide_08.jpg" alt="프로덕션 워크로드 배분">
+      <figcaption><strong>07. 워크로드 배분</strong> — RAG는 살아 있는 기업 문서·법무·컴플라이언스, CAG는 정적 지식·긴 코드 저장소, MAG는 멀티에이전트·고객 계정 자동화</figcaption></figure>
+    <figure><img class="lb" src="/assets/social/rag_cag_mag/slide_09.jpg" alt="인프라와 리소스 풋프린트 사분면">
+      <figcaption><strong>08. 인프라·비용</strong> — 배포비용×파이프라인 복잡도 사분면. RAG=중간비용·낮은복잡도, CAG=높은 선투자·낮은복잡도, MAG=높은비용·높은복잡도</figcaption></figure>
+  </div>
+  <figure><img class="lb" src="/assets/social/rag_cag_mag/slide_10.jpg" alt="프로덕션 배포 트리거">
+    <figcaption><strong>09. 배포 트리거</strong> — “데이터가 분 단위로 바뀌고 정확한 인용 추적이 필요하면 RAG / 대체로 정적이고 속도가 최우선이면 CAG / 다단계 추론 에이전트가 변하는 상태를 추적해야 하면 MAG”. <strong>이 선택 기준 자체는 1차 출처와 대체로 부합합니다.</strong></figcaption></figure>
+
+  <!-- ══════════ 9. 출처 ══════════ -->
+  <h2 class="section"><span class="n">09</span>출처</h2>
+
+  <div class="srcbox">
+    <h4>인스타그램 소스 (본문·이미지 전량 수집)</h4>
+    <ul>
+      <li>@techwith.ram — <a href="https://www.instagram.com/p/Db7LAAAiU4Y/" target="_blank" rel="noopener">RAG vs CAG vs MAG</a> (2026-08-11, 이미지 10장 중 내용 9장 수록)</li>
+    </ul>
+    <h4>논문 (1차 출처)</h4>
+    <ul>
+      <li>RAG — <a href="https://arxiv.org/abs/2005.11401" target="_blank" rel="noopener">arXiv:2005.11401</a> Lewis et al., NeurIPS 2020</li>
+      <li>CAG — <a href="https://arxiv.org/abs/2412.15605" target="_blank" rel="noopener">arXiv:2412.15605</a> Chan et al., WWW ’25 short paper · 코드 <a href="https://github.com/hhhuang/CAG" target="_blank" rel="noopener">hhhuang/CAG</a></li>
+      <li>MemOS (MAG 약어 원출처) — <a href="https://arxiv.org/abs/2505.22101" target="_blank" rel="noopener">arXiv:2505.22101</a> · 확장판 <a href="https://arxiv.org/abs/2507.03724" target="_blank" rel="noopener">arXiv:2507.03724</a></li>
+      <li>MemGPT/Letta — <a href="https://arxiv.org/abs/2310.08560" target="_blank" rel="noopener">arXiv:2310.08560</a> · Mem0 — <a href="https://arxiv.org/abs/2504.19413" target="_blank" rel="noopener">arXiv:2504.19413</a> · LightMem — <a href="https://arxiv.org/abs/2510.18866" target="_blank" rel="noopener">arXiv:2510.18866</a></li>
+    </ul>
+    <h4>벤더 공식 문서</h4>
+    <ul>
+      <li>Anthropic — <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" target="_blank" rel="noopener">Prompt caching</a> · <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool" target="_blank" rel="noopener">Memory tool</a> · <a href="https://platform.claude.com/docs/en/build-with-claude/context-editing" target="_blank" rel="noopener">Context editing</a> · <a href="https://www.anthropic.com/news/contextual-retrieval" target="_blank" rel="noopener">Contextual Retrieval</a></li>
+      <li>OpenAI — <a href="https://developers.openai.com/api/docs/guides/prompt-caching" target="_blank" rel="noopener">Prompt caching</a></li>
+      <li>Google — <a href="https://ai.google.dev/gemini-api/docs/generate-content/caching" target="_blank" rel="noopener">Context caching</a> · <a href="https://ai.google.dev/gemini-api/docs/long-context" target="_blank" rel="noopener">Long context</a> · <a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener">Pricing</a></li>
+      <li>프레임워크 — <a href="https://docs.langchain.com/oss/python/langchain/rag" target="_blank" rel="noopener">LangChain RAG</a> · <a href="https://docs.langchain.com/oss/python/langgraph/memory" target="_blank" rel="noopener">LangGraph memory</a> · <a href="https://developers.llamaindex.ai/python/framework/understanding/rag/" target="_blank" rel="noopener">LlamaIndex RAG</a></li>
+    </ul>
+  </div>
+
+  <div class="callout bad">
+    <span class="ct">이 페이지에서 의도적으로 배제한 것 — 1차 출처 미확인</span>
+    <p>· <strong>MemOS의 LOCOMO 구체 개선 수치</strong> — 정성적 우위 서술만 확인됐고 개선 %는 확인되지 않아 싣지 않았습니다.</p>
+    <p>· <strong>Anthropic memory tool의 정량 벤치마크</strong>(토큰 절감률·정확도 향상률) — 공식 문서에 <strong>수치 자체가 없음</strong>을 확인했습니다. 인터넷에 도는 “39%/84%” 류 수치는 1차 출처가 확인되지 않습니다.</p>
+    <p>· <strong>Gemini explicit caching “90% 할인”</strong> — 공식 pricing 페이지는 모델별 절대 단가만 고시합니다. 90%라는 표현은 2차 블로그에서만 나와 단가로 표기했습니다.</p>
+    <p>· <strong>LOCOMO 벤치마크 신뢰성 논쟁</strong>, <strong>CAG와 TurboRAG·CacheGen의 선행연구 관계</strong> — 2차 출처만 확인돼 배제했습니다.</p>
+    <p>· 모델명·가격은 <strong>2026-08-30 조회 시점</strong> 값입니다. 세대가 바뀌면 달라집니다.</p>
+  </div>
+
+  <p style="font-size:13.5px;color:var(--ink-3);border-top:1px solid var(--line);padding-top:20px;margin-top:36px;">
+    이미지 저작권은 게시자(@techwith.ram)에게 있으며, 원본 링크와 출처를 각 캡션에 표기했습니다.
+    본 페이지의 검증 결과는 위에 링크한 1차 출처를 직접 확인한 것이며, 원 게시물의 정확성에 대한 평가는
+    <strong>명시적으로 인용한 두 항목</strong>에 한정됩니다.
+    관련 문서: <a href="/ai-study/harness_loop_graph_engineering.html">하네스 · 루프 · 그래프 엔지니어링</a>
+  </p>
+
+</div>
+
+<div id="lb" role="dialog" aria-modal="true" aria-label="이미지 확대 보기"></div>
+
+<script>
+(function(){
+  var lb=document.getElementById('lb');
+  document.querySelectorAll('.lb').forEach(function(el){
+    el.addEventListener('click',function(){
+      lb.innerHTML=''; lb.appendChild(el.cloneNode(true));
+      lb.classList.add('on'); document.body.style.overflow='hidden';
+    });
+  });
+  function close(){ lb.classList.remove('on'); lb.innerHTML=''; document.body.style.overflow=''; }
+  lb.addEventListener('click',close);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+})();
+</script>
+
+<script src="/assets/js/page-header.js"></script>
+<script data-page-hash="6GPYC3L" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
