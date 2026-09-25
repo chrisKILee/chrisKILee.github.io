@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FC온라인 네덜·독일·바르샤·유베 감독모드 v5</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red:        #FF0000;
+      --blue:       #0000FF;
+      --yellow:     #FFFF00;
+      --ink:        #111111;
+      --surface:    #FFFFFF;
+      --grey:       #808080;
+      --grey-light: #DADADA;
+      --muted:      #595959;
+      --font-h:     'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --font-b:     'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --font-mono:  'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--surface);
+      color: var(--ink);
+      font-family: var(--font-b);
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      padding-top: 48px;
+    }
+
+    .page-wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+    /* ===== Hero (mondrian) ===== */
+    .hero { padding: clamp(3rem, 6vw, 5rem) 1.5rem clamp(2.5rem, 5vw, 4rem); border-bottom: 3px solid var(--ink); }
+    .hero-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 40px; flex-wrap: wrap; }
+    .hero-text { flex: 1 1 480px; }
+    .hero-eyebrow {
+      display: inline-block; background: var(--ink); color: #fff;
+      font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 12px; margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: var(--font-h); font-size: clamp(2.3rem, 4.8vw, 3.6rem);
+      font-weight: 700; line-height: 1.08; letter-spacing: -0.02em; margin-bottom: 16px;
+    }
+    .hero p { color: var(--ink); opacity: 0.75; font-size: 1rem; max-width: 660px; line-height: 1.7; }
+    .hero p strong { opacity: 1; font-weight: 700; }
+
+    .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 22px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--surface); border: 1.5px solid var(--grey-light);
+      font-family: var(--font-mono); border-radius: 4px; padding: 5px 11px; font-size: 12px; font-weight: 600; color: var(--ink);
+    }
+    .chip.ned { border-color: var(--red); color: var(--red); }
+    .chip.ger { border-color: var(--blue); color: var(--blue); }
+    .chip.new { background: var(--yellow); border-color: var(--ink); color: var(--ink); font-weight: 700; }
+
+    .hero-side { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 16px; }
+    .mondrian-deco {
+      flex: 0 0 auto; display: grid; grid-template-columns: repeat(4, 24px); grid-template-rows: repeat(4, 24px);
+      gap: 4px; background: var(--ink); padding: 4px; width: fit-content;
+    }
+    .mondrian-deco span { display: block; }
+    .mondrian-deco .m-red { background: var(--red); grid-area: 1 / 1 / 3 / 3; }
+    .mondrian-deco .m-surface1 { background: var(--surface); grid-area: 1 / 3 / 2 / 5; }
+    .mondrian-deco .m-yellow { background: var(--yellow); grid-area: 2 / 3 / 4 / 4; }
+    .mondrian-deco .m-surface2 { background: var(--surface); grid-area: 2 / 4 / 3 / 5; }
+    .mondrian-deco .m-blue { background: var(--blue); grid-area: 3 / 4 / 5 / 5; }
+    .mondrian-deco .m-surface3 { background: var(--surface); grid-area: 3 / 1 / 5 / 3; }
+    .mondrian-deco .m-ink { background: var(--ink); grid-area: 4 / 3 / 5 / 4; }
+    .hero-badge {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
+      background: var(--ink); color: #fff; padding: 6px 12px;
+    }
+    @media (max-width: 640px) { .mondrian-deco { display: none; } .hero-side { align-items: flex-start; } }
+
+    /* ===== Section rhythm ===== */
+    .section { padding: 56px 0; border-bottom: 1px solid var(--grey-light); }
+    .section:last-of-type { border-bottom: none; }
+    .section-label { font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .section-desc { font-size: 15px; color: var(--muted); max-width: 680px; margin-bottom: 24px; line-height: 1.7; }
+    .sub-title { font-family: var(--font-h); font-size: clamp(1.3rem, 2.6vw, 1.75rem); font-weight: 700; letter-spacing: -0.01em; margin: 0 0 20px; padding-bottom: 12px; border-bottom: 3px solid var(--ink); }
+    .sub-title.tight { margin-top: 44px; }
+    .row-label, .sub-h { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 28px 0 12px; }
+
+    /* ===== Country tabs ===== */
+    .tab-bar { display: flex; gap: 0; border-bottom: 3px solid var(--ink); margin: 8px 0 24px; position: sticky; top: 48px; background: var(--surface); z-index: 100; }
+    .tab-btn {
+      display: flex; align-items: center; gap: 10px; padding: 14px 24px; font-size: 15px; font-weight: 700;
+      border: none; background: none; cursor: pointer; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em;
+      border-bottom: 4px solid transparent; margin-bottom: -3px; transition: color 0.2s, border-color 0.2s; font-family: var(--font-b);
+    }
+    .tab-swatch { width: 12px; height: 12px; display: inline-block; background: var(--grey-light); }
+    .tab-btn:hover { color: var(--ink); }
+    .tab-btn.active-ned { color: var(--ink); border-bottom-color: var(--red); }
+    .tab-btn.active-ned .tab-swatch { background: var(--red); }
+    .tab-btn.active-ger { color: var(--ink); border-bottom-color: var(--blue); }
+    .tab-btn.active-ger .tab-swatch { background: var(--blue); }
+    .tab-btn.active-bar { color: var(--ink); border-bottom-color: #A50044; }
+    .tab-btn.active-bar .tab-swatch { background: #A50044; }
+    .tab-btn.active-juv { color: var(--ink); border-bottom-color: var(--ink); }
+    .tab-btn.active-juv .tab-swatch { background: var(--ink); }
+    .country-pane { display: none; }
+    .country-pane.active { display: block; }
+    #pane-네덜란드 { --accent: var(--red); }
+    #pane-독일 { --accent: var(--blue); }
+    #pane-바르셀로나 { --accent: #A50044; }
+    #pane-유벤투스 { --accent: var(--ink); }
+    .tag.bar { border-color: #A50044; color: #A50044; }
+    .tag.juv { border-color: var(--ink); color: var(--ink); background: var(--grey-light); }
+    .compare-head.bar { background: #A50044; }
+    .compare-head.juv { background: var(--ink); }
+    .freq-bar.bar { background: #A50044; }
+    .freq-bar.juv { background: var(--ink); }
+    .chip.bar { border-color: #A50044; color: #A50044; }
+    .chip.juv { border-color: var(--ink); color: var(--ink); }
+    .thin-note { font-size: 12.5px; color: var(--muted); background: var(--grey-light); border-radius: 6px; padding: 10px 14px; margin: 8px 0 20px; line-height: 1.6; }
+
+    /* ===== Date tabs ===== */
+    .date-tab-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
+    .date-btn {
+      padding: 8px 18px; font-size: 13px; font-weight: 600; font-family: var(--font-mono);
+      border-radius: 8px; border: 1.5px solid var(--grey-light); background: var(--surface); color: var(--ink);
+      cursor: pointer; transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    }
+    .date-btn:hover { background: #F5F5F5; }
+    .date-btn:active { transform: translateY(1px); }
+    .date-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+    .date-content { display: none; }
+    .date-content.active { display: block; }
+
+    /* ===== Meta bar — flat mondrian color blocks ===== */
+    .meta-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; background: var(--ink); border: 2px solid var(--ink); margin-bottom: 48px; }
+    .meta-item { padding: 20px 18px; }
+    .meta-item:nth-child(1) { background: var(--red); color: #fff; }
+    .meta-item:nth-child(2) { background: var(--blue); color: #fff; }
+    .meta-item:nth-child(3) { background: var(--yellow); color: var(--ink); }
+    .meta-item:nth-child(4) { background: var(--surface); color: var(--ink); }
+    .meta-num { display: block; font-family: var(--font-mono); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
+    .meta-label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; opacity: 0.85; }
+    @media (max-width: 768px) { .meta-bar { grid-template-columns: repeat(2, 1fr); } }
+
+    /* ===== Pitch SVG (best 11) ===== */
+    .svg-wrap { background: var(--surface); border: 1px solid var(--grey-light); border-radius: 8px; padding: 16px; max-width: 720px; margin: 0 auto; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); }
+    .svg-wrap svg { width: 100%; height: auto; display: block; }
+    .svg-caption { text-align: left; font-size: 13px; color: var(--muted); margin-top: 12px; max-width: 720px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+
+    /* ===== Methodology diagram ===== */
+    .diagram-wrap { width: 100%; overflow-x: auto; border: 1px solid var(--grey-light); border-radius: 8px; padding: 16px; background: var(--surface); margin: 8px 0 4px; }
+    .diagram-wrap svg { display: block; min-width: 860px; }
+
+    /* ===== Compare grid (mondrian, new component) ===== */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; border: 2px solid var(--ink); margin-top: 8px; }
+    .compare-col + .compare-col { border-left: 2px solid var(--ink); }
+    .compare-head { padding: 12px 18px; font-size: 15px; font-weight: 700; color: #fff; font-family: var(--font-b); }
+    .compare-head.ned { background: var(--red); }
+    .compare-head.ger { background: var(--blue); }
+    .compare-row { display: flex; flex-direction: column; gap: 3px; padding: 10px 18px; border-bottom: 1px solid var(--grey-light); font-size: 13px; }
+    .compare-row:last-child { border-bottom: none; }
+    .compare-lbl { font-family: var(--font-mono); font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .compare-val { font-weight: 700; color: var(--ink); font-size: 14px; }
+    @media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } .compare-col + .compare-col { border-left: none; border-top: 2px solid var(--ink); } }
+
+    /* ===== Frequency bars (mondrian, new component) ===== */
+    .freq-card { background: var(--surface); border: 1px solid var(--grey-light); border-radius: 8px; padding: 20px 22px 16px; max-width: 680px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); }
+    .freq-card h3 { font-family: var(--font-b); font-size: 15px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .freq-sub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-bottom: 16px; }
+    .freq-row { display: grid; grid-template-columns: 100px 1fr 44px; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .freq-name { font-size: 12.5px; font-weight: 700; color: var(--ink); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .freq-track { display: block; background: var(--grey-light); border-radius: 3px; height: 14px; overflow: hidden; }
+    .freq-bar { display: block; height: 100%; min-width: 3px; }
+    .freq-bar.ned { background: var(--red); }
+    .freq-bar.ger { background: var(--blue); }
+    .freq-val { font-family: var(--font-mono); font-size: 11px; color: var(--muted); font-weight: 700; }
+
+    /* ===== Position cards — reuse snapshot .pos-box/.pos-box-head visual language ===== */
+    .pos-box {
+      background: var(--surface); border: 1px solid var(--grey-light); border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); overflow: hidden; margin-bottom: 24px; max-width: 880px;
+      opacity: 0; animation: fadeInUp 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .pos-box-head {
+      font-family: var(--font-b); font-weight: 700; font-size: 14px; letter-spacing: 0.03em;
+      background: var(--accent); color: #fff; padding: 10px 18px; margin: 0;
+    }
+    .player-row { display: flex; align-items: baseline; gap: 10px; padding: 9px 18px; border-bottom: 1px solid #F0F0F0; font-size: 14px; }
+    .player-row:last-child { border-bottom: none; padding-bottom: 14px; }
+    .player-row:first-of-type { padding-top: 12px; }
+    .player-name { font-weight: 700; color: var(--ink); min-width: 190px; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; font-family: var(--font-b); }
+    .player-note { color: var(--muted); line-height: 1.6; font-size: 13px; flex: 1; }
+    .star { flex: 0 0 auto; }
+    .mention { display: inline-flex; align-items: center; font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 99px; background: var(--surface); border: 1px solid var(--grey-light); color: var(--muted); white-space: nowrap; }
+    .mention.hi { background: var(--yellow); border-color: var(--ink); color: var(--ink); }
+    .season { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--blue); background: var(--surface); border: 1px solid var(--blue); border-radius: 3px; padding: 0 5px; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== Coach grid (mondrian, new component) ===== */
+    .coach-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 16px; }
+    .coach-card { background: var(--surface); border: 1px solid var(--grey-light); border-radius: 8px; padding: 16px; }
+    .coach-pos { font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 6px; }
+    .coach-val { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 3px; font-family: var(--font-b); }
+    .coach-note { font-size: 12px; color: var(--muted); }
+
+    /* ===== Table ===== */
+    .table-wrap { overflow-x: auto; margin-top: 16px; border: 1px solid var(--grey-light); border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--ink); color: #fff; padding: 10px 14px; text-align: left; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+    td { border-bottom: 1px solid var(--grey-light); padding: 10px 14px; font-size: 13px; color: var(--ink); vertical-align: top; line-height: 1.65; }
+    td strong { color: var(--ink); font-weight: 700; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #FAFAFA; }
+
+    /* ===== Callout (mondrian left-border + swatch) ===== */
+    .callout { position: relative; background: var(--surface); border: 1px solid var(--grey-light); border-left: 4px solid var(--grey); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 16px 0; font-size: 14px; line-height: 1.7; color: var(--ink); }
+    .callout-title { font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+    .callout-title::before { content: ''; width: 10px; height: 10px; flex: 0 0 auto; display: inline-block; background: var(--grey); }
+    .callout.info { border-left-color: var(--blue); }
+    .callout.info .callout-title::before { background: var(--blue); }
+    .callout.tip { border-left-color: var(--yellow); }
+    .callout.tip .callout-title::before { background: var(--yellow); }
+    .callout.warn { border-left-color: var(--red); }
+    .callout.warn .callout-title::before { background: var(--red); }
+    .callout.accent { border-left-color: var(--ink); }
+    .callout.accent .callout-title::before { background: var(--ink); }
+
+    /* ===== Tag pills (mondrian, new component) ===== */
+    .tag { display: inline-flex; align-items: center; font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 3px; border: 1px solid var(--grey-light); background: var(--surface); color: var(--muted); text-transform: uppercase; letter-spacing: 0.02em; }
+    .tag.ned { border-color: var(--red); color: var(--red); }
+    .tag.ger { border-color: var(--blue); color: var(--blue); }
+    .tag.green { border-color: var(--blue); color: var(--blue); }
+    .tag.blue { border-color: var(--blue); color: var(--blue); }
+    .tag.orange { background: var(--red); border-color: var(--red); color: #fff; }
+    .tag.warn { background: var(--yellow); border-color: var(--ink); color: var(--ink); }
+    .tag.new { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+    .source-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+    footer { padding: 28px 24px; border-top: 3px solid var(--ink); background: var(--surface); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    @media (max-width: 768px) {
+      .freq-row { grid-template-columns: 82px 1fr 40px; }
+    }
+    @media (max-width: 640px) {
+      .page-wrap { padding: 0 1rem; }
+      .hero { padding: 40px 1rem 32px; }
+      .section { padding: 40px 0; }
+      .tab-btn { padding: 12px 16px; font-size: 13px; }
+      .compare-grid { grid-template-columns: 1fr; }
+      .player-name { min-width: 140px; }
+      .player-row { flex-direction: column; gap: 4px; }
+      footer { padding: 18px 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+      .pos-box { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <span class="hero-eyebrow">FC 온라인 · 감독모드+공식경기 가이드 · v5</span>
+        <h1>네덜란드·독일·바르셀로나·유벤투스 — 데이터 가이드</h1>
+        <p>오픈카톡 2개 방(네덜란드·독일)의 실제 대화 <strong>언급 빈도</strong> + fc-info·인벤 게시판 <strong>전수 검색</strong>으로 만든 v5. <strong>2026-09-25 갱신</strong> — 감독모드 네덜란드·독일은 카톡 8/15~9/25 구간(네덜 54,641발언·독일 6,850발언) + 게시판 신규 11건 반영. <strong>이번 회차 신규</strong>로 공식경기 바르셀로나·유벤투스를 게시판 관찰 데이터(카톡 없음, 표본 각 5건·1건 — 아직 얇음)로 추가했다.</p>
+        <div class="hero-chips">
+          <span class="chip ned">🇳🇱 네덜란드</span>
+          <span class="chip ger">🇩🇪 독일</span>
+          <span class="chip bar">🔵🔴 바르셀로나</span>
+          <span class="chip juv">⚫⚪ 유벤투스</span>
+          <span class="chip">2026-09-25 업데이트</span>
+          <span class="chip new">쿠도 전술 급부상</span>
+          <span class="chip new">독일 Winners슈슈 1위 역전</span>
+          <span class="chip new">공식경기 신규 축</span>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div class="mondrian-deco" aria-hidden="true">
+          <span class="m-red"></span><span class="m-surface1"></span><span class="m-yellow"></span>
+          <span class="m-surface2"></span><span class="m-blue"></span><span class="m-surface3"></span><span class="m-ink"></span>
+        </div>
+        <div class="hero-badge">v5 · 2026-09-25</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-wrap">
+
+    <!-- 수집 방법 -->
+    <section class="section">
+      <div class="section-label">데이터 파이프라인</div>
+      <h2 class="sub-title">어떻게 조사했나 (v5 방법론)</h2>
+      <p class="section-desc">v5는 v4 파이프라인(오픈카톡 빈도분석 + 게시판 교차검증)을 <strong>증분 갱신</strong>(2026-08-15~09-25 신규 대화·게시글만 재수집)하면서, <strong>공식경기(바르셀로나·유벤투스) 축을 신규로 추가</strong>했다. 공식경기는 오픈카톡방이 따로 없어 게시판 관찰만으로 집계한다 — 그래서 네덜란드·독일보다 표본이 훨씬 얇다(아래 "데이터가 얇다" 참고).</p>
+      <div class="thin-note">⚠️ <strong>공식경기(바르셀로나·유벤투스) 데이터는 아직 얇다.</strong> 이번 회차 fc-info+인벤 게시판 인기글 표본에서 바르셀로나 5건·유벤투스 1건만 확인됐다(카톡방이 없어 논의량 데이터도 없음). 절대적인 추천이 아니라 "이번 회차 표본에서 관찰된 것" 정도로 참고할 것 — 표본이 쌓이는 다음 회차부터 신뢰도가 올라간다.</div>
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 880 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="데이터 수집 파이프라인 다이어그램" font-family="Helvetica Neue, Arial, sans-serif">
+          <defs>
+            <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+              <path d="M0,0 L9,4.5 L0,9 Z" fill="#111111"/>
+            </marker>
+          </defs>
+          <text x="0" y="22" font-size="12" font-weight="700" letter-spacing="0.08em" fill="#595959">SOURCE</text>
+          <rect x="10" y="40" width="195" height="120" rx="4" fill="#FFFFFF" stroke="#111111" stroke-width="1.5"/>
+          <text x="107" y="68" text-anchor="middle" font-size="13" font-weight="700" fill="#111111">오픈카톡 2개 방</text>
+          <text x="107" y="90" text-anchor="middle" font-size="11.5" fill="#595959">네덜 14.7MB · 독일 1.7MB</text>
+          <text x="107" y="108" text-anchor="middle" font-size="11.5" fill="#595959">신규 발언 6.1만</text>
+          <text x="107" y="132" text-anchor="middle" font-size="11" fill="#808080">0815~0925 증분</text>
+          <rect x="237" y="40" width="195" height="120" rx="4" fill="#FFFFFF" stroke="#111111" stroke-width="1.5"/>
+          <text x="334" y="68" text-anchor="middle" font-size="13" font-weight="700" fill="#111111">fc-info 게시판</text>
+          <text x="334" y="90" text-anchor="middle" font-size="11.5" fill="#595959">SSR 파싱</text>
+          <text x="334" y="108" text-anchor="middle" font-size="11.5" fill="#595959">감독모드+공식경기</text>
+          <text x="334" y="132" text-anchor="middle" font-size="11" fill="#808080">신규 11글 + 공식경기 표본</text>
+          <rect x="464" y="40" width="195" height="120" rx="4" fill="#FFFFFF" stroke="#111111" stroke-width="1.5"/>
+          <text x="561" y="68" text-anchor="middle" font-size="13" font-weight="700" fill="#111111">인벤 게시판</text>
+          <text x="561" y="90" text-anchor="middle" font-size="11.5" fill="#595959">5296(감독모드)+3150/3154</text>
+          <text x="561" y="108" text-anchor="middle" font-size="11.5" fill="#595959">제목+본문 검색</text>
+          <text x="561" y="132" text-anchor="middle" font-size="11" fill="#808080">신규 4글 + 공식경기 표본</text>
+          <line x1="205" y1="100" x2="237" y2="100" stroke="#111111" stroke-width="1.6" marker-end="url(#ar)"/>
+          <line x1="432" y1="100" x2="464" y2="100" stroke="#111111" stroke-width="1.6" marker-end="url(#ar)"/>
+          <line x1="659" y1="100" x2="691" y2="100" stroke="#111111" stroke-width="1.6" marker-end="url(#ar)"/>
+          <rect x="691" y="40" width="179" height="120" rx="4" fill="#FF0000" stroke="#111111" stroke-width="1.5"/>
+          <text x="780" y="72" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">교차검증 종합</text>
+          <text x="780" y="96" text-anchor="middle" font-size="11.5" fill="#FFFFFF">빈도(논의량)</text>
+          <text x="780" y="114" text-anchor="middle" font-size="11.5" fill="#FFFFFF">+ 게시판 티어(성능)</text>
+          <text x="780" y="138" text-anchor="middle" font-size="11" fill="#FFFF00">= v5 가이드</text>
+          <text x="0" y="194" font-size="11.5" fill="#808080">증분 기준: 2026-08-15 이후 신규분만 재수집(카톡 타임스탬프·fc-info createdAt·인벤 PID). 공식경기는 카톡 없이 게시판만</text>
+        </svg>
+      </div>
+      <div class="callout tip">
+        <div class="callout-title">fc-info 수집 방식</div>
+        <code>fc-info.com/posts?boardType={manager|match|tactic}&amp;page=N</code> 의 Next.js SSR 렌더 HTML을 직접 파싱한다(감독모드=manager, 공식경기=match+tactic). 게시판이 활발해 0815 컷오프까지 감독모드만 16페이지가 필요했다(제목 키워드 매칭 방식이라 v4의 페이지당 스캔량보다 효율적으로 줄었다).
+      </div>
+    </section>
+
+    <!-- 핵심 비교 -->
+    <section class="section">
+      <div class="section-label">핵심 비교</div>
+      <h2 class="sub-title">네덜란드 vs 독일 — 한눈에</h2>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-head ned">🇳🇱 네덜란드</div>
+          <div class="compare-row"><span class="compare-lbl">최다 언급 선수</span><span class="compare-val">메이어(신규 1위, 250) · 팀크룰·둠프리스</span></div>
+          <div class="compare-row"><span class="compare-lbl">필수 2픽</span><span class="compare-val">중앙공미 굴리트 + GK 팀크룰</span></div>
+          <div class="compare-row"><span class="compare-lbl">CDM 고정</span><span class="compare-val">레이카르트 / 더론</span></div>
+          <div class="compare-row"><span class="compare-lbl">정석 전술</span><span class="compare-val">3공미(모카크2) — 단 논의량은 쿠도 계열이 역전</span></div>
+          <div class="compare-row"><span class="compare-lbl">대안 전술</span><span class="compare-val">4톱·닭날개·위잉위잉</span></div>
+          <div class="compare-row"><span class="compare-lbl">진입 문턱</span><span class="compare-val">굴리트 시세 폭등 (콘굴 5천조+)</span></div>
+          <div class="compare-row"><span class="compare-lbl">전술 훈코</span><span class="compare-val">격앙 확정(단 최근 논의는 침착하게 1위)</span></div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-head ger">🇩🇪 독일</div>
+          <div class="compare-row"><span class="compare-lbl">최다 언급 선수</span><span class="compare-val">하베르츠 (1위 유지) · 사네 급부상</span></div>
+          <div class="compare-row"><span class="compare-lbl">필수 2픽</span><span class="compare-val">공미 하베르츠 + GK 테어슈테겐</span></div>
+          <div class="compare-row"><span class="compare-lbl">중미 고정</span><span class="compare-val">키미히 + 슈바인슈타이거</span></div>
+          <div class="compare-row"><span class="compare-lbl">정석 전술</span><span class="compare-val">Winners슈슈가 압도적 1위로 역전</span></div>
+          <div class="compare-row"><span class="compare-lbl">윙 국룰</span><span class="compare-val">무시알라(좌)+회네스/아미리(우) — 단 무시 언급 급감</span></div>
+          <div class="compare-row"><span class="compare-lbl">진입 문턱</span><span class="compare-val">하베·테어 가격 부담</span></div>
+          <div class="compare-row"><span class="compare-lbl">전술 훈코</span><span class="compare-val">격앙 확정(논의량 자체는 적음)</span></div>
+        </div>
+      </div>
+      <div class="callout warn" style="margin-top:24px">
+        <div class="callout-title">빈도 ≠ 티어 (해석 주의)</div>
+        아래 "언급 빈도"는 채팅에서 그 선수가 <strong>얼마나 자주 거론됐는지(논의량)</strong>다. 시세·시즌·강화 질문이 많은 선수도 올라간다. 성능 순위는 각 탭의 ⭐(필수)·티어 표기를 따른다.
+      </div>
+
+      <h2 class="sub-title tight">바르셀로나 vs 유벤투스 — 한눈에 (신규, 표본 얇음)</h2>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-head bar">🔵🔴 바르셀로나</div>
+          <div class="compare-row"><span class="compare-lbl">표본</span><span class="compare-val">게시판 관찰 5건(카톡 없음)</span></div>
+          <div class="compare-row"><span class="compare-lbl">반복 관찰</span><span class="compare-val">LB 쿠쿠레야(2/5) · RB 쿤데(3/5) · LCB 튀랑(3/5)</span></div>
+          <div class="compare-row"><span class="compare-lbl">공격진</span><span class="compare-val">하피냐·라민 야말·레반도프스키 등 유동적</span></div>
+          <div class="compare-row"><span class="compare-lbl">포메이션</span><span class="compare-val">4-2-3-1·4-2-2-2·5-2-1-2 혼재</span></div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-head juv">⚫⚪ 유벤투스</div>
+          <div class="compare-row"><span class="compare-lbl">표본</span><span class="compare-val">게시판 관찰 1건뿐(카톡 없음)</span></div>
+          <div class="compare-row"><span class="compare-lbl">관찰된 스쿼드</span><span class="compare-val">4-2-3-1, 로카텔리·비에이라 더블 볼란치, 브레메르 CB</span></div>
+          <div class="compare-row"><span class="compare-lbl">공격진</span><span class="compare-val">비알리·지단·네드베드(단일 표본, 참고용)</span></div>
+          <div class="compare-row"><span class="compare-lbl">주의</span><span class="compare-val">1건짜리 표본 — 다음 회차에 더 모아야 신뢰 가능</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- v4→v5 메타 변화 -->
+    <section class="section">
+      <div class="section-label">v4 → v5 변화 — 새로 확인된 뉴스·팁</div>
+      <h2 class="sub-title">지난 갱신(0722) 이후 무엇이 바뀌었나</h2>
+      <p class="section-desc">2026-08-15~09-25 신규 대화·게시글에서 관측된 메타 이동. <strong>빈도 변화 = 논의량 변화이지 티어가 확정적으로 바뀌었다는 뜻은 아니다</strong> — 실제 실사용 평가까지 바뀐 항목은 별도 표기했다.</p>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-head ned">🇳🇱 네덜란드</div>
+          <div class="compare-row"><span class="compare-lbl">🆕 선수 논의 1위 교체</span><span class="compare-val">메이어(LB) 250회로 전체 1위 — 팀크룰·둠프리스·굴리트보다 위</span></div>
+          <div class="compare-row"><span class="compare-lbl">🆕 전술 우세 역전</span><span class="compare-val">쿠도 계열(232)이 모카크2(66)를 3배 이상 앞섬</span></div>
+          <div class="compare-row"><span class="compare-lbl">🆕 훈코 1위 교체</span><span class="compare-val">"침착하게"(27)가 1위 — 기존 1위 "격앙"은 단 1회</span></div>
+          <div class="compare-row"><span class="compare-lbl">🆕 특성 신규 진입</span><span class="compare-val">아크로바틱(33) — 이전 가이드에 없던 항목</span></div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-head ger">🇩🇪 독일</div>
+          <div class="compare-row"><span class="compare-lbl">🆕 전술 대변혁</span><span class="compare-val">Winners슈슈(150) 독주 — "정석" 위잉위잉은 단 2회로 급감</span></div>
+          <div class="compare-row"><span class="compare-lbl">🆕 전술 신규 진입</span><span class="compare-val">4톱(65) — 기존 전술 표에 없던 항목이 2위로 등장</span></div>
+          <div class="compare-row"><span class="compare-lbl">⚠️ 언급 급감</span><span class="compare-val">무시알라 11회(과거 87회) — 원인 불명, 다음 회차 재확인 필요</span></div>
+          <div class="compare-row"><span class="compare-lbl">🆕 실사용 반대 평가</span><span class="compare-val">"회네스 감모에선 개꾸짐"(#46238) — 기존 1티어 추천과 상반</span></div>
+        </div>
+      </div>
+      <div class="callout tip" style="margin-top:24px">
+        <div class="callout-title">신규 게시글 실사용 팁 (#46238, "7.5억 서민 독일 챔스달성 꿀팁", 2026-09-20)</div>
+        원문 인용 — "① 회네스: 오버롤 높고 속도 빠르다고 속으면 안 됨. 감모에선 진짜 개꾸짐. ② 하베르츠: 중공(CAM)보다 윙공(LAM/RAM)에 두니 날아다닌다. ③ 마테우스·슈바인슈타이거: 이번 시즌은 WG(Warriors of Glory)가 평정, 9카만 써도 기가막힘 — 마테우스는 키 작아도 윙공에서 잘 통함. ④ 볼데마데: 신특 없어도 인게임에서 굉장히 부드러움(2m 장신, 별칭 사전 미등록 신규 선수 — 다음 회차 추가 예정)."
+      </div>
+      <div class="callout accent" style="margin-top:16px">
+        <div class="callout-title">전술코드 레퍼런스 — "누구의 어떤 전술코드"</div>
+        닭날개=<strong>창원가꿈헤어 C-5</strong> · 3공미(모카크2)=<strong>AGW지혁 C-2</strong> · 위잉위잉/윙전술=<strong>AGW지혁 A-3/A-8</strong> · 3중미윙=<strong>쿠도 B-2</strong>(빙하) · 4톱=<strong>쿠도 B-7</strong> · 투톱=<strong>Gucci다이버 A-7</strong> · 3공미 대안=<strong>FC지디 B-0 / Winners베컴 A-1</strong> · 독일 자작=<strong>Winners슈슈</strong>.
+      </div>
+    </section>
+
+    <!-- 국가 탭 -->
+    <section class="section" style="padding-top:40px">
+      <div class="tab-bar">
+        <button class="tab-btn active-ned" onclick="switchCountry('네덜란드', this)"><span class="tab-swatch"></span>네덜란드</button>
+        <button class="tab-btn" onclick="switchCountry('독일', this)"><span class="tab-swatch"></span>독일</button>
+        <button class="tab-btn" onclick="switchCountry('바르셀로나', this)"><span class="tab-swatch"></span>바르셀로나</button>
+        <button class="tab-btn" onclick="switchCountry('유벤투스', this)"><span class="tab-swatch"></span>유벤투스</button>
+      </div>
+
+      <!-- ===== 네덜란드 ===== -->
+      <div id="pane-네덜란드" class="country-pane active">
+        <div class="date-tab-bar" id="date-tabs-네덜란드">
+          <button class="date-btn active" onclick="selectDate('네덜란드','2026-09-25', this)">2026-09-25</button>
+        </div>
+        <div id="date-content-네덜란드-2026-09-25" class="date-content active">
+
+          <div class="meta-bar">
+            <div class="meta-item"><span class="meta-num">메이어</span><span class="meta-label">최다 언급 선수 · 250회(신규 1위)</span></div>
+            <div class="meta-item"><span class="meta-num">54,641</span><span class="meta-label">신규 발언 수 (0815~0925)</span></div>
+            <div class="meta-item"><span class="meta-num">굴리트 + 팀크룰</span><span class="meta-label">필수 2픽</span></div>
+            <div class="meta-item"><span class="meta-num">쿠도 &gt; 모카크2</span><span class="meta-label">전술 논의 1위(정석은 여전히 모카크2)</span></div>
+          </div>
+
+          <h2 class="sub-title">베스트 11 추천</h2>
+          <div class="svg-wrap">
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="700" viewBox="0 0 1120 700" font-family="Malgun Gothic, Apple SD Gothic Neo, Noto Sans KR, sans-serif">
+<rect x="20" y="20" width="1080" height="660" rx="14" fill="#2e7d32" stroke="#ffffff" stroke-width="3"/>
+<line x1="20" y1="363.2" x2="1100" y2="363.2" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+<circle cx="560.0" cy="363.2" r="70" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+<rect x="400.0" y="610" width="320" height="70" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+<rect x="165.0" y="83.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="290.0" y="103.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">LAM</text>
+<text x="290.0" y="123.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 요한 크루이프(WG 11강) 6회</text>
+<text x="290.0" y="141.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 차비 시몬스(SPA 11강) 4회</text>
+<rect x="435.0" y="83.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="560.0" y="103.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">CAM</text>
+<text x="560.0" y="123.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 루드 굴리트(CH 11강) 6회</text>
+<text x="560.0" y="141.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 로빈 반페르시(WG 11강) 5회</text>
+<rect x="705.0" y="83.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="830.0" y="103.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">RAM</text>
+<text x="830.0" y="123.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 디르크 카위트(WG 11강) 13회</text>
+<text x="830.0" y="141.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 로빈 반페르시(WG 11강) 9회</text>
+<rect x="165.0" y="263.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="290.0" y="283.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">LCM</text>
+<text x="290.0" y="303.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 프랑크 레이카르트(2026FOSL 11강) 18회</text>
+<text x="290.0" y="321.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 퇸 코프메이너르스(LE 11강) 4회</text>
+<rect x="435.0" y="263.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="560.0" y="283.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">CDM</text>
+<text x="560.0" y="303.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 마르턴 더론(25DP 11강) 39회</text>
+<text x="560.0" y="321.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 예르디 스하우턴(26TOTS 11강) 6회</text>
+<rect x="705.0" y="263.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="830.0" y="283.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">RCM</text>
+<text x="830.0" y="303.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 조이 베이르만(26TOTS 10강) 18회</text>
+<text x="830.0" y="321.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 로날트 쿠만(SPA 11강) 3회</text>
+<rect x="30.0" y="443.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="155.0" y="463.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">LB</text>
+<text x="155.0" y="483.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 B. 메이어(22UCL 13강) 10회</text>
+<text x="155.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 토마스(25KLB 11강) 8회</text>
+<rect x="300.0" y="443.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="425.0" y="463.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">LCB</text>
+<text x="425.0" y="483.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 S. 반덴베르흐(SPA 11강) 25회</text>
+<text x="425.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 야프 스탐(WG 11강) 6회</text>
+<rect x="570.0" y="443.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="695.0" y="463.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">RCB</text>
+<text x="695.0" y="483.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 버질 반다이크(25UCL 11강) 16회</text>
+<text x="695.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 야프 스탐(WS 11강) 2회</text>
+<rect x="840.0" y="443.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="965.0" y="463.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">RB</text>
+<text x="965.0" y="483.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 덴젤 둠프리스(GRU 11강) 13회</text>
+<text x="965.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 케니 테테(LE 11강) 12회</text>
+<rect x="435.0" y="593.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="560.0" y="613.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">GK</text>
+<text x="560.0" y="633.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 키얼 스헤르펀(25LIVE 13강) 18회</text>
+<text x="560.0" y="651.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 팀 크룰(BWC 13강) 11회</text>
+</svg>
+          </div>
+          <p class="svg-caption">포지션별 최다 기용 카드 1·2위 — 구단주 스쿼드 스냅샷(2026-09-23, 감독등급 챔피언스급 상위 100명 스쿼드 집계) 기준. 이 가이드의 채팅·게시판 언급 데이터와는 별도 수집.</p>
+
+          <div class="section-label" style="margin-top:44px">언급 빈도 분석</div>
+          <h2 class="sub-title">네덜란드 채팅 최다 거론 TOP 12</h2>
+          <p class="section-desc">2026-08-15 이후 신규 대화에서 선수명(별칭) 언급 발언 수. 닉네임 태그 제외. 막대는 네덜란드 1위(메이어) 대비 비율. <strong>메이어가 신규 1위로 급부상</strong>했고(250회), 기존 1위 굴리트는 4위로 밀렸다.</p>
+          <div class="freq-card">
+            <h3>🇳🇱 네덜란드 <span class="tag ned">신규 54,641발언</span></h3>
+            <div class="freq-sub">0815~0925 증분 · 1위 메이어 = 100%</div>
+            <div class="freq-row"><span class="freq-name">메이어</span><span class="freq-track"><span class="freq-bar ned" style="width:100%"></span></span><span class="freq-val">250</span></div>
+            <div class="freq-row"><span class="freq-name">팀크룰</span><span class="freq-track"><span class="freq-bar ned" style="width:96%"></span></span><span class="freq-val">239</span></div>
+            <div class="freq-row"><span class="freq-name">둠프리스</span><span class="freq-track"><span class="freq-bar ned" style="width:93%"></span></span><span class="freq-val">233</span></div>
+            <div class="freq-row"><span class="freq-name">굴리트</span><span class="freq-track"><span class="freq-bar ned" style="width:89%"></span></span><span class="freq-val">222</span></div>
+            <div class="freq-row"><span class="freq-name">레이카르트</span><span class="freq-track"><span class="freq-bar ned" style="width:74%"></span></span><span class="freq-val">184</span></div>
+            <div class="freq-row"><span class="freq-name">반더벤</span><span class="freq-track"><span class="freq-bar ned" style="width:69%"></span></span><span class="freq-val">172</span></div>
+            <div class="freq-row"><span class="freq-name">스탐</span><span class="freq-track"><span class="freq-bar ned" style="width:61%"></span></span><span class="freq-val">153</span></div>
+            <div class="freq-row"><span class="freq-name">반다이크</span><span class="freq-track"><span class="freq-bar ned" style="width:58%"></span></span><span class="freq-val">145</span></div>
+            <div class="freq-row"><span class="freq-name">크루이프</span><span class="freq-track"><span class="freq-bar ned" style="width:54%"></span></span><span class="freq-val">136</span></div>
+            <div class="freq-row"><span class="freq-name">쿠만</span><span class="freq-track"><span class="freq-bar ned" style="width:48%"></span></span><span class="freq-val">120</span></div>
+            <div class="freq-row"><span class="freq-name">반바스텐</span><span class="freq-track"><span class="freq-bar ned" style="width:38%"></span></span><span class="freq-val">95</span></div>
+            <div class="freq-row"><span class="freq-name">시몬스</span><span class="freq-track"><span class="freq-bar ned" style="width:34%"></span></span><span class="freq-val">85</span></div>
+          </div>
+
+          <div class="section-label" style="margin-top:44px">추천 전술</div>
+          <h2 class="sub-title">네덜란드 전술 세팅</h2>
+          <div class="callout info">
+            <div class="callout-title">채팅 빈도로 본 전술 (네덜란드방)</div>
+            <strong>[0815~0925 신규]</strong> 쿠도 계열(232) · 4톱(100) · 닭날개 C-5(76) · 3공미(67) · 모카크2 C-2(66) · 위잉위잉(22). <strong>쿠도 전술의 논의 비중이 모카크2의 3배 이상으로 벌어졌다</strong> — 굴리트 중앙공미 3공미가 여전히 "정석"이지만, 쿠도가 만드는 세팅에 대한 관심이 뚜렷하게 커졌다.
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>전술명</th><th>포메이션</th><th>비고</th></tr></thead>
+              <tbody>
+                <tr><td><strong>모카크2 (AGW지혁 C-2)</strong></td><td>4-1-2-3-0</td><td><span class="tag ned">정석</span> 3공미 제로톱. "반굴크(반바·굴리트·크루이프) 조합이면 무조건 3공미"</td></tr>
+                <tr><td><strong>쿠도 B-7 (4톱)</strong></td><td>4톱 변형</td><td>반바스텐 사용 시 추천 (fc-info #32301)</td></tr>
+                <tr><td><strong>창원가꿈헤어 C-5 (닭날개)</strong></td><td>4-1-4-1-0</td><td>윙백 활용. 하토 같은 공격적 풀백과 궁합. 고급여 풀백+탄탄한 중원 필요</td></tr>
+                <tr><td><strong>위잉위잉 (AGW지혁 A-3/A-8)</strong></td><td>4-1-4-1-0</td><td>윙 전술. 시몬스·스테인·베르캄프 사용 시 추천</td></tr>
+                <tr><td><strong>Gucci다이버 A-7 (투톱)</strong></td><td>4-1-2-1-2</td><td>반바스텐 투톱</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section-label" style="margin-top:44px">포지션별 추천 선수</div>
+          <h2 class="sub-title">네덜란드 스쿼드 가이드</h2>
+          <p class="section-desc"><span class="mention">숫자</span> = 채팅 언급 횟수 · <span class="season">시즌</span> = 주력 시즌(강화) · 티어는 fc-info #27735(8개월 운영 티어리스트)·#32301 기준.</p>
+          <div class="callout accent">
+            <div class="callout-title">fc-info #27735 핵심 (JJC페르시아 · 8개월 운영 · 조회 3,471)</div>
+            "WB 굴리트가 천조대일 때부터 굴리트부터 올리라 했다. 콘굴 5천조·퇸 20조가 된 지금 <strong>CU·ICON 굴은 시세상 비추, WB반바·FAC반페로도 슈챔 가능</strong>." · "쿠만 수미 금지 — 공격성 높아 가출. 중미로만."
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ned pos-box-head">GK</div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 팀 크룰 <span class="mention hi">219</span> <span class="season">HG</span></span>
+              <span class="player-note"><span class="tag ned">필수</span> "굴리트 중앙공미 + 팀크룰 키퍼, 이 두개는 무조건 필수." 0티어 GK. 급여 부담 시 GRU 실러선·25토츠/21챔 파스베어로 대체.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">파스베어 <span class="mention">59</span> <span class="season">25TOTS/21챔</span></span>
+              <span class="player-note">0티어 대체 GK (#27735). 실러선(GRU)도 0티어.</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ned pos-box-head">CAM (3공미 중앙)</div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 굴리트 <span class="mention hi">3083</span> <span class="season">WB·FAC·CH</span></span>
+              <span class="player-note"><span class="tag ned">0티어 · 사실상 필수</span> 압도적 최다 언급. "공미에서 반바보다 굴리트가 골을 더 넣는다." WB/FAC/CH 굴이 0티어, CU·ICON은 성능 대비 고평가라 비추(#27735).</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">반바스텐 <span class="mention">531</span> <span class="season">WB</span></span>
+              <span class="player-note"><span class="tag ned">1티어</span> 굴 대안 / ST·투톱 겸용. 단 "3공미엔 반바보다 베르캄프가 더 맞다"는 의견도(#33550). 반바 빼고 굴·중미 보강이 승률에 낫다는 말 다수.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">반페르시 <span class="mention">142</span> <span class="season">FAC/UT</span></span>
+              <span class="player-note"><span class="tag ned">1티어</span> FAC반페가 CU굴보다 가성비. 공미·윙 겸용.</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ned pos-box-head">LAM / RAM / 윙 (LM·RM)</div>
+            <div style="padding:12px 18px 0">
+              <div class="callout info" style="margin:0 0 12px; font-size:13px; padding:10px 14px">
+                #27735: "네덜 윙은 거기서 거기. 돈 맞는 거 쓰면 된다." 25토츠 스테인 · 25토츠/25TY WB 시몬스 · BDO·WB·CU 크루이프 · 25챔 GRU 각포 · GRU 베르흐바인 · WS 베르캄프 모두 후보.
+              </div>
+            </div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 크루이프 <span class="mention hi">640</span> <span class="season">CU·WB·BDO</span></span>
+              <span class="player-note"><span class="tag ned">1티어</span> 윙·공미 겸용. "펀(편) 이상부터 좋다." 10카 기준 자주 사용.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">시몬스 <span class="mention">357</span> <span class="season">25TOTS·WB</span></span>
+              <span class="player-note"><span class="tag">2티어</span> 피지컬 좋음. "3공미 윙에 시몬스" 다수. WB 8카로도 운용.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">베르캄프 <span class="mention">231</span> <span class="season">LE·WB·WS</span></span>
+              <span class="player-note"><span class="tag">2티어</span> "WS벨캄은 윙전술(위잉위잉)에서 좋았다." 3공미보단 윙 궁합. 턴오버 잦으면 LE벨캄으로 교체 의견.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">셈 스테인 <span class="mention">195</span> <span class="season">25TOTS</span></span>
+              <span class="player-note"><span class="tag">2티어</span> 윙 자원. 시몬스와 좌우 교차 사용.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">각포 / 베르흐바인 / 노아랑 <span class="season">GRU·25TOTS</span></span>
+              <span class="player-note"><span class="tag">3티어</span> 구단가치 맞춰 사용하는 보조 윙.</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ned pos-box-head">CM (중미)</div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 레이카르트 <span class="mention hi">503</span> <span class="season">WB·CH·BDO·CU</span></span>
+              <span class="player-note"><span class="tag ned">0티어</span> 네덜 중원의 근본. "WB레카가 CH레카보다 중미에서 더 좋다." 와태(WB) 평이 매우 좋음. CDM·CM 모두 가능.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">코프메이너르스(퇸) <span class="mention">386</span> <span class="season">LE·24챔</span></span>
+              <span class="player-note"><span class="tag ned">0티어</span> LE퇸. 레카 없을 때 중미·볼란치·CB 멀티 가성비. 스탯이 좋다는 평.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">레인더르스 <span class="mention">179</span> <span class="season">24챔·25TOTS·EP</span></span>
+              <span class="player-note"><span class="tag ned">0~1티어</span> 토츠 8카만 써도 좋고 11카면 최상급. 공미도 가능.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">흐라벤베르흐 <span class="mention">271</span> <span class="season">25TOTS·25TY·24챔</span></span>
+              <span class="player-note"><span class="tag ned">1티어</span> 레카 짝 중미. 가끔 수미로도. 종결까지 올리는 유저 다수.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">베이날둠 <span class="mention">92</span> <span class="season">DCB·24챔</span></span>
+              <span class="player-note"><span class="tag">1티어</span> DCB 베이날둠. 퇸과 묶어 중미 운용.</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ned pos-box-head">CDM (수미)</div>
+            <div style="padding:12px 18px 0">
+              <div class="callout warn" style="margin:0 0 12px; font-size:13px; padding:10px 14px">
+                <strong>쿠만 수미 금지</strong> — 공격성이 높아 수미에 두면 가출. 쓰려면 중미로. (#27735, 채팅 다수)
+              </div>
+            </div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 더론 <span class="mention hi">285</span> <span class="season">25챔·EP·LE·DP</span></span>
+              <span class="player-note"><span class="tag ned">0티어</span> "솔직히 그냥 더론 or 레이카르트." 수미 1순위. DP더론으로 신특 운용.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 레이카르트 <span class="season">BDO·CU·CH</span></span>
+              <span class="player-note"><span class="tag ned">0티어</span> 수미 겸 가능. 더론과 함께 사실상 양대 수미.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">블린트 <span class="mention">152</span> <span class="season">LE</span></span>
+              <span class="player-note"><span class="tag">1티어</span> LE블린트 수미 대안. "모난 데 없고 몸싸움 좋다." 풀백 겸용.</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ned pos-box-head">CB</div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 반다이크 <span class="mention hi">310</span> <span class="season">24챔·GRU·25TOTS·토티</span></span>
+              <span class="player-note"><span class="tag ned">0티어</span> "뭘 써도 벽." FC BLD/24챔/GRU/DCB/토츠/토티 전부 0티어. CU반다이크는 1티어. 체이서 특성 권장.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">스탐 <span class="mention">306</span> <span class="season">HR·WS</span></span>
+              <span class="player-note"><span class="tag ned">0티어</span> 반다이크 짝. "답답할 땐 반더벤이 더 편하다"는 비교도.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">반더벤 <span class="mention">316</span> <span class="season">25챔·26토티</span></span>
+              <span class="player-note"><span class="tag ned">0티어</span> 센백·풀백 겸용. 반다이크-반더벤 네덜 듀오 그대로 쓰는 유저 다수.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">스헤르펀 <span class="mention">813</span> <span class="season">토티</span></span>
+              <span class="player-note"><span class="tag">언급 2위</span> 최상급 CB(13카 기준). "머리 빼고 상하체가 마동석, 슛 차기 전에 담근다." 단 보호·재료비가 매우 비싸 시세 논의가 많음.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">반덴베르흐 / 더브레이 <span class="season">EP·24챔·WS</span></span>
+              <span class="player-note"><span class="tag">1~2티어</span> EP반덴베르흐 0티어, WS·24챔 더브레이 1티어 (#27735).</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ned pos-box-head">LB / LWB</div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 하토 <span class="mention hi">186</span> <span class="season">25TOTS·LE·토티</span></span>
+              <span class="player-note"><span class="tag ned">0티어</span> 좌풀백 0티어. "공격력이 좋아 닭날개에서 특히 좋다." 블린트에서 갈아타는 유저 다수.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">블린트 / 데이크스 / 메이어 <span class="season">LE·GRU·21챔</span></span>
+              <span class="player-note"><span class="tag">0~1티어</span> 21챔 메이어백금·GRU 데이크스 0티어. EP/LE 블린트 1티어.</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ned pos-box-head">RB / RWB</div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 둠프리스 <span class="mention hi">352</span> <span class="season">24·25챔·26토티</span></span>
+              <span class="player-note"><span class="tag ned">0티어</span> 우풀백 정배. "챔스 비싸면 GRU 둠프 9카로." 반다이크 짝 CB로도 활용 가능.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">테테 / 팀버 <span class="mention">49</span> <span class="season">LE·24·25챔·24HW</span></span>
+              <span class="player-note"><span class="tag">0~1티어</span> LE테테 0티어, 24/25 팀버·24HW테테 1티어.</span>
+            </div>
+          </div>
+
+          <div class="section-label" style="margin-top:44px">훈련코치 &amp; 선수 특성</div>
+          <h2 class="sub-title">네덜란드 세팅 가이드</h2>
+
+          <div class="sub-h">훈련코치 (채팅 빈도: 격앙·티키타카·능중빠 순)</div>
+          <div class="coach-grid">
+            <div class="coach-card">
+              <div class="coach-pos">전술 훈련 (전체)</div>
+              <div class="coach-val">격앙 <span class="tag orange">필수</span></div>
+              <div class="coach-note">확정 세팅 — 모든 포지션</div>
+            </div>
+            <div class="coach-card">
+              <div class="coach-pos">공격진 (굴리트·크루이프·시몬스)</div>
+              <div class="coach-val">능중빠</div>
+              <div class="coach-note">능숙 몸싸움 + 중거리 + 빠른 템포</div>
+            </div>
+            <div class="coach-card">
+              <div class="coach-pos">중미·수미 (레이카르트·더론)</div>
+              <div class="coach-val">능중티</div>
+              <div class="coach-note">능숙 몸싸움 + 중거리 + 티키타카</div>
+            </div>
+            <div class="coach-card">
+              <div class="coach-pos">수비진 (CB·풀백)</div>
+              <div class="coach-val">국룰</div>
+              <div class="coach-note">표준 수비 세팅</div>
+            </div>
+          </div>
+
+          <div class="sub-h">포지션별 특성 (채팅 빈도순)</div>
+          <div class="callout accent">
+            <div class="callout-title">특성 빈도 (네덜란드방)</div>
+            체이서(96) · 두심(78) · 블로커(62) · 크포(52) · 정확한 헤더(41) · 침투(37) · 승부욕(23). 수비/중원에 <strong>체이서</strong>, 공미에 <strong>크포</strong>가 실제로 가장 많이 언급된다.
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>포지션</th><th>권장 특성</th><th>비고</th></tr></thead>
+              <tbody>
+                <tr><td>전 포지션 기본</td><td><strong>두심 + 승부욕</strong></td><td>기본 깔고 시작</td></tr>
+                <tr><td>굴리트 (CAM)</td><td><strong>크포</strong> (크로스 플레이어)</td><td>두심 내장 시즌이면 크포 추가</td></tr>
+                <tr><td>중미·수미·풀백</td><td><strong>체이서</strong></td><td>채팅 최다 언급 특성</td></tr>
+                <tr><td>CB (반다이크·스탐)</td><td><strong>블로커</strong> / 체이서</td><td>두심 vs 블로커 논쟁 → 블로커·체이서 선호</td></tr>
+                <tr><td>GK</td><td><strong>공중볼 장악</strong></td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div><!-- /date-content-네덜란드 -->
+      </div><!-- /pane-네덜란드 -->
+
+      <!-- ===== 독일 ===== -->
+      <div id="pane-독일" class="country-pane">
+        <div class="date-tab-bar" id="date-tabs-독일">
+          <button class="date-btn active" onclick="selectDate('독일','2026-09-25', this)">2026-09-25</button>
+        </div>
+        <div id="date-content-독일-2026-09-25" class="date-content active">
+
+          <div class="meta-bar">
+            <div class="meta-item"><span class="meta-num">하베르츠</span><span class="meta-label">최다 언급 선수 · 105회(여전히 1위)</span></div>
+            <div class="meta-item"><span class="meta-num">6,850</span><span class="meta-label">신규 발언 수 (0815~0925)</span></div>
+            <div class="meta-item"><span class="meta-num">하베르츠 + 테어슈테겐</span><span class="meta-label">필수 2픽</span></div>
+            <div class="meta-item"><span class="meta-num">Winners슈슈 압도</span><span class="meta-label">정석 전술(150회, 2위 4톱의 2배+)</span></div>
+          </div>
+
+          <h2 class="sub-title">베스트 11 추천</h2>
+          <div class="svg-wrap">
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="700" viewBox="0 0 1120 700" font-family="Malgun Gothic, Apple SD Gothic Neo, Noto Sans KR, sans-serif">
+<rect x="20" y="20" width="1080" height="660" rx="14" fill="#2e7d32" stroke="#ffffff" stroke-width="3"/>
+<line x1="20" y1="363.2" x2="1100" y2="363.2" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+<circle cx="560.0" cy="363.2" r="70" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+<rect x="400.0" y="610" width="320" height="70" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+<rect x="165.0" y="83.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="290.0" y="103.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">LAM</text>
+<text x="290.0" y="123.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 케빈 샤데(25DP 11강) 20회</text>
+<text x="290.0" y="141.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 로타어 마테우스(WG 11강) 19회</text>
+<rect x="435.0" y="83.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="560.0" y="103.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">CAM</text>
+<text x="560.0" y="123.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 마르빈 두크슈(25DP 11강) 53회</text>
+<text x="560.0" y="141.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 카이 하베르츠(SPA 10강) 6회</text>
+<rect x="705.0" y="83.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="830.0" y="103.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">RAM</text>
+<text x="830.0" y="123.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 리로이 사네(WS 11강) 31회</text>
+<text x="830.0" y="141.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 로타어 마테우스(WG 11강) 10회</text>
+<rect x="165.0" y="263.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="290.0" y="283.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">LCM</text>
+<text x="290.0" y="303.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 슈바인슈타이거(WG 11강) 10회</text>
+<text x="290.0" y="321.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 레온 고레츠카(2024EP 11강) 7회</text>
+<rect x="435.0" y="263.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="560.0" y="283.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">CDM</text>
+<text x="560.0" y="303.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 안톤 슈타흐(25DP 11강) 36회</text>
+<text x="560.0" y="321.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 A. 파블로비치(25UCL 11강) 5회</text>
+<rect x="705.0" y="263.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="830.0" y="283.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">RCM</text>
+<text x="830.0" y="303.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 펠릭스 은메차(25UCL 11강) 19회</text>
+<text x="830.0" y="321.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 파스칼 그로스(25DP 11강) 5회</text>
+<rect x="30.0" y="443.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="155.0" y="463.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">LB</text>
+<text x="155.0" y="483.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 안젤로 슈틸러(25DP 11강) 22회</text>
+<text x="155.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 M. 미텔슈테트(25DP 11강) 19회</text>
+<rect x="300.0" y="443.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="425.0" y="463.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">LCB</text>
+<text x="425.0" y="483.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 N. 슐로터베크(25UCL 11강) 24회</text>
+<text x="425.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 위르겐 콜러(WG 11강) 2회</text>
+<rect x="570.0" y="443.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="695.0" y="463.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">RCB</text>
+<text x="695.0" y="483.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 요나탄 타(WS 11강) 26회</text>
+<text x="695.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 Y. 비세크(25UCL 11강) 5회</text>
+<rect x="840.0" y="443.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="965.0" y="463.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">RB</text>
+<text x="965.0" y="483.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 마리우스 볼프(WS 11강) 45회</text>
+<text x="965.0" y="501.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 베냐민 헨릭스(FAC 11강) 22회</text>
+<rect x="435.0" y="593.0" width="250" height="74" rx="8" fill="#ffffff" stroke="#1b5e20" stroke-width="2"/>
+<text x="560.0" y="613.0" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">GK</text>
+<text x="560.0" y="633.0" text-anchor="middle" font-size="11.5" fill="#111111">1위 올리버 칸(ICON 11강) 36회</text>
+<text x="560.0" y="651.0" text-anchor="middle" font-size="10.5" fill="#555555">2위 M. 테어슈테겐(CE 11강) 4회</text>
+</svg>
+          </div>
+          <p class="svg-caption">포지션별 최다 기용 카드 1·2위 — 구단주 스쿼드 스냅샷(2026-09-23, 감독등급 챔피언스급 상위 100명 스쿼드 집계) 기준. 이 가이드의 채팅·게시판 언급 데이터와는 별도 수집.</p>
+
+          <div class="section-label" style="margin-top:44px">언급 빈도 분석</div>
+          <h2 class="sub-title">독일 채팅 최다 거론 TOP 12</h2>
+          <p class="section-desc">2026-08-15 이후 신규 대화에서 선수명(별칭) 언급 발언 수. 닉네임 태그 제외. 막대는 독일 1위(하베르츠) 대비 비율. 하베르츠가 여전히 1위를 지켰고, <strong>사네 언급이 4배로 급등</strong>해 2위로 올라섰다(과거 20회 → 80회). 반면 무시알라는 11회로 급감(과거 78회 대비).</p>
+          <div class="freq-card">
+            <h3>🇩🇪 독일 <span class="tag ger">신규 6,850발언</span></h3>
+            <div class="freq-sub">0815~0925 증분 · 1위 하베르츠 = 100%</div>
+            <div class="freq-row"><span class="freq-name">하베르츠</span><span class="freq-track"><span class="freq-bar ger" style="width:100%"></span></span><span class="freq-val">105</span></div>
+            <div class="freq-row"><span class="freq-name">사네</span><span class="freq-track"><span class="freq-bar ger" style="width:76%"></span></span><span class="freq-val">80</span></div>
+            <div class="freq-row"><span class="freq-name">은메차</span><span class="freq-track"><span class="freq-bar ger" style="width:68%"></span></span><span class="freq-val">71</span></div>
+            <div class="freq-row"><span class="freq-name">슈타흐</span><span class="freq-track"><span class="freq-bar ger" style="width:54%"></span></span><span class="freq-val">57</span></div>
+            <div class="freq-row"><span class="freq-name">헨릭스</span><span class="freq-track"><span class="freq-bar ger" style="width:53%"></span></span><span class="freq-val">56</span></div>
+            <div class="freq-row"><span class="freq-name">두크슈</span><span class="freq-track"><span class="freq-bar ger" style="width:52%"></span></span><span class="freq-val">55</span></div>
+            <div class="freq-row"><span class="freq-name">베켄바우어</span><span class="freq-track"><span class="freq-bar ger" style="width:46%"></span></span><span class="freq-val">48</span></div>
+            <div class="freq-row"><span class="freq-name">슐로터베크</span><span class="freq-track"><span class="freq-bar ger" style="width:43%"></span></span><span class="freq-val">45</span></div>
+            <div class="freq-row"><span class="freq-name">고레츠카</span><span class="freq-track"><span class="freq-bar ger" style="width:41%"></span></span><span class="freq-val">43</span></div>
+            <div class="freq-row"><span class="freq-name">마테우스</span><span class="freq-track"><span class="freq-bar ger" style="width:37%"></span></span><span class="freq-val">39</span></div>
+            <div class="freq-row"><span class="freq-name">키미히</span><span class="freq-track"><span class="freq-bar ger" style="width:31%"></span></span><span class="freq-val">33</span></div>
+            <div class="freq-row"><span class="freq-name">볼프</span><span class="freq-track"><span class="freq-bar ger" style="width:30%"></span></span><span class="freq-val">32</span></div>
+          </div>
+
+          <div class="section-label" style="margin-top:44px">추천 전술</div>
+          <h2 class="sub-title">독일 전술 세팅</h2>
+          <div class="callout info">
+            <div class="callout-title">채팅 빈도로 본 전술 (독일방)</div>
+            <strong>[0815~0925 신규]</strong> <strong>Winners슈슈(150)</strong> · 4톱(65, 신규 진입) · 모카크2 C-2(21) · 3공미(11) · 윙전술(4) · 위잉위잉(2). 기존 "정석"이던 위잉위잉이 단 2회로 급감 — 나쁜 전술이 됐다는 근거는 없고, 다들 이미 써서 논의가 줄었을 가능성이 높다(원문 추가 확인 필요).
+          </div>
+          <div class="callout tip">
+            <div class="callout-title">41410 vs 41230 실험 (fc-info #31613 · 2026-04-18 · 댓글 24)</div>
+            동일 구성으로 50경기씩 돌려 비교 → <strong>41410(위잉위잉)이 41230 대비 승률 1~2% 높았다</strong>. 성능 검증 결과 자체는 유효 — 논의량이 줄었다고 성능 우위가 뒤집힌 건 아니다.
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>전술명</th><th>포메이션</th><th>비고</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Winners슈슈 전술</strong></td><td>—</td><td><span class="tag ger">최다 논의</span> 방장 자작. 시즌 3회 슈챔 달성 검증. 최근 구간 논의량 압도적 1위</td></tr>
+                <tr><td><strong>4톱</strong></td><td>4톱 변형</td><td><span class="tag new">신규 진입</span> 0815~0925 구간 65회로 2위 등장. 세부 세팅은 원문 추가 확인 필요</td></tr>
+                <tr><td><strong>모카크2 (AGW지혁 C-2)</strong></td><td>4-1-2-3-0</td><td><span class="tag ger">공통</span> 3공미. 네덜란드와 동일 사용</td></tr>
+                <tr><td><strong>위잉위잉 (AGW지혁 A-3/A-8)</strong></td><td>4-1-4-1-0</td><td><span class="tag green">검증</span> 41410. 무시+회네스/아미리 궁합, 승률 우위 실험 검증됨. 단 최근 논의량은 급감</td></tr>
+                <tr><td><strong>지디님 공디 1·2</strong></td><td>—</td><td>독일 유저 다수 사용</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section-label" style="margin-top:44px">포지션별 추천 선수</div>
+          <h2 class="sub-title">독일 스쿼드 가이드</h2>
+          <p class="section-desc"><span class="mention">숫자</span> = 채팅 언급 횟수 · <span class="season">시즌</span> = 주력 시즌(강화) · 티어는 fc-info #15027(독일 티어리스트)·실험 게시글·#46238(신규) 기준.</p>
+          <div class="callout accent">
+            <div class="callout-title">#46238 신규 게시글 실사용 팁 (7.5억 서민 독일 챔스달성 꿀팁)</div>
+            <strong>볼데마데</strong>(신규 선수, 포지션 미상) — "신특 없어도 인게임에서 굉장히 부드러움." 별칭 사전에 아직 없는 최신 선수라 채팅 언급 집계에선 빠져 있다. 나머지 팁은 아래 각 포지션 절에 병기.
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ger pos-box-head">GK</div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 테어슈테겐 <span class="mention hi">18</span> <span class="season">CU·HG</span></span>
+              <span class="player-note"><span class="tag ger">필수</span> "팩이 아닌 CU가 더 잘 막는다. CU로 종결." 매물 귀함. 급여 터지면 키퍼부터 낮추는 게 정석. 그루테어 백금은 거의 안 씀.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">첸트너 / 노이어 <span class="season">24챔</span></span>
+              <span class="player-note">첸트너(17급여) 급여 절약용. 24챔 노이어 후기 좋음(하위 시즌은 하자 심함).</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ger pos-box-head">CAM (공미)</div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 하베르츠 <span class="mention hi">105</span> <span class="season">EP·CU·25챔·모먼트</span></span>
+              <span class="player-note"><span class="tag ger">감모 최적화 · 필수</span> "감모에서 너무 좋아서 8카만이라도 쓰라." "10강이라도 하베 쓰는 게 옳다." 신규 안 나오면 종결. <span class="tag new">신규 팁(#46238)</span> "중공(CAM)보다 윙공(LAM/RAM)에 두니 날아다닌다" — 윙공 배치 실사용 평가.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">은메차 <span class="mention">76</span> <span class="season">26토티·24챔·25챔</span></span>
+              <span class="player-note"><span class="tag ger">1티어</span> 공미·수미·센백 멀티. "24케미 받으면 메차도 공미 가능." 9카 운용 다수.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">발락 <span class="season">모먼트</span></span>
+              <span class="player-note"><span class="tag">취향</span> 지표 최상급이나 귀속 이슈 — 장기 독일 유저만.</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ger pos-box-head">LAM / RAM (윙공미)</div>
+            <div style="padding:12px 18px 0">
+              <div class="callout tip" style="margin:0 0 12px">
+                <div class="callout-title">윙 조합 국룰 — 무시알라(좌) + 회네스/아미리(우)</div>
+                #31937(윙 4명 8카 비교): 무시알라=드리블·결정력 최고(수비 0), 회네스=침투·골·몸싸움(약발↓), 사네=스피드(기복), 아미리=연계·안정·수비가담. ·
+                #30780: 무시 왼쪽·아미리 오른쪽 정배, <strong>무시+회네스 200경기 52% 승률</strong>(슈슈). 승률순 회네스+무시 &gt; 무시+아미리 &gt; 회네스+아미리(#31937).
+              </div>
+              <div class="callout warn" style="margin:0 0 12px; font-size:13px; padding:10px 14px">
+                <span class="tag new">신규(#46238)</span> "회네스 — 오버롤 높고 속도 빠르다고 속으면 안 됨. 감모에선 진짜 개꾸짐." 기존 가이드는 회네스를 1티어 우측 정배로 소개했는데, 최근 실사용 평가는 정반대다. 상반된 평가를 병기해둔다 — 다음 회차 추가 확인 필요.
+              </div>
+            </div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 무시알라 <span class="mention">11</span> <span class="season">25TOTS·WB·24챔·노미</span></span>
+              <span class="player-note"><span class="tag ger">0티어 · 좌측 고정</span> "무시는 무조건 넣어라." 드리블·결정력 최상, 단 수비 0. 11카까지 올리는 유저 다수. <span class="tag warn">언급 급감</span> 0815~0925 구간 11회로 과거(78회) 대비 급감 — 다치거나 너프됐다는 근거는 없음, 티어 변경 단정 금지·추가 관찰 필요.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">아미리 <span class="mention">5</span> <span class="season">노미·25TOTS</span></span>
+              <span class="player-note"><span class="tag ger">1티어 · 우측 정배</span> "9카면 그냥 계속 아미리." 연계·수비가담 안정적. 매물 귀함.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">회네스 <span class="season">26HR·25TOTS·토티</span></span>
+              <span class="player-note"><span class="tag warn">평가 엇갈림</span> 기존: 윙전술 핵심, 무시 짝 최고 승률. 최근(#46238): "개꾸짐"이라는 반대 실사용 평가 — 위 콜아웃 참조.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">사네 <span class="mention hi">80</span> <span class="season">토티·WS 11강</span></span>
+              <span class="player-note"><span class="tag new">언급 4배 급등</span> 과거 20회 → 0815~0925 구간 80회. "사네 넣으니 잘해준다"(#32155). 논의 비중이 뚜렷하게 커진 신호 — 스피드 자원, 닭날개 우측에도. 스쿼드 스냅샷에서도 RAM 1위(31회)로 실사용 확인.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">마테우스 <span class="mention">39</span> <span class="season">WG(Warriors of Glory)</span></span>
+              <span class="player-note"><span class="tag new">신규 팁(#46238)</span> "이번 시즌은 WG가 평정, 9카만 써도 기가막힘. 키 작아도 윙공에서 잘 통함." 스쿼드 스냅샷 LAM/RAM 2위로 실사용 확인(각 19·10회).</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">비르츠 / 로이스 / 두크슈 / 브란트 <span class="season">24현역·GRU·24EP</span></span>
+              <span class="player-note"><span class="tag">2~3티어</span> 비르츠=시즌·강화 높이면 좋으나 급여↑. GRU로이스=침투. 두크슈=감모 가성비/땜빵, 스쿼드 스냅샷 CAM 1위(53회). 브란트는 GRU 권장.</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ger pos-box-head">CM (중미)</div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 키미히 <span class="mention">33</span> <span class="season">25TOTS·24·25챔·EP</span></span>
+              <span class="player-note"><span class="tag ger">0티어</span> 중미 핵심. 높은 시즌 권장. "수미는 비추"라는 의견 있음(중미로).</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 슈바인슈타이거 <span class="mention">WG시즌 실사용 확인</span> <span class="season">WS·DC·WG 11강</span></span>
+              <span class="player-note"><span class="tag ger">0티어</span> "독일 한정 중미로. 피지컬 넘사, 육각형 스탯"(#15027, #30226). 키미히+슈바인이 베스트 조합. <span class="tag new">신규(#46238)</span> "WG(Warriors of Glory)가 이번 시즌 평정, 9카만 써도 기가막힘" — 스쿼드 스냅샷 LCM 1위(10회)로 실사용 확인.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">고레츠카 <span class="mention">43</span> <span class="season">EP·23·25챔</span></span>
+              <span class="player-note"><span class="tag ger">1티어</span> "앞으로 수미보다 중미 추천. EP 8카까지." 백금 갈수록 육각형. 23고레 수미는 비추.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">아르놀트 / 베켄바우어 / 마테우스 <span class="season">신규·DP·WB·CC</span></span>
+              <span class="player-note"><span class="tag">취향/조건부</span> 아르놀트 9카+면 독사기폼. 베켄바우어=손겜 넘사지만 감모선 "승률 안 올라 비추"는 의견 우세. 마테우스=슛 좋으나 피지컬 약함.</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ger pos-box-head">CDM (수미)</div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 은메차 <span class="mention hi">71</span> <span class="season">24챔 9카·26토티·25UCL 11강</span></span>
+              <span class="player-note"><span class="tag ger">0티어</span> "슈슈·은메차·키미히는 올려야." 수미 1순위 겸 공미 가능. 스쿼드 스냅샷 RCM 1위(19회)로 실사용 확인.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">슈타흐 <span class="mention hi">57</span> <span class="season">EP·25DP 11강</span></span>
+              <span class="player-note"><span class="tag ger">1티어</span> 언급량 많음. "베켄 빼고 바로 슈타흐 데려와 승률 올랐다." 브란트 공미 올릴 때 수미 파트너. 스쿼드 스냅샷 CDM 1위(36회)로 실사용 확인.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">바이글 <span class="season">24EP</span></span>
+              <span class="player-note"><span class="tag">가성비</span> 저예산 수미 옵션.</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ger pos-box-head">CB</div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 슐로터베크 <span class="mention hi">45</span> <span class="season">24·25챔·GRU·토츠·토티·25UCL 11강</span></span>
+              <span class="player-note"><span class="tag ger">0티어 · 근본</span> "슐로터는 무조건 넣고 짠다." 24챔/GRU/25토츠/토티 선택지 여유. 독일 CB 시작점. 스쿼드 스냅샷 LCB 1위(24회)로 실사용 확인.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">후멜스 <span class="mention">17</span> <span class="season">23챔·토츠·토티</span></span>
+              <span class="player-note"><span class="tag ger">0티어</span> "유티 후멜스 발밑이 가장 좋아 인기." 슐로터 짝. 구하기 어렵지만 근본.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">요나탄 타 <span class="mention">4</span> <span class="season">노미·FAC·WS 11강</span></span>
+              <span class="player-note"><span class="tag">상반 의견</span> 긍정: "슐로터-타 헤더로 3골, 9점대"(#32664). 부정: "기대한 몸싸움 장점 없고 실수 잦다"(#15027). 언급량 많은 논쟁 픽.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">마인카 / 콜러 / 코흐 <span class="season">DP</span></span>
+              <span class="player-note"><span class="tag">보조</span> 마인카(194cm) 슐로터 파트너 거론.</span>
+            </div>
+          </div>
+
+          <div class="pos-box">
+            <div class="pos-label ger pos-box-head">LB / RB</div>
+            <div class="player-row">
+              <span class="player-name"><span class="star">⭐</span> 헨릭스 <span class="mention hi">56</span> <span class="season">23·24챔·FAC 11강</span></span>
+              <span class="player-note"><span class="tag ger">RB 정배</span> "290급여 수혜 픽, 23챔 8카 추천. 오버롤 안 나오면 EP/23챔 9카." 강화 포기하고 후보 두는 유저도. 스쿼드 스냅샷 RB 2위(22회).</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">볼프 <span class="mention">32</span> <span class="season">WS 11강</span></span>
+              <span class="player-note"><span class="tag ger">RB 1위 실사용</span> 스쿼드 스냅샷 RB 1위(45회)로 헨릭스보다 실제 기용이 앞선다. 290급여 후엔 헨릭스 권장이라는 채팅 논의와는 결이 다름 — 병기.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">고젠스 <span class="mention">31</span> <span class="season">24현역·DP</span></span>
+              <span class="player-note"><span class="tag ger">LB 고트</span> "독일 풀백의 희망. 신체요건 좋음." 라움 대신 고젠스 권장.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">라움 <span class="mention">24</span> <span class="season">23챔</span></span>
+              <span class="player-note"><span class="tag warn">비추 의견</span> "140 찍히는 것 말고는 여전히 구림. 고젠스 써라"(#15027). 단 LB 경합 종결로 쓰는 유저도 존재.</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">귄터 / 미텔슈테트 / 바쿠 / 슈틸러 <span class="season">DC·HG·HW·25DP 11강</span></span>
+              <span class="player-note"><span class="tag">가성비</span> HG 미텔슈테트는 급여 효율 최고. 스쿼드 스냅샷 LB 1위는 25DP 슈틸러(22회) — 아직 채팅 논의는 적지만 실사용은 상위.</span>
+            </div>
+          </div>
+
+          <div class="section-label" style="margin-top:44px">훈련코치 &amp; 선수 특성</div>
+          <h2 class="sub-title">독일 세팅 가이드</h2>
+
+          <div class="sub-h">훈련코치 (채팅 빈도: 국룰·능중빠·침착하게 순, 표본 매우 적음)</div>
+          <div class="coach-grid">
+            <div class="coach-card">
+              <div class="coach-pos">전술 훈련 (전체)</div>
+              <div class="coach-val">격앙 <span class="tag orange">확정(기존)</span></div>
+              <div class="coach-note">0815~0925 구간 채팅 언급은 0회 — 독일방은 훈코 논의량 자체가 적음(6,850발언 중 표본 5건)</div>
+            </div>
+            <div class="coach-card">
+              <div class="coach-pos">공격진 (하베·무시·회네스)</div>
+              <div class="coach-val">능중빠</div>
+              <div class="coach-note">능숙 몸싸움 + 중거리 + 빠른 템포</div>
+            </div>
+            <div class="coach-card">
+              <div class="coach-pos">중미·수미 (키미히·은메차·슈타흐)</div>
+              <div class="coach-val">능중티</div>
+              <div class="coach-note">능숙 몸싸움 + 중거리 + 티키타카</div>
+            </div>
+            <div class="coach-card">
+              <div class="coach-pos">수비·GK (슐로터·헨릭스·테어)</div>
+              <div class="coach-val">국룰</div>
+              <div class="coach-note">최신 구간에도 3회로 1위 유지 — 표준 세팅</div>
+            </div>
+          </div>
+
+          <div class="sub-h">포지션별 특성 (채팅 빈도, 0815~0925 최신순: 두심19·체이서8·크포7·아크로바틱6·승부욕5)</div>
+          <div class="callout accent">
+            <div class="callout-title">특성 원칙</div>
+            독일방은 특성 토론량이 적은 편(두심·크포 위주 언급). 두심+승부욕 기본 위에 공미 크포, 중원·풀백 체이서, CB 블로커가 정배. <strong>아크로바틱이 신규로 6회 언급</strong>(네덜란드방과 동일하게 새로 떠오른 특성 — 어느 포지션인지는 원문 추가 확인 필요).
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>포지션</th><th>권장 특성</th><th>비고</th></tr></thead>
+              <tbody>
+                <tr><td>전 포지션 기본</td><td><strong>두심 + 승부욕</strong></td><td>기본 깔고 시작</td></tr>
+                <tr><td>하베르츠 (CAM)</td><td><strong>크포</strong></td><td>두심 내장 여부 확인 후 추가</td></tr>
+                <tr><td>CM / CDM / 풀백</td><td><strong>체이서</strong></td><td>수비가담·압박</td></tr>
+                <tr><td>CB (슐로터·후멜스)</td><td><strong>블로커</strong></td><td>두심 vs 블로커 → 블로커 선호</td></tr>
+                <tr><td>GK</td><td><strong>공중볼 장악</strong></td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div><!-- /date-content-독일 -->
+      </div><!-- /pane-독일 -->
+
+      <!-- ===== 바르셀로나 (공식경기, 신규) ===== -->
+      <div id="pane-바르셀로나" class="country-pane">
+        <div class="date-tab-bar" id="date-tabs-바르셀로나">
+          <button class="date-btn active" onclick="selectDate('바르셀로나','2026-09-25', this)">2026-09-25</button>
+        </div>
+        <div id="date-content-바르셀로나-2026-09-25" class="date-content active">
+
+          <div class="thin-note">
+            ⚠️ <strong>공식경기(바르셀로나) 데이터는 아직 표본이 얇다.</strong> fc-info·인벤 게시판에서 "바르셀로나" 팀으로 관찰된 레코드는 총 <strong>53건, 포메이션 확인 3건</strong>뿐이다. 감독모드(네덜란드·독일)처럼 채팅 수만 발언으로 검증된 데이터가 아니라, 게시글에 올라온 스쿼드 화면을 그대로 관찰·집계한 것 — 순위보다는 "반복해서 눈에 띈 선수가 누구인가" 정도로 참고할 것.
+          </div>
+
+          <div class="meta-bar">
+            <div class="meta-item"><span class="meta-num">53</span><span class="meta-label">포지션 관찰 레코드</span></div>
+            <div class="meta-item"><span class="meta-num">3</span><span class="meta-label">포메이션 확인 게시물</span></div>
+            <div class="meta-item"><span class="meta-num">쥘 쿤데</span><span class="meta-label">RB 최다 관찰 · 3회</span></div>
+            <div class="meta-item"><span class="meta-num">릴리앙 튀랑</span><span class="meta-label">LCB 최다 관찰 · 3회</span></div>
+          </div>
+
+          <div class="section-label" style="margin-top:32px">포메이션 관찰</div>
+          <h2 class="sub-title">바르셀로나 포메이션</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>포메이션</th><th>관찰 건수</th></tr></thead>
+              <tbody>
+                <tr><td>4-2-3-1</td><td>1건</td></tr>
+                <tr><td>4-2-2-2</td><td>1건</td></tr>
+                <tr><td>5-2-1-2</td><td>1건</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section-label" style="margin-top:44px">포지션별 관찰</div>
+          <h2 class="sub-title">바르셀로나 포지션별 반복 관찰 선수</h2>
+          <p class="section-desc">숫자 = 게시판 이미지·본문에서 그 포지션에 배치된 것으로 관찰된 횟수. 서술 평가 없이 raw 관찰만 집계 — 1~2회 관찰은 우연일 수 있어 참고 정도로만 볼 것.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>포지션</th><th>1위</th><th>2위</th><th>3위</th></tr></thead>
+              <tbody>
+                <tr><td>GK</td><td>슈체스니 2</td><td>테어슈테겐 2</td><td>J. 가르시아 1</td></tr>
+                <tr><td>LCB</td><td>릴리앙 튀랑 3</td><td>파우 쿠바르시 1</td><td>제라르 마르틴 1</td></tr>
+                <tr><td>RCB</td><td>카를레스 푸욜 1</td><td>파우 쿠바르시 1</td><td>에릭 가르시아 1</td></tr>
+                <tr><td>RB</td><td>쥘 쿤데 3</td><td>에릭 가르시아 1</td><td>—</td></tr>
+                <tr><td>LB</td><td>마르크 쿠쿠레야 2~3</td><td>주앙 칸셀루 1</td><td>—</td></tr>
+                <tr><td>수비형 미드(LDM/RDM)</td><td>F. 케시에 3</td><td>로날드 쿠만 1</td><td>로드리 · 페드리 1</td></tr>
+                <tr><td>중앙 미드(CM/LCM/RCM)</td><td>로드리 1</td><td>주앙 칸셀루 1</td><td>야야 투레 1</td></tr>
+                <tr><td>측면 미드(LM/RM)</td><td>하피냐 2</td><td>라민 야말 1</td><td>뤼도비크 지울리 1</td></tr>
+                <tr><td>공격형 미드(CAM/LAM/RAM)</td><td>요한 크루이프 2</td><td>라민 야말 1</td><td>페르민 로페스 · 리오넬 메시 1</td></tr>
+                <tr><td>최전방(ST/LS/RS)</td><td>사뮈엘 에토 2</td><td>하피냐 1</td><td>레반도프스키 · 헨릭 라르손 · 티에리 앙리 · 호나우두 1</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout info" style="margin-top:20px">
+            <div class="callout-title">반복 관찰 요약</div>
+            표본이 작아 단정할 수는 없지만, <strong>수비 라인(쿤데·튀랑·쿠쿠레야)</strong>과 <strong>공격형 미드(크루이프)</strong>가 여러 게시물에서 반복 등장했다. 역대 레전드·현역이 섞여 있어(크루이프·메시·에토 vs 야말·쿤데) 감모용인지 레전드 컬렉션용인지는 원문 게시물 성격에 따라 갈릴 수 있음.
+          </div>
+
+        </div><!-- /date-content-바르셀로나 -->
+      </div><!-- /pane-바르셀로나 -->
+
+      <!-- ===== 유벤투스 (공식경기, 신규) ===== -->
+      <div id="pane-유벤투스" class="country-pane">
+        <div class="date-tab-bar" id="date-tabs-유벤투스">
+          <button class="date-btn active" onclick="selectDate('유벤투스','2026-09-25', this)">2026-09-25</button>
+        </div>
+        <div id="date-content-유벤투스-2026-09-25" class="date-content active">
+
+          <div class="thin-note">
+            ⚠️ <strong>공식경기(유벤투스) 데이터는 표본이 매우 얇다.</strong> "유벤투스" 팀으로 관찰된 레코드는 포지션 11건, 포메이션 확인 <strong>단 1건</strong>뿐이다. 포지션당 관찰이 1회씩이라 "반복 관찰"이라 부를 수준이 못 된다 — 이번 회차는 "무엇이 관찰됐는가"만 기록하고, 우선순위·추천 판단은 다음 회차 표본이 쌓인 뒤로 미룬다.
+          </div>
+
+          <div class="meta-bar">
+            <div class="meta-item"><span class="meta-num">11</span><span class="meta-label">포지션 관찰 레코드</span></div>
+            <div class="meta-item"><span class="meta-num">1</span><span class="meta-label">포메이션 확인 게시물</span></div>
+            <div class="meta-item"><span class="meta-num">4-2-3-1</span><span class="meta-label">유일하게 확인된 포메이션</span></div>
+            <div class="meta-item"><span class="meta-num">—</span><span class="meta-label">반복 관찰 선수 없음(전부 1회)</span></div>
+          </div>
+
+          <div class="section-label" style="margin-top:32px">포지션별 관찰 (전부 1건씩)</div>
+          <h2 class="sub-title">유벤투스 포지션별 관찰 선수</h2>
+          <p class="section-desc">표본 1건짜리 게시물에서 나온 전체 스쿼드 관찰. 역대 레전드(지단·네드베드·비알리)와 현역(일디즈·브레메르)이 섞여 있어 특정 시점의 팀 컬러 감독모드 스쿼드로 보인다.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>포지션</th><th>관찰 선수</th></tr></thead>
+              <tbody>
+                <tr><td>GK</td><td>G. 비카리오</td></tr>
+                <tr><td>RCB</td><td>릴리앙 튀랑</td></tr>
+                <tr><td>LCB</td><td>브레메르</td></tr>
+                <tr><td>RB</td><td>L. 스피나촐라</td></tr>
+                <tr><td>LB</td><td>잔루카 잠브로타</td></tr>
+                <tr><td>RDM</td><td>파트리크 비에이라</td></tr>
+                <tr><td>LDM</td><td>마누엘 로카텔리</td></tr>
+                <tr><td>RAM</td><td>파벨 네드베드</td></tr>
+                <tr><td>LAM</td><td>지네딘 지단</td></tr>
+                <tr><td>CAM</td><td>K. 일디즈</td></tr>
+                <tr><td>ST</td><td>잔루카 비알리</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div><!-- /date-content-유벤투스 -->
+      </div><!-- /pane-유벤투스 -->
+    </section>
+
+    <!-- 메타 검증 실험 -->
+    <section class="section">
+      <div class="section-label">메타 · 검증 실험</div>
+      <h2 class="sub-title">최근 6개월 게시판 실험 요약</h2>
+      <p class="section-desc">fc-info 감독모드 게시판에서 다수가 추천하거나 직접 경기수를 돌려 검증한 최신 글들.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>주제</th><th>결론</th><th>출처 (작성일)</th></tr></thead>
+          <tbody>
+            <tr><td><strong>독일 41410 vs 41230</strong></td><td>동일 구성 50경기씩 → 41410(위잉위잉) 승률 1~2% 우위. 윙 자원 좋은 독일은 41410 정배</td><td>fc-info #31613 (04-18, 댓24)</td></tr>
+            <tr><td><strong>독일 윙 조합 승률</strong></td><td>무시+회네스 200경기 52%. 회네스+무시 &gt; 무시+아미리 &gt; 회네스+아미리</td><td>fc-info #30780·#31937 (04-08·04-24)</td></tr>
+            <tr><td><strong>독일 윙 4명 8카 비교</strong></td><td>무시(드리블·결정력) / 회네스(침투·골) / 사네(스피드) / 아미리(연계·수비). 무시 좌·회네스/아미리 우</td><td>fc-info #31937 (04-24, 댓19)</td></tr>
+            <tr><td><strong>독일 중미 정리</strong></td><td>슈바인슈타이거 피지컬 1순위, 키미히+슈바인 베스트. 아르놀트 9카+ 독사기폼</td><td>fc-info #30226 (04-04, 댓16)</td></tr>
+            <tr><td><strong>네덜란드 8개월 티어리스트</strong></td><td>WB굴 우선 몰빵, CU·ICON굴 시세상 비추. 쿠만 수미 금지. 더론/레카 수미</td><td>fc-info #27735 (03-11, 조회3.4k 댓41)</td></tr>
+            <tr><td><strong>네덜란드 6개월 슈챔 유지</strong></td><td>WB굴 이상 가능자에게만 네덜 권장. 3공미 정석 유지</td><td>fc-info #32301 (04-29, 댓40)</td></tr>
+            <tr><td><strong>네덜란드 풀백</strong></td><td>좌 하토(25토츠)/블린트(LE), 우 둠프리스(26토티) 정배</td><td>fc-info #34374 (05-22, 댓16)</td></tr>
+            <tr><td><strong>독일 실사용 꿀팁 (신규)</strong></td><td>회네스 실전 비추 반론, 하베르츠 윙공 배치, 마테우스·슈바인 WG시즌 9카, 볼데마데 신규 선수 호평</td><td>#46238 "7.5억 서민 독일 챔스달성 꿀팁" (09월)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 공통 조언 -->
+    <section class="section">
+      <div class="section-label">공통 조언</div>
+      <h2 class="sub-title">감독모드 핵심 원칙</h2>
+      <div class="callout warn">
+        <div class="callout-title">선수·전술 자주 바꾸면 독</div>
+        3일 이상 무지성으로 돌려봐야 전술 효과를 체감할 수 있다. 자주 교체하면 적응 시간이 사라진다.
+      </div>
+      <div class="callout tip">
+        <div class="callout-title">업그레이드 우선순위</div>
+        전술보다 핵심 선수(네덜: 굴리트 / 독일: 하베르츠)를 먼저 올리는 것이 승률 향상에 더 효과적. 굴리트가 천조대일 때부터 굴리트부터 올리라는 게 정설.
+      </div>
+      <div class="callout info">
+        <div class="callout-title">시세 주의 (네덜란드)</div>
+        굴리트 시세가 폭등(콘굴 5천조+)해 CU·ICON굴은 성능 대비 비추. WB반바·FAC반페로도 슈챔 가능하니 무리한 콘굴 몰빵보다 중원 보강이 효율적일 수 있다.
+      </div>
+      <div class="thin-note">
+        ⚠️ <strong>공식경기(바르셀로나·유벤투스) 원칙</strong> — 감독모드와 데이터 성격이 다르다. 채팅 발언 수만 건 규모의 검증이 없고, 게시판 이미지 관찰(각 53건·11건)뿐이라 "정석 조합"을 말하기엔 이르다. 반복 관찰된 선수(쿤데·튀랑 등)를 참고 삼되, 표본이 더 쌓일 때까지는 추천이 아니라 관찰 기록으로 취급할 것.
+      </div>
+    </section>
+
+    <!-- 출처 -->
+    <section class="section">
+      <div class="section-label">데이터 출처 · 수집 범위</div>
+      <h2 class="sub-title">참고 소스 및 검색 방법</h2>
+      <p class="section-desc">모든 데이터는 오픈카톡 실제 대화 + fc-info·인벤 게시판 실게시물 기반. 임의 추론·실제 축구 자료 미사용. 첨부 링크만이 아니라 게시판을 직접 검색·이미지까지 확인해 수집. <strong>네덜란드·독일(감독모드)은 4개 소스</strong>(카톡 2개 + fc-info + 인벤)를 모두 쓰지만, <strong>바르셀로나·유벤투스(공식경기)는 카톡 데이터가 없다</strong> — 게시판 이미지 관찰만으로 구성된 것이 표본이 얇은 근본 이유다.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>소스</th><th>접근 방법</th><th>수집 범위</th></tr></thead>
+          <tbody>
+            <tr><td><strong>오픈카톡 — 네덜란드방</strong></td><td>대화 내보내기 텍스트(14.7MB)</td><td>~2026-09-25. 신규 54,641발언 증분(0815~0925) 빈도분석</td></tr>
+            <tr><td><strong>오픈카톡 — 독일방</strong></td><td>대화 내보내기 텍스트(1.7MB)</td><td>~2026-09-25. 신규 6,850발언 증분(0815~0925) 빈도분석</td></tr>
+            <tr><td><strong>fc-info 게시판</strong> (manager·match·squad·tactic·tip 등)</td><td><code>fc-info.com/posts?boardType=X</code> SSR 파싱, JSON-LD 본문·이미지 추출</td><td>네덜란드·독일 신규 11건(본문 포함) + 공식경기/스쿼드/팁 157건·이미지 288장(바르셀로나·유벤투스 포함)</td></tr>
+            <tr><td><strong>인벤 FC온라인</strong> (감독모드 5296 + 선수평가 3150·팀상담 3154·팁 3145)</td><td>SSR HTML 파싱, 카테고리 필터(<code>?category=</code>)</td><td>네덜란드·독일 신규 4건 + 선수평가·팀상담·팁 게시판 다건</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout tip" style="margin-top:16px">
+        <div class="callout-title">재현용 검색 레시피 (analyze-fc-online 스킬)</div>
+        ① fc-info 목록: <code>GET api.fc-info.com/posts?page=N</code> (Referer 필수, 20개/p, boardType별, createdAt 내림차순) → 컷오프까지 페이지네이션. ② fc-info 본문: JSON-LD(<code>DiscussionForumPosting</code>)에서 제목·본문·날짜·이미지 URL 정규식 1회로 추출. ③ 인벤: <code>inven.co.kr/board/fifaonline4/{board_id}?p=N</code> (SSR, PID 증분). ④ 채팅: <code>[닉][시간] 본문</code> 패턴에서 본문만 추출 후 선수·전술·훈코·특성 별칭 사전으로 카운트(중복 OR 제거).
+      </div>
+      <div class="source-grid" style="margin-top:20px">
+        <span class="chip">v5 신규: 채팅 6.1만 발언 · fc-info/인벤 15건 + 공식경기 관찰 157건</span>
+        <span class="chip">채팅 메시지 빈도분석 2개 방</span>
+        <span class="chip">수집 구간: 2026-08-15 ~ 2026-09-25</span>
+        <span class="chip new">v5 업데이트: 2026-09-25</span>
+      </div>
+    </section>
+
+  </div><!-- /page-wrap -->
+
+  <footer>
+    <span>FC온라인 네덜·독일·바르샤·유베 감독모드 v5</span>
+    <span>2026-09-25</span>
+  </footer>
+
+  <script>
+    const COUNTRY_ACTIVE_CLASS = { '네덜란드': 'active-ned', '독일': 'active-ger', '바르셀로나': 'active-bar', '유벤투스': 'active-juv' };
+
+    function switchCountry(country, btn) {
+      document.querySelectorAll('.country-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active-ned', 'active-ger', 'active-bar', 'active-juv'));
+      document.getElementById('pane-' + country).classList.add('active');
+      btn.classList.add(COUNTRY_ACTIVE_CLASS[country] || 'active-ned');
+    }
+
+    function selectDate(country, date, btn) {
+      document.querySelectorAll('#date-tabs-' + country + ' .date-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      document.querySelectorAll('#pane-' + country + ' .date-content').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById('date-content-' + country + '-' + date);
+      if (target) target.classList.add('active');
+    }
+  </script>
+
+  <script src="/assets/js/page-header.js"></script>
+  <script data-page-hash="FCV5NLD" src="/assets/js/page-footer.js"></script>
+</body>
+</html>
